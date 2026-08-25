@@ -1,0 +1,2 @@
+plotting_name,plotting_color,avg_shape_bias,median_shape_bias
+ts_resnet18_dkl_rg_dvd_trans,"(0.0, 0.0, 0.0)",0.526548672566,0.458041958042

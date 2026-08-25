@@ -1,0 +1,4 @@
+subj,dataset_name,metric_name,performance
+resnet50_DVD_B,cue-conflict,accuracy (top-1),0.49765625
+resnet50_DVD_B,cue-conflict,mean_shape_bias,0.82183908045977
+resnet50_DVD_B,cue-conflict,median_shape_bias,0.8507578100835138

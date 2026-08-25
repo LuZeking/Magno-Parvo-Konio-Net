@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+mobilenet_v3_small_TVD_B,cue-conflict,accuracy (top-1),0.41171875

@@ -1,0 +1,4 @@
+log_path: '/share/klab/lzejin/mbenito/two_stream_dvd/logs/linear_readout/final_ts_dkl_contrast'
+dataset_dir: '/share/klab/datasets/'
+dataset_name: 'texture2shape_miniecoset_256px_dkl_kapoor.h5'
+experiment_name: 'final_ts_dkl_contrast'

@@ -1,0 +1,4 @@
+subj,dataset_name,metric_name,performance
+resnet50_baseline,edge,accuracy (top-1),0.1625
+resnet50_baseline,silhouette,accuracy (top-1),0.05625
+resnet50_baseline,cue-conflict,accuracy (top-1),0.2671875

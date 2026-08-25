@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+resnext101_32x8d,cue-conflict,accuracy (top-1),0.2515625

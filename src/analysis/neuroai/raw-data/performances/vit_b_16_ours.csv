@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+vit_b_16_ours,cue-conflict,accuracy (top-1),0.44375

@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+resnet50_TVD_B_blur_color_only,cue-conflict,accuracy (top-1),0.29921875

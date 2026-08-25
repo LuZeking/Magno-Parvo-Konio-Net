@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+transformer_L16_IN21K,cue-conflict,accuracy (top-1),0.4671875

@@ -1,0 +1,161 @@
+subj,dataset_name,metric_name,performance
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all),0.96171875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all),1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1),0.490625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias,0.9267515923566879
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias,0.9418972332015809
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 0,0.74921875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 0,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 0,0.32265625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 0,0.8824884792626728
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 0,0.8876050420168067
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 4,0.91015625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 4,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 4,0.4203125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 4,0.9118705035971223
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 4,0.9066937119675456
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 9,0.946875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 9,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 9,0.4453125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 9,0.9212328767123288
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 9,0.9305263157894738
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 14,0.934375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 14,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 14,0.484375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 14,0.9267515923566879
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 14,0.9273809523809523
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 19,0.9390625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 19,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 19,0.4921875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 19,0.91875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 19,0.9354395604395604
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 24,0.94921875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 24,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 24,0.4734375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 24,0.9169381107491856
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 24,0.9217325227963524
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 29,0.9359375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 29,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 29,0.48203125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 29,0.9206349206349206
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 29,0.9165217391304348
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 34,0.94921875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 34,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 34,0.49765625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 34,0.9050535987748852
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 34,0.8951465201465202
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 39,0.946875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 39,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 39,0.5
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 39,0.9222395023328149
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 39,0.9194070080862533
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 44,0.93828125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 44,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 44,0.49296875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 44,0.9263322884012539
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 44,0.9282094594594594
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 49,0.94609375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 49,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 49,0.49609375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 49,0.9081163859111792
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 49,0.916630481980026
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 54,0.95703125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 54,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 54,0.5078125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 54,0.9237804878048782
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 54,0.9365079365079365
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 59,0.94921875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 59,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 59,0.4703125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 59,0.9286898839137645
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 59,0.9365384615384615
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 64,0.9515625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 64,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 64,0.50546875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 64,0.9364341085271317
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 64,0.9560019129603061
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 69,0.94296875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 69,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 69,0.5046875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 69,0.9310872894333844
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 69,0.9166666666666667
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 74,0.96015625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 74,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 74,0.5078125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 74,0.9454828660436138
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 74,0.9484265734265733
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 79,0.95234375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 79,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 79,0.48046875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 79,0.9171974522292993
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 79,0.9102678571428572
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 84,0.95234375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 84,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 84,0.48515625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 84,0.9401294498381877
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 84,0.9357045143638851
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 89,0.94921875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 89,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 89,0.50703125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 89,0.9469578783151326
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 89,0.9660087719298245
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 94,0.9609375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 94,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 94,0.51953125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 94,0.9326347305389222
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 94,0.923125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 99,0.94375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 99,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 99,0.503125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 99,0.9250764525993883
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 99,0.9351127473538887
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 104,0.953125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 104,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 104,0.49765625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 104,0.9337539432176656
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 104,0.9323863636363636
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 109,0.9546875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 109,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 109,0.4765625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 109,0.910828025477707
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 109,0.9254629629629629
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 114,0.9609375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 114,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 114,0.484375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 114,0.9210110584518167
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 114,0.9230769230769231
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 119,0.953125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 119,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 119,0.47265625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 119,0.912621359223301
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 119,0.9285714285714285
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 124,0.96015625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 124,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 124,0.4859375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 124,0.9178515007898894
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 124,0.9395136778115502
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 129,0.95546875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 129,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 129,0.49453125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 129,0.9222395023328149
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 129,0.9070512820512822
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 134,0.9515625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 134,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 134,0.50390625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 134,0.9332298136645962
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 134,0.9352968460111317
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 139,0.9578125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 139,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 139,0.47890625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 139,0.9237012987012987
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 139,0.9242999525391551
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 144,0.95703125
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 144,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 144,0.49375
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 144,0.9242902208201893
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 144,0.9484126984126984
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 149,0.96171875
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 149,1.0
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,accuracy (top-1) epoch: 149,0.490625
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,mean_shape_bias epoch: 149,0.9267515923566879
+ts_resnet18_dkl_lum_blur_cs_final,cue-conflict,median_shape_bias epoch: 149,0.9418972332015809

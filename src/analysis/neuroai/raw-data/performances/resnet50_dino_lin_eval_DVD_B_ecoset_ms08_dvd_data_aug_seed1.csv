@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+resnet50_dino_lin_eval_DVD_B_ecoset_ms08_dvd_data_aug_seed1,cue-conflict,accuracy (top-1),0.28125

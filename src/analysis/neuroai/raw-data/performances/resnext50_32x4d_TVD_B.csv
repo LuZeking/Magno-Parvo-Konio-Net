@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+resnext50_32x4d_TVD_B,cue-conflict,accuracy (top-1),0.496875

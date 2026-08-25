@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+ResNeXt101_32x16d_swsl,cue-conflict,accuracy (top-1),0.46171875

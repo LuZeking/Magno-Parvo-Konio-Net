@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+blipv2_7b,cue-conflict,accuracy (top-1),0.0484375

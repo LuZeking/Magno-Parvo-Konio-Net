@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+BiTM_resnetv2_50x1,cue-conflict,accuracy (top-1),0.33984375

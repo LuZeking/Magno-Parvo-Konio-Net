@@ -1,0 +1,163 @@
+subj,dataset_name,metric_name,performance
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1),0.49296875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias,0.8333333333333334
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias,0.7989921612541993
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 0,0.05078125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 0,0.5
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 0,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 4,0.07109375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 4,0.5918367346938775
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 4,0.24285714285714288
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 9,0.09296875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 9,0.6162162162162163
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 9,0.24285714285714288
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 14,0.09765625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 14,0.594059405940594
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 14,0.2777777777777778
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 19,0.0828125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 19,0.495
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 19,0.06250000000000001
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 24,0.08203125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 24,0.49238578680203043
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 24,0.05
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 29,0.071875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 29,0.4368421052631579
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 29,0.11111111111111112
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 34,0.09921875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 34,0.6402116402116402
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 34,0.3888888888888889
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 39,0.08671875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 39,0.5454545454545454
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 39,0.25
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 44,0.15
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 44,0.7338709677419355
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 44,0.6770833333333334
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 49,0.14921875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 49,0.6483516483516484
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 49,0.5833333333333333
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 54,0.146875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 54,0.7131474103585658
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 54,0.521978021978022
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 59,0.26328125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 59,0.7644110275689223
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 59,0.6583333333333334
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 64,0.39140625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 64,0.8534322820037106
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 64,0.8572874493927125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 69,0.43359375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 69,0.8510998307952623
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 69,0.8248905565978737
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 74,0.44140625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 74,0.8453947368421053
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 74,0.8092296511627908
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 79,0.45390625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 79,0.8286163522012578
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 79,0.8013141426783479
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 84,0.4796875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 84,0.8111273792093704
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 84,0.7853488372093023
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 89,0.484375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 89,0.8244837758112095
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 89,0.8130434782608695
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 94,0.51171875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 94,0.8333333333333333
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 94,0.7859738372093024
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 99,0.49453125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 99,0.8223495702005731
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 99,0.7979591836734694
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 104,0.48125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 104,0.8398791540785498
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 104,0.8042553191489361
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 109,0.48828125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 109,0.8382352941176471
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 109,0.8505555555555556
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 114,0.47734375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 114,0.8241430700447094
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 114,0.7872340425531915
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 119,0.48203125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 119,0.8403614457831325
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 119,0.8109243697478992
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 124,0.4890625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 124,0.8248175182481752
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 124,0.7763375620518478
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 129,0.50234375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 129,0.8567251461988303
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 129,0.8174119241192412
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 134,0.4890625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 134,0.8410104011887073
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 134,0.860655737704918
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 139,0.49609375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 139,0.834054834054834
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 139,0.8152777777777778
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 144,0.47890625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 144,0.8411497730711045
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 144,0.8136170212765959
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,accuracy (top-1) epoch: 149,0.49296875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_shape_bias epoch: 149,0.8333333333333334
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_shape_bias epoch: 149,0.7989921612541993
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all),0.77109375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all),1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (ratio),0.5169015030934816
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (ratio),0.5167806046905624
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 0,0.48125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 0,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 4,0.1671875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 4,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 9,0.22578125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 9,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 14,0.328125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 14,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 19,0.48828125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 19,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 24,0.45546875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 24,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 29,0.44921875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 29,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 34,0.3859375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 34,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 39,0.409375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 39,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 44,0.265625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 44,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 49,0.29765625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 49,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 54,0.296875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 54,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 59,0.29375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 59,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 64,0.43984375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 64,0.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 69,0.57109375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 69,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 74,0.6859375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 74,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 79,0.765625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 79,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 84,0.7796875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 84,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 89,0.75546875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 89,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 94,0.78125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 94,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 99,0.76640625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 99,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 104,0.81796875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 104,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 109,0.80703125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 109,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 114,0.81015625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 114,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 119,0.8265625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 119,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 124,0.70703125
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 124,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 129,0.79609375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 129,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 134,0.7796875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 134,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 139,0.79921875
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 139,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 144,0.80625
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 144,1.0
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all) epoch: 149,0.77109375
+ts_baseline_resnet50_DVD_Scale_Free_DVD_trans,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all) epoch: 149,1.0

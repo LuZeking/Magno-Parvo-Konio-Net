@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+vgg19_bn,cue-conflict,accuracy (top-1),0.2015625

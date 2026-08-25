@@ -1,0 +1,2 @@
+plotting_name,plotting_color,avg_shape_bias,median_shape_bias
+ts_resnet18_dkl_blur_final,"(0.0, 0.0, 0.0)",0.663551401869,0.641666666667

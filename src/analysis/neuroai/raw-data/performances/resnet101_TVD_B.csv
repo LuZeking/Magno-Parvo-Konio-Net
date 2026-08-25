@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+resnet101_TVD_B,cue-conflict,accuracy (top-1),0.4578125

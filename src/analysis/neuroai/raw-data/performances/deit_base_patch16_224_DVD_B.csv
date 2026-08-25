@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+deit_base_patch16_224_DVD_B,cue-conflict,accuracy (top-1),0.44609375

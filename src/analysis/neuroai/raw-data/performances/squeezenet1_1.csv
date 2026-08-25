@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+squeezenet1_1,cue-conflict,accuracy (top-1),0.1265625

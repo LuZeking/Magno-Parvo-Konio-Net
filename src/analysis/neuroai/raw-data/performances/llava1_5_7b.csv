@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+llava1_5_7b,cue-conflict,accuracy (top-1),0.0625

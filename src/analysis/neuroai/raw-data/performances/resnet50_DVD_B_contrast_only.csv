@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+resnet50_DVD_B_contrast_only,cue-conflict,accuracy (top-1),0.45390625

@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+clipRN50_CCM_12m_DVD,cue-conflict,accuracy (top-1),0.134375

@@ -1,0 +1,8 @@
+subj,dataset_name,metric_name,performance
+ts_resnet18_dkl_blur_cs_medium_s1_90,cue-conflict,mean_repr_shape_bias_stream_1 (winner-take-all),0.98125
+ts_resnet18_dkl_blur_cs_medium_s1_90,cue-conflict,median_repr_shape_bias_stream_1 (winner-take-all),1.0
+ts_resnet18_dkl_blur_cs_medium_s1_90,cue-conflict,mean_repr_shape_bias_stream_2 (winner-take-all),0.096875
+ts_resnet18_dkl_blur_cs_medium_s1_90,cue-conflict,median_repr_shape_bias_stream_2 (winner-take-all),0.0
+ts_resnet18_dkl_blur_cs_medium_s1_90,cue-conflict,accuracy (top-1),0.39609375
+ts_resnet18_dkl_blur_cs_medium_s1_90,cue-conflict,mean_shape_bias,0.7339743589743589
+ts_resnet18_dkl_blur_cs_medium_s1_90,cue-conflict,median_shape_bias,0.7017094017094017

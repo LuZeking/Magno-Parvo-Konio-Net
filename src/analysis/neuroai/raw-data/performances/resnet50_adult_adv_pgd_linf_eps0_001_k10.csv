@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+resnet50_adult_adv_pgd_linf_eps0_001_k10,cue-conflict,accuracy (top-1),0.3640625

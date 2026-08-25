@@ -1,0 +1,2 @@
+plotting_name,plotting_color,avg_shape_bias,median_shape_bias
+ts_resnet18_dkl_blur_cs_dvd_trans,"(0.0, 0.0, 0.0)",0.677777777778,0.590775558167

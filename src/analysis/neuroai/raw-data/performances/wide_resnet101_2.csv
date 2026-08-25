@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+wide_resnet101_2,cue-conflict,accuracy (top-1),0.22734375

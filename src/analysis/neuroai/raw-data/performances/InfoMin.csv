@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+InfoMin,cue-conflict,accuracy (top-1),0.20546875

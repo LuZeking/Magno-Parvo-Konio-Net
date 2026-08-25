@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+resnet50_finetuned_adult_SimCLR_ecoset_ms08_dvd_data_aug_seed1,cue-conflict,accuracy (top-1),0.34140625

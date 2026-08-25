@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+swin_b_ours,cue-conflict,accuracy (top-1),0.2296875

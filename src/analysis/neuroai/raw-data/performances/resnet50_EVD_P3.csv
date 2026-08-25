@@ -1,0 +1,4 @@
+subj,dataset_name,metric_name,performance
+resnet50_EVD_P3,edge,accuracy (top-1),0.08125
+resnet50_EVD_P3,silhouette,accuracy (top-1),0.0625
+resnet50_EVD_P3,cue-conflict,accuracy (top-1),0.3578125

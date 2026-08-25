@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+resnet50_mpe1_0_alpha0_2_dn50_0,cue-conflict,accuracy (top-1),0.43203125

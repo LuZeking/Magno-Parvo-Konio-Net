@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+efficientnet_l2_noisy_student_475,cue-conflict,accuracy (top-1),0.59609375

@@ -1,0 +1,60 @@
+slurm_auto_requeue: False
+epochs: 150
+batch_size_train: 256
+batch_size_val_test: 256
+learning_rate: 0.0001
+devices: 1
+num_workers: 8
+in_memory: True
+num_classes: 112
+decay: 1e-6
+momentum: 0.9
+augment_train: []
+augment_test_val: []
+epsilon: 1e-8
+dropout: 0.0
+like_resnet: 'resnet18'
+seperate_from_layer: 0
+baseline: False
+
+apply_blur: 0
+apply_color: 0
+apply_contrast: 0
+contrast_amplitude_beta: 0
+contrast_amplitude_lamda: 0
+apply_threshold_color: False
+image_size: 256
+cs_logspan_start: 0
+dvd_strategy: 'dkl'
+fully_random: False
+months_per_epoch: 0
+age_m: 48
+stream_concat: False
+stream1_weight: 0.5
+
+lum: True
+rg: True
+by: False
+lum_blur: False
+lum_cs: True
+rg_blur: False
+rg_cs: False
+by_blur: False
+by_cs: False
+combined_color: False
+
+
+hflip_prob: 0.25
+rotation_prob: 0.25
+rotation_degrees: 15.0
+brightness_prob: 0.5
+grayscale_prob: 0
+equalize_prob: 0.5
+distortion_scale: 0.5
+perspective_prob: 0.5
+sharpness_prob: 0.5
+rand_blur_prob: 0.5
+
+loss_func:
+        _target_: torch.nn.CrossEntropyLoss
+label_smoothing: 0.0

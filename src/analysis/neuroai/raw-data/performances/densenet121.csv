@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+densenet121,cue-conflict,accuracy (top-1),0.22109375

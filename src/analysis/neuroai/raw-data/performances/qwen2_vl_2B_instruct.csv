@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+qwen2_vl_2B_instruct,cue-conflict,accuracy (top-1),0.22265625

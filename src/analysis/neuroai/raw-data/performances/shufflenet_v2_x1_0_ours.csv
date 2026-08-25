@@ -1,0 +1,2 @@
+subj,dataset_name,metric_name,performance
+shufflenet_v2_x1_0_ours,cue-conflict,accuracy (top-1),0.3421875
