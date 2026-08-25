@@ -31,6 +31,7 @@ class TwoStreamNetwork(nn.Module):
         combined_color: bool = False,
         stream_concat: bool = False,
         stream1_weight: float = 0.5,
+        legacy_asymmetric_mixing: bool = False,
     ):
         super().__init__()
 
@@ -43,6 +44,10 @@ class TwoStreamNetwork(nn.Module):
         self.combined_color = combined_color
         self.stream_concat = stream_concat
         self.stream1_weight = stream1_weight
+        # Checkpoints trained before the mixing fix used an asymmetric update
+        # (stream 2 received the already-mixed stream-1 tensor, i.e. an
+        # effective 0.8125/0.1875 split); set True to reproduce their forward.
+        self.legacy_asymmetric_mixing = legacy_asymmetric_mixing
 
         self.setup_model_blocks()
 
@@ -206,6 +211,21 @@ class TwoStreamNetwork(nn.Module):
 
         self.classifier = copy.deepcopy(nn.Sequential(*classifier_layers))
 
+    def _mix_streams(self, y1, y2):
+        """Cross-stream mixing after block 2 (75% own stream, 25% other).
+
+        The legacy variant fed the already-mixed y1 into y2's update, so
+        stream 2 effectively received 0.8125*y2 + 0.1875*y1.
+        """
+        if self.legacy_asymmetric_mixing:
+            y1 = (3 * y1 + y2) / 4
+            y2 = (3 * y2 + y1) / 4
+            return y1, y2
+        y1_pre, y2_pre = y1, y2
+        y1 = (3 * y1_pre + y2_pre) / 4
+        y2 = (3 * y2_pre + y1_pre) / 4
+        return y1, y2
+
     def forward(self, x_1, x_2=None):
         "Forward pass"
 
@@ -222,8 +242,7 @@ class TwoStreamNetwork(nn.Module):
                     y1 = self.stream1_block1(x_1)
                     y2 = self.stream2_block1(x_1)
 
-                    y1 = (3 * y1 + y2) / 4
-                    y2 = (3 * y2 + y1) / 4
+                    y1, y2 = self._mix_streams(y1, y2)
 
                     y1 = self.stream1_block2(y1)
                     y2 = self.stream2_block2(y2)
@@ -255,8 +274,7 @@ class TwoStreamNetwork(nn.Module):
                 y1 = self.stream1_block1(x_1)
                 y2 = self.stream2_block1(x_2)
 
-                y1 = (3 * y1 + y2) / 4
-                y2 = (3 * y2 + y1) / 4
+                y1, y2 = self._mix_streams(y1, y2)
 
                 y1 = self.stream1_block2(y1)
                 y2 = self.stream2_block2(y2)
