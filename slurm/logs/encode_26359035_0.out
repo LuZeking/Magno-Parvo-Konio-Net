@@ -1,0 +1,16 @@
+[subj01] design + betas
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev/src/analysis/encoding/run_encoding.py", line 179, in <module>
+    main()
+  File "/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev/src/analysis/encoding/run_encoding.py", line 119, in main
+    stim_info = nsd_data.load_stim_info()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev/src/analysis/encoding/nsd_data.py", line 51, in load_stim_info
+    return pd.read_pickle(
+           ^^^^^^^^^^^^^^^
+  File "/scratch/byrong/anaconda3/envs/mpk/lib/python3.11/site-packages/pandas/io/pickle.py", line 233, in read_pickle
+    return pickle.load(handles.handle)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'ascii' codec can't decode byte 0x9a in position 0: ordinal not in range(128)

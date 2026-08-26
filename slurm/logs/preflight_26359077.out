@@ -1,0 +1,23 @@
+=== preflight, subject 1 ===
+  OK   load_stim_info: 73000 rows, 1000 shared
+  OK   available_sessions: 40 sessions on disk
+  FAIL build_train_test_split
+Traceback (most recent call last):
+  File "/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev/src/analysis/encoding/preflight.py", line 28, in check
+    out = fn()
+          ^^^^
+  File "/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev/src/analysis/encoding/preflight.py", line 55, in _split
+    split = nsd_data.build_train_test_split(s, stim_info)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev/src/analysis/encoding/nsd_data.py", line 199, in build_train_test_split
+    test_ids = shared515_image_ids(stim_info)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev/src/analysis/encoding/nsd_data.py", line 117, in shared515_image_ids
+    mask &= (trial_pos >= 1) & (trial_pos <= n_trials)
+ValueError: output array is read-only
+  OK   load_mask: 15724 voxels, shape (83, 104, 81)
+  OK   load_noise_ceiling: NC median 0.281, >0.1 in 12687 voxels
+  OK   load_roi_labels: {'streams': 9, 'prf-eccrois': 7, 'prf-visualrois': 9}
+  OK   load_betas(1 session): one session -> (750, 15724), finite=True
+
+PREFLIGHT FAILED: ['build_train_test_split']
