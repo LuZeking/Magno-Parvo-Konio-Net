@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import glob
 import os
+import pickle
 import re
 
 import h5py
@@ -48,9 +49,19 @@ def _roi_dir(subject: int) -> str:
 
 
 def load_stim_info() -> pd.DataFrame:
-    return pd.read_pickle(
-        os.path.join(NSD_ROOT, "stimuli", "nsd_stim_info_merged.pkl")
-    )
+    """Load the NSD design table.
+
+    `nsd_stim_info_merged.pkl` was written by an older Python, so newer
+    pandas/pickle versions raise UnicodeDecodeError unless the legacy
+    latin1 encoding is requested explicitly.
+    """
+    path = os.path.join(NSD_ROOT, "stimuli", "nsd_stim_info_merged.pkl")
+    with open(path, "rb") as f:
+        try:
+            return pickle.load(f)
+        except UnicodeDecodeError:
+            f.seek(0)
+            return pickle.load(f, encoding="latin1")
 
 
 def available_sessions(subject: int) -> list[int]:
@@ -97,7 +108,9 @@ def shared515_image_ids(stim_info: pd.DataFrame) -> np.ndarray:
     sessions available on disk. With full 40-session data this yields the
     canonical "special515" set.
     """
-    mask = stim_info["shared1000"].to_numpy(dtype=bool)
+    # .to_numpy() can hand back a read-only view of the frame's block,
+    # which breaks the in-place &= below.
+    mask = np.array(stim_info["shared1000"].to_numpy(dtype=bool), copy=True)
     for subject in range(1, N_SUBJECTS + 1):
         n_trials = n_completed_trials(subject)
         for rep in range(N_REPS):
