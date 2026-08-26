@@ -35,14 +35,30 @@ def make_grouped_splits(
 
 
 def _as_numpy(x, backend_mod) -> np.ndarray:
-    """Scores come back as numpy when Y_in_cpu=True and as backend tensors
-    otherwise; normalize both."""
+    """Predictions come back as numpy when Y_in_cpu=True and as backend
+    tensors otherwise; normalize both."""
     if isinstance(x, np.ndarray):
         return x
     try:
         return np.asarray(backend_mod.to_numpy(x))
     except (AttributeError, TypeError):
         return np.asarray(x)
+
+
+def r2_per_target(Y_true: np.ndarray, Y_pred: np.ndarray) -> np.ndarray:
+    """Per-voxel R^2, computed in numpy.
+
+    himalaya's own scoring assumes backend tensors and raises on the numpy
+    arrays that Y_in_cpu=True yields, so the metric is computed here.
+    Matches himalaya's definition: 1 - SS_res / SS_tot with SS_tot about the
+    test-set mean of each target.
+    """
+    Y_true = np.asarray(Y_true, dtype=np.float64)
+    Y_pred = np.asarray(Y_pred, dtype=np.float64)
+    ss_res = np.sum((Y_true - Y_pred) ** 2, axis=0)
+    ss_tot = np.sum((Y_true - Y_true.mean(axis=0, keepdims=True)) ** 2, axis=0)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(ss_tot > 0, 1.0 - ss_res / ss_tot, np.nan)
 
 
 def fit_banded(
@@ -59,7 +75,6 @@ def fit_banded(
     """Joint banded ridge + per-band single ridge fits; test R2 per voxel."""
     from himalaya.backend import set_backend
     from himalaya.ridge import BandedRidgeCV, RidgeCV
-    from himalaya.scoring import r2_score
     from sklearn.preprocessing import StandardScaler
 
     backend_mod = set_backend(backend, on_error="warn")
@@ -76,8 +91,8 @@ def fit_banded(
         ridge = RidgeCV(alphas=alphas, cv=splits)
         ridge.fit(Xb_tr.astype(np.float32), Y_train)
         pred = ridge.predict(Xb_te.astype(np.float32))
-        results[f"r2_{name}"] = _as_numpy(
-            r2_score(Y_test, pred), backend_mod
+        results[f"r2_{name}"] = r2_per_target(
+            Y_test, _as_numpy(pred, backend_mod)
         )
 
     # ---- joint banded ridge, PRIMAL space ----
@@ -91,6 +106,9 @@ def fit_banded(
     Xtr_cat = np.concatenate(Xtr, axis=1).astype(np.float32)
     Xte_cat = np.concatenate(Xte, axis=1).astype(np.float32)
 
+    # NB: Y_in_cpu=True expects a backend (torch) tensor and raises on the
+    # numpy arrays used here, so targets stay in the backend and memory is
+    # bounded by n_targets_batch instead.
     banded = BandedRidgeCV(
         groups=groups,
         solver="random_search",
@@ -102,11 +120,10 @@ def fit_banded(
         ),
         random_state=seed,
         cv=splits,
-        Y_in_cpu=True,
     )
     banded.fit(Xtr_cat, Y_train)
     pred = banded.predict(Xte_cat)
-    results["r2_joint"] = _as_numpy(r2_score(Y_test, pred), backend_mod)
+    results["r2_joint"] = r2_per_target(Y_test, _as_numpy(pred, backend_mod))
 
     return results
 

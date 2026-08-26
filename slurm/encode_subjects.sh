@@ -11,20 +11,23 @@
 # prio QOS caps gres/gpu=8/user -> throttle to 4 and use standard QOS so
 # other latency-critical jobs keep prio headroom.
 #
+# CPU partition: the fits are primal banded ridge over ~1k features per band
+# (cheap), and per project policy anything that does not need CUDA runs on
+# `main` with no --gres. This also avoids the GPU queue, where an earlier
+# attempt sat pending behind contention. Note gpu nodes g[001-008] only have
+# 95250 MB RealMemory, so a >93G request there is unschedulable, not queued.
 #SBATCH --job-name=mpk_encode
-#SBATCH --partition=gpu
+#SBATCH --partition=main
 #SBATCH --qos=standard
-#SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
-# gpu nodes g[001-008] have 95250 MB RealMemory; asking for >93G makes the job
-# unschedulable (Reason=BadConstraints) rather than merely queued.
-#SBATCH --mem=80G
-#SBATCH --time=12:00:00
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=60G
+#SBATCH --time=24:00:00
 #SBATCH --array=0-7%4
 #SBATCH --output=slurm/logs/encode_%A_%a.out
 
 set -euo pipefail
 mkdir -p slurm/logs
+export OPENBLAS_NUM_THREADS=16 OMP_NUM_THREADS=16 MKL_NUM_THREADS=16
 
 MODEL_NAME=${1:?model name required}
 CHECKPOINT=${2:-}
