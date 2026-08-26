@@ -132,6 +132,67 @@ def stream_logits(
     return {k: np.concatenate(v) for k, v in outs.items()}
 
 
+
+def build_baseline(
+    checkpoint: str | None,
+    like_resnet: str = "resnet50",
+    num_classes: int = 112,
+    seed: int = 0,
+    device: str = "cpu",
+):
+    """Plain single-stream ResNet baseline (RGB Baseline / DVD Baseline).
+
+    These are the anchors for the paper's comparative claim ("more
+    shape-biased than standard CNNs, approaching DVD-trained models"), so
+    they are scored with the identical decision rule as the TSN.
+    """
+    import torch.nn as nn
+    import torchvision.models as tvm
+
+    torch.manual_seed(seed)
+    model = getattr(tvm, like_resnet)(weights=None)
+    model.fc = nn.Linear(model.fc.in_features, num_classes)
+    if checkpoint is not None:
+        state = torch.load(checkpoint, map_location="cpu", weights_only=False)
+        if isinstance(state, dict) and "state_dict" in state:
+            state = state["state_dict"]
+        cleaned = {}
+        for k, v in state.items():
+            for prefix in ("network.", "model.", "module."):
+                if k.startswith(prefix):
+                    k = k[len(prefix):]
+            cleaned[k] = v
+        missing, unexpected = model.load_state_dict(cleaned, strict=False)
+        if missing or unexpected:
+            print(
+                f"[cue_conflict] baseline load_state_dict: {len(missing)} "
+                f"missing, {len(unexpected)} unexpected keys",
+                flush=True,
+            )
+    return model.eval().to(device)
+
+
+@torch.no_grad()
+def baseline_logits(
+    model, rgb_uint8: np.ndarray, batch_size: int = 32, device: str = "cpu",
+    image_size: int = 224,
+) -> dict[str, np.ndarray]:
+    """Logits for a single-stream baseline on RGB cue-conflict images."""
+    x = torch.from_numpy(np.ascontiguousarray(rgb_uint8)).permute(0, 3, 1, 2)
+    x = x.float() / 255.0
+    if x.shape[-1] != image_size:
+        x = F.interpolate(
+            x, size=(image_size, image_size), mode="bilinear",
+            antialias=True, align_corners=False,
+        )
+    out = []
+    for start in range(0, x.shape[0], batch_size):
+        out.append(
+            model(x[start:start + batch_size].to(device)).float().cpu().numpy()
+        )
+    return {"full": np.concatenate(out)}
+
+
 def shape_bias(
     logits: np.ndarray, shapes: list[str], textures: list[str],
     class_index: dict[str, int],
@@ -179,6 +240,33 @@ def bootstrap_ci(
     return float(np.percentile(vals, 2.5)), float(np.percentile(vals, 97.5))
 
 
+
+def write_report(logits, shapes, textures, class_index, args) -> None:
+    """Score every condition, print it, and persist JSON + raw logits."""
+    report = {"model_name": args.model_name,
+              "checkpoint": str(args.checkpoint), "conditions": {}}
+    for cond, lg in logits.items():
+        res = shape_bias(lg, shapes, textures, class_index)
+        lo, hi = bootstrap_ci(lg, shapes, textures, class_index,
+                              n_boot=args.n_boot, seed=args.seed)
+        res["shape_bias_ci95"] = [lo, hi]
+        report["conditions"][cond] = res
+        print(f"  {cond:11s} shape_bias={res['shape_bias']:.3f} "
+              f"[{lo:.3f}, {hi:.3f}]  shape_acc={res['shape_accuracy']:.3f}",
+              flush=True)
+
+    os.makedirs(args.out_dir, exist_ok=True)
+    out_path = os.path.join(args.out_dir, f"{args.model_name}.json")
+    with open(out_path, "w") as f:
+        json.dump(report, f, indent=2)
+    np.savez(
+        os.path.join(args.out_dir, f"{args.model_name}_logits.npz"),
+        shapes=np.asarray(shapes), textures=np.asarray(textures),
+        **logits,
+    )
+    print(f"saved -> {out_path}", flush=True)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--checkpoint", default=None)
@@ -191,6 +279,10 @@ def main():
     p.add_argument("--transform-target", default="magno",
                    choices=["magno", "parvo"])
     p.add_argument("--age-months", type=int, default=48)
+    p.add_argument("--baseline", action="store_true",
+                   help="checkpoint is a single-stream ResNet baseline")
+    p.add_argument("--like-resnet", default="resnet50",
+                   help="architecture for --baseline")
     p.add_argument("--legacy-mixing", action="store_true",
                    help="reproduce pre-fix asymmetric mixing (old ckpts)")
     p.add_argument("--seed", type=int, default=0)
@@ -208,6 +300,24 @@ def main():
     shapes = [i[1] for i in items]
     textures = [i[2] for i in items]
     print(f"[{args.model_name}] {len(items)} cue-conflict images", flush=True)
+
+    if args.baseline:
+        # Single-stream anchor: no DKL front end, no stream decomposition.
+        model = build_baseline(
+            args.checkpoint, like_resnet=args.like_resnet,
+            seed=args.seed, device=device,
+        )
+        parts: dict[str, list[np.ndarray]] = {}
+        for start in range(0, len(paths), 128):
+            rgb = load_images(paths[start:start + 128])
+            for k, v in baseline_logits(model, rgb, device=device).items():
+                parts.setdefault(k, []).append(v)
+            print(f"  {min(start + 128, len(paths))}/{len(paths)}", flush=True)
+        write_report(
+            {k: np.concatenate(v) for k, v in parts.items()},
+            shapes, textures, class_index, args,
+        )
+        return
 
     ch_min, ch_max = dkl_frontend.compute_dkl_channel_minmax()
     model = features.build_model(
@@ -235,27 +345,7 @@ def main():
         print(f"  {min(start + chunk, len(paths))}/{len(paths)}", flush=True)
     logits = {k: np.concatenate(v) for k, v in all_logits.items()}
 
-    report = {"model_name": args.model_name,
-              "checkpoint": str(args.checkpoint), "conditions": {}}
-    for cond, lg in logits.items():
-        res = shape_bias(lg, shapes, textures, class_index)
-        lo, hi = bootstrap_ci(lg, shapes, textures, class_index,
-                             n_boot=args.n_boot, seed=args.seed)
-        res["shape_bias_ci95"] = [lo, hi]
-        report["conditions"][cond] = res
-        print(f"  {cond:11s} shape_bias={res['shape_bias']:.3f} "
-              f"[{lo:.3f}, {hi:.3f}]  shape_acc={res['shape_accuracy']:.3f}",
-              flush=True)
-
-    out_path = os.path.join(args.out_dir, f"{args.model_name}.json")
-    with open(out_path, "w") as f:
-        json.dump(report, f, indent=2)
-    np.savez(
-        os.path.join(args.out_dir, f"{args.model_name}_logits.npz"),
-        shapes=np.asarray(shapes), textures=np.asarray(textures),
-        **logits,
-    )
-    print(f"saved -> {out_path}", flush=True)
+    write_report(logits, shapes, textures, class_index, args)
 
 
 if __name__ == "__main__":
