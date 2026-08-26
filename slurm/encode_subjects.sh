@@ -35,7 +35,10 @@ shift $(( $# >= 2 ? 2 : 1 )) || true
 
 SUBJECT=$((SLURM_ARRAY_TASK_ID + 1))
 PY=/scratch/byrong/anaconda3/envs/mpk/bin/python
-REPO=/home/byrong/projects/TSN/Magno-Parvo-Konio-Net
+# Run from the directory the job was submitted from, so a worktree checkout
+# uses its own code and writes its own results (a hard-coded main-checkout
+# path made `src.analysis.encoding` unimportable).
+REPO=$SLURM_SUBMIT_DIR
 OUT=$REPO/results/encoding
 CACHE=$REPO/results/encoding/feature_cache/${MODEL_NAME}_subj$(printf %02d "$SUBJECT").npz
 
