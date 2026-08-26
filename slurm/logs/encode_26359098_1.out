@@ -1,0 +1,25 @@
+[subj02] design + betas
+[subj02] features
+  features 512/10000
+  features 1024/10000
+  features 1536/10000
+  features 2048/10000
+  features 2560/10000
+  features 3072/10000
+  features 3584/10000
+  features 4096/10000
+  features 4608/10000
+  features 5120/10000
+  features 5632/10000
+  features 6144/10000
+  features 6656/10000
+  features 7168/10000
+  features 7680/10000
+  features 8192/10000
+  features 8704/10000
+  features 9216/10000
+  features 9728/10000
+  features 10000/10000
+[subj02] PCA to 1000 per stream
+[subj02] banded ridge
+[                              ] 0% | 0.00 sec | 100 random sampling with cv | [2026-08-26T15:30:26.826] error: *** JOB 26359105 ON c063 CANCELLED AT 2026-08-26T15:30:26 DUE to SIGNAL Terminated ***

@@ -61,6 +61,43 @@ def r2_per_target(Y_true: np.ndarray, Y_pred: np.ndarray) -> np.ndarray:
         return np.where(ss_tot > 0, 1.0 - ss_res / ss_tot, np.nan)
 
 
+def prepare_band(
+    Xb_train: np.ndarray, Xb_test: np.ndarray, var_tol: float = 1e-6
+) -> tuple[np.ndarray, np.ndarray]:
+    """Center, drop degenerate dimensions, and scale one feature band.
+
+    Do NOT z-score PCA output: components whose variance is ~0 (the feature
+    matrix is rank-deficient well below the requested component count) get
+    rescaled to unit variance, which amplifies numerical noise and leaves the
+    design ill-conditioned -- torch's SVD then fails to converge outright.
+    Instead drop those dimensions and give the band unit root-mean-square
+    scale, which also puts the two bands on comparable footing for the
+    banded-ridge group weights.
+
+    All statistics come from the training split only.
+    """
+    mu = Xb_train.mean(axis=0, keepdims=True)
+    tr = (Xb_train - mu).astype(np.float64)
+    te = (Xb_test - mu).astype(np.float64)
+
+    sd = tr.std(axis=0)
+    keep = sd > (sd.max() * var_tol if sd.size and sd.max() > 0 else 0.0)
+    if not keep.any():
+        raise ValueError("feature band has no non-degenerate dimensions")
+    tr, te = tr[:, keep], te[:, keep]
+    if int(keep.size - keep.sum()):
+        print(
+            f"[banded_ridge] dropped {int(keep.size - keep.sum())} of "
+            f"{keep.size} degenerate band dimensions",
+            flush=True,
+        )
+
+    scale = np.sqrt((tr**2).sum() / tr.shape[0])
+    if scale <= 0:
+        raise ValueError("feature band has zero scale")
+    return tr / scale, te / scale
+
+
 def fit_banded(
     X_bands_train: list[np.ndarray],
     Y_train: np.ndarray,
@@ -75,22 +112,23 @@ def fit_banded(
     """Joint banded ridge + per-band single ridge fits; test R2 per voxel."""
     from himalaya.backend import set_backend
     from himalaya.ridge import BandedRidgeCV, RidgeCV
-    from sklearn.preprocessing import StandardScaler
 
     backend_mod = set_backend(backend, on_error="warn")
 
-    # per-band standardization, fit on train only
-    scalers = [StandardScaler().fit(Xb) for Xb in X_bands_train]
-    Xtr = [s.transform(Xb) for s, Xb in zip(scalers, X_bands_train)]
-    Xte = [s.transform(Xb) for s, Xb in zip(scalers, X_bands_test)]
+    prepared = [
+        prepare_band(tr, te)
+        for tr, te in zip(X_bands_train, X_bands_test)
+    ]
+    Xtr = [p[0] for p in prepared]
+    Xte = [p[1] for p in prepared]
 
     results: dict[str, np.ndarray] = {}
 
     # ---- single-band ridge fits ----
     for name, Xb_tr, Xb_te in zip(("magno", "parvo"), Xtr, Xte):
         ridge = RidgeCV(alphas=alphas, cv=splits)
-        ridge.fit(Xb_tr.astype(np.float32), Y_train)
-        pred = ridge.predict(Xb_te.astype(np.float32))
+        ridge.fit(Xb_tr.astype(np.float64), Y_train)
+        pred = ridge.predict(Xb_te.astype(np.float64))
         results[f"r2_{name}"] = r2_per_target(
             Y_test, _as_numpy(pred, backend_mod)
         )
@@ -98,13 +136,12 @@ def fit_banded(
     # ---- joint banded ridge, PRIMAL space ----
     # With ~1k features per band and tens of thousands of trials, the primal
     # solver is far cheaper than a kernel one (which would build an
-    # n_samples x n_samples kernel per band). Y_in_cpu keeps the voxel matrix
-    # off the GPU so the fit is not limited by card memory.
+    # n_samples x n_samples kernel per band).
     groups = np.concatenate(
         [np.full(Xb.shape[1], i) for i, Xb in enumerate(Xtr)]
     )
-    Xtr_cat = np.concatenate(Xtr, axis=1).astype(np.float32)
-    Xte_cat = np.concatenate(Xte, axis=1).astype(np.float32)
+    Xtr_cat = np.concatenate(Xtr, axis=1).astype(np.float64)
+    Xte_cat = np.concatenate(Xte, axis=1).astype(np.float64)
 
     # NB: Y_in_cpu=True expects a backend (torch) tensor and raises on the
     # numpy arrays used here, so targets stay in the backend and memory is

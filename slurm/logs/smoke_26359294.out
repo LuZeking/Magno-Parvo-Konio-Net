@@ -1,0 +1,22 @@
+########## 1. encoding solver (primal banded ridge) ##########
+r2_joint median=0.998 r2_magno=0.569 r2_parvo=0.297
+SPI vs ground-truth gradient: rho=0.995 p=3.7e-40
+SOLVER SMOKE TEST PASSED
+########## 2. trainer conditions ##########
+--- dkl_bcs ---
+[dkl_bcs_seed0] train=263200 val=5600 device=cpu in_channels=1,1
+[dkl_bcs_seed0] {'epoch': 0, 'train_loss': 4.87451958656311, 'val_top1': 0.0, 'sec': 6.5}
+[dkl_bcs_seed0] done -> /scratch/byrong/anaconda3/fake_home/.claude/jobs/dc3b9010/tmp/smoke_runs/dkl_bcs_seed0
+--- dkl_bcs_inter ---
+[dkl_bcs_inter_seed0] train=263200 val=5600 device=cpu in_channels=1,1
+[dkl_bcs_inter_seed0] {'epoch': 0, 'train_loss': 4.86683201789856, 'val_top1': 0.0, 'sec': 3.4}
+[dkl_bcs_inter_seed0] done -> /scratch/byrong/anaconda3/fake_home/.claude/jobs/dc3b9010/tmp/smoke_runs/dkl_bcs_inter_seed0
+--- dkl_bcs_parvo_highsf ---
+[dkl_bcs_parvo_highsf_seed0] train=263200 val=5600 device=cpu in_channels=1,2
+[dkl_bcs_parvo_highsf_seed0] {'epoch': 0, 'train_loss': 4.720219373703003, 'val_top1': 0.0, 'sec': 3.5}
+[dkl_bcs_parvo_highsf_seed0] done -> /scratch/byrong/anaconda3/fake_home/.claude/jobs/dc3b9010/tmp/smoke_runs/dkl_bcs_parvo_highsf_seed0
+--- dkl_bcs_swap ---
+[dkl_bcs_swap_seed0] train=263200 val=5600 device=cpu in_channels=1,1
+[dkl_bcs_swap_seed0] {'epoch': 0, 'train_loss': 4.85399603843689, 'val_top1': 0.0, 'sec': 3.2}
+[dkl_bcs_swap_seed0] done -> /scratch/byrong/anaconda3/fake_home/.claude/jobs/dc3b9010/tmp/smoke_runs/dkl_bcs_swap_seed0
+########## smoke tests finished ##########
