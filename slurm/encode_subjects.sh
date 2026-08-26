@@ -20,7 +20,9 @@
 #SBATCH --partition=main
 #SBATCH --qos=standard
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=60G
+# main nodes span 64G..772G RealMemory; 120G lands on a larger node and gives
+# headroom over the measured peak (a 60G attempt was OOM-killed).
+#SBATCH --mem=120G
 #SBATCH --time=24:00:00
 #SBATCH --array=0-7%4
 #SBATCH --output=slurm/logs/encode_%A_%a.out

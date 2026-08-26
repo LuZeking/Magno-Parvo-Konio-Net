@@ -41,6 +41,8 @@ def parse_args():
     p.add_argument("--age-months", type=int, default=48)
     p.add_argument("--pca-dim", type=int, default=1000)
     p.add_argument("--n-splits", type=int, default=5)
+    p.add_argument("--voxel-chunk", type=int, default=4000,
+                   help="fit this many voxels at a time (memory bound)")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument(
@@ -136,20 +138,42 @@ def main():
     te_rows = np.array([row_of[int(i)] for i in split["test_image_ids"]])
 
     print(f"[subj{s:02d}] PCA to {args.pca_dim} per stream", flush=True)
-    pcam = features.fit_pca(magno[np.unique(tr_rows)], args.pca_dim, args.seed)
-    pcap = features.fit_pca(parvo[np.unique(tr_rows)], args.pca_dim, args.seed)
-    Xm_tr, Xm_te = pcam.transform(magno[tr_rows]), pcam.transform(magno[te_rows])
-    Xp_tr, Xp_te = pcap.transform(parvo[tr_rows]), pcap.transform(parvo[te_rows])
-    del magno, parvo
+    # Project at IMAGE resolution and only then expand to trials. Indexing the
+    # 15360-dim features by trial first copies ~1.8 GB per stream (repeats
+    # included) and was what pushed this job out of memory.
+    unique_tr_rows = np.unique(tr_rows)
+    pcam = features.fit_pca(magno[unique_tr_rows], args.pca_dim, args.seed)
+    Xm_img = pcam.transform(magno).astype(np.float32)
+    del magno
+    pcap = features.fit_pca(parvo[unique_tr_rows], args.pca_dim, args.seed)
+    Xp_img = pcap.transform(parvo).astype(np.float32)
+    del parvo
 
-    print(f"[subj{s:02d}] banded ridge", flush=True)
+    Xm_tr, Xm_te = Xm_img[tr_rows], Xm_img[te_rows]
+    Xp_tr, Xp_te = Xp_img[tr_rows], Xp_img[te_rows]
+    del Xm_img, Xp_img
+
+    print(f"[subj{s:02d}] banded ridge over {Y_train.shape[1]} voxels "
+          f"in chunks of {args.voxel_chunk}", flush=True)
     splits = banded_ridge.make_grouped_splits(
         split["train_image_ids"], n_splits=args.n_splits, seed=args.seed
     )
-    res = banded_ridge.fit_banded(
-        [Xm_tr, Xp_tr], Y_train, [Xm_te, Xp_te], Y_test,
-        splits, backend=args.backend, seed=args.seed,
-    )
+    # Voxels are fit independently (alphas and group weights are per target),
+    # so chunking is statistically identical and bounds peak memory.
+    res_chunks: dict[str, list[np.ndarray]] = {}
+    n_vox = Y_train.shape[1]
+    for start in range(0, n_vox, args.voxel_chunk):
+        stop = min(start + args.voxel_chunk, n_vox)
+        part_res = banded_ridge.fit_banded(
+            [Xm_tr, Xp_tr], Y_train[:, start:stop],
+            [Xm_te, Xp_te], Y_test[:, start:stop],
+            splits, backend=args.backend, seed=args.seed,
+        )
+        for k, v in part_res.items():
+            res_chunks.setdefault(k, []).append(v)
+        print(f"  voxels {stop}/{n_vox}", flush=True)
+    res = {k: np.concatenate(v) for k, v in res_chunks.items()}
+
     part = banded_ridge.variance_partition(
         res["r2_joint"], res["r2_magno"], res["r2_parvo"], noise_ceiling=nc
     )

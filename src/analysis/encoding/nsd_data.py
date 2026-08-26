@@ -160,6 +160,7 @@ def load_betas(
     mask: np.ndarray,
     sessions: list[int] | None = None,
     dtype=np.float32,
+    trial_chunk: int = 150,
 ) -> np.ndarray:
     """Load, scale to PSC, and z-score betas per voxel within session.
 
@@ -173,14 +174,24 @@ def load_betas(
         path = os.path.join(
             _betas_dir(subject), f"betas_session{ses:02d}.hdf5"
         )
+        # Read in trial chunks: a whole session is ~1 GB of int16, and
+        # materializing it before masking dominated peak memory.
         with h5py.File(path, "r") as f:
-            raw = f["betas"][:]  # (750, z, y, x) int16
-        if raw.shape[1:] != mask.shape:
-            raise ValueError(
-                f"betas {raw.shape[1:]} vs mask {mask.shape} mismatch "
-                f"(subject {subject}, session {ses})"
-            )
-        b = raw.reshape(raw.shape[0], -1)[:, flat_mask].astype(np.float64)
+            dset = f["betas"]
+            if dset.shape[1:] != mask.shape:
+                raise ValueError(
+                    f"betas {dset.shape[1:]} vs mask {mask.shape} mismatch "
+                    f"(subject {subject}, session {ses})"
+                )
+            n_trials = dset.shape[0]
+            b = np.empty((n_trials, int(mask.sum())), dtype=np.float64)
+            for start in range(0, n_trials, trial_chunk):
+                stop = min(start + trial_chunk, n_trials)
+                chunk = dset[start:stop]
+                b[start:stop] = chunk.reshape(stop - start, -1)[
+                    :, flat_mask
+                ].astype(np.float64)
+                del chunk
         b /= 300.0  # int16 -> percent signal change
         mu = b.mean(axis=0, keepdims=True)
         sd = b.std(axis=0, keepdims=True)
