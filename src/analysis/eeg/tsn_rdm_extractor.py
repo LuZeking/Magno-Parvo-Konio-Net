@@ -90,6 +90,12 @@ def stream_layer_activations(
         ("magno", model.stream1_block1, x_magno),
         ("parvo", model.stream2_block1, x_parvo),
     ):
+        # Input-level pseudo-layer: the transformed stimulus itself, before
+        # any (random or learned) weights. Separates input statistics from
+        # network features as the source of brain alignment.
+        out[f"{stream_name}_input"] = (
+            x.flatten(1).cpu().numpy().astype(np.float64)
+        )
         h = x
         for i, layer in enumerate(block):
             h = layer(h)
@@ -119,6 +125,9 @@ def main():
     p.add_argument("--no-lum-cs", action="store_true")
     p.add_argument("--age-months", type=int, default=48,
                    help="DVD CS transform age for the magno input")
+    p.add_argument("--transform-target", default="magno",
+                   choices=["magno", "parvo"],
+                   help="channel-swap control: apply blur/CS to this stream")
     p.add_argument("--out-root", required=True, help="pearson cache root")
     p.add_argument("--out-root-spearman", default=None)
     args = p.parse_args()
@@ -145,6 +154,7 @@ def main():
             lum_cs=not args.no_lum_cs,
             age_months=args.age_months,
             device=device,
+            transform_target=args.transform_target,
         )
         acts = stream_layer_activations(model, x_m, x_p)
         layers = list(acts.keys())

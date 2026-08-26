@@ -34,6 +34,17 @@ def make_grouped_splits(
     ]
 
 
+def _as_numpy(x, backend_mod) -> np.ndarray:
+    """Scores come back as numpy when Y_in_cpu=True and as backend tensors
+    otherwise; normalize both."""
+    if isinstance(x, np.ndarray):
+        return x
+    try:
+        return np.asarray(backend_mod.to_numpy(x))
+    except (AttributeError, TypeError):
+        return np.asarray(x)
+
+
 def fit_banded(
     X_bands_train: list[np.ndarray],
     Y_train: np.ndarray,
@@ -47,14 +58,8 @@ def fit_banded(
 ) -> dict[str, np.ndarray]:
     """Joint banded ridge + per-band single ridge fits; test R2 per voxel."""
     from himalaya.backend import set_backend
-    from himalaya.kernel_ridge import (
-        ColumnKernelizer,
-        Kernelizer,
-        MultipleKernelRidgeCV,
-    )
-    from himalaya.ridge import RidgeCV
+    from himalaya.ridge import BandedRidgeCV, RidgeCV
     from himalaya.scoring import r2_score
-    from sklearn.pipeline import make_pipeline
     from sklearn.preprocessing import StandardScaler
 
     backend_mod = set_backend(backend, on_error="warn")
@@ -71,28 +76,23 @@ def fit_banded(
         ridge = RidgeCV(alphas=alphas, cv=splits)
         ridge.fit(Xb_tr.astype(np.float32), Y_train)
         pred = ridge.predict(Xb_te.astype(np.float32))
-        results[f"r2_{name}"] = np.asarray(
-            backend_mod.to_numpy(r2_score(Y_test, pred))
+        results[f"r2_{name}"] = _as_numpy(
+            r2_score(Y_test, pred), backend_mod
         )
 
-    # ---- joint banded (multiple-kernel) ridge ----
-    n_feats = [Xb.shape[1] for Xb in Xtr]
-    slices = []
-    start = 0
-    for n in n_feats:
-        slices.append(slice(start, start + n))
-        start += n
+    # ---- joint banded ridge, PRIMAL space ----
+    # With ~1k features per band and tens of thousands of trials, the primal
+    # solver is far cheaper than a kernel one (which would build an
+    # n_samples x n_samples kernel per band). Y_in_cpu keeps the voxel matrix
+    # off the GPU so the fit is not limited by card memory.
+    groups = np.concatenate(
+        [np.full(Xb.shape[1], i) for i, Xb in enumerate(Xtr)]
+    )
     Xtr_cat = np.concatenate(Xtr, axis=1).astype(np.float32)
     Xte_cat = np.concatenate(Xte, axis=1).astype(np.float32)
 
-    kernelizers = [
-        (name, make_pipeline(Kernelizer(kernel="linear")), sl)
-        for name, sl in zip(("magno", "parvo"), slices)
-    ]
-    column_kernelizer = ColumnKernelizer(kernelizers)
-
-    mkr = MultipleKernelRidgeCV(
-        kernels="precomputed",
+    banded = BandedRidgeCV(
+        groups=groups,
         solver="random_search",
         solver_params=dict(
             n_iter=n_iter,
@@ -102,13 +102,11 @@ def fit_banded(
         ),
         random_state=seed,
         cv=splits,
+        Y_in_cpu=True,
     )
-    pipe = make_pipeline(column_kernelizer, mkr)
-    pipe.fit(Xtr_cat, Y_train)
-    pred = pipe.predict(Xte_cat)
-    results["r2_joint"] = np.asarray(
-        backend_mod.to_numpy(r2_score(Y_test, pred))
-    )
+    banded.fit(Xtr_cat, Y_train)
+    pred = banded.predict(Xte_cat)
+    results["r2_joint"] = _as_numpy(r2_score(Y_test, pred), backend_mod)
 
     return results
 

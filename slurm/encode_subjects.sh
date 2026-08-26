@@ -16,7 +16,9 @@
 #SBATCH --qos=standard
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=100G
+# gpu nodes g[001-008] have 95250 MB RealMemory; asking for >93G makes the job
+# unschedulable (Reason=BadConstraints) rather than merely queued.
+#SBATCH --mem=80G
 #SBATCH --time=12:00:00
 #SBATCH --array=0-7%4
 #SBATCH --output=slurm/logs/encode_%A_%a.out

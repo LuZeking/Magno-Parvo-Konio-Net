@@ -173,17 +173,31 @@ def magno_parvo_inputs(
     lum_cs: bool = True,
     age_months: int = DEFAULT_AGE_MONTHS,
     device: str = "cpu",
+    transform_target: str = "magno",
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Full front end: RGB uint8 -> (magno input, parvo input).
 
     Defaults correspond to the DKL B&CS family (blur + contrast on lum,
     rg untouched). Set both flags False for DKL Base.
+
+    ``transform_target="parvo"`` is the channel-swap control: the blur and
+    contrast-sensitivity cut are applied to the rg channel instead, which
+    dissociates "which transformation" from "which chromatic channel" as
+    the cause of any stream difference.
     """
+    if transform_target not in ("magno", "parvo"):
+        raise ValueError(f"transform_target={transform_target!r}")
     x_lum, x_rg = rgb_to_stream_inputs(rgb_uint8, ch_min, ch_max)
     x_lum = x_lum.to(device)
     x_rg = x_rg.to(device)
+
+    target = x_lum if transform_target == "magno" else x_rg
     if lum_blur:
-        x_lum = apply_gaussian_blur(x_lum)
+        target = apply_gaussian_blur(target)
     if lum_cs:
-        x_lum = apply_scale_free_contrast(x_lum, age_months)
+        target = apply_scale_free_contrast(target, age_months)
+    if transform_target == "magno":
+        x_lum = target
+    else:
+        x_rg = target
     return x_lum, x_rg
