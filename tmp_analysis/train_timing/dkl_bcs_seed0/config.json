@@ -1,0 +1,25 @@
+{
+  "dataset": "/scratch/byrong/VST_data/VST_datasets/miniecoset_256px_dkl_uint8.h5",
+  "condition": "dkl_bcs",
+  "seed": 0,
+  "out_dir": "/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev/tmp_analysis/train_timing",
+  "epochs": 1,
+  "batch_size": 256,
+  "lr": 0.0001,
+  "num_workers": 8,
+  "num_classes": 112,
+  "like_resnet": "resnet18",
+  "age_months": 48,
+  "max_steps": 60,
+  "val_batches": 2,
+  "ckpt_every": 1000,
+  "condition_cfg": {
+    "input_mode": "dkl",
+    "blur": true,
+    "cs": true
+  },
+  "in_channels": [
+    1,
+    1
+  ]
+}

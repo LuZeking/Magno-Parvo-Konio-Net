@@ -20,10 +20,12 @@
 #SBATCH --partition=main
 #SBATCH --qos=standard
 #SBATCH --cpus-per-task=16
-# main nodes span 64G..772G RealMemory; 120G lands on a larger node and gives
-# headroom over the measured peak (a 60G attempt was OOM-killed).
-#SBATCH --mem=120G
-#SBATCH --time=24:00:00
+# Measured peak with chunk=all (the fast setting) is 115G on subject 1, so
+# 120G left only 4% headroom; 68 main nodes have >=190G. Chunking would cut
+# memory but multiplies the per-gamma decomposition by the chunk count and
+# pushed an earlier run past 12h, so buy memory instead of time.
+#SBATCH --mem=190G
+#SBATCH --time=12:00:00
 #SBATCH --array=0-7%4
 #SBATCH --output=slurm/logs/encode_%A_%a.out
 

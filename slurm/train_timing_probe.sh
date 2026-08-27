@@ -5,9 +5,13 @@
 # rather than a guess.
 #
 #SBATCH --job-name=mpk_train_probe
-#SBATCH --partition=gpu
+# The `gpu` partition is GTX 1080 Ti (sm_61), which torch 2.13+cu130 no
+# longer ships kernels for: any run there dies with
+# 'CUDA error: no kernel image is available for execution on the device'.
+# a5000 (sm_86) on agcichy is supported.
+#SBATCH --partition=agcichy
 #SBATCH --qos=standard
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:a5000:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=80G
 #SBATCH --time=01:00:00
