@@ -82,3 +82,9 @@ venv/
 
 # written by setuptools_scm
 **/_version.py
+
+# Large analysis artefacts (regenerable; caches are ~1.1 GB per subject)
+results/encoding/feature_cache/
+results/encoding/*.npz
+results/eeg_rsa/*/per_subject_rsa.csv.gz
+slurm/logs/

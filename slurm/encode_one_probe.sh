@@ -1,6 +1,6 @@
 #!/bin/bash
-# Single-subject encoding run with peak-memory reporting, used to size the
-# array's --mem before launching 8 of them.
+# Single-subject encoding run with peak-memory + staged timing, used to size
+# the array's --mem and --time before launching 8 of them.
 #
 # Usage: sbatch slurm/encode_one_probe.sh <subject> <model-name> [args...]
 #
@@ -9,12 +9,13 @@
 #SBATCH --qos=standard
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=120G
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --output=slurm/logs/enc_probe_%j.out
 
 set -uo pipefail
 cd "$SLURM_SUBMIT_DIR"
 export OPENBLAS_NUM_THREADS=16 OMP_NUM_THREADS=16 MKL_NUM_THREADS=16
+export PYTHONUNBUFFERED=1
 
 SUBJECT=${1:?subject required}
 MODEL_NAME=${2:?model name required}
@@ -23,11 +24,17 @@ shift 2
 PY=/scratch/byrong/anaconda3/envs/mpk/bin/python
 OUT=$SLURM_SUBMIT_DIR/results/encoding
 CACHE=$OUT/feature_cache/${MODEL_NAME}_subj$(printf %02d "$SUBJECT").npz
+RAW=slurm/logs/enc_probe_${SLURM_JOB_ID}_raw.log
 
+# Write the raw stream straight to a file. A previous version piped through
+# grep, which buffered; when the job hit its time limit every line was lost
+# and the log contained only the Slurm cancellation notice.
 /usr/bin/time -v $PY -m src.analysis.encoding.run_encoding \
     --subject "$SUBJECT" --model-name "$MODEL_NAME" \
-    --out-dir "$OUT" --feature-cache "$CACHE" "$@" 2>&1 |
-    grep -vE "random sampling with cv"
+    --out-dir "$OUT" --feature-cache "$CACHE" "$@" > "$RAW" 2>&1
+STATUS=$?
 
-echo "=== slurm accounting ==="
+echo "=== progress / timing (raw log: $RAW) ==="
+grep -aE "^\[subj|^\[stage|voxels |dropped |Elapsed \(wall|Maximum resident" "$RAW" | tail -40
+echo "=== exit status: $STATUS ==="
 sacct -j "$SLURM_JOB_ID" --format=JobID,State,Elapsed,MaxRSS,MaxVMSize

@@ -105,11 +105,18 @@ def fit_banded(
     Y_test: np.ndarray,
     splits,
     backend: str = "torch_cuda",
-    n_iter: int = 100,
+    n_iter: int = 20,
     alphas=np.logspace(-2, 8, 21),
     seed: int = 0,
 ) -> dict[str, np.ndarray]:
-    """Joint banded ridge + per-band single ridge fits; test R2 per voxel."""
+    """Joint banded ridge + per-band single ridge fits; test R2 per voxel.
+
+    Cost note: the random search re-decomposes the band-weighted design for
+    every sampled gamma, so wall time scales as n_iter * n_folds * SVD cost.
+    With only two bands the search space is effectively the 1-D ratio between
+    them, so n_iter=20 is ample; n_iter=100 (with 5 folds and voxel chunking)
+    ran past a 12-hour limit for a single subject.
+    """
     from himalaya.backend import set_backend
     from himalaya.ridge import BandedRidgeCV, RidgeCV
 

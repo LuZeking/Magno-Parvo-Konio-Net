@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import time
 
 import numpy as np
 import torch
@@ -40,9 +41,14 @@ def parse_args():
     p.add_argument("--no-lum-cs", action="store_true")
     p.add_argument("--age-months", type=int, default=48)
     p.add_argument("--pca-dim", type=int, default=1000)
-    p.add_argument("--n-splits", type=int, default=5)
-    p.add_argument("--voxel-chunk", type=int, default=4000,
-                   help="fit this many voxels at a time (memory bound)")
+    p.add_argument("--n-splits", type=int, default=3,
+                   help="CV folds for alpha/gamma selection; cost is linear "
+                        "in this")
+    p.add_argument("--voxel-chunk", type=int, default=0,
+                   help="fit this many voxels at a time; 0 = all at once. "
+                        "himalaya already bounds memory via n_targets_batch, "
+                        "and each chunk repeats the per-gamma decomposition, "
+                        "so chunking multiplies wall time by the chunk count.")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument(
@@ -110,6 +116,13 @@ def get_features_for_images(args, image_ids: np.ndarray, device: str):
 
 def main():
     args = parse_args()
+    _t0 = time.time()
+
+    def stage(msg: str) -> None:
+        """Timestamped stage marker, so a run that hits its wall clock still
+        shows which phase consumed the time."""
+        print(f"[stage +{time.time() - _t0:7.1f}s] {msg}", flush=True)
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
     s = args.subject
     os.makedirs(args.out_dir, exist_ok=True)
@@ -117,7 +130,7 @@ def main():
         args.out_dir, f"{args.model_name}_subj{s:02d}.npz"
     )
 
-    print(f"[subj{s:02d}] design + betas", flush=True)
+    stage("design + betas")
     stim_info = nsd_data.load_stim_info()
     split = nsd_data.build_train_test_split(s, stim_info)
     mask = nsd_data.load_mask(s, "nsdgeneral")
@@ -128,7 +141,7 @@ def main():
     Y_test = betas[split["test_trials_per_image"]].mean(axis=1)
     del betas
 
-    print(f"[subj{s:02d}] features", flush=True)
+    stage("features")
     all_ids = np.unique(
         np.concatenate([split["train_image_ids"], split["test_image_ids"]])
     )
@@ -137,7 +150,7 @@ def main():
     tr_rows = np.array([row_of[int(i)] for i in split["train_image_ids"]])
     te_rows = np.array([row_of[int(i)] for i in split["test_image_ids"]])
 
-    print(f"[subj{s:02d}] PCA to {args.pca_dim} per stream", flush=True)
+    stage(f"PCA to {args.pca_dim} per stream")
     # Project at IMAGE resolution and only then expand to trials. Indexing the
     # 15360-dim features by trial first copies ~1.8 GB per stream (repeats
     # included) and was what pushed this job out of memory.
@@ -153,8 +166,8 @@ def main():
     Xp_tr, Xp_te = Xp_img[tr_rows], Xp_img[te_rows]
     del Xm_img, Xp_img
 
-    print(f"[subj{s:02d}] banded ridge over {Y_train.shape[1]} voxels "
-          f"in chunks of {args.voxel_chunk}", flush=True)
+    stage(f"banded ridge over {Y_train.shape[1]} voxels "
+          f"(chunk={args.voxel_chunk or 'all'}, folds={args.n_splits})")
     splits = banded_ridge.make_grouped_splits(
         split["train_image_ids"], n_splits=args.n_splits, seed=args.seed
     )
@@ -162,8 +175,9 @@ def main():
     # so chunking is statistically identical and bounds peak memory.
     res_chunks: dict[str, list[np.ndarray]] = {}
     n_vox = Y_train.shape[1]
-    for start in range(0, n_vox, args.voxel_chunk):
-        stop = min(start + args.voxel_chunk, n_vox)
+    chunk = args.voxel_chunk if args.voxel_chunk > 0 else n_vox
+    for start in range(0, n_vox, chunk):
+        stop = min(start + chunk, n_vox)
         part_res = banded_ridge.fit_banded(
             [Xm_tr, Xp_tr], Y_train[:, start:stop],
             [Xm_te, Xp_te], Y_test[:, start:stop],
@@ -171,7 +185,7 @@ def main():
         )
         for k, v in part_res.items():
             res_chunks.setdefault(k, []).append(v)
-        print(f"  voxels {stop}/{n_vox}", flush=True)
+        stage(f"  voxels {stop}/{n_vox} done")
     res = {k: np.concatenate(v) for k, v in res_chunks.items()}
 
     part = banded_ridge.variance_partition(
@@ -196,7 +210,7 @@ def main():
         **{k: v for k, v in part.items()},
         **rois,
     )
-    print(f"[subj{s:02d}] saved -> {out_path}", flush=True)
+    stage(f"saved -> {out_path}")
 
 
 if __name__ == "__main__":

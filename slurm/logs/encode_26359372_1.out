@@ -1,6 +1,0 @@
-[subj02] design + betas
-[subj02] features
-[subj02] PCA to 1000 per stream
-[subj02] banded ridge
-/var/spool/slurmd/job26359379/slurm_script: line 56: 1308966 Killed                  $PY -m src.analysis.encoding.run_encoding --subject "$SUBJECT" --model-name "$MODEL_NAME" --out-dir "$OUT" --feature-cache "$CACHE" $CKPT_ARG "$@"
-[2026-08-26T15:57:00.561] error: Detected 1 oom_kill event in StepId=26359379.batch. Some of the step tasks have been OOM Killed.
