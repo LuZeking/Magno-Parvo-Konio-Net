@@ -69,16 +69,53 @@ CONDITIONS = {
 
 
 class H5ImageDataset(Dataset):
-    """Lazily-opened HDF5 image/label dataset (worker-safe)."""
+    """Lazily-opened HDF5 image/label dataset (worker-safe).
+
+    `cache_ram` reads the whole split into a resident uint8 tensor once, up
+    front, and serves batches from it. The dataset lives on Lustre, where the
+    per-image random reads of the uncached path are latency-bound: measured
+    throughput was 127 img/s at 8 workers and still only 591 at 32, against a
+    model that can consume 670 img/s. Caching removes that ceiling for a
+    one-off sequential read (~48 GB for the 263200-image train split, ~150 s).
+
+    That 48 GB fits an a5000 node (95 GB) only if the job takes essentially
+    the whole node, so caching trades three of the node's four GPUs for the
+    speedup -- worth it because a cached run is ~16 h against ~36 h for two
+    concurrent uncached ones. The larger-memory alternatives are not usable
+    here: begendiv rejects this account, and g017 (2 TB, 8x B200) does not
+    mount /scratch at all, so neither the dataset nor the conda env is
+    visible from it.
+    """
 
     def __init__(self, path: str, split: str, image_key: str = "data",
-                 label_key: str = "labels"):
+                 label_key: str = "labels", cache_ram: bool = False):
         self.path, self.split = path, split
         self.image_key, self.label_key = image_key, label_key
         self._f = None
+        self.cache = None
         with h5py.File(path, "r") as f:
-            self.length = f[split][image_key].shape[0]
+            d = f[split][image_key]
+            self.length = d.shape[0]
             self.labels = np.asarray(f[split][label_key][:]).reshape(-1)
+            if cache_ram:
+                gb = d.size / 2**30
+                print(f"  caching {split} into RAM ({gb:.1f} GB)...",
+                      flush=True)
+                t0 = time.time()
+                self.cache = torch.empty(d.shape, dtype=torch.uint8)
+                # Sequential block reads: Lustre serves these far better than
+                # the random single-image reads of the uncached path.
+                block = 2048
+                buf = self.cache.numpy()
+                for i in range(0, self.length, block):
+                    d.read_direct(buf, np.s_[i:i + block],
+                                  np.s_[i:i + block])
+                # Deliberately NOT share_memory_(): that would copy all 48 GB
+                # into /dev/shm, which is typically far smaller. Forked
+                # DataLoader workers already see these pages copy-on-write,
+                # and the cache is only ever read, so no copy is triggered.
+                print(f"  cached in {time.time() - t0:.0f}s "
+                      f"({gb / (time.time() - t0):.2f} GB/s)", flush=True)
 
     def __len__(self) -> int:
         return self.length
@@ -89,6 +126,8 @@ class H5ImageDataset(Dataset):
         return self._f
 
     def __getitem__(self, idx: int):
+        if self.cache is not None:
+            return self.cache[idx].permute(2, 0, 1), int(self.labels[idx])
         img = self._file()[self.split][self.image_key][idx]  # (H, W, C) uint8
         x = torch.from_numpy(np.ascontiguousarray(img)).permute(2, 0, 1)
         return x, int(self.labels[idx])
@@ -175,7 +214,7 @@ def patch_stream_input_channels(model: TwoStreamNetwork, c1: int, c2: int):
 
 
 @torch.no_grad()
-def evaluate(model, builder, loader, device, max_batches=None):
+def evaluate(model, builder, loader, device, max_batches=None, amp=False):
     model.eval()
     correct = total = 0
     for i, (x, y) in enumerate(loader):
@@ -184,7 +223,11 @@ def evaluate(model, builder, loader, device, max_batches=None):
         x = x.to(device, non_blocking=True).float() / 255.0
         y = y.to(device, non_blocking=True)
         x1, x2 = builder(x)
-        logits = model(x1, x2)
+        if amp:
+            x1 = x1.contiguous(memory_format=torch.channels_last)
+            x2 = x2.contiguous(memory_format=torch.channels_last)
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
+            logits = model(x1, x2)
         correct += (logits.argmax(1) == y).sum().item()
         total += y.numel()
     model.train()
@@ -208,6 +251,16 @@ def main():
                    help="stop early (smoke test)")
     p.add_argument("--val-batches", type=int, default=None)
     p.add_argument("--ckpt-every", type=int, default=10)
+    # Measured on an A5000 (tmp_analysis/profile_opt.py): bf16 autocast plus
+    # channels_last takes the model's fwd/bwd from 314 to 670 img/s and peak
+    # memory from 20.5 to 11.2 GB at bs=256, cutting a 150-epoch run from
+    # ~35 h to ~16 h. Adam keeps fp32 master weights, so this changes speed,
+    # not the optimization. --no-amp restores the fp32 path.
+    p.add_argument("--no-amp", action="store_true",
+                   help="disable bf16 autocast + channels_last")
+    p.add_argument("--cache-ram", action="store_true",
+                   help="load the whole dataset into RAM (~48 GB train); "
+                        "big-memory nodes only")
     args = p.parse_args()
 
     cfg = CONDITIONS[args.condition]
@@ -219,10 +272,21 @@ def main():
     out_dir = os.path.join(args.out_dir, run)
     os.makedirs(out_dir, exist_ok=True)
 
-    train_ds = H5ImageDataset(args.dataset, "train")
-    val_ds = H5ImageDataset(args.dataset, "val")
-    common = dict(num_workers=args.num_workers, pin_memory=True,
-                  persistent_workers=args.num_workers > 0)
+    train_ds = H5ImageDataset(args.dataset, "train",
+                              cache_ram=args.cache_ram)
+    val_ds = H5ImageDataset(args.dataset, "val",
+                            cache_ram=args.cache_ram)
+    # With the dataset already resident, worker processes buy nothing: there
+    # is no I/O left to overlap, only a ~50 MB per-batch memcpy against a
+    # ~380 ms GPU step. They also cost a great deal -- forking 24 children
+    # off a 48 GB parent fails outright with OSError(12) under the job's
+    # memory cgroup, even though the pages are copy-on-write.
+    n_workers = args.num_workers
+    if args.cache_ram and n_workers > 0:
+        print(f"  cache_ram: forcing num_workers {n_workers} -> 0", flush=True)
+        n_workers = 0
+    common = dict(num_workers=n_workers, pin_memory=True,
+                  persistent_workers=n_workers > 0)
     train_loader = DataLoader(train_ds, batch_size=args.batch_size,
                               shuffle=True, drop_last=True, **common)
     val_loader = DataLoader(val_ds, batch_size=args.batch_size,
@@ -242,6 +306,10 @@ def main():
     patch_stream_input_channels(model, c1, c2)
     model = model.to(device)
 
+    amp = (not args.no_amp) and device == "cuda" and torch.cuda.is_bf16_supported()
+    if amp:
+        model = model.to(memory_format=torch.channels_last)
+
     builder = StreamInputBuilder(cfg, age_months=args.age_months)
     augment = build_augmentations(cfg["input_mode"]).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr,
@@ -253,7 +321,8 @@ def main():
                    "in_channels": [c1, c2]}, f, indent=2)
 
     print(f"[{run}] train={len(train_ds)} val={len(val_ds)} device={device} "
-          f"in_channels={c1},{c2}", flush=True)
+          f"in_channels={c1},{c2} amp={amp} workers={n_workers}",
+          flush=True)
 
     history, step = [], 0
     for epoch in range(args.epochs):
@@ -264,8 +333,11 @@ def main():
             with torch.no_grad():
                 x = augment(x)
             x1, x2 = builder(x)
-            logits = model(x1, x2)
-            loss = criterion(logits, y)
+            if amp:
+                x1 = x1.contiguous(memory_format=torch.channels_last)
+                x2 = x2.contiguous(memory_format=torch.channels_last)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
+                loss = criterion(model(x1, x2), y)
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
             optimizer.step()
@@ -275,7 +347,7 @@ def main():
             if args.max_steps is not None and step >= args.max_steps:
                 break
         val_acc = evaluate(model, builder, val_loader, device,
-                           max_batches=args.val_batches)
+                           max_batches=args.val_batches, amp=amp)
         rec = {"epoch": epoch, "train_loss": running / max(seen, 1),
                "val_top1": val_acc, "sec": round(time.time() - t0, 1)}
         history.append(rec)
