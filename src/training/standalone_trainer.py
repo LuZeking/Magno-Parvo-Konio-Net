@@ -258,6 +258,8 @@ def main():
     # not the optimization. --no-amp restores the fp32 path.
     p.add_argument("--no-amp", action="store_true",
                    help="disable bf16 autocast + channels_last")
+    p.add_argument("--resume", action="store_true",
+                   help="continue from checkpoint_last.pt if present")
     p.add_argument("--cache-ram", action="store_true",
                    help="load the whole dataset into RAM (~48 GB train); "
                         "big-memory nodes only")
@@ -324,8 +326,23 @@ def main():
           f"in_channels={c1},{c2} amp={amp} workers={n_workers}",
           flush=True)
 
-    history, step = [], 0
-    for epoch in range(args.epochs):
+    # Resume: these runs are ~3 days each, so a node failure or a
+    # walltime kill must not cost the whole run. checkpoint_last.pt carries
+    # the optimizer state too -- restoring weights alone would silently
+    # restart Adam's moments and change the optimization.
+    history, step, start_epoch = [], 0, 0
+    last_path = os.path.join(out_dir, "checkpoint_last.pt")
+    if args.resume and os.path.exists(last_path):
+        ck = torch.load(last_path, map_location=device, weights_only=False)
+        model.load_state_dict(ck["state_dict"])
+        optimizer.load_state_dict(ck["optimizer"])
+        start_epoch = ck["epoch"] + 1
+        history = ck.get("history", [])
+        step = ck.get("step", 0)
+        print(f"[{run}] resumed from epoch {ck['epoch']} "
+              f"-> starting at {start_epoch}", flush=True)
+
+    for epoch in range(start_epoch, args.epochs):
         t0, running, seen = time.time(), 0.0, 0
         for x, y in train_loader:
             x = x.to(device, non_blocking=True).float() / 255.0
@@ -354,6 +371,16 @@ def main():
         print(f"[{run}] {rec}", flush=True)
         with open(os.path.join(out_dir, "history.json"), "w") as f:
             json.dump(history, f, indent=2)
+        # Resume point, rewritten every epoch: cheap next to an epoch, and
+        # it bounds the loss from an unexpected kill to one epoch rather
+        # than to ckpt_every. Written to a temp path first so a kill during
+        # the write cannot leave a truncated file as the only resume point.
+        tmp_path = last_path + ".tmp"
+        torch.save({"epoch": epoch, "step": step, "history": history,
+                    "state_dict": model.state_dict(),
+                    "optimizer": optimizer.state_dict(),
+                    "config": {**cfg, "in_channels": [c1, c2]}}, tmp_path)
+        os.replace(tmp_path, last_path)
         if (epoch + 1) % args.ckpt_every == 0 or epoch + 1 == args.epochs:
             torch.save(
                 {"epoch": epoch, "state_dict": model.state_dict(),

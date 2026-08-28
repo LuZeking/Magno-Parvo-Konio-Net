@@ -6,7 +6,7 @@
   "epochs": 1,
   "batch_size": 256,
   "lr": 0.0001,
-  "num_workers": 24,
+  "num_workers": 0,
   "num_classes": 112,
   "like_resnet": "resnet18",
   "age_months": 48,

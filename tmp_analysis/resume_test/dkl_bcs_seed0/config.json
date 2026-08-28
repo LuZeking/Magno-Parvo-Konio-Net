@@ -1,0 +1,28 @@
+{
+  "dataset": "/scratch/byrong/VST_data/VST_datasets/miniecoset_256px_dkl_uint8.h5",
+  "condition": "dkl_bcs",
+  "seed": 0,
+  "out_dir": "/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev/tmp_analysis/resume_test",
+  "epochs": 4,
+  "batch_size": 32,
+  "lr": 0.0001,
+  "num_workers": 8,
+  "num_classes": 112,
+  "like_resnet": "resnet18",
+  "age_months": 48,
+  "max_steps": 20,
+  "val_batches": 2,
+  "ckpt_every": 100,
+  "no_amp": false,
+  "resume": true,
+  "cache_ram": false,
+  "condition_cfg": {
+    "input_mode": "dkl",
+    "blur": true,
+    "cs": true
+  },
+  "in_channels": [
+    1,
+    1
+  ]
+}
