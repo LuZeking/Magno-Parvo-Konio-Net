@@ -88,3 +88,6 @@ results/encoding/feature_cache/
 results/encoding/*.npz
 results/eeg_rsa/*/per_subject_rsa.csv.gz
 slurm/logs/
+tmp_analysis/train_timing/
+tmp_analysis/smoke_runs*/
+*.pt
