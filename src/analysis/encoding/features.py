@@ -49,11 +49,19 @@ def build_model(
         legacy_asymmetric_mixing=legacy_asymmetric_mixing,
     )
     if checkpoint is not None:
-        state = torch.load(checkpoint, map_location="cpu")
-        if "state_dict" in state:  # lightning checkpoint
+        state = torch.load(checkpoint, map_location="cpu", weights_only=False)
+        if "state_dict" in state:
+            state = state["state_dict"]
+        # Two checkpoint dialects reach this function: Lightning wraps the
+        # network under a `network.` prefix, while standalone_trainer.py
+        # saves `model.state_dict()` directly. Detect rather than assume --
+        # unconditionally filtering on the prefix silently loaded NOTHING
+        # from a standalone checkpoint and left the network random, which
+        # looks exactly like "training changed nothing".
+        if any(k.startswith("network.") for k in state):
             state = {
                 k.removeprefix("network."): v
-                for k, v in state["state_dict"].items()
+                for k, v in state.items()
                 if k.startswith("network.")
             }
         missing, unexpected = model.load_state_dict(state, strict=False)
@@ -61,6 +69,13 @@ def build_model(
             print(
                 f"[features] load_state_dict: {len(missing)} missing, "
                 f"{len(unexpected)} unexpected keys"
+            )
+        # A checkpoint that populates no parameter at all is a silent
+        # failure, not a warning: refuse rather than return a random net.
+        if len(missing) >= sum(1 for _ in model.state_dict()):
+            raise RuntimeError(
+                f"checkpoint {checkpoint} loaded 0 of "
+                f"{len(missing)} parameters -- key format not recognised"
             )
     model.eval()
     return model.to(device)
