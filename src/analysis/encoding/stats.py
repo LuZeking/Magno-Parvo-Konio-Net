@@ -26,7 +26,7 @@ STREAMS_LABELS = {
     6: "lateral",
     7: "parietal",
 }
-ECC_LABELS = {1: "ecc_0.5", 2: "ecc_1", 3: "ecc_2", 4: "ecc_4"}
+ECC_LABELS = {1: "ecc_0.5", 2: "ecc_1", 3: "ecc_2", 4: "ecc_4", 5: "ecc_4+"}
 
 
 def load_results(out_dir: str, model_name: str) -> dict[int, dict]:
