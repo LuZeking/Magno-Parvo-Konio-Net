@@ -1,0 +1,11 @@
+{
+  "model_name": "dkl_bcs_mheavy_thesis_trained",
+  "checkpoint": "/scratch/byrong/tsn_checkpoints/dkl_blur_cs_s1_90/epoch=147-step=152292.ckpt",
+  "condition": "dkl_bcs",
+  "stream1_weight": 0.9,
+  "split": "val",
+  "n_images": 5600,
+  "acc": {
+    "256": 0.5833928571428572
+  }
+}
