@@ -1,0 +1,11 @@
+{
+  "model_name": "s1_90_at_w0.5",
+  "checkpoint": "/scratch/byrong/tsn_checkpoints/dkl_blur_cs_s1_90/epoch=147-step=152292.ckpt",
+  "condition": "dkl_bcs",
+  "stream1_weight": 0.5,
+  "split": "val",
+  "n_images": 5600,
+  "acc": {
+    "256": 0.5707142857142857
+  }
+}
