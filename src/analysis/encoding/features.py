@@ -9,6 +9,9 @@ parameters" confound in variance partitioning.
 
 from __future__ import annotations
 
+import json
+import os
+
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -19,6 +22,36 @@ from src.models.pytorch_models import TwoStreamNetwork
 # 0 conv1, 1 bn1, 2 relu, 3 maxpool, 4 layer1, 5 layer2, 6 layer3, 7 layer4
 STAGE_INDICES = (4, 5, 6, 7)
 POOL_GRID = 4  # adaptive avg pool each stage to POOL_GRID x POOL_GRID
+
+
+def assert_converged(checkpoint: str, allow_partial: bool = False) -> None:
+    """Refuse a `checkpoint_last.pt` written by a run that is still training.
+
+    `checkpoint_last.pt` is overwritten every epoch, so reading it mid-run
+    yields a partially trained network whose output JSON is indistinguishable
+    from a converged one. That silently happened once (see PAPER_PLAN §10.1):
+    a swap-condition probe was compared against fully converged baselines.
+    Numbered checkpoints (`checkpoint_025.pt`) are explicit requests for an
+    intermediate state, so they are left alone.
+    """
+    if allow_partial or os.path.basename(checkpoint) != "checkpoint_last.pt":
+        return
+    run = os.path.dirname(checkpoint)
+    hist_p = os.path.join(run, "history.json")
+    cfg_p = os.path.join(run, "config.json")
+    if not (os.path.exists(hist_p) and os.path.exists(cfg_p)):
+        return
+    with open(hist_p) as fh:
+        done = len(json.load(fh))
+    with open(cfg_p) as fh:
+        want = json.load(fh).get("epochs")
+    if want is not None and done < want:
+        raise RuntimeError(
+            f"{checkpoint} is from a run at epoch {done}/{want} -- still "
+            f"training. Comparing it against converged models confounds the "
+            f"condition with training length. Wait, use an explicit "
+            f"checkpoint_NNN.pt, or pass allow_partial=True on purpose."
+        )
 
 
 def build_model(

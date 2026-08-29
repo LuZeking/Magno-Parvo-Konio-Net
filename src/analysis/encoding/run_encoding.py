@@ -50,6 +50,8 @@ def parse_args():
                         "and each chunk repeats the per-gamma decomposition, "
                         "so chunking multiplies wall time by the chunk count.")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--allow-partial", action="store_true",
+                   help="encode a still-training checkpoint on purpose")
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument(
         "--backend",
@@ -75,6 +77,11 @@ def get_features_for_images(args, image_ids: np.ndarray, device: str):
         return z["magno"][idx], z["parvo"][idx]
 
     ch_min, ch_max = dkl_frontend.compute_dkl_channel_minmax()
+    # A 12-hour fit on a mid-training checkpoint is expensive to discover
+    # late, and the output npz records nothing about it (PAPER_PLAN §10.1).
+    if args.checkpoint:
+        features.assert_converged(args.checkpoint, args.allow_partial)
+
     model = features.build_model(
         checkpoint=args.checkpoint,
         stream_concat=args.stream_concat,

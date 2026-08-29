@@ -20,11 +20,17 @@
 #SBATCH --partition=main
 #SBATCH --qos=standard
 #SBATCH --cpus-per-task=16
-# Measured peak with chunk=all (the fast setting) is 115G on subject 1, so
-# 120G left only 4% headroom; 68 main nodes have >=190G. Chunking would cut
-# memory but multiplies the per-gamma decomposition by the chunk count and
-# pushed an earlier run past 12h, so buy memory instead of time.
-#SBATCH --mem=190G
+# Measured peak with chunk=all (the fast setting) is 137G (sacct MaxRSS,
+# subject 1), so 120G would OOM. Chunking would cut memory but multiplies the
+# per-gamma decomposition by the chunk count and pushed an earlier run past
+# 12h, so buy memory instead of time.
+#
+# 160G, not 190G, and the unit is why: Slurm reads G as GiB, so --mem=190G
+# asks for 194560 MB while the 50 mid-tier main nodes advertise 192080 MB.
+# 190G therefore fits on only the 18 large-memory nodes and queues for a day
+# behind them; 160G (163840 MB) fits on 68 nodes and still leaves 20% headroom
+# over the measured peak.
+#SBATCH --mem=160G
 #SBATCH --time=12:00:00
 #SBATCH --array=0-7%4
 #SBATCH --output=slurm/logs/encode_%A_%a.out

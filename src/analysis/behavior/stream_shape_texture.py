@@ -81,7 +81,14 @@ def main() -> None:
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--batch-size", type=int, default=32)
     p.add_argument("--out", default="results/shape_texture")
+    p.add_argument("--allow-partial", action="store_true",
+                   help="probe a still-training checkpoint on purpose")
     args = p.parse_args()
+
+    # Before any compute: a mid-training checkpoint produces output that is
+    # indistinguishable from a converged one (PAPER_PLAN §10.1).
+    if args.checkpoint:
+        features.assert_converged(args.checkpoint, args.allow_partial)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     items = list_cue_conflict_images()
