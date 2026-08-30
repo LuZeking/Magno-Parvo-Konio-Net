@@ -1,0 +1,1365 @@
+# TSN → Paper Plan: Magno-Parvo-Konio-Net
+
+**Goal.** Turn the BA thesis (Manocchio, "Investigating two-stream artificial neural networks
+using a developmental visual diet") into a high-tier paper (NMI / NeurIPS-tier). Working title
+claim: *biologically constrained magno/parvo(/konio) input channels induce specialized
+shape-/texture-biased streams under a single objective; their integration yields human-like
+shape-biased behavior; and each stream uniquely explains distinct, biologically predicted
+variance in visual cortex.*
+
+Repo: `/home/byrong/projects/TSN/Magno-Parvo-Konio-Net` (clone of the thesis codebase
+`two_stream_dvd`). Thesis PDF: `/home/byrong/projects/TSN/BA_Manocchio_Benito.pdf`.
+
+---
+
+## 0. Audited ground truth (verified on this cluster, 2026-08-25)
+
+| Item | Status | Location / note |
+|---|---|---|
+| NSD betas b3 (`betas_fithrf_GLMdenoise_RR`, func1pt8mm, session HDF5s) | ✅ present, 8 subjects | `/scratch/byrong/encoding/datasets/nsd/betas/subjXX/betas_fithrf_GLMdenoise_RR/` |
+| NSD noise-ceiling SNR (`ncsnr.nii.gz`, + split1/2) | ✅ present | same dir as betas |
+| ROIs: `nsdgeneral`, `streams`, `prf-eccrois`, `prf-visualrois`, `floc-*`, `Kastner2015`, `HCP_MMP1` | ✅ present | `/scratch/byrong/encoding/datasets/nsd/rois/subjXX/func1pt8mm/roi/` |
+| NSD stimuli + design (`nsd_stimuli.hdf5`, `nsd_stim_info_merged.pkl`) | ✅ present | `/scratch/byrong/encoding/datasets/nsd/stimuli/` |
+| Continuous pRF maps (`prf_eccentricity/angle/size.nii.gz`) | ❌ not local | optional small download from `nsddata/ppdata`; the 4-band `prf-eccrois` labels suffice for the main analysis |
+| **Trained TSN checkpoints from the thesis** | ❌ **NOT local** | they live on the Osnabrück cluster (`/share/klab/...`). Blocks trained-model feature extraction until fetched or retrained. Pipeline is validated with the untrained-network control first (needed anyway). |
+| MiniEcoset 256px | ✅ present | `/scratch/byrong/VST_data/VST_datasets/texture2shape_miniecoset_256px.h5` (verify class count = 112 before retraining) |
+| Python env with torch/himalaya | ❌ none exists | create env `mpk` (plan §4, step 0) |
+| DVD package (scale_free branch) | ✅ public | `github.com/KietzmannLab/DVD` branches `paper`, `scale_free` |
+| `lightning_kietzmannlab` (training pipeline dep) | ❌ not on PyPI | needed only for retraining with the original pipeline; either obtain from lab GitHub or write a minimal local trainer. **Open item.** |
+| Slurm | ✅ | `main` (CPU, 166 nodes, 14d), `gpu`, `agcichy`, `scavenger`. Rules: array jobs when N>1; CPU work on `main`; GPU only when CUDA used; watch `prio` GPU cap → fall back `--qos=standard`. |
+| **Subject neural RDMs + 12 models' layer RDMs** | ✅ in repo `RDMs/` | `streams` + V1v/V1d/V2v/V2d/V3v/V3d/hV4/PPA per subject (special515) — repaired RSA (Phase 1.2) unblocked WITHOUT checkpoints |
+| Design assumptions validated | ✅ | shared-515 logic reproduces exactly 515 across 8 subjects; `nsdId` = 0-based row index; sessions on disk: 40/40/32/30/40/32/40/30 |
+| MiniEcoset h5 | ✅ verified | 112 classes, train/val/test/testplus splits — it IS the thesis dataset |
+| Known code bug: Interconnected-TSN mixing | ✅ confirmed | `src/models/pytorch_models.py:225-226, 258-259`: `y2` is mixed with the **already-mixed** `y1` ⇒ stream 2 receives 0.8125·y2 + 0.1875·y1, not 75/25; mixing asymmetric. Fix with a legacy flag (old checkpoints trained under buggy forward must be evaluated with the same forward). |
+
+Thesis-inherited issues the paper must fix:
+- Single seed per condition; no error bars/tests anywhere.
+- Dataset-version confound (DKL Base & DKL CS trained on uint8 dataset; others on float64).
+- Linear readouts trained for 1 epoch only.
+- Neural-alignment section is a null (group-averaged RSA, 515 images, no ceiling normalization,
+  no per-subject stats).
+
+---
+
+## 1. Track A — Neural alignment redesign (no retraining required to build)
+
+**Reframe.** Drop "magno→dorsal, parvo→ventral" as the headline (static images cannot carry it;
+parietal reliability is low). New target claim: **the two input-defined streams uniquely explain
+complementary, biologically predicted variance in visual cortex** along axes where a
+luminance/low-SF vs. chromatic(L−M) contrast has strong priors: eccentricity, spatial-frequency
+preference, color selectivity, texture-vs-shape selectivity.
+
+### A1. Core analysis: voxelwise banded-ridge encoding + stream-wise variance partitioning
+- Betas: b3 session HDF5s, int16/300 → PSC, **z-score per voxel within session**, pool sessions.
+  Mask: `nsdgeneral`. All 8 subjects, each subject's full available design.
+- Split **by 73k image ID**: test = shared-515 (all 8 subjects, 3 reps each — average reps);
+  train = all remaining trials (single-trial). Exclude any trial of a test image from training.
+  Hyperparameter CV: GroupKFold grouped by image ID.
+- Features: NSD images through the model's **own training front end** (RGB→XYZ(D65)→LMS(HPE)→DKL;
+  magno band = luminance + blur σ=4 + 48-month CSF cut; parvo band = L−M untransformed), then
+  per-stream activations from all 4 ResNet stages, adaptive spatial pooling, **PCA to matched
+  dimensionality per stream** (default 1000; robustness at 500/4000; PCA fit on train images only).
+- Model: himalaya `MultipleKernelRidgeCV` (torch_cuda backend), 2 bands; plus 2 single-band
+  ridge fits with identical CV.
+- Quantities: Unique_magno = R²_joint − R²_parvo; Unique_parvo = R²_joint − R²_magno;
+  Shared = R²_m + R²_p − R²_joint; SPI = (Uₘ−Uₚ)/(Uₘ+Uₚ) on voxels where joint model > chance.
+- **Noise-ceiling normalization**: NC = ncsnr²/(ncsnr² + 1/3) (3 reps averaged); report R²/NC;
+  analyze voxels above NC threshold (ncsnr > 0.2 default; show threshold robustness).
+
+### A2. Inference: stream × cortical-axis interaction, subject-level
+- Unit of inference = subject (n=8). Per-subject ROI summaries of NC-normalized unique variance.
+- Interaction: paired difference-of-differences across subjects (Wilcoxon/permutation), all 8
+  subject dots plotted; mixed model as omnibus. A **double dissociation additionally requires both
+  simple effects** significant (avoid the Nieuwenhuis error).
+- Stimulus bootstrap (resample 515 test images, 1000×) for per-subject CIs.
+- FDR across ROIs for maps; one pre-declared headline contrast.
+
+### A3. Hypothesis-targeted analyses (ordered by prior)
+1. **Eccentricity gradient**: SPI parvo→magno from fovea to periphery within V1–V3/hV4
+   (`prf-eccrois` bands; trend test across subjects). Near-free; likely the strongest panel.
+2. **Spatial-frequency preference**: small Gabor-pyramid encoding model per voxel → preferred SF;
+   correlate with SPI (low-SF voxels ↔ magno-unique).
+3. **Color cortex**: parvo-unique variance peaks in hV4/VO (`prf-visualrois`/Kastner labels).
+4. **Texture/shape voxels + in-silico cue-conflict** (flagship link to behavior): define
+   texture- vs shape-selective voxels split-half (Portilla–Simoncelli / Gram-feature control
+   models); test stream-unique variance in each set. Then push Geirhos cue-conflict images
+   through fitted encoding models → per-voxel predicted shape-bias index → correlate with SPI.
+5. Dorsal/MT: explicitly a *limitation* (static stimuli), not a result.
+
+### A4. Controls (built in from the start)
+- **Untrained (random) TSN**, identical inputs & pipeline → isolates learning from input filtering.
+  (Also unblocks development while trained checkpoints are missing.)
+- **Input-level bands** (Gabor energy / GIST on each stream's transformed input) as extra bands →
+  learned-nonlinear vs. filter-induced variance.
+- Matched PCA dims; no best-layer selection on test data; report magno↔parvo feature-space
+  correlation (they were trained jointly); state unique-variance caveats.
+
+### A6. Developmental EEG alignment (7 sub-age bins) — NEW
+Time-resolved RSA of TSN stream RDMs against the developmental EEG dataset
+(infant project, `/scratch/byrong/infant`): bins infants_6mo, infants_12mo,
+youngerChildren_4yo/6yo, olderChildren_8yo/12yo, adults_all (target months
+6/12/48/72/96/144/240); ~360 subjects, each seeing one of 4 subsets of 12
+stimuli (80-image pool at `infantEEG/stimuli`); neural RDMs 12x12x301 tp
+(-500 ms + 20 ms steps), sources occipital/wholebrain, from
+`rsa2026/inputs/brain_rdms`; campaign noise ceilings per bin x tp.
+
+**Hypothesis:** relative magno-vs-parvo stream alignment shifts across
+development — infant EEG (low acuity, immature chromatic pathways) should
+align relatively better with the blurred/low-SF magno stream, with
+parvo-stream alignment increasing toward adulthood. This connects the TSN
+directly to the DVD developmental story with human developmental data.
+
+Implementation (worktree `src/analysis/eeg/`):
+- `tsn_rdm_extractor.py`: EEG stimuli → training-exact DKL front end →
+  stream-wise layer RDMs (magno_/parvo_ conv1, layer1-4, avgpool +
+  combined_avgpool), emitted in the rsa2026 campaign npz schema
+  (`<root>/<subset>/<model>/rdms_epoch_NNN.npz`, pearson+spearman ×
+  zscore/no_zscore via the infant project's own `compute_rdm`) — caches are
+  interchangeable with the existing runner.
+- `temporal_rsa_tsn.py`: per-subject time-resolved Spearman per layer,
+  aggregated per sub-age bin with campaign noise ceilings; plus the key
+  statistic: layer-matched magno-minus-parvo contrast per bin x stage x tp
+  (Wilcoxon across subjects) → developmental trajectory of stream alignment.
+Caches: `/scratch/byrong/infant/tsn_rdms_orig_input_v1{,_spearman}`.
+
+### A5. Repaired RSA → supplementary
+Per-subject inference, crossnobis distances (rsatoolbox), both noise ceilings, stimulus×subject
+bootstrap, stream × ROI interaction on ceiling-normalized values. Recompute for existing RDMs
+first — the thesis null may partly dissolve with correct statistics alone.
+
+**Figures:** N1 pipeline + R²/NC flatmap + ROI bars w/ ceiling; N2 SPI flatmap + paired
+unique-variance dots + shared-variance panel; N3 eccentricity & SF gradients + color ROIs;
+N4 texture/shape voxels + in-silico cue-conflict map.
+
+---
+
+## 2. Track B — Model modifications (ranked)
+
+**Diagnosis.** Supervised parallel pathways don't segregate (Bakhtiari et al. 2021); genuine
+stream→brain mapping came from magno/parvo-like inputs **plus different objectives per stream**
+(Choi & Han 2023). Summing stream features into one shared FC forces a common representational
+basis. Accuracy collapse (0.47 vs 0.76) is an input-information problem: no stream ever sees
+high-SF luminance; biologically the parvo pathway is the *high-acuity luminance* channel
+(fine SF + L−M), not chroma-only.
+
+1. **B1 — Objective asymmetry + unshared readout** (highest leverage, ~1.5–2× compute).
+   Separate heads; parvo: classification (or SimCLR); magno: CPC-style prediction over simulated
+   gaze sequences (3–5 fixational-jitter/saccade crops per image; optional frame-difference
+   input). Gives the 2×2 design (input split × objective split) in which the thesis result is the
+   control cell. Full video training (Kinetics/Ego4D) deferred.
+2. **B2 — Per-pathway DVD developmental schedule + corrected parvo input** (~zero extra compute).
+   Parvo input := high-SF luminance + L−M. Full DVD trajectory per pathway with biologically
+   ordered maturation (magno early ~4–6 mo; parvo over years; Dobkins 1999, Hammarrenger 2003),
+   ending at mature inputs (recovers accuracy, keeps shape bias per Lu et al. 2026).
+   Ablation: magno-first vs parvo-first vs simultaneous.
+3. **B3 — Konio third stream** (after B1+B2). Thin (¼-width) S−(L+M) stream, heavy blur;
+   dual projection: → parvo stream after block 1 (K→blobs→thin stripes→V4) and late skip →
+   magno stream (LGN-K→MT bypass; Sincich 2004). Prediction: selective gain in color-biased
+   ventral ROIs. Delivers the repo title.
+4. B4 — Learnable L1-sparse cross-stream gates: one ablation; report learned gate values as a
+   result. Fix the 75/25 mixing bug first (with legacy flag).
+
+Required regardless: ≥3 seeds per condition, single dataset version (uint8), readouts trained to
+convergence, blur-only / channel-swap / RGB-two-stream controls (is it the DKL split or the
+transformation?), report accuracy–shape-bias tradeoff curve.
+
+---
+
+## 3. Statistics & reporting standards (whole paper)
+- Every bar/point: mean ± CI over ≥3 seeds; subject-level tests for neural data.
+- Behavioral shape bias: bootstrap over cue-conflict items; compare conditions with permutation.
+- Disclose all limitations (static stimuli for dorsal claims; MiniEcoset scale; supervised
+  objective in the base 2×2 cell).
+
+---
+
+## 4. Execution phases
+
+**Working copy:** all code changes live in the git worktree
+`Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev` (branch `mpk-dev`);
+the user's checkout stays untouched.
+
+**Phase 0 — Infrastructure (now, this machine)**
+0.1 Create conda env `mpk` (`/scratch/byrong/anaconda3/envs/mpk`): python 3.11, torch (CUDA),
+    himalaya, nibabel, h5py, scipy, pandas, scikit-learn, matplotlib, colour-science, rsatoolbox.
+0.2 Fix Interconnected-TSN mixing bug (`symmetric mixing` + `legacy` flag).
+0.3 Implement encoding pipeline package `src/analysis/encoding/`:
+    `nsd_data.py` (betas/z-scoring/ncsnr/ROIs/design/shared-515), `dkl_frontend.py`
+    (RGB→DKL + per-stream transforms, matching training), `features.py` (stream activations,
+    pooling, PCA), `banded_ridge.py` (himalaya fits, partitioning, SPI, NC-normalization),
+    `stats.py` (subject-level interaction, bootstraps), `run_encoding.py` (CLI, one subject),
+    `slurm/encode_subjects.sh` (array 0-7).
+0.4 Validate end-to-end on subj01 with an **untrained** TSN (control model), CPU or 1 GPU.
+
+**Phase 1 — Existing-model rescue (needs checkpoints)**
+1.1 Obtain thesis checkpoints from Osnabrück (`/share/klab/lzejin/mbenito/...`) — **ask/rsync**;
+    otherwise proceed to 2.1 and treat retrained models as canonical.
+1.2 Repaired RSA on existing RDMs (in-repo `RDMs/` pickles) with proper stats → quick read on
+    whether the null survives.
+1.3 Full A1–A3 on trained + untrained models, 8 subjects (Slurm array; GPU for feature
+    extraction, `main` for ridge fits if CPU-feasible, else GPU/`standard` QOS).
+
+**Phase 2 — Retraining with fixes (GPU)**
+2.1 ≥3 seeds × {RGB baseline, DVD baseline, RGB TSN, DVD TSN, DKL Base, DKL B&CS, M-heavy,
+    Inter (fixed mixing)} on uint8 dataset; plus controls (blur-only RGB TSN, channel swap).
+    One Slurm **array**, `gpu` partition, watch QOS caps. Blocked on `lightning_kietzmannlab`
+    or a minimal local trainer (open item in §0).
+2.2 Stream-ablation/logit-decomposition mechanism analysis on cue-conflict (why does behavior
+    follow the magno stream when parvo is more predictive?).
+**Phase 3 — B1 objective-asymmetry 2×2; Phase 4 — B3 konio stream; Phase 5 — writing.**
+
+## 5. Status log
+
+**2026-08-25 (Phase 0 executed):**
+- Env `mpk` built (torch 2.13 cu130, himalaya, kornia, nibabel; DVD scale_free
+  via `/scratch/byrong/software/DVD_scale_free` + .pth — its pip packaging omits
+  the nested `dvd_scale_free.dvd_scale_free` module).
+- Mixing bug fixed (`legacy_asymmetric_mixing` flag); encoding package written
+  and committed on branch `mpk-dev` (worktree `.claude/worktrees/mpk-dev`,
+  commit 2697b9f). Push blocked: no GitHub credentials in this environment.
+- **Smoke test passed**: NSD→DKL front end→untrained-TSN features→banded
+  ridge→variance partitioning recovers a synthetic magno/parvo voxel gradient
+  (SPI vs ground truth ρ=0.996).
+- **Repaired RSA on existing RDMs done** (`results/repaired_rsa/` in worktree):
+  noise ceilings vary hugely (ventral .71, parietal .36, hV4 .11, V3d .01);
+  general-factor pattern confirmed (one stream better across ALL ROI classes,
+  every DKL model, p=.008 simple effects); dorsal/ventral interaction null
+  except a suggestive DKL-B effect (magno relatively more parietal, p=.014
+  uncorrected; DKL Base same direction p=.08) — reinforces the plan to move
+  to encoding-model axes (eccentricity/SF/color/texture).
+- Slurm: job 26348386 (DKL min/max, `main`) pending on QOS job cap;
+  job 26348518 (subj01 untrained-control encoding pilot, `gpu`) queued with
+  dependency on it.
+
+**2026-08-25 (EEG track added & first result):**
+- Built + committed (c93f1b7, c13408c) the developmental-EEG RSA track (§A6):
+  TSN RDM extractor (campaign-schema caches at
+  `/scratch/byrong/infant/tsn_rdms_orig_input_v1{,_spearman}`) and the
+  7-sub-age-bin temporal RSA runner.
+- **First result (untrained-control TSN, occipital, post-stimulus, matched
+  stages):** infants (6/12 mo) show NO stream preference (contrast ≈ 0);
+  from 4 yo the EEG aligns increasingly better with the PARVO (L−M) stream,
+  peaking at 8 yo (mean magno−parvo ≈ −0.11 at conv1; ~55–59% of timepoints
+  individually significant) and persisting into adulthood. Untrained network
+  ⇒ the developmental emergence of parvo-stream alignment is carried by the
+  input-statistics split itself — consistent with late maturation of
+  chromatic/parvocellular vision, and a clean baseline against which trained
+  TSNs (pending checkpoints) can be compared.
+- Caveat for interpretation: `group_summary.csv` n_subj counts
+  subject×subset observations; `stream_contrast.csv` n_subj is true subject
+  count (subjects contribute up to 4 subsets, averaged within subject before
+  the Wilcoxon).
+- **SUPERSEDED 2026-08-26 — do not cite the wording above.** The claim of a
+  developmental *emergence* of parvo alignment does not survive the noise-
+  ceiling check; see the corrected entry below.
+
+**2026-08-26 (checkpoint-independent work):**
+- **Fixed a silent Slurm bug**: the subj01 encoding pilot sat in
+  `Reason=BadConstraints` — `gpu` nodes g[001-008] have 95250 MB RealMemory
+  and the script asked for 100G, so it could never be scheduled (not merely
+  queued). Now `--mem=80G`. Cancelled 26348518; resubmit after smoke test.
+- **Solver changed to primal banded ridge** (`himalaya.ridge.BandedRidgeCV`,
+  `Y_in_cpu=True`) instead of `MultipleKernelRidgeCV`: with ~1k PCA features
+  per band, the kernel formulation would build an n_trials x n_trials kernel
+  per band (~7 GB at 30k trials) for no benefit. Primal is cheaper in both
+  time and GPU memory, and fits the 11 GB cards on the `gpu` partition.
+  (Cluster GPU inventory: gpu=gtx1080ti/93GB RAM, agcichy=a5000/95GB +
+  g017 B200 8x/2TB, agkeller=rtx2080ti/192GB, begendiv=h100 4x/515GB.)
+- **EEG control battery submitted** (job 26358875, 5-task array, `main`):
+  B&CS seeds 0/1/2 (seed robustness), DKL-Base (no blur/CS — are the
+  transforms necessary?), channel-swap (blur/CS on rg instead of lum —
+  transformation vs channel identity). All runs now also emit input-level
+  pseudo-layers (`magno_input`/`parvo_input`: RDMs of the stimuli themselves),
+  which separate input statistics from network features as the source of the
+  developmental alignment effect.
+- **Local training unblocked**: `lightning_kietzmannlab` is unreachable (no
+  GitHub credentials, not on PyPI), so `src/training/standalone_trainer.py`
+  reimplements the needed pieces on top of the in-repo `TwoStreamNetwork`
+  and the verified DVD transforms — thesis defaults (150 ep, Adam 1e-4,
+  bs 256, DVD-B augmentations), plus seeds, corrected symmetric mixing, and
+  a condition registry covering thesis replications, the blur-only /
+  channel-swap controls, and Track B's high-SF-luminance parvo input.
+  Prerequisite `scripts/convert_miniecoset_dkl.py` (single pass, reuses the
+  cached min/max, uncompressed uint8 for dataloader throughput) is RUNNING
+  as job 26358896.
+- Cue-conflict images confirmed local (1280 canonical Geirhos stimuli, one
+  subdirectory per class); behavioural eval implemented as
+  `src/analysis/behavior/cue_conflict.py` — shape bias with item-bootstrap
+  CIs **plus a per-stream decomposition** (`full` / `magno_only` /
+  `parvo_only`, exact because the classifier is linear on the weighted
+  feature sum). This is the analysis that answers the thesis's open question
+  §5.2. All 16 Geirhos categories verified present in MiniEcoset
+  (airplane→89, bear→103, …, truck→87).
+- Smoke tests all green on a compute node (job 26358947 / local): encoding
+  solver recovers a synthetic magno/parvo voxel gradient; trainer runs
+  `rgb_tsn`, `dkl_bcs`, `dkl_bcs_inter`, `dkl_bcs_parvo_highsf` end to end
+  (loss ≈ ln 112 at init, checkpoints written).
+- Infrastructure note: **always smoke-test through Slurm**. The login node
+  has `RLIMIT_NPROC=4096` and is often saturated, so BLAS thread spawning
+  fails mid-import and surfaces as a bogus `KeyboardInterrupt` during
+  `import scipy`. Local quick checks need
+  `OPENBLAS_NUM_THREADS`/`OMP_NUM_THREADS` capped.
+
+**2026-08-26 — CORRECTED reading of the EEG result (supersedes §A6 log above).**
+Occipital noise ceilings (NC_lower, post-stimulus, campaign CSV) rise
+monotonically with age: 6mo **−0.007**, 12mo **0.005**, 4yo 0.147, 6yo 0.176,
+8yo 0.285, 12yo 0.324, adults 0.364. Consequences:
+1. **Infant bins carry no reliable stimulus-driven signal** (NC ≈ 0), so the
+   earlier "infants show no stream preference" is an absence of measurable
+   signal, not a finding. No model claim of any kind can be made for 6/12 mo
+   from this measure.
+2. Raw magno-minus-parvo contrast tracks NC almost exactly, so the apparent
+   "developmental increase" is confounded with data reliability and must not
+   be reported as development.
+3. What the data actually show, from 4 yo on (where NC is measurable): the
+   **parvo (L−M) stream aligns positively** (mean ρ ≈ +0.02…+0.08, peak at
+   8 yo) while the **magno stream does not align at all** (ρ ≈ 0 to −0.04 at
+   every bin). So the honest claim is *stream-selective* alignment, not
+   *developmentally emerging* alignment.
+4. Absolute ρ (0.02–0.08) is small against NC (0.15–0.36): an untrained TSN
+   captures only a small share of reliable EEG geometry, as expected.
+5. Controls (job 26358875): effect is **seed-robust** (3 seeds agree to
+   ~0.01); the **network amplifies it over raw input statistics** (fraction
+   of significant timepoints at 8 yo: input 0.05 vs conv1 0.59 vs avgpool
+   0.57) — so it is not a pure stimulus-statistics artefact; blur/CS are
+   **not necessary** but strengthen it (adults −0.035 → −0.049); the
+   **channel swap attenuates it** (adults −0.049 → −0.011), so channel
+   identity and the transformation both contribute.
+6. **Methods fix needed**: the scale-free ratio index
+   (ρm−ρp)/(|ρm|+|ρp|) degenerates to exactly ±1 whenever the two streams
+   have opposite signs (which is the common case here). For the paper use the
+   **noise-ceiling-normalized difference** (ρp−ρm)/NC_lower with
+   subject-level CIs, and restrict age comparisons to bins with NC above a
+   pre-declared threshold.
+
+**2026-08-27 — FIRST REAL ENCODING RESULT (2 of 8 subjects).**
+Two elements of an earlier array completed before the runtime fix (subj04 in
+10h41m, subj08 in 19h56m); the other six were OOM-killed. Feature caches for
+all 8 subjects survived, so reruns skip extraction.
+
+Untrained-control TSN, `nsdgeneral`, voxels with NC>0.1, median per ROI of
+noise-ceiling-normalized unique variance:
+
+| ROI | subj04 uM-uP | subj08 uM-uP | consistent? |
+|---|---|---|---|
+| early | +0.066 | +0.045 | yes (magno) |
+| midventral | **-0.016** | **-0.044** | **yes (parvo)** |
+| midparietal | **+0.057** | **+0.044** | **yes (magno)** |
+| midlateral | +0.004 | -0.005 | no |
+| ventral | +0.013 | -0.009 | no |
+| lateral | +0.027 | -0.004 | no |
+| parietal | +0.015 | -0.004 | no |
+
+Difference-of-differences (dorsal-leaning minus ventral-leaning ROIs):
+subj04 **+0.0375**, subj08 **+0.0470** — same sign, similar magnitude, from
+independently fitted subjects.
+
+**This is the crossover the thesis looked for and did not find**: magno
+favours midparietal, parvo favours midventral. The encoding-model +
+variance-partitioning approach recovers a dissociation that group-averaged
+RSA missed, vindicating the Track A redesign. Model quality is modest but
+real: R2_joint/NC median ~0.09 overall, ~0.23-0.27 in early visual cortex.
+
+Caveats that must travel with this number:
+1. **n=2 subjects — descriptive only, no group inference.** The pre-declared
+   subject-level interaction test needs all 8.
+2. **Untrained network**, so this reflects input statistics plus architecture,
+   not learned representations. Interesting in itself, but the trained
+   comparison is what licenses any claim about learning.
+3. Voxelwise Wilcoxon p-values in the scratch analysis are anti-conservative
+   (voxels are not independent) and are within-subject descriptors only.
+4. Only early / midventral / midparietal are consistent across the two
+   subjects; the higher-level ROIs disagree in sign.
+
+
+**2026-08-28 — GROUP RESULT, ALL 8 SUBJECTS. Track A core analysis complete.**
+Array 26368287 finished the remaining five subjects overnight; all 8
+`untrained_seed0_subj*.npz` exist. Coverage is uniform (12.7k–17.9k voxels,
+8.5k–13.5k with NC>0.1, median R²_joint/NC 0.11–0.17), so no subject is
+carried by a degenerate fit. Analyses in `tmp_analysis/{group_interaction,
+ecc_gradient,visualrois}.py`; unit of inference is the subject throughout.
+
+**A2 — pre-declared stream × cortical-axis interaction (n=8).**
+Difference-of-differences, dorsal{midparietal,parietal} minus
+ventral{midventral,ventral}: **+0.0266**, sign-flip permutation
+**p = .0079**, **8/8 subjects positive**, **dz = +1.64**. With 8 subjects
+there are only 2⁸ = 256 sign patterns, so p = .0079 is the second-smallest
+attainable value — the test is at its resolution limit, not weakly
+significant. Per-ROI simple effects (FDR q=.05): early **+0.052** (p=.008,
+survives), midparietal **+0.030** (p=.008, survives), midventral **−0.023**
+(p=.016, survives), lateral +0.021 (p=.039, does not survive FDR);
+midlateral, ventral, parietal null.
+
+*The double dissociation is incomplete and must be reported as such.* On the
+pooled ROI sets the dorsal simple effect is significant (median +0.018,
+p=.016) but the ventral one is not (median −0.012, **p=.078**). Per
+Nieuwenhuis et al. (2011) the interaction is the valid claim; "magno→dorsal
+AND parvo→ventral" as a double dissociation is not yet licensed.
+
+**A3.1 — eccentricity gradient (n=8). This is the strongest panel, as §1
+predicted, and it is now the headline candidate.**
+Median SPI by `prf-eccrois` band, averaged over subjects:
+
+| ecc band | 0.5° | 1° | 2° | 4° |
+|---|---|---|---|---|
+| mean SPI | **−0.449** | −0.065 | +0.211 | **+0.326** |
+
+A full **sign reversal**: parvo-dominant at the fovea, magno-dominant in the
+periphery. Per-subject slope of SPI on log-eccentricity: mean **+0.322**,
+sign-flip **p = .0079**, Wilcoxon p=.0078, **dz = +1.77**, **8/8 subjects
+positive**, and monotonic in every subject. Companion contrast
+SPI(4°)−SPI(0.5°) = **+0.775**, 8/8 positive. This is the textbook M/P
+retinotopic signature recovered from a model that was never fitted to
+retinotopy.
+
+**A3.3 — retinotopic areas V1→hV4 (n=8).**
+hV4 is the **only** area where parvo-unique variance exceeds magno-unique
+(mean SPI **−0.223**); every other area is magno-preferring. SPI(hV4) −
+SPI(V1) = **−0.538**, **0/8 subjects positive**, p=.0078.
+Mechanism, stated precisely because it is not what the naive prediction says:
+magno-unique variance **falls monotonically** along the hierarchy (V1v 0.207
+→ hV4 0.055, a 3.8× drop) while parvo-unique is roughly **flat** (0.111 →
+0.087). The crossover is magno *losing* explanatory power, not parvo gaining
+it. Matched-eccentricity control — dorsal vs ventral bank of V1/V2/V3 —
+is **null** (+0.091, p=.109, 6/8), so the hV4 effect is not a generic
+ventral-stream effect.
+
+**THE CONTROL THAT DECIDES WHETHER ANY OF THIS IS PUBLISHABLE.**
+All three results are consistent with a deflationary account: the magno
+stream is low-pass by construction (blur σ=4 + 48-month CSF cut), so it
+should predict low-SF, peripheral, non-chromatic voxels better *for trivial
+reasons*, with no biology involved. Job **26373186** (array 0-7%3) reruns
+the identical pipeline and the identical untrained network with
+`--no-lum-blur --no-lum-cs`, i.e. magno = raw luminance, parvo = raw L−M.
+- If the eccentricity gradient **survives**, it is carried by
+  achromatic-vs-chromatic channel content — the real biological claim.
+- If it **collapses**, the gradient is a restatement of the blur and must be
+  demoted from a finding to a front-end validation.
+Nothing in this section should be written up before that array returns.
+
+Further caveats carried forward: the network is **untrained**, so these are
+input-statistics-plus-architecture effects, not learned representations —
+the trained comparison is what licenses any claim about learning; and
+`prf-eccrois` bands are coarse (4 rings), so the gradient is a trend, not a
+continuous pRF fit.
+
+**2026-08-28 — GPU throughput is a blocker for Track B.**
+Timing probe 26368283 on an A5000: 60 steps at bs=256 in 270.8 s ≈ **57
+img/s** → ~1.3 h/epoch → **~8 days for one 150-epoch run**, which makes a
+seed × condition array impossible as designed. Two candidate causes, being
+separated by profiler 26373188 (h5 dataloader vs the per-batch DVD front end
+vs model fwd/bwd, at two worker counts): the probe ran on g017 alongside
+three of my other jobs, and `StreamInputBuilder` calls
+`apply_scale_free_contrast` on **every batch** inside the training loop.
+If the DVD front end dominates, the fix is to precompute the transform —
+the schedule is fixed at 48 months, so the transform is a constant function
+of the image and can be baked into the h5 exactly as the DKL conversion was.
+
+**2026-08-28 (later) — statistic harmonized, figure built, training array launched.**
+
+*Reporting-consistency fix.* Two summary statistics were in use across my own
+analyses: `stats.py` summarizes an ROI as median(U_m) − median(U_p) (a
+difference of medians), while the eccentricity, robustness and figure code
+use median(U_m − U_p) (the median of the paired per-voxel difference). They
+are not identical. All headline numbers are now reported with the **paired**
+statistic (`tmp_analysis/group_interaction_paired.py`), which is the more
+natural summary of a within-voxel contrast and the one the figure draws.
+
+Harmonized values, n=8, NC>0.1:
+
+| ROI | median(U_m−U_p) | p | subjects | dz |
+|---|---|---|---|---|
+| early | **+0.0556** | .0078 | 8/8 | +3.65 |
+| midparietal | **+0.0286** | .0078 | 8/8 | +1.75 |
+| lateral | +0.0174 | .023 | 7/8 | +1.29 |
+| parietal | +0.0106 | .078 | 6/8 | +0.81 |
+| ventral | +0.0065 | .109 | 6/8 | +0.74 |
+| midlateral | −0.0033 | .055 | 1/8 | −0.79 |
+| midventral | **−0.0162** | .039 | 1/8 | −0.89 |
+
+Pre-declared interaction: **+0.0245, p_perm = .0079, 8/8 subjects, dz = 1.46**
+(was +0.0266 under the difference-of-medians statistic; the conclusion does
+not move). Simple effects: dorsal **+0.0196, p = .016**; ventral **−0.0049,
+p = .31**.
+
+*The double-dissociation caveat gets stronger, not weaker.* Under the paired
+statistic the ventral simple effect falls from p = .078 to **p = .31**. The
+pre-declared pooling is the reason: `midventral` on its own is
+parvo-preferring (−0.0162, 7/8 subjects) but `ventral` leans very slightly
+the other way (+0.0065), and averaging them cancels most of the effect. The
+pooled contrast was fixed in advance and is reported as primary; the
+per-ROI breakdown showing that the parvo effect is specifically
+**midventral** is exploratory and must be labelled as such.
+
+*Figure.* `tmp_analysis/fig_streams.py` → `results/figures/fig_streams.{png,pdf}`.
+Three panels (eccentricity, V1→hV4, the interaction), all 8 subjects drawn
+individually since the subject is the unit of inference. `--compare` overlays
+a second model, which is how the blur control will be shown: if the gradient
+is a restatement of the low-pass front end, the red lines in panel A flatten.
+
+**Training array 26373625 launched: 5 conditions x 3 seeds = 15 runs.**
+Conditions: dkl_bcs, dkl_base, rgb_tsn, dkl_bcs_swap, dkl_bcs_parvo_highsf.
+Deferred: dkl_b, dkl_cs, dkl_bcs_mheavy, dkl_bcs_inter, rgb_tsn_blur.
+
+Measured first-epoch times (8 jobs, 4 per node, g010/g011): **583–734 s**,
+i.e. 359–452 img/s — better than the 130–200 img/s I projected, so
+**~24–31 h per run and ~2.6 days for all 15**. Two checks that the
+performance model is right: `dkl_base` (585 s) and `dkl_bcs` (734 s) differ
+by 149 s, almost exactly the profiled DVD front-end cost (143 ms × 1028
+steps = 147 s); and val top-1 after one epoch is 0.07–0.23 against 1/112 =
+0.009 chance, so every condition is learning. `dkl_base` learns fastest
+(0.18–0.23) and `dkl_bcs` slowest (0.07–0.14), as expected when blur+CSF
+removes information.
+
+*Self-imposed constraint while the array runs:* no further edits to
+`standalone_trainer.py`. A job that resumes from `checkpoint_last.pt` after
+an edit would run different code than its own earlier epochs. The
+RandomEqualize optimization (a ~20% win) waits until the array drains.
+
+**Still the gating item:** the `--no-lum-blur --no-lum-cs` control array
+(26373186) has not returned. Until it does, none of the three neural results
+above can be written up as biology rather than as a consequence of the magno
+stream being low-pass by construction.
+## 6. Risks / open items
+- `lightning_kietzmannlab` not public → minimal local trainer fallback (plain Lightning loop
+  reusing `TwoStreamNetwork`).
+- Trained thesis checkpoints not on this cluster → Phase 1 blocked on transfer; Phase 0/2 are not.
+- MiniEcoset h5 here is the `texture2shape` variant → verify it matches the thesis's 112-class
+  256px version before retraining.
+- himalaya on GPU with ~30k trials × ~8k features × ~30k voxels: fits in A100 80GB with
+  kernelized solver; fall back to chunked voxel batches.
+- DVD CSF-cut implementation must exactly match the `scale_free` branch used in the thesis
+  (import DVD package rather than re-implementing).
+
+---
+
+## 7. Analysis review, 2026-08-28 — gaps and additions
+
+Review of what is built vs. what the claim needs. Two items were executed
+during the review (§7.1); the rest is a ranked queue (§7.2–7.4).
+
+### 7.1 Done during the review (no refitting required)
+
+**Kastner2015 ROIs attached to the existing fits.** The encoding runs used a
+deterministic `nsdgeneral` mask, so any ROI atlas on disk can be indexed onto
+the stored per-voxel arrays after the fact. `Kastner2015.nii.gz` is present
+for all 8 subjects and contains TO1/TO2 (= hMT+), VO1/VO2, V3A/V3B and
+IPS0–5. `tmp_analysis/kastner_rois.py`, n=8, NC>0.1:
+
+| ROI | median(Uₘ−Uₚ) | subjects |
+|---|---|---|
+| V1d / V1v | +0.086 / +0.083 | 8/8 |
+| V2v / V2d | +0.077 / +0.058 | 8/8 |
+| PHC2 | +0.054 | 8/8 |
+| V3d / V3A / PHC1 / V3v | +0.041 / +0.041 / +0.038 / +0.036 | 8/8 |
+| **TO2 / TO1 (hMT+)** | +0.021 / +0.018 | 6/8, 7/8 |
+| VO2 / VO1 | +0.011 / −0.002 | 7/8, 4/8 |
+| LO2 | −0.010 | 1/8 |
+| **hV4** | **−0.012** | 2/8 |
+
+- **hMT+ is magno-preferring: +0.0197, p = .023, 7/8 subjects, dz = 1.29.**
+  §A3.5 wrote the dorsal/MT test off as a limitation of static stimuli. It is
+  testable and it comes out in the predicted direction. It should be promoted
+  from "limitation" to a reported (secondary) result.
+- **The colour prediction fails at VO: +0.0044, p = .46.** hV4 remains the
+  only parvo-preferring area. The hMT+ − VO interaction is **not**
+  significant (+0.0153, p = .109), so this is *not* a second double
+  dissociation. Report the null.
+- **The 20-ROI profile is highly reproducible**: leave-one-subject-out
+  Spearman **ρ = +0.79** (range .59–.88). Useful reviewer-proofing: the map
+  is not carried by one or two subjects.
+- The profile ranks roughly by hierarchical level *and* eccentricity
+  (V1 > V2 > V3 > rest; peripheral-biased PHC/V3A high; foveal hV4/LO2 low),
+  consistent with the already-reported mechanism (magno-unique *declines*
+  along the hierarchy) rather than with a clean dorsal/ventral split.
+
+**Limitation discovered while building it.** `prf-eccrois` labels **0%** of
+TO1/TO2 and VO2 voxels, ~9–23% of VO1, and only **~33% of the reliable mask
+overall**. So (i) the eccentricity gradient is estimated on the retinotopic
+core only, not on the mask it is implicitly generalized to, and (ii) the
+eccentricity-residualized version of the hMT+/VO contrast **cannot be
+computed** with this atlas. Controlling retinotopy outside early visual
+cortex requires the continuous pRF maps (§7.2).
+
+**Bug fix: a whole eccentricity band was being dropped.** `prf-eccrois` has
+**five** labels (`ecc0pt5, ecc1, ecc2, ecc4, ecc4+`); `stats.py:ECC_LABELS`
+defines four. Every eccentricity number reported so far silently excluded
+`ecc4+` — which is the **largest** band (median 948 voxels/subject) and the
+most peripheral, i.e. the most magno-diagnostic voxels in the mask.
+`tmp_analysis/ecc_gradient5.py`:
+
+| band | 0.5° | 1° | 2° | 4° | **4+°** |
+|---|---|---|---|---|---|
+| mean SPI | −0.449 | −0.065 | +0.211 | +0.326 | **+0.342** |
+
+The gradient stays monotonic across all five bands and the effect **grows**:
+dz **+1.77 → +2.01**, SPI(outer)−SPI(0.5°) = +0.791, still 8/8 subjects and
+still at the permutation floor (p = .0079). The slope statistic changes
+(+0.322 → +0.261) only because the x-range extends. Fix `ECC_LABELS` and
+re-report. Note the gradient **saturates** between 4° and 4+°, which is worth
+stating rather than smoothing over.
+
+### 7.2 Highest-value additions (ranked)
+
+1. **Input-level null model — the control that decides how much the network
+   matters.** Add, as extra bands, a Gabor-energy (or pixel-PCA)
+   representation of each stream's *own transformed input*, and refit. If the
+   eccentricity gradient and the V1→hV4 crossover are fully carried by the
+   input bands, the untrained ResNet is doing nothing and those panels are
+   front-end validations, not model results. This is the exact control that
+   rescued the EEG track (§log 2026-08-26: input 0.05 vs conv1 0.59 of
+   timepoints significant) and a top-tier reviewer will demand it. Note this
+   is a *different* question from the blur control (26373186): blur asks
+   whether the magno *input* is trivially low-pass; this asks whether the
+   *network* adds anything at all.
+
+2. **Continuous pRF maps** (`prf_eccentricity/prf_size/prf_angle.nii.gz`
+   from `nsddata/ppdata`, small download). Buys three things at once:
+   (a) turns a 5-bin trend into a continuous within-subject regression over
+   the whole mask instead of the 33% that carries a band label;
+   (b) **dissociates eccentricity from pRF size**, which the bands confound
+   entirely — "magno explains peripheral voxels" and "magno explains
+   large-pRF voxels" are different claims and only one is about retinotopy;
+   (c) makes the residualized hMT+/VO contrast in §7.1 computable.
+
+3. **Spatial frequency as a mediator, not as an extra panel.** §A3.2 is
+   currently framed as an independent result, but preferred SF and
+   eccentricity are the same axis in cortex, so an SF panel would be the
+   eccentricity panel twice. The informative version is mediation: fit a
+   Gabor-pyramid model per voxel for preferred SF, then test whether
+   SPI ~ log-ecc survives partialling SF, and vice versa. Infrastructure is
+   shared with item 1, so it is nearly free once that exists.
+
+4. **Reliability of the SPI map itself.** Split the training trials in half,
+   fit twice, correlate the two SPI maps within subject. Gives a noise
+   ceiling for SPI and licenses statements of the form "the eccentricity
+   gradient explains X% of the *reliable* SPI variance". Two extra fits.
+
+5. **Stimulus bootstrap** (§A2, still unrun). With n=8 the sign-flip test is
+   pinned at its floor (p = .0039), so subject-level inference has no
+   headroom left; resampling the 515 test images gives a second, independent
+   inferential axis and per-subject CIs. Requires storing test predictions —
+   a cheap re-run.
+
+6. **Encoding-form general-factor control.** The RSA general-factor confound
+   (a global stream main effect of +0.0218, §2026-08-28 novelty check) has a
+   direct analogue here: the two streams' feature spaces differ in total
+   variance and effective dimensionality, which alone can shift unique
+   variance. Report participation ratio and feature-norm per stream and show
+   the gradients survive matching. Cheap, and it closes the objection that
+   the thesis's method lost to.
+
+### 7.3 The biggest hole in the story
+
+The working claim has three legs. Leg (c) — each stream uniquely explains
+distinct cortical variance — is done (gated on the blur control). Leg (b) —
+integration yields human-like shape bias — is implemented
+(`src/analysis/behavior/cue_conflict.py`, with the exact per-stream
+decomposition) and waits on trained checkpoints. **Leg (a) — that the input
+split induces shape- vs texture-biased streams — currently has no direct
+measurement anywhere in the project.** It is asserted in the title and tested
+nowhere.
+
+- **7.3a Stream-level shape/texture probe (do this next; runnable today).**
+  Push the Geirhos cue-conflict / stylized stimuli through each stream and
+  measure shape-vs-texture decodability *from each stream's features*
+  (linear probe on shape label vs texture label, matched dimensionality).
+  This is the mechanistic middle link between the input split and the
+  behavioural shape bias, it needs no fMRI and no trained checkpoints to
+  produce a baseline, and it re-runs unchanged on the trained models when the
+  array lands.
+- **7.3b In-silico cue-conflict → cortex (§A3.4, the flagship figure).**
+  Push cue-conflict images through the *fitted encoding models* → per-voxel
+  predicted shape-bias index → correlate with SPI across voxels. This is the
+  single panel that makes Track A and the behavioural result one paper
+  instead of two. Blocked on nothing but effort.
+
+### 7.4 Framing decisions to make *before* the checkpoints land
+
+- **Pre-declare the untrained-vs-trained comparison now.** The untrained
+  network already produces the headline, so "what does training add?" is the
+  question the paper will be judged on, and deciding what each outcome means
+  *after* seeing it would be storytelling. Write down now what "training
+  increases / does not change / decreases stream differentiation" each imply.
+  If the answer is that architecture plus input statistics suffice, that is a
+  strong and topical claim in its own right (cf. the untrained-network
+  critiques in the Brain-Score literature) — but only if declared in advance.
+- **Single-stream and pretrained baselines.** Reviewers will ask whether the
+  two-stream split buys anything over a matched single-stream ResNet-18 on
+  RGB and over an ImageNet-pretrained network, in *total* explained variance
+  as well as in differentiation. `rgb_tsn` in array 26373625 covers part of
+  this; a single-stream control does not yet exist.
+- **Konio (§B3) via the cheap route.** A third ¼-width S−(L+M) stream run
+  **untrained** through the existing encoding pipeline costs one array and no
+  training, and delivers the repository's title with a pre-registered
+  prediction (K → VO1/VO2/hV4). Given that VO came out null for parvo
+  (§7.1), this is also the honest test of whether the colour prediction fails
+  because the *parvo* channel is the wrong model of colour cortex.
+
+---
+
+## 8. 2026-08-29 — THE BLUR CONTROL RETURNED. Headline reassigned.
+
+Array 26373186 finished all 8 subjects (`untrained_seed0_noblur`): identical
+pipeline, identical untrained network, `--no-lum-blur --no-lum-cs`, so magno
+= raw luminance and parvo = raw L−M. The two models differ **only** in
+whether the luminance channel is low-passed. Per §A3/§5 this was pre-declared
+as the gate on every neural result.
+
+**Sanity first: the control is not degenerate.** It fits *better* than the
+main model (median R²_joint/NC 0.1435 vs 0.1191), as expected when the blur
+stops destroying information.
+
+### 8.1 A statistical fork that had to be resolved first
+
+In the control, magno (raw luminance) dominates unique variance almost
+everywhere, so SPI = (Uₘ−Uₚ)/(Uₘ+Uₚ) sits at +0.44…+0.80 — deep in the
+compressive tail of a bounded ratio. A real gradient could be present there
+and still look flat. Every contrast is therefore reported under **both**:
+
+- `raw`  = median(Uₘ−Uₚ) — unbounded; *does magno's absolute advantage grow?*
+- `norm` = median(Uₘ−Uₚ)/median(Uₘ+Uₚ) — scale-free; *does the relative
+  stream preference shift?*
+
+A result is claimed only where the two agree
+(`tmp_analysis/blur_verdict.py`, `blur_control_unbounded.py`).
+
+### 8.2 Verdict table (n=8, paired statistic, NC>0.1)
+
+| contrast | blur | no blur | verdict |
+|---|---|---|---|
+| ecc slope, raw | +0.0470 (p=.008, 8/8) | +0.0413 (p=.008, 8/8) | **survives** (diff p=.109) |
+| ecc slope, norm | +0.2518 (p=.008, 8/8) | +0.0891 (p=.055, 6/8) | **collapses** (diff p=.016) |
+| foveal band (<0 ⇒ parvo wins) | −0.0574 (0/8) | **+0.0513 (7/8)** | **DEAD — sign flips** |
+| **hV4 − V1v, raw** | −0.1179 (p=.008, 0/8) | **−0.2081 (p=.008, 0/8)** | **survives, larger** |
+| **hV4 − V1v, norm** | −0.4691 (p=.008, 0/8) | **−0.4877 (p=.008, 0/8)** | **survives** (diff p=.383) |
+| interaction dorsal−ventral | +0.0245 (p=.008, 8/8) | +0.0122 (p=.195, 6/8) | **DEAD** |
+| hMT+ | +0.0181 (p=.016) | +0.0443 (p=.008) | survives but **not specific** |
+| hMT+ − VO | +0.0128 (p=.109) | −0.0087 (p=.383) | **DEAD** |
+
+### 8.3 What this means — the eccentricity headline must be given up
+
+**The sign reversal is an artefact of the blur.** Without the low-pass front
+end the foveal band flips from parvo-preferring (−0.057) to magno-preferring
+(+0.051), 7/8 subjects, and SPI is positive in all five bands. "Parvo
+dominates the fovea, magno the periphery" — the candidate headline of
+2026-08-28 — **is not a biological result** and must not be reported as one.
+
+What honestly survives of §A3.1 is weaker and must be stated in these terms:
+magno's *absolute* unique-variance advantage grows with eccentricity in both
+models (raw slope +0.047 vs +0.041, 8/8 both, difference n.s.), but the
+*relative* preference shifts with eccentricity only when the magno stream is
+blurred. So the gradient is real in magnitude and artefactual in sign.
+
+**The dorsal/ventral interaction is dead** (p=.195 without blur), and with it
+the last remnant of "magno→dorsal, parvo→ventral". §1's reframe was right to
+drop it; it should now be dropped entirely rather than reported weakly.
+
+**hMT+ is not a specific result.** It gets *stronger* without blur (+0.044,
+8/8, dz=3.09) — but so does VO (+0.053, 8/8), so hMT+−VO is null and even
+flips sign. Without blur essentially everything is magno-preferring; the blur
+manufactures apparent regional specificity by handicapping magno until parvo
+can win somewhere. This is the same general-factor pathology that defeated
+the thesis's RSA, reappearing in encoding form — worth reporting *as* a
+methodological point.
+
+### 8.4 THE NEW HEADLINE: the V1→hV4 decline, which the control strengthens
+
+The one contrast that survives on both statistics, and the only one that is
+*larger* without blur:
+
+> Magno-unique variance falls from V1v to hV4 while parvo-unique variance
+> holds up. norm: −0.4691 (blur) vs −0.4877 (no blur), difference p=.383,
+> **0/8 subjects positive in either model**.
+
+Because it is undiminished when the low-pass filter is removed entirely, it
+**cannot** be a spatial-frequency artefact — the strongest possible outcome
+for this panel.
+
+**Eccentricity-matched control** (`tmp_analysis/hv4_matched.py`): hV4 and V1v
+compared within the *same* prf-eccrois band, so retinotopy cannot drive it.
+
+| within band | 0.5° | 1° | 2° | 4° | 4+° | pooled |
+|---|---|---|---|---|---|---|
+| blur, raw | −0.007 | −0.033 | −0.084** | −0.161** | −0.166** | **−0.092**, 0/8 |
+| **no blur, raw** | −0.085* | −0.143** | −0.181** | −0.246** | −0.252** | **−0.183**, 0/8 |
+| **no blur, norm** | −0.503* | −0.447* | −0.413** | −0.487** | −0.524** | **−0.468**, 0/8 |
+
+(* p<.05, ** p=.0078 = permutation floor.) In the control the effect holds in
+**every band including the fovea**, 0–1/8 subjects positive, dz −1.2 to −5.5.
+In the blurred model the two foveal bands are null — i.e. the blur *weakens*
+this result rather than creating it.
+
+### 8.5 Consequences for the paper
+
+1. Figure panel A (eccentricity) is demoted to a front-end validation and a
+   supplementary panel. Panel B (V1→hV4) becomes the lead.
+2. The claim to lead with: **the chromatic and achromatic input channels
+   diverge along the ventral hierarchy — the achromatic stream's unique
+   contribution declines from V1 to hV4 at matched eccentricity — and this
+   does not depend on any spatial-frequency manipulation.** That is a
+   colour-cortex claim, and hV4 is the right place for it.
+3. Every remaining ROI-specificity claim (hMT+, dorsal/ventral, VO) is
+   reported as null, with the global magno dominance in the control given as
+   the reason. Do not bury this: it is the general-factor problem, and naming
+   it is what separates this analysis from the thesis's.
+4. Still untrained. §7.4's pre-declaration is now urgent, because the
+   surviving result is precisely the one the trained models must be tested
+   against. `dkl_base` ×3 seeds and `rgb_tsn` ×2 seeds completed on
+   2026-08-29 (~20 h each); `dkl_bcs` ×3 still running.
+
+---
+
+## 9. 2026-08-29 — Leg (a) measured for the first time, and a caught bug
+
+### 9.1 A silent failure that would have become a "finding"
+
+`features.build_model` assumed a Lightning checkpoint and unconditionally
+kept only keys prefixed `network.`. `standalone_trainer.py` saves
+`model.state_dict()` directly, with no prefix, so the filter matched nothing,
+the state dict became empty, and `load_state_dict(strict=False)` **loaded 0
+of 242 parameters while returning normally**. Every "trained" model was a
+random network.
+
+Caught because the probe returned byte-identical numbers for
+`untrained_noblur`, `dkl_base_seed0_trained` and `dkl_base_seed1_trained`.
+The log said so plainly — "202 missing, 0 unexpected keys" — but nothing
+raised.
+
+This is the worst failure mode available to this project: it produces a
+confident **"training changes nothing"**, which §7.4 had already flagged as a
+live and *publishable-sounding* outcome. It would have been read as a result.
+`build_model` now detects the dialect and **raises** when a checkpoint
+populates no parameters. Jobs 26383592/26383633 were cancelled, outputs and
+feature caches deleted, and relaunched as **26383806** (encoding) and
+**26383807** (probe).
+
+Standing lesson: every trained-vs-untrained comparison in this project must
+carry a positive control that the checkpoint actually loaded. Identical
+numbers across conditions are a bug signature, not a null.
+
+### 9.2 The stream shape/texture probe (§7.3a) — first direct test of leg (a)
+
+`src/analysis/behavior/stream_shape_texture.py`. Geirhos cue-conflict images
+(1200 usable, 16 shape × 16 texture classes, orthogonal by construction);
+cross-validated linear probes on stage-pooled features, both streams reduced
+to the same 256 PCA components. `bias = acc(shape) − acc(texture)`; chance
+.0625 for both probes, so the two accuracies are directly comparable.
+
+| model | magno shape/tex → bias | parvo shape/tex → bias | **M−P** |
+|---|---|---|---|
+| untrained, blur+CS | .977 / .181 → **+0.796** | .325 / .412 → −0.087 | **+0.882** |
+| untrained, no blur | .860 / .443 → **+0.417** | .325 / .412 → −0.087 | **+0.503** |
+| **trained dkl_base** s0 | .734 / .953 → **−0.219** | .352 / .871 → −0.519 | **+0.300** |
+| trained dkl_base s1 | .725 / .938 → −0.213 | .370 / .879 → −0.509 | +0.296 |
+| trained dkl_base s2 | .710 / .956 → −0.246 | .388 / .872 → −0.484 | +0.238 |
+| trained swap s0 | .781 / .966 → −0.185 | .315 / .521 → −0.206 | **+0.021** |
+| trained swap s1 | .772 / .938 → −0.166 | .267 / .512 → −0.244 | +0.078 |
+
+**The predicted direction holds everywhere: M−P > 0 in all seven models.**
+Leg (a) has its first direct evidence — the magno stream is reliably *more
+shape-biased relative to* the parvo stream, and this is a property of the
+representations, not of the classifier's decisions.
+
+Three things must be reported with it, none of them flattering:
+
+1. **Most of the absolute shape bias is the blur, not the split.** Untrained
+   magno bias falls +0.796 → +0.417 when the low-pass front end is removed.
+   And .977 shape / .181 texture is near ceiling and near floor respectively,
+   so that +0.796 is range-limited and should not be quoted as an effect
+   size.
+2. **Training makes both streams texture-biased and *shrinks* the
+   asymmetry.** On a fixed front end, M−P falls +0.503 (untrained) → +0.300
+   (trained), and magno flips from shape-preferring (+0.417) to
+   texture-preferring (−0.219). This is the classic Geirhos CNN texture bias
+   appearing, and it works *against* the input-induced specialisation rather
+   than consolidating it.
+3. **The channel swap nearly abolishes the asymmetry** (+0.021 / +0.078 vs
+   +0.300 / +0.296 / +0.238 for `dkl_base`), so the effect tracks which
+   channel carries the developmental transform, not channel identity alone.
+   Caveat: `dkl_base` and `dkl_bcs_swap` differ in *both* front end and
+   training, so this is suggestive, not a single-variable contrast. The
+   contrast that closes it is `dkl_bcs` (transform on magno), still training.
+
+### 9.3 PRE-DECLARATION, made before `dkl_bcs` finishes
+
+Point 2 is measured on `dkl_base` — the condition **without** the
+developmental visual diet. The DVD claim is precisely that the diet protects
+shape bias. So the sharp, currently-open question is what `dkl_bcs`
+(blur + CS, still training as 26373625 tasks 0–2) does. Writing the reading
+down now, so it is not chosen after seeing the number:
+
+- **M−P(dkl_bcs trained) ≈ M−P(dkl_bcs untrained) = +0.882**, or magno bias
+  stays positive → the developmental diet *preserves* the input-induced
+  specialisation that ordinary training erodes. This supports the project's
+  working claim and is the strong outcome.
+- **M−P(dkl_bcs trained) ≈ +0.30, magno bias goes negative** → the diet
+  delays but does not prevent the collapse to texture bias; the honest claim
+  becomes that the input split sets the *initial* geometry and training
+  overwrites it. Leg (a) then has to be restated as a claim about
+  initialisation, not about learned streams.
+- **M−P(dkl_bcs trained) < M−P(dkl_base trained)** → the diet actively hurts
+  specialisation. This would contradict the working claim and must be
+  reported as such.
+
+The comparison must be trained-vs-untrained *within* `dkl_bcs`, since the
+untrained blur+CS number (+0.882) is inflated by the probe ceiling noted
+above.
+
+---
+
+## §10 Status check 2026-08-29 — two corrections to §9
+
+### 10.1 The swap numbers in §9 are from a model that was 20% trained
+
+`dkl_bcs_swap_seed0/1` were still training when the shape/texture probe read
+their `checkpoint_last.pt`. Timeline from the run directories:
+
+| | started | first ckpt (ep 25) | probe read `checkpoint_last.pt` |
+|---|---|---|---|
+| `dkl_bcs_swap_seed0` | 12:05 | 16:54 | **17:45** |
+
+So the probe measured roughly epoch 28 of 150, whereas the `dkl_base` numbers
+it was compared against are from fully converged 150-epoch runs. `checkpoint_last.pt`
+is overwritten continuously, so nothing in the output file records this — the
+JSON looks identical to a converged one. **Any probe that reads
+`checkpoint_last.pt` must first assert `history.json` has the full epoch count.**
+
+Direction of the bias, stated before re-running: the §9 trend is that *more*
+training *shrinks* M−P, so an undertrained model should sit **between**
+untrained (+0.503) and converged `dkl_base` (+0.238…+0.300). The swap sits far
+below all of them (+0.021, +0.078). Undertraining therefore does not explain
+the swap result under the trend already established, and if anything understates
+it. But this is not a clean contrast (front end, training length, and loss level
+all differ), so **the swap claim is provisional and must be re-run on the
+converged checkpoints** before it appears in any figure or text.
+
+`dkl_base_seed0/1/2` and `untrained_*` are unaffected — those checkpoints are final.
+
+### 10.2 Classification accuracy is now on the record
+
+Fully converged, top-1 on held-out miniEcoset (112 classes):
+
+| condition | seed 0 | seed 1 | seed 2 |
+|---|---|---|---|
+| `dkl_base` | 0.6998 | 0.6982 | 0.7055 |
+| `rgb_tsn`  | 0.6643 | 0.6836 | — (training) |
+| `dkl_bcs`  | ~0.43–0.48 at ep 146 (still training) | | |
+
+Two things follow. First, **the DKL front end is not a handicap**: `dkl_base`
+beats the RGB two-stream control by ~2–4 points, so the opponent-channel split
+is at worst free and plausibly helpful. Second, **the developmental diet costs
+~25 points of accuracy**. That is expected — blur plus reduced contrast destroys
+information — but it must be stated plainly in the paper rather than omitted,
+and it means every `dkl_bcs` representational claim has to be defended against
+"this model is simply worse". The matched comparison for that is `dkl_base`,
+not `rgb_tsn`.
+
+### 10.3 A scheduling bug that cost a day
+
+`slurm/encode_subjects.sh` requested `--mem=190G`. Slurm reads `G` as GiB, so
+that is 194560 MB, while the 50 mid-tier `main` nodes advertise 192080 MB. The
+request therefore fit on only the 18 large-memory nodes — the comment in the
+script claiming "68 main nodes have >=190G" was wrong by exactly this unit
+conversion. Measured peak is 137G (`sacct` MaxRSS), so the request is now
+`--mem=160G` (163840 MB): fits on 68 nodes, 20% headroom. Pending job 26383806
+updated in place via `scontrol`.
+
+---
+
+## §11 The thesis checkpoints arrived (2026-08-29) — what still needs training
+
+`/scratch/byrong/tsn_checkpoints/` now holds the two models the BA thesis
+actually reports, with a full provenance record (SwissTransfer link, md5 of the
+archive, per-file sha256, `unzip -t` verified). This closes the §6 risk item
+"obtain thesis checkpoints from Osnabrück OR treat local retrains as canonical" —
+we now have both, which is strictly better than either.
+
+| downloaded | our equivalent |
+|---|---|
+| `dkl_blur_cs_dvd_trans` | `dkl_bcs` |
+| `dkl_blur_cs_s1_90` | `dkl_bcs_mheavy` (deferred) |
+
+Verified by loading: Lightning 2.6.1, epoch 147 / step 152292, 242 tensors,
+`network.stream{1,2}_*` prefixes, **1 input channel per stream**, 112-class head
+over a 512-d shared FC, `num_classes=112`, `out_size=224`. Architecturally
+identical to ours; `features.build_model` loads all 242/242 parameters clean.
+40/242 tensors are byte-identical between the two (buffers), so they are
+genuinely distinct models.
+
+**The mixing flag is not a confound.** Our retrains set
+`legacy_asymmetric_mixing=False`, the thesis runs used the pre-fix asymmetric
+path. But `_mix_streams` is only reached inside `if self.stream_concat:`, and
+`stream_concat` is false for every condition in play. The flag is therefore a
+no-op here and the two sets are directly comparable. It would matter only for
+`dkl_bcs_inter`, which is still deferred.
+
+### 11.1 What the download does and does not remove from the training queue
+
+Of the five conditions in array 26373625, **one overlaps and four do not**:
+
+| condition | in download? | why it is still needed |
+|---|---|---|
+| `dkl_bcs` | **yes** | 3 seeds vs the thesis's 1; and it is the reproduction test |
+| `dkl_base` | no | isolates the diet from the DKL front end — the control leg (a) needs |
+| `rgb_tsn` | no | isolates the DKL front end from two-stream architecture |
+| `dkl_bcs_swap` | no | the causal control: transform on parvo instead of magno |
+| `dkl_bcs_parvo_highsf`| no | the second causal control |
+
+So the training is not redundant. Two changes follow:
+
+1. **`dkl_bcs_mheavy` is dropped from the deferred queue** — `s1_90` is exactly
+   that condition, already trained. This is ~10 GPU-hours saved.
+2. **`dkl_bcs` ×3 is kept** and finishes within the hour anyway. A single
+   checkpoint cannot give seed variance, and the retrain is the only way to
+   check that our pipeline reproduces the thesis's model rather than assuming it.
+
+### 11.2 The larger point: every encoding result so far is on an untrained net
+
+The V1→hV4 headline, the blur control, the eccentricity work — all of it is
+`untrained_seed0`. That was the right starting point (it isolates architecture
+and input from learning), but the paper is about a *trained* model, and we now
+have the exact trained model the thesis reports. **Running the encoding
+pipeline on `thesis_dvd_trans` is now the highest-value queued analysis**, and
+it no longer depends on our own training finishing.
+
+### 11.3 This also resolves §9.3 without waiting
+
+`thesis_dvd_trans` *is* a trained blur+CS model, so the shape/texture probe on
+it answers the §9.3 pre-declaration directly. Submitted as 26385545 (array
+tasks 7,8). One assumption is on the record: the checkpoints carry no
+LightningModule `hyper_parameters`, so **which stream received the DVD
+transform is not recorded in the file**. We run it as transform-on-magno, our
+default. If the probe returns a strongly *negative* M−P, mis-assigned
+transform target is the first thing to check, not a finding.
+
+---
+
+## §12 §9.3 RESOLVED — the diet protects magno; training specialises parvo
+
+Probe on the thesis checkpoints (26385545), against the pre-declaration written
+in §9.3 before any of these numbers existed. Chance = 0.0625.
+
+| model | M:shape | M:tex | **M bias** | P:shape | P:tex | **P bias** | **M−P** |
+|---|---|---|---|---|---|---|---|
+| untrained blur+CS | .977 | .181 | **+0.796** | .325 | .412 | −0.087 | +0.882 |
+| untrained no-blur | .860 | .443 | +0.417 | .325 | .412 | −0.087 | +0.503 |
+| **thesis `dvd_trans`** (trained, diet) | .983 | .153 | **+0.831** | .443 | .948 | **−0.506** | **+1.337** |
+| **thesis `s1_90`** (trained, diet, w=.9) | .992 | .173 | +0.818 | .332 | .948 | −0.617 | **+1.435** |
+| `dkl_base` ×3 (trained, **no** diet) | .71–.73 | .94–.96 | **−0.21…−0.25** | .35–.39 | .87–.88 | −0.48…−0.52 | +0.24…+0.30 |
+
+**Outcome 1 of the three pre-declared readings** — the strong one: with the
+diet, M−P does not merely survive training, it *grows* (+0.882 → +1.337), and
+magno stays firmly shape-biased. Without the diet, training drives magno from
++0.417 to **−0.219**: the shape bias present at initialisation is destroyed and
+the stream becomes texture-preferring like everything else.
+
+### 12.1 The mechanism is legible, and it is not the one we assumed
+
+The asymmetry is built from two independent halves that move for different
+reasons:
+
+- **Magno's shape bias is created by the input filter, not by learning.** It is
+  already +0.796 at initialisation under blur+CS. Training with the diet leaves
+  it there (+0.831 — and both are at probe ceiling, .977 vs .983, so this is
+  "preserved", not "increased"). Training *without* the diet destroys it.
+- **Parvo's texture bias is created by learning, not by the input.** It is
+  −0.087 at initialisation — essentially neutral — and training drives it to
+  −0.506. Notably it reaches −0.48…−0.52 in `dkl_base` too, i.e. **parvo
+  specialises into a texture stream whether or not the diet is applied.**
+
+So the honest claim for leg (a) is a conjunction, and it is sharper than
+"the input split induces two streams":
+
+> The chromatic/achromatic split gives magno a shape bias at initialisation and
+> lets training specialise parvo toward texture. The developmental diet's role
+> is specifically **protective**: it prevents training from erasing magno's
+> shape bias, which is otherwise lost. The diet does not create the
+> specialisation; it preserves the half that learning would destroy.
+
+This is a better result than the one we set out to show, because the protective
+role is exactly what the developmental-diet literature predicts, and the
+initialisation-vs-learning split is directly measured rather than argued.
+
+### 12.2 Dose-response
+
+`s1_90` weights magno at 0.9 and shows a *larger* asymmetry (+1.435 vs +1.337),
+driven entirely by parvo (−0.617 vs −0.506). Weak evidence — n=1 per condition,
+and the two differ only in the readout weight — but it is in the predicted
+direction and is free to report.
+
+### 12.3 What must be disclosed
+
+- **The magno probe is at ceiling** (.977–.992 shape accuracy). Differences
+  among magno biases above ~+0.8 are not interpretable; all real movement in
+  this table is in parvo. A harder probe would be needed to rank the magno
+  conditions against each other.
+- **`thesis_dvd_trans` vs `dkl_base` is not a matched comparison.** They differ
+  in the diet *and* in codebase, trainer, and augmentation. Our own `dkl_bcs`
+  ×3 (finishing within the hour) is the matched contrast and **§12's claim is
+  provisional until it agrees.** If it does not, the codebase difference — not
+  the diet — is the explanation.
+- The transform-target assumption from §11.3 held: a mis-assigned target would
+  have produced a negative M−P, and we observe +1.337.
+- Absolute accuracies are not comparable across front ends; only the within-model
+  shape-minus-texture contrast is.
+
+### 12.4 Priority change
+
+Encoding on `thesis_dvd_trans` is now the top queued analysis. Every encoding
+result to date (V1→hV4 headline, blur control, eccentricity) is from an
+*untrained* network, and we now hold the trained model the thesis reports, with
+a measured, interpretable representational difference between its streams. The
+leg-(a) result above and the leg-(c) encoding result should be computed on the
+same checkpoint.
+
+
+---
+
+## §13 Two controls §12 did not run, and one correction to §11
+
+§11/§12 were written from job 26385545. Job **26385558/26385589** ran the same
+probe independently and reproduced §12's numbers exactly (M−P +1.337 and +1.435,
+magno +0.831/+0.818, parvo −0.506/−0.617), so that table is confirmed by two
+independent submissions. What follows is only what those sections do not cover.
+
+### 13.1 `stream1_weight` is unrecorded and must be asserted, not assumed
+
+§12 labels `s1_90` as "w=.9", but **nothing in the checkpoint carries that
+value**. `stream1_weight` is a plain forward-pass scalar
+(`pytorch_models.py:250`), absent from the state dict and from the (nonexistent)
+LightningModule `hyper_parameters`. Passing the default 0.5 for `s1_90` loads a
+valid-looking wrong model with no error — the same silent-failure shape as §9.1.
+
+2×2 cross-check, top-1 on miniEcoset val (n=5600), each checkpoint run under
+both weights:
+
+| checkpoint | w=0.5 | w=0.9 |
+|---|---|---|
+| `dkl_blur_cs_dvd_trans` | **0.5686** | 0.2929 |
+| `dkl_blur_cs_s1_90` | 0.5707 | **0.5834** |
+
+Each peaks at its named weight, so the mapping holds. Quote the asymmetry
+honestly: for `dvd_trans` it is decisive (−0.276 at the wrong weight), for
+`s1_90` it is weak on accuracy alone (+0.013) and rests mainly on the filename
+and the `model_zoo` / figure-legend mapping. Operationally: **always pass
+`--stream1-weight 0.9` for `s1_90`** in anything routed through the classifier
+(accuracy, behavioural shape bias). It does not affect §12's probe or the
+encoding features — `extract_stream_features` runs the streams independently and
+never reads it, which is why §12's numbers are safe as published.
+
+### 13.2 The accuracy positive control does *not* reproduce the thesis
+
+§12 says absolute accuracies are not comparable across front ends, which is
+true, but the thesis reports val accuracy for *these two checkpoints*
+(`plot_classification_performance.py`: 0.469 and 0.524) and that is a
+within-model target we should be able to hit. We do not:
+
+| model | ours (val, n=5600, 256 px) | thesis | Δ |
+|---|---|---|---|
+| DKL B&CS (`dvd_trans`) | 0.5686 | 0.469 | **+0.100** |
+| M-heavy (`s1_90`) | 0.5834 | 0.524 | **+0.059** |
+
+Chance is 1/112 = 0.009, so this is emphatically not a loading failure, and the
+M-heavy > standard ordering is preserved. But a 10-point overshoot is not
+"reproduced", and the direction is the awkward one — we look *better* than the
+thesis, which is what a subtly easier evaluation looks like. Most likely causes,
+untested: we evaluate clean (no augmentation) on the uint8 DKL h5 at 256 px,
+whereas the thesis logged val accuracy *during training* at `out_size=224` on
+the float64 dataset (see §13.3 — that 224 is not runnable, which is itself a
+clue that the thesis's logged number came from a differently-configured pass).
+
+Scope of the remaining doubt, after commit a7c30aa: the **representational**
+reproduction is settled — our `dkl_bcs` seeds 0/2 give M−P +1.292/+1.349 against
+the thesis's +1.337, agreement to 0.016 across two independent codebases. What
+is *not* settled is the **absolute accuracy** of the thesis checkpoints under our
+evaluation. So the honest statement is: our pipeline reproduces the thesis
+model's representational geometry, and we cannot yet reproduce its reported
+top-1. Nothing in §12 or in the matched contrast depends on the latter — both
+are within-model contrasts — but no text should claim the thesis's *performance*
+numbers were reproduced until this is closed.
+
+### 13.3 Correction to §11: the model cannot be run at 224 px
+
+§11 records `out_size=224` from the checkpoint's datamodule hparams. That value
+cannot be honoured by this front end. `apply_scale_free_contrast` constructs
+`DVDConfig(image_size=256)` (`dkl_frontend.py:161`, `IMAGE_SIZE = 256`), so it
+returns a **256 px** magno channel regardless of input size; feed 224 px and
+parvo stays 224 while magno comes back 256, and the two streams fail to
+broadcast at the fusion (`RuntimeError: size of tensor a (8) must match tensor b
+(7)`). 256 px is the resolution the transform — and therefore the trained
+model — actually operates at. The `out_size=224` in the hparams describes the
+thesis *datamodule*, not the front end that ran inside it, and is a likely
+contributor to §13.2's gap.
+
+### 13.4 Artefacts
+
+- `tmp_analysis/thesis_ckpt_accuracy.py` — accuracy control (native 256 px).
+- `slurm/thesis_ckpt.sh` — array: probe ×2 + accuracy ×2 (26385558).
+- `slurm/thesis_ckpt_w.sh` — array: `stream1_weight` off-diagonal (26385589).
+- `results/thesis_ckpt_accuracy/*.json` — all four accuracy cells.
+Both arrays are CPU-only on `main`, ~2–3 min per task.
+
+---
+
+## §14 Leg (c) on the TRAINED thesis model — the headline survives and sharpens
+
+First encoding run on a trained network (26385643). **n=7 of 8; subject 7 still
+fitting — every number below is provisional until it lands.** Paired against
+`untrained_seed0` on the same subjects.
+
+| contrast | untrained | **thesis trained** | verdict |
+|---|---|---|---|
+| **hV4 − V1v** (norm) | −0.480 (0/7) | **−0.851 (0/7)** | **survives, ~2× larger** (p=.016) |
+| foveal band | −0.416 | −0.757 | larger — but still blur-dependent (§8) |
+| ecc slope | +0.258 | +0.124 | weakened / absent |
+| dorsal−ventral interaction | +0.283 | −0.019 (p=.375) | **dead** (dead in the blur control too) |
+| hMT+ absolute | +0.267 | **−0.892** | **SIGN FLIP** |
+| hMT+ − VO | +0.221 | +0.070 (p=.047) | survives, weaker |
+
+### 14.1 Training flips global stream dominance from magno to parvo
+
+Per-subject global stream bias: **+0.19 untrained (8/8 magno-dominant) →
+−0.47 trained (0/7 magno-dominant)**. This single fact explains most of the
+table, and it is the encoding-side echo of §13: training makes parvo strongly
+texture-selective and therefore highly predictive of image-driven BOLD almost
+everywhere. hMT+'s "sign flip" is this global shift, not a change in hMT+'s
+relative position — hMT+ − VO stays positive.
+
+### 14.2 The headline is NOT a general factor — this is the decisive control
+
+The confound that killed the thesis's RSA is at its most dangerous here, because
+the hV4−V1v effect now points in the *same* direction as the global bias.
+Subtracting each subject's own across-ROI mean removes any global additive
+stream bias; whatever survives is regional by construction.
+
+| | untrained | **thesis trained** |
+|---|---|---|
+| hV4−V1v after global centring (norm) | −0.469, p=.008, 0/8, dz=−2.56 | **−0.851, p=.016, 0/7, dz=−10.43** |
+| V1v relative to subject's own mean | +0.101 (8/8 above) | **+0.451 (7/7 above)** |
+| hV4 relative to subject's own mean | −0.368 (0/8 above) | **−0.400 (0/7 above)** |
+| Spearman ρ(V1→V2→V3→hV4, value) | −0.698, 8/8 negative | **−0.973, 7/7 negative** |
+
+The effect is *undiminished* by centring, V1 sits significantly above and hV4
+significantly below each subject's own mean, and the gradient along the ventral
+hierarchy is **near-perfectly monotonic in every subject**. A global stream
+factor cannot produce a within-subject rank ordering of ρ = −0.97. Training
+does not create this gradient — it *sharpens* it (−0.70 → −0.97).
+
+### 14.3 What must be restated: gradient, not double dissociation
+
+In the untrained model V1v is magno-preferring and hV4 parvo-preferring, so the
+two ROIs sit on opposite sides of zero — a genuine crossover in **7/8** subjects.
+In the trained model V1v is **not** magno-preferring in absolute terms
+(−0.017, p=.81, 3/7) and the crossover holds in only **3/7**.
+
+By the Nieuwenhuis standard a double dissociation needs both simple effects, and
+in the trained model only one of them is present. So the claim has to be stated
+as what it is:
+
+> Along the ventral hierarchy, magno-unique variance declines monotonically and
+> parvo-unique variance rises, in every subject, and this gradient is
+> independent of each subject's global stream bias. It is a **relative
+> gradient**, not an absolute double dissociation: after training, hV4 is
+> strongly parvo-preferring while V1 is merely *less* parvo-preferring than the
+> rest of cortex.
+
+The absolute crossover is a property of the untrained network and should be
+reported as such rather than folded into the trained-model claim.
+
+### 14.4 Eccentricity-matched, trained model
+
+The gradient is not eccentricity in disguise. Restricting V1v and hV4 to the
+same `prf-eccrois` band (norm): −0.543 (1°), −0.755 (2°), −0.954 (4°), −1.053
+(4+°), all p=.016, 0/7, dz −2.8 to −7.6; **pooled within-band −0.726, p=.016,
+0/7, dz=−5.36** — larger than untrained (−0.356, dz=−2.36) in every band. The
+0.5° band is null in both models (n=6, few voxels), a limitation carried from §8
+that needs continuous pRF maps to resolve.
+
+### 14.5 Consequence for the figure
+
+Panel A is now the **trained** V1→hV4 gradient with the global-centring control
+beside it, since that is the analysis that survives the confound the project has
+repeatedly fallen to. The untrained model becomes the reference showing the
+gradient exists before learning and sharpens with it.
+
+---
+
+## §15 THE UNIFYING RESULT — the diet decides whether learning builds or destroys the cortical gradient
+
+Each contrast below holds the encoding front end constant, so the only thing
+that varies within a row is training. (n=7 per cell; the pairs use slightly
+different subject sets — see §15.3.)
+
+| | untrained | trained | change | A−B p |
+|---|---|---|---|---|
+| **without diet** (no-blur front end) | **−0.478** | **−0.072** | **destroyed (−85%)** | .016 |
+| **with diet** (blur+CS front end) | **−0.480** | **−0.851** | **amplified (+77%)** | .016 |
+
+hV4−V1v, scale-free statistic. The two untrained models start at
+**−0.478 and −0.480** — indistinguishable. The initial cortical gradient does
+not depend on the input front end at all (this is the §8 blur-control result,
+restated). What the diet determines is the **direction learning moves it**.
+
+This is the same phenomenon as §13, measured in cortex instead of in the
+network's representations:
+
+| | magno shape bias (§13) | cortical V1→hV4 gradient (§15) |
+|---|---|---|
+| at initialisation | +0.417 / +0.796 | −0.478 / −0.480 |
+| trained **without** diet | **−0.226** (destroyed, sign flip) | **−0.072** (destroyed) |
+| trained **with** diet | **+0.819** (preserved) | **−0.851** (amplified) |
+
+**Legs (a) and (c) are not two findings. They are one finding measured two
+ways.** The developmental visual diet preserves magno's shape bias through
+learning, and a network whose magno stream keeps its shape bias is the one whose
+unique variance tracks the human ventral hierarchy. Without the diet, learning
+collapses both together.
+
+### 15.1 Why this is the paper
+
+The claim the project set out to make — biologically constrained inputs induce
+specialised streams that explain cortical variance — is true only in a much more
+specific and more interesting form:
+
+> The input split alone is not sufficient and the diet alone is not
+> constructive. The input split creates a magno shape bias and an initial
+> cortical gradient; ordinary training destroys both; the developmental visual
+> diet's function is to protect them. Brain-likeness here is not something
+> training produces — it is something training removes unless development is
+> constrained to prevent it.
+
+That last sentence is the contribution. It inverts the usual goal-driven framing
+(train harder on more data to become more brain-like) and it is supported by a
+2×2 in which both untrained cells are identical and the two trained cells move
+in opposite directions.
+
+### 15.2 What is already controlled
+
+- **General factor** (§14.2): the gradient survives removing each subject's
+  global stream bias undiminished (dz −10.4), with ρ(hierarchy) = −0.973 in 7/7
+  subjects. This is the confound that killed the thesis's RSA.
+- **Eccentricity** (§14.4): holds within every pRF band except the 0.5° one
+  (which is null in all models), pooled dz −5.36.
+- **Front end** (§15, top row): both untrained models agree to 0.002, so the
+  low-pass filter does not set the initial gradient.
+- **Codebase** (§13): our retrain reproduces the thesis checkpoint to 0.016 on
+  the behavioural probe.
+
+### 15.3 What is NOT yet controlled — must be closed before submission
+
+1. **One seed per trained cell, and one model in the diet cell.** The "destroy"
+   row rests on `dkl_base_seed0` alone and the "amplify" row on the thesis
+   checkpoint alone. Queued: encoding for `dkl_base_seed1` and for our own
+   `dkl_bcs_seed0`, which also makes the amplify cell a cross-codebase
+   replication. **Until those land, §15 is a single-seed result and must be
+   described that way.**
+2. **The two rows use different subject sets** (one is missing subject 1, the
+   other subject 7, both currently re-fitting). The within-row pairing is exact,
+   which is what the p-values rest on, but the between-row comparison is not yet
+   on identical subjects.
+3. `dkl_bcs` differs from `dkl_base` in *both* blur and contrast-sensitivity.
+   `dkl_b` and `dkl_cs` (deferred) would separate them. Not required for the
+   claim as stated, which is about the diet as a package.
+4. The absolute crossover is an untrained-model property only (§14.3). The
+   trained claim is a relative gradient.
