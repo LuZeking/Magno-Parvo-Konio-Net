@@ -1,0 +1,45 @@
+{
+  "model_name": "untrained_blur_cs",
+  "checkpoint": "None",
+  "conditions": {
+    "full": {
+      "n_images": 1200,
+      "n_shape": 75,
+      "n_texture": 74,
+      "n_other": 1051,
+      "shape_bias": 0.5033557046979866,
+      "shape_accuracy": 0.0625,
+      "texture_accuracy": 0.06166666666666667,
+      "shape_bias_ci95": [
+        0.4178060516733137,
+        0.5874147727272727
+      ]
+    },
+    "magno_only": {
+      "n_images": 1200,
+      "n_shape": 79,
+      "n_texture": 75,
+      "n_other": 1046,
+      "shape_bias": 0.512987012987013,
+      "shape_accuracy": 0.06583333333333333,
+      "texture_accuracy": 0.0625,
+      "shape_bias_ci95": [
+        0.4374779929577465,
+        0.5894124639157752
+      ]
+    },
+    "parvo_only": {
+      "n_images": 1200,
+      "n_shape": 76,
+      "n_texture": 75,
+      "n_other": 1049,
+      "shape_bias": 0.5033112582781457,
+      "shape_accuracy": 0.06333333333333334,
+      "texture_accuracy": 0.0625,
+      "shape_bias_ci95": [
+        0.41721854304635764,
+        0.5870967741935483
+      ]
+    }
+  }
+}

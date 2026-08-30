@@ -281,8 +281,15 @@ def main():
     p.add_argument("--age-months", type=int, default=48)
     p.add_argument("--baseline", action="store_true",
                    help="checkpoint is a single-stream ResNet baseline")
-    p.add_argument("--like-resnet", default="resnet50",
-                   help="architecture for --baseline")
+    # resnet18, not resnet50: every checkpoint in this project is resnet18
+    # (see any run's config.json), and the two-stream path below does not pass
+    # this through at all -- it takes features.build_model's own resnet18
+    # default. So the old resnet50 default was inert on the main path and
+    # wrong on --baseline, which is the worst combination: silently ignored
+    # where you look, silently wrong where you don't.
+    p.add_argument("--like-resnet", default="resnet18",
+                   help="architecture for --baseline only; the two-stream "
+                        "path always uses features.build_model's default")
     p.add_argument("--legacy-mixing", action="store_true",
                    help="reproduce pre-fix asymmetric mixing (old ckpts)")
     p.add_argument("--seed", type=int, default=0)
