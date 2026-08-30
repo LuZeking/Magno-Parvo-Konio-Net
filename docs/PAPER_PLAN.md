@@ -1436,3 +1436,71 @@ model of visual cortex". It does not. It makes a model whose *stream-level
 division of labour* matches the human ventral hierarchy, at a small cost in
 total variance explained. That is a sharper and more falsifiable claim than a
 goodness-of-fit story, and it is the one the data support.
+
+
+---
+
+## §17 The 2×2 is complete — n=8 everywhere, two models per trained cell
+
+All three queued encoding arrays landed. Every cell below is n=8 on the **same
+eight subjects**, and each trained cell now has two independent models.
+hV4−V1v, scale-free statistic; `dz` and `ρ` are from the global-centring
+control (§14.2).
+
+| | model | hV4−V1v | centred dz | ρ(hierarchy) |
+|---|---|---|---|---|
+| **untrained**, no-blur front end | — | **−0.4877** | −2.56 | −0.698 |
+| **untrained**, blur+CS front end | — | **−0.4691** | −2.56 | −0.698 |
+| **trained, NO diet** | `dkl_base` s0 | −0.1669 | **−0.61** | −0.512 |
+| | `dkl_base` s1 | −0.1318 | — | — |
+| **trained, WITH diet** | thesis `dvd_trans` | **−0.8593** | **−10.86** | −0.973 |
+| | **ours** `dkl_bcs` s0 | **−0.8618** | **−11.70** | −0.964 |
+
+All within-row model-vs-untrained contrasts p ≤ .039, 0/8 or 1/8 subjects.
+
+**The diet cell replicates across codebases to 0.0025.** Our standalone-trained
+`dkl_bcs_seed0` and the thesis Lightning checkpoint give −0.8618 and −0.8593,
+with matching control statistics (dz −11.70 / −10.86, ρ −0.964 / −0.973). Two
+trainers, two augmentation pipelines, two seeds. This is the strongest
+reproducibility evidence in the project.
+
+### 17.1 Correction to §15: "destroyed" was too strong
+
+§15 reported the no-diet trained cell as **−0.072, "destroyed (−85%)"**. That
+was n=7 — computed while subject 1 was still re-fitting after the disk-quota
+failure. **With subject 1 included the value is −0.1669**, and the second seed
+gives −0.1318. The corrected figure is a mean of **−0.149, a ~69% reduction**
+from −0.4877, not 85%, and the effect remains statistically detectable
+(p=.016, though only 1/8 subjects).
+
+The claim must therefore be stated as **attenuation, not abolition**:
+
+> Training without the developmental diet reduces the ventral gradient by
+> roughly two thirds and collapses its effect size by a factor of ~19
+> (dz −11.70 → −0.61), leaving a weak residual gradient that is monotonic in
+> far fewer subjects (ρ −0.964 → −0.512). Training with the diet nearly doubles
+> it.
+
+The effect-size and monotonicity collapse is the more honest headline than the
+point estimate, because it is the part that does not move between n=7 and n=8:
+dz −0.61 versus −11.70 is not a marginal difference.
+
+### 17.2 A detail worth reporting: the two trained models are globally opposite
+
+Per-subject global stream bias (norm): **no-diet trained is +0.727, magno-
+dominant in 7/8 subjects; diet-trained is −0.454, parvo-dominant in 0/8.** The
+low-pass front end is what hands parvo the global advantage, exactly as §8's
+blur control predicted.
+
+This makes the general-centring control more valuable, not less: the two trained
+models sit on *opposite sides* of the global-bias axis, yet the diet model shows
+the strong ventral gradient and the no-diet model does not. A general stream
+factor cannot explain a regional effect that is largest in the model whose
+global bias points the other way.
+
+### 17.3 §15 and §16 stand otherwise
+
+The unifying claim is unchanged and now rests on two models per trained cell:
+the diet determines whether learning strengthens or attenuates the correspondence
+between the network's stream-level division of labour and the human ventral
+hierarchy. Legs (a) and (c) remain the same finding measured two ways.
