@@ -1363,3 +1363,47 @@ in opposite directions.
    claim as stated, which is about the diet as a package.
 4. The absolute crossover is an untrained-model property only (§14.3). The
    trained claim is a relative gradient.
+
+
+---
+
+## §16 Final n=8 numbers, and one more claim withdrawn
+
+Subject 7 landed; `thesis_dvd_trans` is complete at n=8. Everything in §14 is
+confirmed and slightly stronger. **The n=7 figures in §14 are superseded by
+these.**
+
+| contrast (norm) | untrained n=8 | thesis trained n=8 | verdict |
+|---|---|---|---|
+| **hV4 − V1v** | −0.4691 (p=.008, 0/8) | **−0.8593 (p=.008, 0/8)** | **survives, 1.8× larger** (A−B p=.008) |
+| after removing global bias | −0.4691, dz −2.56 | **−0.8593, p=.008, 0/8, dz −10.86** | general factor excluded |
+| ρ(V1→V2→V3→hV4) | −0.698, 8/8 neg | **−0.973, 8/8 neg** | monotonic in every subject |
+| eccentricity-matched, pooled | −0.356, dz −2.36 | **−0.7363, p=.008, 0/8, dz −5.72** | not eccentricity |
+| V1v vs own mean | +0.101 (8/8 above) | **+0.454 (8/8 above)** | |
+| hV4 vs own mean | −0.368 (0/8 above) | **−0.406 (0/8 above)** | |
+
+Significant within-band in 4 of 5 pRF bands (1°, 2°, 4°, 4+°; dz −3.0 to −7.9).
+The 0.5° band remains null in every model (n=7, few voxels) — the limitation
+from §8 that needs continuous pRF maps.
+
+### 16.1 hMT+ is dead — withdraw it
+
+At n=7 hMT+ − VO looked like it survived (p=.047 norm). **At n=8 it does not:
+p=.195 on the scale-free statistic and p=.039 on the raw one.** The two
+statistics disagree, and the project's own rule (§8) is to claim a result only
+where they agree. It is also already dead in the blur control.
+
+So the dorsal/MT leg is withdrawn entirely, in all models. This matters because
+§7 promoted it from "limitation" to "result" on the strength of an n=8 untrained
+fit (+0.0197, p=.023) — that number does not replicate on the final subject set
+(raw +0.0128, p=.109). **The honest record is that hMT+ specificity was a
+false positive from an incomplete subject set, and it is now retracted.**
+
+Nothing else in §14/§15 depends on it. What survives is the ventral gradient,
+which is the stronger and better-controlled claim anyway.
+
+### 16.2 Crossover, final
+
+4/8 subjects in the trained model (was 3/7). The §14.3 restatement stands
+unchanged: **relative gradient, not double dissociation.** The absolute
+crossover is a property of the untrained network (7/8) and is reported as such.
