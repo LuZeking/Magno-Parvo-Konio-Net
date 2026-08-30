@@ -1,0 +1,45 @@
+{
+  "model_name": "thesis_s1_90",
+  "checkpoint": "/scratch/byrong/tsn_checkpoints/dkl_blur_cs_s1_90/epoch=147-step=152292.ckpt",
+  "conditions": {
+    "full": {
+      "n_images": 1200,
+      "n_shape": 460,
+      "n_texture": 186,
+      "n_other": 554,
+      "shape_bias": 0.7120743034055728,
+      "shape_accuracy": 0.38333333333333336,
+      "texture_accuracy": 0.155,
+      "shape_bias_ci95": [
+        0.6780172639974812,
+        0.7477007874015748
+      ]
+    },
+    "magno_only": {
+      "n_images": 1200,
+      "n_shape": 562,
+      "n_texture": 60,
+      "n_other": 578,
+      "shape_bias": 0.9035369774919614,
+      "shape_accuracy": 0.4683333333333333,
+      "texture_accuracy": 0.05,
+      "shape_bias_ci95": [
+        0.8801962962863084,
+        0.925040911428705
+      ]
+    },
+    "parvo_only": {
+      "n_images": 1200,
+      "n_shape": 141,
+      "n_texture": 330,
+      "n_other": 729,
+      "shape_bias": 0.29936305732484075,
+      "shape_accuracy": 0.1175,
+      "texture_accuracy": 0.275,
+      "shape_bias_ci95": [
+        0.25933862433862437,
+        0.34097365630406873
+      ]
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "model_name": "thesis_dvd_trans",
+  "checkpoint": "/scratch/byrong/tsn_checkpoints/dkl_blur_cs_dvd_trans/epoch=147-step=152292.ckpt",
+  "conditions": {
+    "full": {
+      "n_images": 1200,
+      "n_shape": 432,
+      "n_texture": 188,
+      "n_other": 580,
+      "shape_bias": 0.6967741935483871,
+      "shape_accuracy": 0.36,
+      "texture_accuracy": 0.15666666666666668,
+      "shape_bias_ci95": [
+        0.6607992926045017,
+        0.7322586995173991
+      ]
+    },
+    "magno_only": {
+      "n_images": 1200,
+      "n_shape": 542,
+      "n_texture": 53,
+      "n_other": 605,
+      "shape_bias": 0.9109243697478991,
+      "shape_accuracy": 0.45166666666666666,
+      "texture_accuracy": 0.04416666666666667,
+      "shape_bias_ci95": [
+        0.8855775356456669,
+        0.934149906062945
+      ]
+    },
+    "parvo_only": {
+      "n_images": 1200,
+      "n_shape": 173,
+      "n_texture": 252,
+      "n_other": 775,
+      "shape_bias": 0.40705882352941175,
+      "shape_accuracy": 0.14416666666666667,
+      "texture_accuracy": 0.21,
+      "shape_bias_ci95": [
+        0.3606954979202349,
+        0.45365853658536587
+      ]
+    }
+  }
+}

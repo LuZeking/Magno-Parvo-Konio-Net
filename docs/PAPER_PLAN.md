@@ -1504,3 +1504,103 @@ The unifying claim is unchanged and now rests on two models per trained cell:
 the diet determines whether learning strengthens or attenuates the correspondence
 between the network's stream-level division of labour and the human ventral
 hierarchy. Legs (a) and (c) remain the same finding measured two ways.
+
+---
+
+## §18 LEG (b) MEASURED — the third leg agrees with the other two
+
+Leg (b) — "their integration yields human-like shape-biased behaviour" — had
+never been run on any model. `cue_conflict.py` was written before the
+checkpoints existed and then never invoked, so the claim in the working title
+had numbers for legs (a) and (c) and none for (b). Array 26391416, twelve
+converged models, 1200 usable Geirhos cue-conflict images, B_shape =
+N_shape/(N_shape+N_texture), CI from 2000-item bootstrap.
+
+| model | **B_shape** [CI95] | magno_only | parvo_only | 16-way acc |
+|---|---|---|---|---|
+| untrained, no blur | 0.500 [.416,.583] | 0.568 | 0.503 | 0.125 |
+| untrained, blur+CS | 0.503 [.418,.587] | 0.513 | 0.503 | 0.124 |
+| `dkl_base` s0/s1/s2 (no diet) | .421 / .433 / .394 → **0.416 ± .020** | ~0.42 | ~0.36 | 0.47–0.51 |
+| `dkl_bcs` s0/s1/s2 (diet) | .692 / .686 / .646 → **0.675 ± .025** | **0.87–0.89** | ~0.42 | 0.37–0.45 |
+| `dkl_bcs_swap` s0/s1 | .412 / .409 → **0.411 ± .002** | 0.40 | 0.48 | 0.47–0.49 |
+| thesis `dvd_trans` | **0.697** [.661,.732] | **0.911** | 0.407 | 0.517 |
+| thesis `s1_90` | **0.712** [.678,.748] | 0.904 | 0.299 | 0.538 |
+
+### 18.1 The same 2×2, a third time
+
+| | untrained | trained, no diet | trained, with diet |
+|---|---|---|---|
+| leg (a) magno shape bias (§13) | +0.796 | **−0.226** | **+0.819** |
+| leg (b) behavioural B_shape (§18) | **0.50** | **0.416** | **0.675** |
+| leg (c) cortical hV4−V1v (§17) | −0.488 | **−0.149** | **−0.860** |
+
+Behaviour starts at the neutral point — untrained models are at B_shape = 0.50,
+i.e. no preference at all — and training moves it in *opposite directions*
+depending on the diet. Three independent measurements (representations,
+behaviour, cortex), three different data types, one pattern. Leg (b) was the
+one that could have broken the story and it does not.
+
+### 18.2 The thesis's behavioural number reproduces
+
+`thesis_dvd_trans` gives **0.697** against the thesis's reported **0.677**
+(`plot_behavioral_shape_bias.py`), a difference of 0.020 that sits inside our
+bootstrap CI. This is worth contrasting with §13.2, where the same checkpoint's
+*accuracy* overshot the thesis by 10 points and remains unexplained: the
+behavioural pipeline reproduces the thesis, the accuracy pipeline does not.
+That narrows §13.2 — whatever the discrepancy is, it is in the classification
+evaluation path, not in the checkpoint or the front end.
+
+Less good: `thesis_s1_90` gives 0.712 against a reported 0.756, and 0.756 falls
+just outside our CI [.678,.748]. The M-heavy > standard ordering is preserved
+(0.712 > 0.697, as 0.756 > 0.677) but the gap is smaller than the thesis's.
+Report the ordering, not the magnitude.
+
+### 18.3 The swap control is now decisive, and §10.1 is discharged for behaviour
+
+`dkl_bcs_swap` puts blur+CSF on the chromatic channel instead of the luminance
+one. Behaviour collapses to **0.411**, statistically indistinguishable from the
+no-diet `dkl_base` (0.416) and nowhere near the diet models (0.675). Both swap
+seeds are converged 150/150, so this is *not* the §10.1 problem — the earlier
+swap numbers came from 20%-trained checkpoints and were quarantined in
+`results/shape_texture/partial_invalid/`. For leg (b) that caveat is now
+discharged on converged models.
+
+The control therefore rules out the obvious alternative: it is not "whichever
+stream gets the developmental transform becomes the shape stream and drives
+behaviour". Applying the identical transform to parvo does **not** produce a
+shape-biased network. The effect requires the transform on the *luminance*
+channel specifically.
+
+### 18.4 The per-stream decomposition answers §2.2
+
+The thesis's open question was why behaviour follows the magno stream when
+parvo is the better classifier. Zeroing one stream before the weighted sum
+isolates the other exactly (the classifier is linear on that sum):
+
+- In the diet models, **magno alone is far more shape-biased than the full
+  network** (0.87–0.91 vs 0.65–0.70) while parvo alone is texture-biased
+  (~0.41). The full network's shape bias is magno's, diluted by parvo.
+- In the swap models the asymmetry weakly *reverses* (magno 0.40, parvo 0.48) —
+  the transformed channel is the more shape-biased one — but neither stream is
+  strongly shape-biased and the network is not.
+
+So the answer is that behaviour follows magno because magno is the only stream
+that ever becomes shape-biased, and only the luminance channel can be made so.
+
+### 18.5 What must be disclosed
+
+- **The untrained B_shape = 0.50 rests on very few decisions.** Untrained
+  16-way accuracy is 0.124, so only ~150 of 1200 images produce a shape-or-
+  texture answer (n_shape=75, n_texture=74) against ~1050 "other". The CI is
+  correspondingly wide [.416,.587]. Read it as "no preference", not as a
+  precise 0.50.
+- **The diet costs accuracy here too**: 0.37–0.45 against 0.47–0.51 for
+  `dkl_base`, the same ~25%-relative penalty as §10.2. The shape-bias gain is
+  not free and the tradeoff curve must be reported (§2, "required regardless").
+- **`rgb_tsn` is not covered.** It is a 3-channel RGB two-stream model and this
+  entry point builds the 1-channel DKL front end only. The architecture-only
+  control for leg (b) therefore does not yet exist.
+- `dkl_bcs_swap_seed2` (96/150) and all three `parvo_highsf` seeds were still
+  training and are excluded by the convergence guard, which was added to
+  `cue_conflict.py` for this run — it had been added to
+  `stream_shape_texture.py` after §10.1 but never to this entry point.

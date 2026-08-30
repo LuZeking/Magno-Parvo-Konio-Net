@@ -1,0 +1,45 @@
+{
+  "model_name": "dkl_bcs_swap_seed1",
+  "checkpoint": "/scratch/byrong/VST_data/mpk_runs/dkl_bcs_swap_seed1/checkpoint_last.pt",
+  "conditions": {
+    "full": {
+      "n_images": 1200,
+      "n_shape": 241,
+      "n_texture": 348,
+      "n_other": 611,
+      "shape_bias": 0.4091680814940577,
+      "shape_accuracy": 0.20083333333333334,
+      "texture_accuracy": 0.29,
+      "shape_bias_ci95": [
+        0.3716631944444444,
+        0.4483361292962356
+      ]
+    },
+    "magno_only": {
+      "n_images": 1200,
+      "n_shape": 254,
+      "n_texture": 378,
+      "n_other": 568,
+      "shape_bias": 0.40189873417721517,
+      "shape_accuracy": 0.21166666666666667,
+      "texture_accuracy": 0.315,
+      "shape_bias_ci95": [
+        0.36509196620893913,
+        0.4409461045630166
+      ]
+    },
+    "parvo_only": {
+      "n_images": 1200,
+      "n_shape": 76,
+      "n_texture": 79,
+      "n_other": 1045,
+      "shape_bias": 0.49032258064516127,
+      "shape_accuracy": 0.06333333333333334,
+      "texture_accuracy": 0.06583333333333333,
+      "shape_bias_ci95": [
+        0.4140504436728395,
+        0.5684995719178082
+      ]
+    }
+  }
+}
