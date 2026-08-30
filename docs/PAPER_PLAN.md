@@ -1407,3 +1407,32 @@ which is the stronger and better-controlled claim anyway.
 4/8 subjects in the trained model (was 3/7). The §14.3 restatement stands
 unchanged: **relative gradient, not double dissociation.** The absolute
 crossover is a property of the untrained network (7/8) and is reported as such.
+
+### 16.3 The gradient is not "the diet model predicts cortex better" — it predicts worse
+
+Median R²_joint / noise ceiling, over reliable voxels, averaged across subjects:
+
+| model | R²/NC | hV4−V1v (norm) |
+|---|---|---|
+| untrained, blur+CS | 0.119 | −0.469 |
+| untrained, no blur | 0.144 | −0.478 |
+| **trained, no diet** (`dkl_base`) | **0.461** | **−0.072** |
+| **trained, with diet** (`thesis`) | **0.423** | **−0.859** |
+
+Two things follow, and the second is the important one.
+
+First, **training improves cortical prediction ~3.5×** (0.12–0.14 → 0.42–0.46).
+The trained models are good encoding models, explaining >40% of the noise
+ceiling, so nothing in §14–§16 rests on a degenerate fit.
+
+Second, and this closes the obvious objection to §15: **the diet model is the
+*worse* aggregate encoder** — 0.423 against 0.461, ~8% lower — while carrying
+essentially all of the ventral gradient (−0.859 against −0.072). Aggregate
+variance explained and regional structure therefore dissociate cleanly, and in
+opposite directions.
+
+So the §15 claim cannot be restated as "the developmental diet makes a better
+model of visual cortex". It does not. It makes a model whose *stream-level
+division of labour* matches the human ventral hierarchy, at a small cost in
+total variance explained. That is a sharper and more falsifiable claim than a
+goodness-of-fit story, and it is the one the data support.
