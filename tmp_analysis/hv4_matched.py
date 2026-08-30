@@ -16,7 +16,10 @@ from scipy import stats as sps
 
 from src.analysis.encoding.stats import load_results
 
-MAIN, CTRL = "untrained_seed0", "untrained_seed0_noblur"
+import sys
+
+MAIN = sys.argv[1] if len(sys.argv) > 1 else "untrained_seed0"
+CTRL = sys.argv[2] if len(sys.argv) > 2 else "untrained_seed0_noblur"
 BANDS = {1: "0.5", 2: "1", 3: "2", 4: "4", 5: "4+"}
 V1V, HV4 = 1, 7          # prf-visualrois labels
 NC_MIN, MIN_VOX = 0.1, 20
@@ -50,7 +53,7 @@ def rep(x, label):
 for kind in ("raw", "norm"):
     print(f"\n{'=' * 70}\nSTATISTIC: {kind}\n{'=' * 70}")
     for m in (MAIN, CTRL):
-        lab = "blur (main)" if m == MAIN else "NO blur (control)"
+        lab = m
         print(f"\n  [{lab}]")
         R = res[m]
         # how many voxels does each ROI have per band?
