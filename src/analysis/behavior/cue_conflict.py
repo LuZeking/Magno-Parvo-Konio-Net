@@ -287,7 +287,17 @@ def main():
                    help="reproduce pre-fix asymmetric mixing (old ckpts)")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--n-boot", type=int, default=2000)
+    p.add_argument("--allow-partial", action="store_true",
+                   help="probe a still-training checkpoint on purpose")
     args = p.parse_args()
+
+    # Same guard as stream_shape_texture.py: `checkpoint_last.pt` is
+    # overwritten every epoch, so reading one mid-run yields a partially
+    # trained network whose report is indistinguishable from a converged one.
+    # That already cost the project a retracted result once (PAPER_PLAN §10.1)
+    # and this entry point was missing the check.
+    if args.checkpoint:
+        features.assert_converged(args.checkpoint, args.allow_partial)
 
     os.makedirs(args.out_dir, exist_ok=True)
     device = "cuda" if torch.cuda.is_available() else "cpu"
