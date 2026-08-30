@@ -50,7 +50,13 @@ PY=/scratch/byrong/anaconda3/envs/mpk/bin/python
 # path made `src.analysis.encoding` unimportable).
 REPO=$SLURM_SUBMIT_DIR
 OUT=$REPO/results/encoding
-CACHE=$REPO/results/encoding/feature_cache/${MODEL_NAME}_subj$(printf %02d "$SUBJECT").npz
+# The feature cache is ~1.2 GB per subject per model and is regenerable, so it
+# must NOT live in the repo: $REPO is on /home, which is quota'd, and a cache
+# write there filled the quota mid-run and killed subject 1 of 26383806 with
+# `OSError: [Errno 122] Disk quota exceeded` after 34 minutes of work. Scratch
+# has hundreds of TB free and is the right home for regenerable intermediates.
+CACHE_DIR=${MPK_FEATURE_CACHE:-/scratch/byrong/VST_data/mpk_feature_cache}
+CACHE=$CACHE_DIR/${MODEL_NAME}_subj$(printf %02d "$SUBJECT").npz
 
 cd "$REPO"
 CKPT_ARG=""
