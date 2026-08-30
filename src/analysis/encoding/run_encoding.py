@@ -25,7 +25,8 @@ import time
 import numpy as np
 import torch
 
-from src.analysis.encoding import banded_ridge, dkl_frontend, features
+from src.analysis.encoding import (banded_ridge, dkl_frontend, features,
+                                    input_bands)
 from src.analysis.encoding import nsd_data
 
 
@@ -41,6 +42,12 @@ def parse_args():
     p.add_argument("--no-lum-cs", action="store_true")
     p.add_argument("--age-months", type=int, default=48)
     p.add_argument("--pca-dim", type=int, default=1000)
+    p.add_argument(
+        "--features", choices=("network", "gabor"), default="network",
+        help="'gabor' replaces the stream network features with oriented "
+             "energy on each stream's own transformed input -- the "
+             "input-level null model of PAPER_PLAN 7.2 item 1",
+    )
     p.add_argument("--n-splits", type=int, default=3,
                    help="CV folds for alpha/gamma selection; cost is linear "
                         "in this")
@@ -82,13 +89,15 @@ def get_features_for_images(args, image_ids: np.ndarray, device: str):
     if args.checkpoint:
         features.assert_converged(args.checkpoint, args.allow_partial)
 
-    model = features.build_model(
-        checkpoint=args.checkpoint,
-        stream_concat=args.stream_concat,
-        stream1_weight=args.stream1_weight,
-        seed=args.seed,
-        device=device,
-    )
+    model = None
+    if args.features == "network":
+        model = features.build_model(
+            checkpoint=args.checkpoint,
+            stream_concat=args.stream_concat,
+            stream1_weight=args.stream1_weight,
+            seed=args.seed,
+            device=device,
+        )
 
     magno_all, parvo_all = [], []
     chunk = 512
@@ -104,9 +113,14 @@ def get_features_for_images(args, image_ids: np.ndarray, device: str):
             age_months=args.age_months,
             device=device,
         )
-        f = features.extract_stream_features(
-            model, x_m, x_p, batch_size=args.batch_size, device=device
-        )
+        if args.features == "gabor":
+            f = input_bands.extract_input_features(
+                x_m, x_p, batch_size=args.batch_size, device=device
+            )
+        else:
+            f = features.extract_stream_features(
+                model, x_m, x_p, batch_size=args.batch_size, device=device
+            )
         magno_all.append(f["magno"])
         parvo_all.append(f["parvo"])
         print(f"  features {start + len(ids)}/{len(image_ids)}", flush=True)
