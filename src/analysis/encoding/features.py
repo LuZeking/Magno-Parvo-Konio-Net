@@ -17,6 +17,7 @@ import torch
 import torch.nn.functional as F
 
 from src.models.pytorch_models import TwoStreamNetwork
+from src.training.standalone_trainer import patch_stream_input_channels
 
 # Children of torchvision resnet* inside stream{1,2}_block1 (sequential):
 # 0 conv1, 1 bn1, 2 relu, 3 maxpool, 4 layer1, 5 layer2, 6 layer3, 7 layer4
@@ -63,12 +64,22 @@ def build_model(
     num_classes: int = 112,
     seed: int = 0,
     device: str = "cpu",
+    in_channels: tuple[int, int] = (1, 1),
 ) -> TwoStreamNetwork:
     """Build a DKL-input TSN; load a checkpoint or return an untrained net.
 
     ``legacy_asymmetric_mixing`` defaults to True because all existing
     checkpoints were trained with the pre-fix forward pass; untrained
     control nets keep the flag of whatever they are compared against.
+
+    ``in_channels`` is (stream1, stream2). Every condition uses (1, 1) except
+    ``dkl_bcs_parvo_highsf``, which feeds stream 2 untransformed luminance +
+    red-green stacked and therefore needs (1, 2). It is threaded through the
+    trainer's own ``patch_stream_input_channels`` so the probe builds the
+    identical architecture rather than a lookalike. Without it, loading a
+    parvo_highsf checkpoint raises on the stem-conv shape -- load_state_dict
+    tolerates missing/unexpected KEYS under strict=False but never a shape
+    mismatch, so this is a loud failure, not a silent random layer.
     """
     torch.manual_seed(seed)
     model = TwoStreamNetwork(
@@ -81,6 +92,8 @@ def build_model(
         stream1_weight=stream1_weight,
         legacy_asymmetric_mixing=legacy_asymmetric_mixing,
     )
+    if tuple(in_channels) != (1, 1):
+        patch_stream_input_channels(model, in_channels[0], in_channels[1])
     if checkpoint is not None:
         state = torch.load(checkpoint, map_location="cpu", weights_only=False)
         if "state_dict" in state:

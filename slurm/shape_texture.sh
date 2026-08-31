@@ -12,7 +12,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=02:00:00
-#SBATCH --array=0-11%4
+#SBATCH --array=0-13%4
 #SBATCH --output=slurm/logs/shptex_%A_%a.out
 
 set -euo pipefail
@@ -49,6 +49,8 @@ CONFIG=(
   "dkl_bcs_seed0_trained|$RUNS/dkl_bcs_seed0/checkpoint_last.pt|"
   "dkl_bcs_seed1_trained|$RUNS/dkl_bcs_seed1/checkpoint_last.pt|"
   "dkl_bcs_seed2_trained|$RUNS/dkl_bcs_seed2/checkpoint_last.pt|"
+  "dkl_bcs_parvo_highsf_seed1_trained|$RUNS/dkl_bcs_parvo_highsf_seed1/checkpoint_last.pt|--parvo-highsf"
+  "dkl_bcs_parvo_highsf_seed2_trained|$RUNS/dkl_bcs_parvo_highsf_seed2/checkpoint_last.pt|--parvo-highsf"
 )
 
 IFS='|' read -r NAME CKPT EXTRA <<< "${CONFIG[$SLURM_ARRAY_TASK_ID]}"

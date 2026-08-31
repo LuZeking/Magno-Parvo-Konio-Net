@@ -77,6 +77,12 @@ def main() -> None:
     p.add_argument("--transform-target", default="magno",
                    choices=("magno", "parvo"))
     p.add_argument("--stream1-weight", type=float, default=0.5)
+    p.add_argument("--parvo-highsf", action="store_true",
+                   help="biologically corrected parvo input: stream 2 gets "
+                        "untransformed luminance + rg (2 channels). Sets "
+                        "in_channels=(1,2); required for the "
+                        "dkl_bcs_parvo_highsf checkpoints and wrong for "
+                        "every other condition.")
     p.add_argument("--pca-dim", type=int, default=256)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--batch-size", type=int, default=32)
@@ -105,11 +111,13 @@ def main() -> None:
         rgb, ch_min, ch_max,
         lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs,
         transform_target=args.transform_target, device="cpu",
+        parvo_highsf=args.parvo_highsf,
     )
 
     model = features.build_model(
         checkpoint=args.checkpoint, stream1_weight=args.stream1_weight,
         seed=args.seed, device=device,
+        in_channels=(1, 2) if args.parvo_highsf else (1, 1),
     )
     model.eval()
     feats = features.extract_stream_features(

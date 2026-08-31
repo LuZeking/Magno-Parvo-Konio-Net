@@ -174,6 +174,7 @@ def magno_parvo_inputs(
     age_months: int = DEFAULT_AGE_MONTHS,
     device: str = "cpu",
     transform_target: str = "magno",
+    parvo_highsf: bool = False,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Full front end: RGB uint8 -> (magno input, parvo input).
 
@@ -184,12 +185,24 @@ def magno_parvo_inputs(
     contrast-sensitivity cut are applied to the rg channel instead, which
     dissociates "which transformation" from "which chromatic channel" as
     the cause of any stream difference.
+
+    ``parvo_highsf=True`` is the biologically corrected parvo input: stream 2
+    receives UNTRANSFORMED high-acuity luminance stacked with rg (2 channels),
+    because real parvocellular cells carry both. It mirrors
+    ``standalone_trainer.StreamInputBuilder`` exactly -- note that the
+    luminance it stacks is the raw one, captured before any transform is
+    written back, not the blurred copy magno receives. Requires
+    ``features.build_model(in_channels=(1, 2))``.
     """
     if transform_target not in ("magno", "parvo"):
         raise ValueError(f"transform_target={transform_target!r}")
     x_lum, x_rg = rgb_to_stream_inputs(rgb_uint8, ch_min, ch_max)
     x_lum = x_lum.to(device)
     x_rg = x_rg.to(device)
+    # Captured before the transform is written back below: parvo_highsf feeds
+    # stream 2 the UNTRANSFORMED luminance, so taking it afterwards would hand
+    # parvo the blurred copy and silently make this the wrong condition.
+    raw_lum, raw_rg = x_lum, x_rg
 
     target = x_lum if transform_target == "magno" else x_rg
     if lum_blur:
@@ -200,4 +213,6 @@ def magno_parvo_inputs(
         x_lum = target
     else:
         x_rg = target
+    if parvo_highsf:
+        return x_lum, torch.cat([raw_lum, raw_rg], dim=1)
     return x_lum, x_rg

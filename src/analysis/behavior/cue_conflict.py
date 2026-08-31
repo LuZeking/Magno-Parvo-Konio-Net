@@ -292,6 +292,12 @@ def main():
                         "path always uses features.build_model's default")
     p.add_argument("--legacy-mixing", action="store_true",
                    help="reproduce pre-fix asymmetric mixing (old ckpts)")
+    p.add_argument("--parvo-highsf", action="store_true",
+                   help="biologically corrected parvo input: stream 2 gets "
+                        "untransformed luminance + rg (2 channels). Sets "
+                        "in_channels=(1,2); required for the "
+                        "dkl_bcs_parvo_highsf checkpoints and wrong for "
+                        "every other condition.")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--n-boot", type=int, default=2000)
     p.add_argument("--allow-partial", action="store_true",
@@ -344,6 +350,7 @@ def main():
         legacy_asymmetric_mixing=args.legacy_mixing,
         seed=args.seed,
         device=device,
+        in_channels=(1, 2) if args.parvo_highsf else (1, 1),
     )
 
     all_logits: dict[str, list[np.ndarray]] = {}
@@ -355,6 +362,7 @@ def main():
             lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs,
             age_months=args.age_months, device=device,
             transform_target=args.transform_target,
+            parvo_highsf=args.parvo_highsf,
         )
         got = stream_logits(model, x_m, x_p, device=device)
         for k, v in got.items():

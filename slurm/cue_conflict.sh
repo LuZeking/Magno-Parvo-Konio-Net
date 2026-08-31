@@ -21,7 +21,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=02:00:00
-#SBATCH --array=0-11
+#SBATCH --array=0-13
 #SBATCH --output=slurm/logs/cueconf_%A_%a.out
 
 set -euo pipefail
@@ -48,6 +48,8 @@ CONFIG=(
   "dkl_bcs_swap_seed1|$RUNS/dkl_bcs_swap_seed1/checkpoint_last.pt|--transform-target parvo"
   "thesis_dvd_trans|$TCK/dkl_blur_cs_dvd_trans/epoch=147-step=152292.ckpt|--stream1-weight 0.5"
   "thesis_s1_90|$TCK/dkl_blur_cs_s1_90/epoch=147-step=152292.ckpt|--stream1-weight 0.9"
+  "dkl_bcs_parvo_highsf_seed1|$RUNS/dkl_bcs_parvo_highsf_seed1/checkpoint_last.pt|--parvo-highsf"
+  "dkl_bcs_parvo_highsf_seed2|$RUNS/dkl_bcs_parvo_highsf_seed2/checkpoint_last.pt|--parvo-highsf"
 )
 
 IFS='|' read -r NAME CK EXTRA <<< "${CONFIG[$SLURM_ARRAY_TASK_ID]}"
