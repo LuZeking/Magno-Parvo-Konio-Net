@@ -2110,3 +2110,42 @@ repair; task 16 is the file that was wrong.
 
 **Do not re-report any `dkl_base_seed0_trained` n=8 number until 26399760
 lands.** Until then quote seed1, or seed0 at n=7.
+
+### 22.8 Figure 1 contains the contaminated subject (for the other session)
+
+`results/figures/fig1_data.npz` was built 2026-08-30 22:59, i.e. *after* the
+bad `dkl_base_seed0_trained_subj01.npz` landed at 06:06 that morning. Its
+`nodiet_s0__profile / __centred / __rho` arrays are (8, 7) over subjects 1-8
+and therefore include the contaminated subject in row 0. The `nodiet_s1`,
+`diet_thesis`, `diet_ours_s0` and both `untrained_*` panels are unaffected.
+
+`fig1_diet_gradient.pdf/png` and the caption must be regenerated once 26399760
+lands. This is not a redraw for taste — one of the four trained rows is wrong.
+Per §22.5 the correction moves the no-diet row *further* from the diet rows,
+so the figure's message does not change and its contrast gets cleaner.
+
+Since §20.5 already requires a Figure 1 revision (relabelling the untrained arm
+as a front-end validation after §19), both changes should be made in the same
+pass by whoever owns the figure. This session is not touching it — see §21.
+
+### 22.9 Verification status of the §7.3b code (job 26399760)
+
+Tested before submission, not after:
+
+- `prepare_band` with an extra design: extra receives the training mu, the
+  training degenerate-dimension mask and the training scale; with
+  `Xb_extra=None` the train/test outputs are bit-identical to before.
+- `fit_banded` with a synthetic design whose magno band carries the shape
+  label and whose parvo band carries the texture label: `pred_extra_*` come
+  back at (n_extra, n_voxels), the parvo-band VSB is strongly negative as
+  constructed, and with no extra design the returned keys and `r2_joint` are
+  unchanged.
+- Full cue-conflict path end to end on a 64-image subset: 1200 images listed
+  (same-cue excluded, 16 shapes x 75, 16 textures), front end, features, PCA
+  projection, VSB, npz round-trip. NB the subset returns VSB = -1 because the
+  first 64 images are all `airplane` and shape variance is identically zero
+  there -- the correct degenerate answer, not a failure.
+
+Not yet exercised: the voxel-chunked concatenation of `pred_extra_*` along the
+voxel axis (the array runs with `--voxel-chunk 0`, a single chunk, so this
+path is not hit) and the real 1200-image fit.
