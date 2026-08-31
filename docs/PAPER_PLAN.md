@@ -2998,3 +2998,30 @@ This is independent of the §22.2 feature-identity check and of the §22.4
 outlier analysis, and agrees with both. Tasks 16-23 of 26399760 will overwrite
 this cache with a provenance-stamped, correctly-blurred version; the PR asymmetry
 should disappear, and that is a cheap post-hoc verification the repair worked.
+
+### 27.3 Capacity ladder submitted pre-emptively — job 26402571
+
+`slurm/encode_cc_pca.sh`, array 0-15%6, one array over (pca-dim x subject):
+
+| tasks | output model | PCA dims |
+|---|---|---|
+| 0-7 | `dkl_bcs_seed0_pca16` | 16 (matched to the bank's PR ~15) |
+| 8-15 | `dkl_bcs_seed0_pca64` | 64 (intermediate) |
+
+Run **before** the null reports, deliberately: §27.1 says a negative null would
+be uninterpretable without it, and pre-committing removes any appearance of
+having chosen the control after seeing which way the result went.
+
+Implementation note worth keeping: the job passes a `CACHE_NAME`
+(`dkl_bcs_seed0_trained`) distinct from its output `MODEL_NAME`. PCA is applied
+*after* caching, so the features are byte-identical to the parent run and the
+provenance-stamped cache is reused — the ~25 min extraction is skipped and the
+ridge over 16-64 features is cheap, so these are much shorter than their
+parents. The provenance guard (§22.6) still validates the reuse, which is
+exactly the case it was written for: a deliberate cache share across two model
+names, checked rather than assumed.
+
+Reading the ladder, decided now: if the hV4/LO step is present at 1000 dims and
+absent at 16, capacity matters and a negative Gabor null is uninterpretable. If
+the step is present at all three, capacity does not explain it and a negative
+null means the front end genuinely lacks the structure.
