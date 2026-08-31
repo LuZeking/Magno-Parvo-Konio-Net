@@ -2711,3 +2711,64 @@ cell, with the seed spread shown, not as a p-value.
 - `26401311` / `26401312` — probe and cue-conflict for `rgb_tsn` seeds 0–2.
 
 All four on `--partition=main`, no `--gres`, as CPU-only work.
+
+## §26 The §7.3b profile at n=7, both statistics — and what actually survives
+
+`dkl_bcs_seed0_trained`, subjects 1-6 and 8 (subject 7 still running in
+26399760). n=7 puts the exact Wilcoxon floor at p=.0156, so significance is
+reachable for the first time. `tmp_analysis/cc_panel.py` now computes both
+statistics required by §8:
+
+    norm = (eta2_s - eta2_t)/(eta2_s + eta2_t)   [VSB, bounded]
+    raw  =  eta2_s - eta2_t                      [unbounded]
+
+### 26.1 Everything below agrees on both statistics
+
+| quantity | norm | raw | subjects | p |
+|---|---|---|---|---|
+| stream dissociation magno − parvo | +1.541 | +0.620 | 7/7 | .0156 |
+| profile hV4 − V1 (uncorrected) | −0.467 | −0.190 | 7/7 | .0156 |
+| after removing SPI | −0.150 | −0.071 | 6/7 | .0312 |
+| after removing SPI x predictability | −0.096 | −0.057 | 6/7 | .0312 |
+
+The confound share is stable across statistics and subjects (SPI removes
+.170/.166 of the variance; SPI x predictability .219/.215). So §24.6's
+conclusion holds at n=7 and under the project's both-statistics rule: the
+hV4/LO texture shift is **not** reducible to band weighting or to fit quality.
+
+### 26.2 But it is a step at hV4/LO, NOT a hierarchical gradient
+
+This wording matters and §24.6 got it wrong by implication. Monotonicity
+along V1v..hV4:
+
+| | uncorrected | − SPI | − SPI x predictability |
+|---|---|---|---|
+| rho (norm) | **−0.663** (0/7 positive) | −0.087 (2/7) | −0.066 (2/7) |
+| rho (raw) | **−0.597** (1/7) | −0.077 (3/7) | −0.010 (3/7) |
+
+The monotone gradient **is** the band-weighting effect: it collapses to
+approximately zero once SPI is removed, and the sign becomes inconsistent
+across subjects. What survives residualisation is not a gradient at all --
+the residual profile is *positive* through V1d..V3d (+0.03 to +0.17, norm)
+and negative only at hV4 and LO.
+
+So the correct statement is: **after controlling band preference and fit
+quality, hV4 and LO stand apart from every earlier area as texture-shifted.**
+It is a categorical step at the two areas, not a progressive shift along the
+hierarchy. Do not write "the model predicts a shape-to-texture gradient";
+write that it places a texture-dominated readout specifically at hV4/LO.
+
+This is still the claim that collides with human LO's strong shape/object
+selectivity, so §24.6's tension stands and is if anything more pointed -- it
+is localised to exactly the areas where the discrepancy is sharpest.
+
+### 26.3 Not yet settled
+
+- Subject 7 outstanding; n=8 will move the floor to p=.0078.
+- **The input-level null (§25, job 26401261) is the control that decides
+  whether any of this is about the network at all.** Nothing in §26 should be
+  written into the manuscript before that column exists -- §19 is the
+  precedent, where a comparable-looking cortical profile turned out to be a
+  property of the front end.
+- The no-diet column (tasks 16-23 of 26399760) is needed to separate "the
+  network builds it" from "the diet builds it" (§25.2).
