@@ -120,3 +120,98 @@ for model in models:
         note = "  <- band mixing, see §24.3" if band == "joint" else "  <- within-band control"
         print(f"   {band:6s} mean rho {f.mean():+.4f}  p={p:.4f}  "
               f"{int((f>0).sum())}/{f.size}{note}")
+
+    # ---- 4. SPI-residualised profile: the non-circular remainder ----
+    # §24.5 established that the raw VSB profile re-expresses the band-mixing
+    # gradient. Two voxels with the SAME SPI can still differ in VSB, though,
+    # depending on WHICH features inside a band they read out -- and that
+    # remainder is not determined by the variance partition. Removing all
+    # dependence on SPI at the resolution of 20 quantile bins (stronger than
+    # linear residualisation: it kills any monotone relation) leaves exactly
+    # that remainder. If its ROI profile is flat, §7.3b is fully a
+    # re-description of leg (c); if it is not, the model predicts shape/texture
+    # organisation beyond band weighting.
+    print("\n4. SPI-residualised VSB profile  [the non-circular remainder]")
+    NBIN = 20
+    rprof, shares = [], []
+    for s in subs:
+        z = R[s]
+        rel = z["noise_ceiling"] > NC_MIN
+        v, spi = z["cc_joint_vsb"].copy(), z["spi"]
+        m = rel & np.isfinite(v) & np.isfinite(spi)
+        resid = np.full(v.shape, np.nan)
+        edges = np.nanquantile(spi[m], np.linspace(0, 1, NBIN + 1))
+        edges[0], edges[-1] = -np.inf, np.inf
+        b = np.digitize(spi, edges) - 1
+        for k in range(NBIN):
+            sel = m & (b == k)
+            if sel.sum() >= 5:
+                resid[sel] = v[sel] - np.median(v[sel])
+        ok = np.isfinite(resid) & m
+        shares.append(1.0 - np.nanvar(resid[ok]) / np.nanvar(v[ok]))
+        vroi = z["roi_prf-visualrois"]
+        row = [med(resid, ok & (vroi == k)) for k in sorted(VIS)]
+        try:
+            kast = nsd_data.load_roi_labels(s, "Kastner2015",
+                                            nsd_data.load_mask(s, "nsdgeneral"))
+            row.append(med(resid, ok & np.isin(kast, list(KAST_LO))))
+        except Exception:
+            row.append(np.nan)
+        rprof.append(row)
+    rprof = np.array(rprof)
+    print(f"   variance in VSB explained by SPI alone: "
+          f"{np.mean(shares):.3f} (per subject {' '.join(f'{x:.2f}' for x in shares)})")
+    print("   " + "  ".join(f"{n:>7s}" for n in names))
+    print("   " + "  ".join(f"{x:+7.3f}" for x in np.nanmean(rprof, 0)))
+    dd = (rprof[:, 6] - np.nanmean(rprof[:, [0, 1]], 1))
+    dd = dd[np.isfinite(dd)]
+    if dd.size >= 5:
+        print(f"   residual hV4 - V1: {dd.mean():+.4f}  p={sps.wilcoxon(dd)[1]:.4f}  "
+              f"{int((dd>0).sum())}/{dd.size} subjects")
+    else:
+        print(f"   residual hV4 - V1: {dd.mean():+.4f}  (n={dd.size}, need 5 for Wilcoxon)")
+
+    # ---- 5. stricter control: residualise on SPI *and* predictability ----
+    # SPI is only a summary of the band weighting, and a voxel the model
+    # predicts poorly has a noisier VSB. Subtracting the median within each
+    # cell of a 10x10 grid of (SPI decile) x (r2_joint_nc decile) removes both
+    # at once, so anything left cannot be band preference or fit quality.
+    print("\n5. Residualised on SPI x predictability (10x10 cells)")
+    r2prof = []
+    for s in subs:
+        z = R[s]
+        rel = z["noise_ceiling"] > NC_MIN
+        v, spi = z["cc_joint_vsb"].copy(), z["spi"]
+        q = z["r2_joint_nc"] if "r2_joint_nc" in z.files else z["r2_joint"]
+        m = rel & np.isfinite(v) & np.isfinite(spi) & np.isfinite(q)
+        def dig(x, n=10):
+            e = np.nanquantile(x[m], np.linspace(0, 1, n + 1))
+            e[0], e[-1] = -np.inf, np.inf
+            return np.digitize(x, e) - 1
+        ba, bb = dig(spi), dig(q)
+        resid = np.full(v.shape, np.nan)
+        for ka in range(10):
+            for kb in range(10):
+                sel = m & (ba == ka) & (bb == kb)
+                if sel.sum() >= 5:
+                    resid[sel] = v[sel] - np.median(v[sel])
+        ok = np.isfinite(resid) & m
+        vroi = z["roi_prf-visualrois"]
+        row = [med(resid, ok & (vroi == k)) for k in sorted(VIS)]
+        try:
+            kast = nsd_data.load_roi_labels(s, "Kastner2015",
+                                            nsd_data.load_mask(s, "nsdgeneral"))
+            row.append(med(resid, ok & np.isin(kast, list(KAST_LO))))
+        except Exception:
+            row.append(np.nan)
+        r2prof.append(row)
+    r2prof = np.array(r2prof)
+    print("   " + "  ".join(f"{n:>7s}" for n in names))
+    print("   " + "  ".join(f"{x:+7.3f}" for x in np.nanmean(r2prof, 0)))
+    dd2 = (r2prof[:, 6] - np.nanmean(r2prof[:, [0, 1]], 1))
+    dd2 = dd2[np.isfinite(dd2)]
+    if dd2.size >= 5:
+        print(f"   residual hV4 - V1: {dd2.mean():+.4f}  p={sps.wilcoxon(dd2)[1]:.4f}  "
+              f"{int((dd2>0).sum())}/{dd2.size} subjects")
+    else:
+        print(f"   residual hV4 - V1: {dd2.mean():+.4f}  (n={dd2.size}, need 5 for Wilcoxon)")

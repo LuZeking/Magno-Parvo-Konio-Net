@@ -2491,3 +2491,47 @@ so it is a prediction the architecture actually makes.
 A genuinely independent test would need measured shape/texture selectivity in
 the same voxels, which requires cue-conflict fMRI this project does not have.
 Absent that, §7.3b is: leg (a) measured (§24.2), plus a disclosed tension.
+
+### 24.6 §24.5 was too strong — the profile survives residualisation (n=3)
+
+§24.5 argued from the *mechanism* that the ROI profile must be the band-mixing
+gradient re-expressed, and concluded §7.3b "does not supply an independent
+cortical test". That was an inference, not a measurement. Measuring it:
+
+**SPI explains 0.161 of the variance in joint VSB** (per subject 0.18, 0.17,
+0.14). The confound is real but accounts for a *sixth* of the signal, not the
+bulk of it. "Largely a re-description of leg (c)" is wrong.
+
+Removing the dependence non-parametrically — subtract the median VSB within
+each of 20 SPI quantile bins, which kills any monotone relation, not merely a
+linear one — and again within each cell of a 10x10 (SPI decile) x
+(r2_joint_nc decile) grid, which additionally removes fit quality:
+
+| profile | V1v | V1d | V2v | V2d | V3v | V3d | hV4 | LO | hV4−V1 |
+|---|---|---|---|---|---|---|---|---|---|
+| raw | −0.101 | +0.014 | −0.014 | −0.076 | −0.157 | −0.181 | −0.543 | −0.536 | — |
+| − SPI | +0.008 | +0.137 | +0.167 | +0.129 | +0.189 | +0.137 | **−0.111** | −0.039 | −0.184 |
+| − SPI x predictability | −0.093 | +0.058 | +0.038 | +0.088 | +0.102 | +0.099 | **−0.105** | −0.046 | −0.088 |
+
+The effect attenuates substantially (hV4 −0.543 → −0.111 → −0.105) but does
+not vanish, and hV4/LO remain the most texture-shifted areas under both
+controls. Whatever survives cannot be band preference and cannot be fit
+quality, because both were removed within-subject at decile resolution.
+
+**Why a remainder exists at all**, which §24.5 missed: SPI summarises *which
+band* explains a voxel, but not *which features inside that band* it reads
+out. Two voxels with identical SPI can weight shape-tuned and texture-tuned
+magno features differently, and that degree of freedom is not touched by the
+variance partition.
+
+**Revised status of §7.3b.** It supplies (i) leg (a), §24.2, untouched by any
+of this; and (ii) a genuine, if modest, cortical prediction — the model places
+its texture-dominated readout at hV4/LO, beyond what band weighting explains.
+Since human LO is strongly shape-selective, that remains the tension flagged
+in §24.5, and it is now a *sharper* tension because it cannot be dismissed as
+an artefact of the variance partition.
+
+**n = 3 subjects, one model.** No Wilcoxon is possible below n=5 and none is
+reported. Everything here is provisional until the cell completes; the
+attenuation from −0.184 to −0.088 between the two controls is itself large
+enough that the n=8 numbers could land either side of meaningful.
