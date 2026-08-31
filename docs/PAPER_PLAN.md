@@ -3025,3 +3025,31 @@ Reading the ladder, decided now: if the hV4/LO step is present at 1000 dims and
 absent at 16, capacity matters and a negative Gabor null is uninterpretable. If
 the step is present at all three, capacity does not explain it and a negative
 null means the front end genuinely lacks the structure.
+
+### 26.6 Second diet model replicates (n=4, descriptive) — and a fixed display bug
+
+`thesis_dvd_trans` (Lightning checkpoint, thesis codebase) against
+`dkl_bcs_seed0_trained` (our standalone trainer). Different codebases,
+different training runs, same diet:
+
+| quantity | dkl_bcs_seed0 (n=8) | thesis_dvd_trans (n=4) |
+|---|---|---|
+| magno − parvo, norm | +1.534 | +1.572 (4/4) |
+| magno − parvo, raw | +0.616 | **+0.615** (4/4) |
+| profile hV4 − V1, norm | −0.447 | −0.489 (4/4 negative) |
+| profile hV4 − V1, raw | −0.182 | **−0.183** (4/4 negative) |
+| − SPI, norm | −0.128 | −0.172 (4/4 negative) |
+| − SPI x predictability, norm | −0.080 | −0.121 (4/4 negative) |
+
+The raw statistic agrees to three decimals on two independent rows. n=4 admits
+no Wilcoxon (floor is p=.125 at n=4, and even that needs 4/4), so this is
+descriptive — but the agreement is close enough that the §26.5 result is
+clearly not a property of one training run.
+
+**Bug fixed in `tmp_analysis/cc_panel.py`.** Its `wil()` helper returned a
+hardcoded `0` for the positive count whenever n < 5, so the n=4 table first
+printed "`magno - parvo +1.5715 ... 0/4 positive`" — a +1.57 mean next to a
+count implying every subject was negative. The p-value withholding below n=5 is
+correct and stays; only the count was wrong. No number previously recorded in
+this plan came from that path (all committed tables are n>=5), but the interim
+n=3/n=4 console output in this session's log should not be trusted for counts.

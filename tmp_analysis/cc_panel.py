@@ -55,10 +55,17 @@ def med(v, sel):
 
 
 def wil(x):
+    """mean, p, n_positive, n. Below n=5 the exact Wilcoxon cannot reach any
+    useful p, so p is withheld -- but the positive COUNT is still reported.
+    (An earlier version returned 0 here, which printed "0/4 positive" beside a
+    +1.57 mean and read as a sign reversal.)"""
     x = np.asarray(x)[np.isfinite(x)]
+    if x.size == 0:
+        return np.nan, np.nan, 0, 0
+    n_pos = int((x > 0).sum())
     if x.size < 5:
-        return x.mean() if x.size else np.nan, np.nan, 0, x.size
-    return x.mean(), sps.wilcoxon(x)[1], int((x > 0).sum()), x.size
+        return x.mean(), np.nan, n_pos, x.size
+    return x.mean(), sps.wilcoxon(x)[1], n_pos, x.size
 
 
 def report(label, x, extra=""):
