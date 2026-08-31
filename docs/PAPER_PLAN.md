@@ -2154,23 +2154,22 @@ path is not hit) and the real 1200-image fit.
 
 ## §25 `parvo_highsf` closes the conjunction into a 2×2 on the INPUT factors
 
-**n=1 so far** (`dkl_bcs_parvo_highsf_seed2`, cue-conflict). Seed 1 is still
-running (26399701_12, stalled on a slow node); seed 0 is at 139/150. Treat the
-numbers as provisional until n=2, but the direction is unambiguous and it is the
-prediction §21.3 was most exposed to.
+**n=2, confirmed** (`dkl_bcs_parvo_highsf` seeds 1 and 2, cue-conflict; seed 0
+is at 139/150 and excluded). This was the prediction the conjunction claim was
+most exposed to, and the two seeds agree to within 0.006 on every condition.
 
 The condition gives stream 2 **untransformed high-acuity luminance + rg** (2
 channels) — the biologically corrected parvo input, since real parvocellular
 cells carry both. So parvo gets the achromatic *carrier* without the
 developmental *transform*.
 
-| condition | shape bias |
-|---|---|
-| magno_only | 0.803 [.762,.841] |
-| **parvo_only** | **0.402** [.364,.443] |
-| full | 0.491 [.451,.532] |
+| condition | seed 1 | seed 2 | mean |
+|---|---|---|---|
+| magno_only | 0.798 [.756,.839] | 0.803 [.762,.841] | **0.801** |
+| **parvo_only** | 0.390 [.352,.431] | 0.402 [.364,.443] | **0.396** |
+| full | 0.516 [.476,.555] | 0.491 [.451,.532] | **0.504** |
 
-### 22.1 The prediction holds — and the input factors now form a clean 2×2
+### 25.1 The prediction holds — and the input factors now form a clean 2×2
 
 §21.3 claimed only an achromatic carrier can be driven into shape bias. The
 sharper test is whether the carrier *alone* suffices. It does not:
@@ -2178,7 +2177,7 @@ sharper test is whether the carrier *alone* suffices. It does not:
 | | **no transform** | **with transform** |
 |---|---|---|
 | **chromatic carrier (rg)** | 0.364 (no-diet parvo) | 0.484 (swap parvo) |
-| **achromatic carrier (lum)** | **0.402 (parvo_highsf parvo)** | **0.878 (diet magno)** |
+| **achromatic carrier (lum)** | **0.396 (parvo_highsf parvo)** | **0.878 (diet magno)** |
 
 Both single factors land at 0.36–0.48. Only the **conjunction** reaches 0.878.
 That is an interaction, not two additive main effects, and it is now measured on
@@ -2187,26 +2186,43 @@ statement in the project: **the shape bias is produced by the developmental
 low-pass transform applied specifically to an achromatic channel, and neither
 factor alone does anything much.**
 
-### 22.2 The capacity confound is not merely argued away — it is measured
+**The linear probe replicates the same 2x2 independently** (job 26399698,
+`results/shape_texture/dkl_bcs_parvo_highsf_seed{1,2}_trained.json`,
+magno/parvo shape−texture bias, n=2 agreeing to 0.017):
+
+| | **no transform** | **with transform** |
+|---|---|---|
+| **chromatic carrier (rg)** | −0.504 (no-diet parvo) | −0.155 (swap parvo) |
+| **achromatic carrier (lum)** | **−0.266 (parvo_highsf parvo)** | **+0.819 (diet magno)** |
+
+The probe version is the more interpretable of the two because zero is
+meaningful (it is the shape/texture sign flip), and the result is sharper:
+**both single factors move parvo substantially toward neutral — −0.504 to
+−0.266 for the carrier alone, −0.504 to −0.155 for the transform alone — and
+neither crosses zero. Only the conjunction does, and it goes all the way to
++0.819.** Two measurement modalities, four cells each, same interaction.
+
+### 25.2 The capacity confound is not merely argued away — it is measured
 
 `parvo_highsf` gives stream 2 an extra input channel, an architectural
 difference from every other condition (disclose this). The confound would
 matter if the extra channel were *weakening* parvo and thereby faking the null.
 It is not — the extra channel demonstrably **helped** parvo:
 
-- parvo 16-way accuracy **0.477**, up from ~0.379 in the standard diet models
-- full accuracy 0.485, up from 0.447
+- parvo 16-way accuracy **0.486** (0.496 / 0.477), up from ~0.379 in the
+  standard diet models -- a ~28% relative gain
+- full accuracy 0.500 (0.515 / 0.485), up from 0.447
 
 So parvo received materially more usable information, got materially better at
-the task, and *still* did not become shape-biased (0.402 vs 0.418 standard).
+the task, and *still* did not become shape-biased (0.396 vs 0.418 standard).
 A capacity confound can only push parvo's competence up, which is the direction
 that would have *helped* it become shape-biased if the carrier were sufficient.
 The null survives its own most favourable confound.
 
-### 22.3 It independently confirms §20.2's averaging account
+### 25.3 It independently confirms §20.2's averaging account
 
-The integrated readout **drops** to 0.491, from 0.675 in the standard diet
-models, even though magno is still strongly shape-biased (0.803). §20.2 argued
+The integrated readout **drops** to 0.504, from 0.675 in the standard diet
+models, even though magno is still strongly shape-biased (0.801). §20.2 argued
 the readout is a competence-weighted average rather than a synergy. This is that
 account's prediction: making parvo a *better* classifier gives its
 texture-biased logits more pull, so the integrated shape bias falls. Predicted
@@ -2216,12 +2232,46 @@ Together with `s1_90` (up-weighting magno raises integrated shape bias to 0.712)
 this brackets the effect from both sides — the readout tracks the mixing weight
 and the relative competence of the streams, and never exceeds its best stream.
 
-### 22.4 One thing to watch at n=2
+### 25.4 The watch item resolves — but NOT the way I first wrote it
 
-magno reads 0.803 here against 0.87–0.89 in the standard diet models. If that
-holds at n=2 it is worth a sentence: when parvo is made competent, magno
-specialises *less*, which would be a division-of-labour effect rather than
-noise. Do not claim it from one seed.
+**Correction to the first draft of this subsection.** From behaviour alone,
+magno read 0.798 / 0.803 against 0.870–0.892 in the standard diet models, and I
+wrote that "when parvo is made competent, magno specialises less". The linear
+probe, which arrived afterwards, **refutes the representational version of that
+claim**:
+
+| measure | standard diet magno | parvo_highsf magno |
+|---|---|---|
+| probe (shape − texture) | +0.819 | **+0.852** (unchanged, if anything higher) |
+| behavioural shape bias | 0.878 | **0.801** (lower) |
+| behavioural 16-way accuracy | ~0.397 | **0.303** (much lower) |
+
+Magno's *representation* is exactly as shape-biased as before. What falls is
+magno's **readout competence** — it classifies far fewer images correctly
+(0.303 vs ~0.397), and behavioural shape bias is computed only over decided
+images, so a weaker decider contributes less to the integrated readout.
+
+Meanwhile parvo's accuracy rises (0.486 vs ~0.379) and full accuracy rises
+(0.500 vs 0.447). So the division of labour is real, but it is a division of
+**classification**, not of representation: parvo takes over more of the task
+while magno keeps representing shape exactly as it did.
+
+That is a better claim than the one I first wrote, and it only became available
+because the two modalities disagreed. It also removes the "specialisation is
+relational" speculation — the front end fixes what magno represents, and what
+changes is how much the readout leans on it. Consistent with §25.3 and §20.2:
+the readout is a competence-weighted average, and here the competences moved
+without the representations moving.
+
+### 25.5 Disclosure
+
+The extra input channel is an architectural difference from every other
+condition (a 2-channel vs 1-channel stem conv, ~64 extra parameters). §25.2
+argues and measures why it cannot manufacture the null, but it must be stated
+in the text rather than left for a reviewer to find. `parvo_highsf` is also not
+yet run through the encoding path, so it contributes to legs (a)/(b) only, not
+to leg (c). Both seeds are covered on both behavioural measures (n=2); seed 0
+(139/150) would take it to n=3.
 
 ---
 
@@ -2287,3 +2337,34 @@ after the repair, folding in all three pending changes:
 Until then `fig1_diet_gradient.{png,pdf}` and `fig1_caption.md` must not be used
 in any draft. A warning banner has been written into `fig1_caption.md` itself so
 the file cannot be picked up innocently.
+
+---
+
+## §23 Process note, 2026-08-31 — two files committed by the wrong session
+
+Commit `ad64e58` (this session, the §7.3b code) used an unrestricted
+`git add -A` and swept in two files belonging to the *other* session:
+
+    results/cue_conflict/dkl_bcs_parvo_highsf_seed2.json
+    results/cue_conflict/dkl_bcs_parvo_highsf_seed2_logits.npz
+
+Verified intact, not truncated mid-write: the npz loads with all five arrays
+at full size (`shapes`/`textures` 1200, `full`/`magno_only`/`parvo_only`
+1200x112), the json parses, and both are byte-identical to the working tree.
+Nothing is lost and nothing needs re-running — they are simply recorded under
+a commit whose message does not mention them.
+
+History is **not** being rewritten to extract them: `mpk-dev` is shared with a
+live session and rewriting under it is worse than a mislabelled commit.
+
+**Rule going forward, both sessions**: in this worktree use path-limited
+`git add <paths>`, never `git add -A`/`git add .`. Two sessions write to
+`results/` and `docs/` concurrently, so an unrestricted add commits whatever
+the other session happens to have on disk at that instant — and unlike this
+case, it could catch a file *during* a write.
+
+Also noted: the index currently holds another session's staged, uncommitted
+work (`docs/PAPER_PLAN.md`, a `parvo_highsf_seed1` result, and
+`tmp_analysis/fix_subsection_numbers.py`). The staging area is shared across
+the worktree, so `git commit` without explicit paths would commit that too.
+This session has committed only explicit paths since.
