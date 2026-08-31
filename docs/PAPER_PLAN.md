@@ -1816,3 +1816,83 @@ or move it to a supplementary panel. Additionally §19's finding that the diet's
 front end *lowers* the input-level gradient (−0.62 -> −0.37) while the
 diet-trained network overtakes anyway is a strong addition to §15 — it rules out
 "the diet just supplies a better input representation". Not yet acted on.
+
+---
+
+## §21 The swap probe on converged checkpoints — quarantine vindicated, §20.1 refined
+
+Job 26399145 (`shape_texture` indices 5–6) re-ran the leg (a) linear probe on
+both `dkl_bcs_swap` seeds at 150/150, replacing the epoch-33 files in
+`results/shape_texture/partial_invalid/`.
+
+| cell | magno | parvo | magno − parvo | n |
+|---|---|---|---|---|
+| untrained, no diet | +0.417 | −0.087 | +0.503 | 1 |
+| untrained, with diet | +0.796 | −0.087 | +0.883 | 1 |
+| trained, no diet | −0.226 | −0.504 | +0.278 | 3 |
+| trained, with diet | **+0.819** | −0.518 | **+1.338** | 3 |
+| **trained, SWAP (converged)** | **−0.236** | **−0.155** | **−0.081** | 2 |
+| trained, SWAP (quarantined, ep33) | −0.175 | −0.225 | +0.050 | 2 |
+| thesis `dvd_trans` | +0.831 | −0.506 | +1.337 | 1 |
+| thesis `s1_90` | +0.818 | −0.617 | +1.435 | 1 |
+
+### 21.1 The quarantine was correct — the sign was not stable
+
+At epoch 33 the swap asymmetry was **+0.050**; at convergence it is **−0.081**.
+The sign flips. Both values are near zero, so no strong claim was ever
+available from either, but the withdrawn §10.1 statement ("the channel swap
+nearly abolishes the asymmetry") was resting on a number that does not survive
+the remaining 78% of training. Quarantining rather than patching was the right
+call, and `partial_invalid/` should be kept as the record.
+
+The converged swap also does not merely *abolish* the asymmetry — it slightly
+**reverses** it (−0.081), which agrees in sign with the cue-conflict swap result
+(§18: magno 0.399 vs parvo 0.484). Two independent measures, same weak
+reversal. Report it as "abolished, with a weak reversal that both measures
+agree on", not as "abolished".
+
+Also clean: swap magno (−0.236) is statistically indistinguishable from no-diet
+magno (−0.226). Removing the diet from the luminance channel returns that
+channel exactly to its no-diet value — no residual effect of the diet being
+present elsewhere in the network.
+
+### 21.2 §20.1's "14%" is a behavioural number, not a universal one — corrected
+
+§20.1 quantified the conjunction from cue-conflict behaviour: the transform
+buys +0.457 on luminance and +0.066 on red-green, a **7x** ratio, "14% of the
+effect". The probe gives the same direction but a different ratio:
+
+| transform applied to | that stream, no diet | with transform | Δ |
+|---|---|---|---|
+| **luminance** | −0.226 | +0.819 | **+1.046** |
+| **red-green** | −0.504 | −0.155 | **+0.349** |
+
+Ratio **3.0x** on representations vs **7x** on behaviour. So "14%" must not be
+quoted as the conjunction's magnitude in general — on the probe the chromatic
+carrier captures **33%** of the benefit. Corrected in the text; §20.1's ratio
+stands only for the behavioural readout.
+
+### 21.3 The sharper form of the conjunction claim
+
+The probe makes the conjunction crisper than a ratio does. The transform helps
+*whichever* carrier receives it, substantially so — red-green moves from −0.504
+to −0.155, i.e. from clearly texture-biased to nearly neutral. But it **never
+crosses zero**. Only luminance is pushed into positive, shape-biased territory
+(+0.819).
+
+**State it as**: the developmental transform reduces texture bias on either
+carrier, but only the achromatic channel can be driven into genuine shape
+bias. This is the quantitative version of §18.4's sentence ("magno is the only
+stream that ever becomes shape-biased, and only the luminance channel can be
+made so") — that sentence is now supported by both the behavioural and the
+representational measure, with the probe supplying the zero-crossing that makes
+it a qualitative distinction rather than a difference of degree.
+
+### 21.4 Consequence for Figure 1C
+
+Figure 1C currently plots magno/parvo arms for diet vs no-diet only. The swap
+arm is now available on converged checkpoints for both measures and is the
+strongest causal control in the project. Adding it makes 1C a three-arm panel
+(diet / no-diet / swap) and lets the zero-crossing in §21.3 be read directly
+off the axis, since the panel already has a zero line. Recommended, together
+with the §20.5 relabelling of the untrained arm. Not yet acted on.
