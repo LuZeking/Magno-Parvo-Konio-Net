@@ -1507,137 +1507,312 @@ hierarchy. Legs (a) and (c) remain the same finding measured two ways.
 
 ---
 
-## §18 LEG (b) HAS NUMBERS — and it does not say what we assumed
+## §18 LEG (b) MEASURED — the third leg agrees with the other two
 
-Job 26391506, 12/12 tasks complete. `results/cue_conflict/*.json`, 1200
-Geirhos cue-conflict images, bootstrap CIs over items, per-stream logit
-decomposition (`full` / `magno_only` / `parvo_only`, the other stream's
-features zeroed before the weighted sum). Model set mirrors the §17 2x2, so
-all three legs now sit on one set of checkpoints.
+Leg (b) — "their integration yields human-like shape-biased behaviour" — had
+never been run on any model. `cue_conflict.py` was written before the
+checkpoints existed and then never invoked, so the claim in the working title
+had numbers for legs (a) and (c) and none for (b). Array 26391416, twelve
+converged models, 1200 usable Geirhos cue-conflict images, B_shape =
+N_shape/(N_shape+N_texture), CI from 2000-item bootstrap.
 
-### 18.1 The numbers
+| model | **B_shape** [CI95] | magno_only | parvo_only | 16-way acc |
+|---|---|---|---|---|
+| untrained, no blur | 0.500 [.416,.583] | 0.568 | 0.503 | 0.125 |
+| untrained, blur+CS | 0.503 [.418,.587] | 0.513 | 0.503 | 0.124 |
+| `dkl_base` s0/s1/s2 (no diet) | .421 / .433 / .394 → **0.416 ± .020** | ~0.42 | ~0.36 | 0.47–0.51 |
+| `dkl_bcs` s0/s1/s2 (diet) | .692 / .686 / .646 → **0.675 ± .025** | **0.87–0.89** | ~0.42 | 0.37–0.45 |
+| `dkl_bcs_swap` s0/s1 | .412 / .409 → **0.411 ± .002** | 0.40 | 0.48 | 0.47–0.49 |
+| thesis `dvd_trans` | **0.697** [.661,.732] | **0.911** | 0.407 | 0.517 |
+| thesis `s1_90` | **0.712** [.678,.748] | 0.904 | 0.299 | 0.538 |
 
-| cell | n | full | magno_only | parvo_only | 16-cls acc |
-|---|---|---|---|---|---|
-| untrained, no diet | 1 | 0.500 | 0.568 | 0.503 | 0.125 |
-| untrained, with diet | 1 | 0.503 | 0.513 | 0.503 | 0.124 |
-| trained, no diet (`dkl_base`) | 3 | 0.416 | 0.421 | 0.364 | 0.494 |
-| trained, with diet (`dkl_bcs`) | 3 | **0.675** | **0.878** | 0.418 | 0.396 |
-| trained, swapped diet | 2 | 0.411 | 0.399 | 0.484 | 0.481 |
-| thesis `dvd_trans` | 1 | 0.697 | 0.911 | 0.407 | 0.517 |
-| thesis `s1_90` | 1 | 0.712 | 0.904 | 0.299 | 0.538 |
+### 18.1 The same 2×2, a third time
 
-### 18.2 What replicates (and it replicates well)
+| | untrained | trained, no diet | trained, with diet |
+|---|---|---|---|
+| leg (a) magno shape bias (§13) | +0.796 | **−0.226** | **+0.819** |
+| leg (b) behavioural B_shape (§18) | **0.50** | **0.416** | **0.675** |
+| leg (c) cortical hV4−V1v (§17) | −0.488 | **−0.149** | **−0.860** |
 
-**The diet raises the integrated network's shape bias, 0.416 -> 0.675**
-(Δ +0.259, non-overlapping bootstrap CIs, 3 seeds vs 3 seeds). The thesis
-Lightning checkpoint independently gives 0.697 — a third codebase, same answer.
+Behaviour starts at the neutral point — untrained models are at B_shape = 0.50,
+i.e. no preference at all — and training moves it in *opposite directions*
+depending on the diet. Three independent measurements (representations,
+behaviour, cortex), three different data types, one pattern. Leg (b) was the
+one that could have broken the story and it does not.
 
-**The entire increase is carried by magno.** magno 0.421 -> 0.878 (Δ +0.457);
-parvo 0.364 -> 0.418 (Δ +0.054). This is the same dissociation as §13/§15,
-now measured a third way. Leg (a) used a linear probe on features; leg (b)
-uses the network's own 16-way decisions. Independent measurements, same
-structure:
+### 18.2 The thesis's behavioural number reproduces
 
-| | leg (a) probe (shape − texture) | leg (b) behaviour (shape bias) |
-|---|---|---|
-| magno, no diet | −0.226 | 0.421 |
-| magno, with diet | +0.817 | 0.878 |
-| parvo, no diet | −0.504 | 0.364 |
-| parvo, with diet | −0.503 | 0.418 |
+`thesis_dvd_trans` gives **0.697** against the thesis's reported **0.677**
+(`plot_behavioral_shape_bias.py`), a difference of 0.020 that sits inside our
+bootstrap CI. This is worth contrasting with §13.2, where the same checkpoint's
+*accuracy* overshot the thesis by 10 points and remains unexplained: the
+behavioural pipeline reproduces the thesis, the accuracy pipeline does not.
+That narrows §13.2 — whatever the discrepancy is, it is in the classification
+evaluation path, not in the checkpoint or the front end.
 
-Parvo is diet-invariant on both measures. Magno is where the diet acts.
+Less good: `thesis_s1_90` gives 0.712 against a reported 0.756, and 0.756 falls
+just outside our CI [.678,.748]. The M-heavy > standard ordering is preserved
+(0.712 > 0.697, as 0.756 > 0.677) but the gap is smaller than the thesis's.
+Report the ordering, not the magnitude.
 
-### 18.3 The swap control, on converged checkpoints — a sharper claim
+### 18.3 The swap control is now decisive, and §10.1 is discharged for behaviour
 
-This replaces the mid-training swap result quarantined in
-`results/shape_texture/partial_invalid/`. Both swap seeds are now at 150/150.
+`dkl_bcs_swap` puts blur+CSF on the chromatic channel instead of the luminance
+one. Behaviour collapses to **0.411**, statistically indistinguishable from the
+no-diet `dkl_base` (0.416) and nowhere near the diet models (0.675). Both swap
+seeds are converged 150/150, so this is *not* the §10.1 problem — the earlier
+swap numbers came from 20%-trained checkpoints and were quarantined in
+`results/shape_texture/partial_invalid/`. For leg (b) that caveat is now
+discharged on converged models.
 
-`--transform-target parvo` applies the *identical* blur + contrast-sensitivity
-transform to the red-green channel instead of luminance. Stream identity is
-unchanged: stream 1 always receives luminance, stream 2 always red-green
-(`dkl_frontend.magno_parvo_inputs`). So the swap dissociates *which
-transformation* from *which chromatic channel*.
+The control therefore rules out the obvious alternative: it is not "whichever
+stream gets the developmental transform becomes the shape stream and drives
+behaviour". Applying the identical transform to parvo does **not** produce a
+shape-biased network. The effect requires the transform on the *luminance*
+channel specifically.
 
-- transform on **luminance**: that stream goes 0.421 -> 0.878 (**+0.457**)
-- transform on **red-green**: that stream goes 0.418 -> 0.484 (**+0.066**)
+### 18.4 The per-stream decomposition answers §2.2
 
-**The transform alone does not produce the shape bias — it is ~7x weaker
-without a luminance carrier.** The shape bias requires the *conjunction* of
-the developmental low-pass transform and the achromatic channel. This is a
-better result than "the diet causes the shape bias," because it is the
-conjunction that is biologically motivated: magnocellular cells are both
-luminance-driven and low-pass, and the model needs both properties, not either
-one. A reviewer asking "is this just blur?" now has an answer: no — the same
-blur on the chromatic channel buys 14% of the effect.
+The thesis's open question was why behaviour follows the magno stream when
+parvo is the better classifier. Zeroing one stream before the weighted sum
+isolates the other exactly (the classifier is linear on that sum):
 
-### 18.4 Leg (b) AS ORIGINALLY FRAMED IS NOT SUPPORTED — reframe required
+- In the diet models, **magno alone is far more shape-biased than the full
+  network** (0.87–0.91 vs 0.65–0.70) while parvo alone is texture-biased
+  (~0.41). The full network's shape bias is magno's, diluted by parvo.
+- In the swap models the asymmetry weakly *reverses* (magno 0.40, parvo 0.48) —
+  the transformed channel is the more shape-biased one — but neither stream is
+  strongly shape-biased and the network is not.
 
-The working claim's leg (b) reads: *"their integration yields human-like
-shape-biased behavior."* Both halves of that fail.
+So the answer is that behaviour follows magno because magno is the only stream
+that ever becomes shape-biased, and only the luminance channel can be made so.
 
-**(i) Integration dilutes, it does not amplify.** In every model, the
-integrated readout is *below* the better stream:
+### 18.5 What must be disclosed
+
+- **The untrained B_shape = 0.50 rests on very few decisions.** Untrained
+  16-way accuracy is 0.124, so only ~150 of 1200 images produce a shape-or-
+  texture answer (n_shape=75, n_texture=74) against ~1050 "other". The CI is
+  correspondingly wide [.416,.587]. Read it as "no preference", not as a
+  precise 0.50.
+- **The diet costs accuracy here too**: 0.37–0.45 against 0.47–0.51 for
+  `dkl_base`, the same ~25%-relative penalty as §10.2. The shape-bias gain is
+  not free and the tradeoff curve must be reported (§2, "required regardless").
+- **`rgb_tsn` is not covered.** It is a 3-channel RGB two-stream model and this
+  entry point builds the 1-channel DKL front end only. The architecture-only
+  control for leg (b) therefore does not yet exist.
+- `dkl_bcs_swap_seed2` (96/150) and all three `parvo_highsf` seeds were still
+  training and are excluded by the convergence guard, which was added to
+  `cue_conflict.py` for this run — it had been added to
+  `stream_shape_texture.py` after §10.1 but never to this entry point.
+
+---
+
+## §19 THE INPUT-LEVEL NULL MODEL — the trained result survives, the untrained panels do not
+
+§7.2 item 1, "the control that decides how much the network matters", run at
+last. A bank of oriented energy filters (4 scales × 8 orientations, quadrature
+energy, 2048 dims/stream) is applied to **each stream's own transformed input**
+and pushed through the identical PCA → banded-ridge → variance-partition path
+(`--features gabor`, jobs 26391744/26391745, n=8 both front ends). If the
+gradient is carried by the input, the ResNet is doing nothing.
+
+### 19.1 The result, hV4−V1v (norm), n=8
+
+| front end | **Gabor input-only** | untrained net | trained net |
+|---|---|---|---|
+| no-blur (no diet) | **−0.6209** | −0.4877 | −0.1669 (`dkl_base` s0) |
+| blur+CS (diet) | **−0.3666** | −0.4691 | −0.8593 / −0.8618 |
+
+Fit quality, median R²/NC over reliable voxels:
+
+| | Gabor input | untrained net | trained net |
+|---|---|---|---|
+| blur+CS | **0.1408** | **0.1384** | 0.386–0.403 |
+| no-blur | **0.1627** | **0.1610** | 0.424 |
+
+### 19.2 What survives: the trained diet result, on both statistics
+
+`gabor_blur_cs` vs the diet-trained models is the one contrast where the raw
+and scale-free statistics **agree**, which is this project's bar (§8):
+
+| contrast | raw | norm | verdict |
+|---|---|---|---|
+| gabor vs thesis `dvd_trans` | −0.0419 vs −0.1746, **p=.008** | −0.3666 vs −0.8593, **p=.008** | **larger in trained** |
+| gabor vs our `dkl_bcs` s0 | −0.0419 vs −0.1759, **p=.008** | −0.3666 vs −0.8618, **p=.008** | **larger in trained** |
+
+**The headline of §15/§17 survives the control it was most exposed to.** The
+diet-trained network's ventral gradient is roughly 2.3× the input model's on
+the scale-free statistic and 4.2× on the raw one, in both codebases. It is not
+a front-end artefact.
+
+### 19.3 What does not survive: the untrained network adds nothing to fit
+
+The untrained ResNet predicts BOLD **no better than oriented energy on its own
+input** — 0.1384 vs 0.1408 (blur+CS) and 0.1610 vs 0.1627 (no-blur), the input
+model marginally *ahead* in both. Whatever the random network computes, it buys
+zero additional explained variance over a Gabor bank.
+
+This forces a correction to §14.5, which proposed keeping the untrained model as
+"the reference showing the gradient exists before learning and sharpens with
+it". That framing is still available but the wording must change: the
+pre-learning gradient is a property of the **front end**, not of the untrained
+network. Any panel that shows the untrained model as evidence about
+architecture is a front-end validation and must be labelled as one.
+
+### 19.4 Two contrasts where the statistics disagree — both unresolved
+
+Per §8 neither may be claimed.
+
+1. **Untrained net vs input null.** raw says the network roughly *doubles* the
+   absolute gradient (−0.1179 vs −0.0419, p=.008; no-blur −0.2081 vs −0.1009,
+   p=.008); norm says the two are indistinguishable (p=.109 and p=.055). The
+   cause is visible in the denominator: total stream-unique variance is
+   0.0294 for the untrained net against 0.0208 for the input model, so the
+   network moves variance from shared into unique **without predicting better**
+   (§19.3). Absolute and relative statements therefore diverge, and both are
+   true of different quantities. The honest summary is that the untrained
+   network sharpens the *magnitude* of stream separation while leaving the
+   *relative* stream preference profile where the input already had it.
+2. **No-diet trained vs input null.** norm says training drops the model below
+   its own input (−0.1669 vs −0.6209, p=.016); raw says no difference
+   (p=.055). Tempting to read as "learning without the diet actively destroys
+   structure the input handed it for free", and the monotonicity is consistent
+   (input ρ=−0.819, 8/8 negative; no-diet trained ρ=−0.512), but one statistic
+   is not enough. **Do not put this in the paper until it is resolved.**
+
+### 19.5 The eccentricity gradient is a front-end property, confirmed
+
+Gabor +0.2221 vs untrained +0.2518, norm **p=.844** — indistinguishable. (Raw
+disagrees, p=.008, for the §19.4 denominator reason.) §8 already demoted
+eccentricity to a front-end validation on the blur control; the input model
+confirms it directly. It is also *absent* in the trained diet model (+0.1009,
+p=.055), so it is not part of the trained claim at all.
+
+### 19.6 Monotonicity, and a subtlety worth keeping
+
+Spearman ρ along V1→V2→V3→hV4, from the global-centring control:
+
+| model | centred hV4−V1v | dz | ρ |
+|---|---|---|---|
+| Gabor, blur+CS | −0.3666 | −2.93 | −0.326 (7/8) |
+| Gabor, no-blur | −0.6209 | −4.04 | −0.819 (8/8) |
+| untrained net | −0.4691 | −2.56 | −0.698 |
+| diet-trained | −0.8593 | −10.86 | −0.973 (8/8) |
+
+The diet's front end *lowers* the input-level gradient (−0.62 → −0.37) and
+weakens its monotonicity (ρ −0.82 → −0.33): blurring luminance removes the
+fine-scale content that gives V1 its magno advantage. Learning then builds it
+back to −0.86 with ρ=−0.97. So the diet does not hand the network a better
+starting point — it hands it a *worse* one, and the diet-trained network
+overtakes anyway. That is a stronger version of §15's claim, and unlike §19.4
+it rests on the contrast that passes both statistics.
+
+### 19.7 Consequences
+
+1. §15/§17's central claim stands and is now defended against the control the
+   plan predicted a reviewer would demand.
+2. Every untrained-model panel is re-labelled a front-end validation (§19.3).
+3. The eccentricity panel is settled as front-end (§19.5), consistent with §8.
+4. Two contrasts are unresolved pending a statistic that both agree on (§19.4).
+5. Still to do: the input-null column for `dkl_base` seed1 and `dkl_bcs` seed2+,
+   and an input-null run against the `swap` front end once its seeds converge.
+
+---
+
+## §20 Three additions to §18, and a coordination note
+
+§18 and this section were written by two sessions independently from the same
+JSONs (see §20.4). §18 stands as the primary write-up; the following three
+points are not in it and change what leg (b) may claim.
+
+### 20.1 Quantify the swap: it is a CONJUNCTION, not a transform effect
+
+§18.3 concludes the swap "does not produce a shape-biased network", which is
+true but leaves the effect unquantified. `transform_target` moves *only* the
+transform between streams — stream 1 always receives luminance, stream 2 always
+red-green (`dkl_frontend.magno_parvo_inputs`) — so the per-stream deltas
+isolate the carrier:
+
+| transform applied to | that stream, no diet | that stream, with transform | Δ |
+|---|---|---|---|
+| **luminance** (magno) | 0.421 | 0.878 | **+0.457** |
+| **red-green** (parvo) | 0.418 | 0.484 | **+0.066** |
+
+The identical transform buys **7x less** on the chromatic carrier — 14% of the
+effect. So the *direction* does follow the transform (in swap the transformed
+stream is the more shape-biased of the two, 0.484 vs 0.399, consistent with
+§18.4's "weakly reverses"), but the *magnitude* requires luminance.
+
+State the claim as a conjunction: **the shape bias requires both the
+developmental low-pass transform and an achromatic carrier; neither alone
+suffices.** This is the biologically motivated version — magnocellular cells
+are both luminance-driven and low-pass — and it is what answers a reviewer
+asking "isn't this just blur?": the same blur on the chromatic channel buys
+14%.
+
+### 20.2 "Integration yields shape-biased behaviour" is unsupported — the
+readout AVERAGES, it does not amplify
+
+§18.4 notes the full network's bias is "magno's, diluted by parvo". That
+dilution is fatal to the working claim's wording for leg (b) ("*their
+integration* yields human-like shape-biased behaviour") and should be recorded
+as a refutation, not an aside. In **every** model the integrated readout is at
+or below the better stream:
 
     full − max(magno, parvo):  diet −0.203, thesis −0.214, s1_90 −0.191,
                                no-diet −0.005, swap −0.073
 
-For the diet cell, full 0.675 [0.65, 0.73] vs magno 0.878 [0.84, 0.90] —
-non-overlapping CIs. The integrated readout behaves like a weighted average of
-its streams, not a synergistic combination. `s1_90` confirms the mechanism:
-up-weighting magno to 0.9 gives *both* the highest integrated shape bias
-(0.712) and the highest accuracy (0.538). There is no evidence of integration
-synergy anywhere in the model set. **Claim "integration yields shape bias"
-is dead; the surviving claim is that the diet gives the network a shape-biased
-stream, and the integrated readout inherits a fraction of it set by the
-mixing weight.**
+For the diet cell full 0.675 [.653,.729] vs magno 0.878 [.839,.901] — CIs do
+not overlap. There is no integration synergy anywhere in the model set, and
+`s1_90` confirms the mechanism rather than contradicting it: up-weighting magno
+to 0.9 yields *both* the highest integrated shape bias (0.712) and the highest
+accuracy (0.538), exactly as a weighted average of two streams predicts.
 
-**(ii) Not human-level.** Human shape bias on these stimuli is far above our
-best (0.712). The honest statement is *directional*, not *matching*: the diet
-moves the integrated network substantially toward the human end and the
-no-diet model sits near the texture-biased CNN regime. Any claim quantifying
-the gap needs Geirhos's published human observer data, which is **not in this
-repo** — do not put a human number in the manuscript until it is downloaded
-and cited. Flagged, not assumed.
+**Surviving claim**: the diet gives the network one shape-biased stream, and
+the integrated readout inherits a fraction of it set by the mixing weight.
+Integration is where shape bias is *lost*, not created. Do not write
+"integration yields".
 
-### 18.5 No usable untrained baseline for leg (b) — disclose
+### 20.3 "Human-like" is not established, and the human data is not here
 
-Both untrained models classify only ~150/1200 images into any of the 16
-categories (12.5% accuracy, 2x the 6.25% chance rate) and return a shape bias
-of 0.500 / 0.503 — a coin flip on a tiny decided subset, with CIs straddling
-0.5 ([0.42, 0.58]).
+Best integrated shape bias in the model set is 0.712; human shape bias on these
+stimuli is far higher. Leg (b) supports a *directional* statement (the diet
+moves the network toward the human end; the no-diet model sits in the
+texture-biased CNN regime) and **not** a matching one. Geirhos's human observer
+data is **not in this repo** — no human number goes into the manuscript until
+it is downloaded and cited. Flagged, not assumed, and not estimated from
+memory.
 
-Consequence: **leg (b) cannot be drawn as an untrained -> trained slopegraph**
-the way legs (a) and (c) are (Figure 1A, 1C). It is a trained-only contrast.
-This is a real asymmetry between the legs and belongs in the text, not hidden
-by plotting the 0.500 as if it were a measured starting point. Leg (a)'s
-linear probe works on untrained networks precisely because it does not require
-the network to classify; leg (b) does.
+Consequence for figures, reinforcing §18.5: because the untrained models decide
+only ~150/1200 images and return a coin-flip 0.50, **leg (b) cannot be drawn as
+an untrained -> trained slopegraph** the way Figure 1A/1C are. §18.1's "training
+moves it in opposite directions" overstates what the untrained cell can carry —
+by §18.5's own disclosure that cell means "no preference", so the honest
+rendering is a trained-only contrast. Leg (a)'s probe works untrained precisely
+because it does not require the network to classify; leg (b) does.
 
-### 18.6 Where this leaves the three-legged claim
+### 20.4 Coordination note (process, worth fixing)
 
-- **(a)** magno/parvo specialise into shape/texture streams — **holds**, and
-  now with a conjunction-level causal control (§18.3).
-- **(b)** ~~integration yields human-like shape-biased behaviour~~ —
-  **reframed**: the diet raises the integrated network's shape bias 0.42 ->
-  0.68 (replicated in 3 seeds + an independent codebase), entirely via magno;
-  integration itself averages rather than amplifies, and the result is
-  directionally human-like, not human-level.
-- **(c)** each stream explains distinct cortical variance — **holds as a
-  relative gradient**, not a double dissociation (§14, §16).
+Two sessions submitted the *same* 12-task cue-conflict array over the identical
+config 20 min apart — 26391416 (23:02) and 26391506 (23:24) — and both wrote a
+§18. The files in `results/cue_conflict/` are from 26391506, which overwrote the
+earlier set; the numbers are identical, so nothing is compromised. Separately,
+this session briefly clobbered §19 and the original §18 by copying the
+out-of-repo `/home/byrong/projects/TSN/PAPER_PLAN.md` (which lagged the repo
+copy) over `docs/PAPER_PLAN.md`; restored from 927f49a.
 
-Three independent measurement modalities — linear probe on features,
-16-way behavioural decisions, and voxelwise encoding of NSD — now agree that
-the diet's function is to protect the magnocellular stream's shape bias during
-learning, and that parvo's texture specialisation is learned and
-diet-independent. That convergence across modalities is the paper.
+**Fix**: `docs/PAPER_PLAN.md` in the repo is now the authoritative copy. The
+out-of-repo file is stale and should not be copied forward again — edit the
+repo copy directly.
 
-### 18.7 Figure implication (not yet acted on)
+### 20.5 §19's consequence for Figure 1 (open)
 
-Figure 1 is full at four panels. Leg (b) is a fourth convergent measure and
-the swap control in §18.3 is the strongest causal statement in the project.
-Options: (i) replace Figure 1C's linear probe with the behavioural measure
-(same idiom, stronger measure, but loses the untrained arm — see §18.5);
-(ii) add leg (b) + swap as Figure 2. Recommend (ii) — the swap control
-deserves its own panel and Figure 1's untrained->trained narrative should not
-be broken. Awaiting instruction.
+§19 finds a Gabor bank predicts BOLD as well as the untrained ResNet, so the
+untrained arm is a **front-end validation, not evidence about architecture**.
+Figure 1A/1B currently lead on the untrained -> trained divergence and the
+caption implies the shared start is a property of the networks. It is not; it is
+a property of the input filters. Either relabel the untrained arm in the caption
+or move it to a supplementary panel. Additionally §19's finding that the diet's
+front end *lowers* the input-level gradient (−0.62 -> −0.37) while the
+diet-trained network overtakes anyway is a strong addition to §15 — it rules out
+"the diet just supplies a better input representation". Not yet acted on.
