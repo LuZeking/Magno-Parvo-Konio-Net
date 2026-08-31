@@ -2912,3 +2912,38 @@ the omission is reasonable.
 `rgb_tsn`'s channels are DKL lum/rg/by, not R/G/B, and this condition alone
 was trained with `RandomGrayscale(p=0.5)`. Both remain disclosure items
 regardless of how the condition is now framed.
+
+### 26.5 FINAL n=8 for the diet cell (`dkl_bcs_seed0_trained`)
+
+All 8 subjects, exact Wilcoxon floor p=.0078. Supersedes the n=5/n=7 tables
+above; those were interim and should not be quoted.
+
+| quantity | norm | raw | p (norm/raw) | subjects |
+|---|---|---|---|---|
+| stream dissociation magno − parvo | **+1.534** | **+0.616** | .0078 / .0078 | 8/8 |
+| profile hV4 − V1, uncorrected | −0.447 | −0.182 | .0078 / .0078 | 8/8 |
+| − SPI | −0.128 | −0.063 | .0391 / .0234 | 6/8, 7/8 |
+| − SPI x predictability | −0.080 | −0.050 | .0391 / .0234 | 6/8, 7/8 |
+| **− SPI x predictability x ecc** | **−0.095** | — | **.0078** | **8/8** |
+
+Both statistics significant on every row, so the §8 rule is met throughout.
+
+**Adding the eccentricity control makes the step stronger, not weaker**
+(−0.080 at 6/8 -> −0.095 at 8/8, p .0391 -> .0078). Eccentricity was
+*opposing* the effect: hV4's foveal bias pushes its residual VSB in the same
+direction as the ROI step, so leaving eccentricity uncontrolled mixes two
+effects of opposite consistency. Matching on it isolates the ROI step and
+makes it unanimous. This is the strongest form of the §26.2 result.
+
+**Monotonicity is gone**, confirming §26.2's wording: rho after residualisation
+is −0.022 (norm) and −0.013 (raw), with 3/8 and 4/8 subjects positive — i.e.
+indistinguishable from zero. The uncorrected rho of −0.59 is band weighting.
+The manuscript says "a texture-dominated readout localised to hV4/LO", never
+"a gradient".
+
+The eccentricity gradient itself is stable at n=8: −0.212, −0.222, −0.110,
++0.121, +0.325 across the five bands.
+
+**Still gated on §25.** `thesis_dvd_trans` has begun landing (subject 3), so
+the second diet model will provide a within-cell replication; the no-diet
+column and the Gabor null remain outstanding.
