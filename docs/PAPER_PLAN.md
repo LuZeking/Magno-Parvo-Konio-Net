@@ -2368,3 +2368,86 @@ work (`docs/PAPER_PLAN.md`, a `parvo_highsf_seed1` result, and
 `tmp_analysis/fix_subsection_numbers.py`). The staging area is shared across
 the worktree, so `git commit` without explicit paths would commit that too.
 This session has committed only explicit paths since.
+
+---
+
+## §24 First §7.3b result (subject 6, diet cell) — and a circularity caveat
+declared before the group analysis
+
+`results/encoding_cc/dkl_bcs_seed0_trained_subj06.npz`, the first task of
+26399760 to land. Recorded now, with the caveat, so the group result cannot be
+framed after seeing it (§7.4's rule).
+
+### 24.1 The refit reproduces the original bit-for-bit
+
+Against `results/encoding/dkl_bcs_seed0_trained_subj06.npz`:
+
+| quantity | max abs difference |
+|---|---|
+| r2_joint, r2_magno, r2_parvo | **0.000e+00** |
+| unique_magno, unique_parvo, spi | **0.000e+00** |
+
+Exactly zero, not merely small. Three things follow: the pipeline is
+deterministic end to end; the §7.3b code changes perturb nothing upstream of
+the extra design; and the un-keyed feature cache for this model/subject was
+in fact sound, since the forced recompute reproduced it exactly. The
+provenance guard (§22.6) costs a recompute and buys proof.
+
+### 24.2 Leg (a), measured for the first time — in the encoding model
+
+Median VSB over reliable voxels, by band (n = 16503):
+
+| band | median VSB | eta2_shape | eta2_texture |
+|---|---|---|---|
+| **magno** | **+0.770** [IQR +0.61, +0.88] | 0.352 | 0.045 |
+| **parvo** | **−0.748** [IQR −0.85, −0.60] | 0.049 | 0.354 |
+| joint | −0.425 | 0.111 | 0.277 |
+
+A near-perfect mirror image, with nothing pinned at the ±1 bounds (0.0% of
+voxels), so it is not a degenerate ratio. The magno stream's predicted
+responses to cue-conflict images are dominated by the **shape** cue by ~8x in
+explained variance; the parvo stream's by the **texture** cue by ~7x.
+
+§7.3 called leg (a) "asserted in the title and tested nowhere". This is a
+direct measurement of it, and it agrees in sign and in ordering with the
+behavioural decomposition (§18/§20.1: magno B_shape 0.878, parvo 0.484).
+
+### 24.3 The panel — and why its headline number is partly circular
+
+    rho(VSB, SPI) across voxels, subject 6:
+      joint model   +0.2090  (p = 2.6e-162)
+      magno band    -0.0495
+      parvo band    -0.0021
+
+The joint result falls in §21.4's **positive** branch. But it must not be
+reported as the pre-declared "strong unifying result" without this caveat,
+which the within-band rows make unavoidable:
+
+Within a single band, VSB barely varies with SPI at all (−0.05, −0.00). So the
+entire +0.209 comes from **band mixing** — and given §24.2, that is close to
+definitional. SPI measures which band explains a voxel; the magno band's
+predictions are shape-dominated and the parvo band's texture-dominated; so a
+voxel weighted toward magno must have shape-dominated joint predictions. The
+correlation is largely guaranteed once §24.2 is known.
+
+What is *not* circular: SPI is estimated from brain responses to NSD images
+and VSB from Geirhos cue-conflict images, so the two are computed on disjoint
+stimulus sets. The conjunction is real. Its **effect size is inflated** by the
+shared band structure, and +0.209 is not evidence of a cortical fact
+independent of §24.2.
+
+**Consequence for the manuscript, decided now**: the flagship panel is
+§24.2 (the streams' shape/texture dissociation, measured through cortex),
+with the VSB-SPI correlation as a consistency check carrying the caveat in
+its caption — not as an independent result. Do not lead with rho = +0.209.
+
+The genuinely independent test, which the group data can support and which
+should be run when all 24 tasks land: does the predicted VSB map reproduce the
+**known cortical organisation** of shape vs texture selectivity (higher shape
+weighting in LO/hV4 than in V1/V2)? That is checkable against the literature
+rather than against SPI, and it is a real prediction the model can fail.
+
+### 24.4 Status
+
+n = 1 subject, one model, one cell of the design. Nothing above is a group
+claim. 23 tasks outstanding.
