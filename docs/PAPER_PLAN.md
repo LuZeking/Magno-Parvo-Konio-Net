@@ -2947,3 +2947,54 @@ The eccentricity gradient itself is stable at n=8: −0.212, −0.222, −0.110,
 **Still gated on §25.** `thesis_dvd_trans` has begun landing (subject 3), so
 the second diet model will provide a within-cell replication; the no-diet
 column and the Gabor null remain outstanding.
+
+## §27 Participation ratio — the §25 comparison is not dimensionality-matched
+
+§7.2 item 6 asked for participation ratio per stream, to close the
+general-factor objection that defeated the thesis's RSA. Computed from the
+feature caches (2000 NSD images, subject 1):
+
+| model | magno D | magno PR | parvo D | parvo PR |
+|---|---|---|---|---|
+| `dkl_bcs_seed0_trained` | 15360 | **269.9** | 15360 | 160.1 |
+| `gabor_blur_cs` | 2048 | **15.3** | 2048 | 11.8 |
+| `dkl_base_seed0_trained` (subj01, contaminated) | 15360 | **32.2** | 15360 | 189.5 |
+
+### 27.1 Consequence for §25, stated before the null lands
+
+The Gabor bank has roughly **18x fewer effective dimensions** than the trained
+network. Both are projected to 1000 PCA components, but PCA cannot manufacture
+dimensions the bank does not have. So the two columns are *not* matched in
+representational capacity, and §25's comparison inherits that.
+
+The caveat is **asymmetric**, which is what makes it tolerable:
+
+- If the null **reproduces** the hV4/LO step, the conclusion is safe and in
+  fact strengthened: a 15-dimensional input model producing the effect means
+  the network is not needed for it, and no dimensionality argument rescues the
+  network's claim.
+- If the null **fails to reproduce** it, the result is **confounded**: the
+  bank may lack the step because it lacks the capacity to express any
+  fine-grained voxel structure, not because the front end lacks the
+  information. That outcome cannot be reported as "the network builds it"
+  without a capacity-matched control.
+
+So §25.1's second and third outcomes both require a follow-up if they occur:
+refit the trained model with its PCA truncated to the bank's effective
+dimensionality (~16 components), and check the step survives. That is one
+extra array and should be pre-committed now rather than argued about later.
+
+### 27.2 Independent corroboration of the §22 contamination
+
+`dkl_base_seed0_trained` subject 1 shows magno PR = **32.2** against parvo
+PR = 189.5. Every other model here has the *magno* stream at least as
+high-dimensional as parvo (dkl_bcs: 270 vs 160), which is what an unblurred or
+diet-matched front end should give. A magno stream collapsed to a sixth of its
+partner is exactly what applying a blur the network never trained on would do,
+and this cache is the one §22 identified as contaminated — note it is also the
+only row still reading `prov=unstamped`, i.e. written before the guard.
+
+This is independent of the §22.2 feature-identity check and of the §22.4
+outlier analysis, and agrees with both. Tasks 16-23 of 26399760 will overwrite
+this cache with a provenance-stamped, correctly-blurred version; the PR asymmetry
+should disappear, and that is a cheap post-hoc verification the repair worked.
