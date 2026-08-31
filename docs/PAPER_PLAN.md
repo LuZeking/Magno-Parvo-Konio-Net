@@ -2772,3 +2772,46 @@ is localised to exactly the areas where the discrepancy is sharpest.
   property of the front end.
 - The no-diet column (tasks 16-23 of 26399760) is needed to separate "the
   network builds it" from "the diet builds it" (§25.2).
+
+### 26.4 The hV4/LO step is not an eccentricity artefact
+
+hV4 and LO are foveally biased and this dataset has a strong eccentricity
+gradient (§7.1, §A3.2), so "hV4/LO are texture-shifted" and "foveal voxels are
+texture-shifted" are competing explanations of §26.2. Tested with a third
+control factor (`$CLAUDE_JOB_DIR/tmp/ecc_confound.py`, n=7).
+
+**First, the eccentricity effect is real and large.** Residual VSB by
+`prf-eccrois` band after removing SPI x predictability (all five bands, per
+§7.1's ECC_LABELS fix):
+
+| 0.5° | 1° | 2° | 4° | 4+° |
+|---|---|---|---|---|
+| −0.199 | −0.221 | −0.116 | +0.111 | **+0.323** |
+
+Monotonic, range 0.52. The model predicts foveal voxels texture-dominated and
+peripheral voxels shape-dominated, *beyond* band weighting and fit quality.
+This is the §A3.2 eccentricity story restated in shape/texture units and is a
+new observation, not a restatement of SPI (SPI was residualised out).
+
+**But it does not explain the ROI step.** Adding the eccentricity band as a
+third residualisation factor:
+
+| controls | hV4 − V1 | p | subjects |
+|---|---|---|---|
+| SPI x predictability | −0.0964 | .0312 | 6/7 |
+| SPI x predictability x **ecc band** | **−0.0926** | **.0156** | **7/7** |
+
+The step barely moves (−0.096 → −0.093) and becomes *more* consistent, not
+less — 7/7 subjects at the n=7 floor. So §26.2 survives three controls: band
+preference, fit quality, and retinotopic eccentricity. That is a considerably
+harder target for a reviewer than it was an hour ago.
+
+Caveat to carry: `prf-eccrois` labels only ~33% of the reliable mask (§7.1),
+so unlabeled voxels form a single residualisation cell rather than being
+eccentricity-matched. hV4 and V1 are retinotopic and largely labeled, so the
+contrast tested here is well covered, but the control is weaker for LO.
+
+**Both of these still await §25's input-level null.** A Gabor bank on blurred
+luminance versus red-green input could plausibly produce *both* the
+eccentricity effect and the hV4/LO step by itself. Nothing in §26 is a claim
+about the network until 26401261 says otherwise.
