@@ -1896,3 +1896,91 @@ strongest causal control in the project. Adding it makes 1C a three-arm panel
 (diet / no-diet / swap) and lets the zero-crossing in §21.3 be read directly
 off the axis, since the panel already has a zero line. Recommended, together
 with the §20.5 relabelling of the untrained arm. Not yet acted on.
+
+---
+
+## §21 Claiming §7.3b (in-silico cue-conflict → cortex), 2026-08-31
+
+**Coordination (per §20.4): this session is taking §7.3b and nothing else.**
+§20.5 (Figure 1 relabel) and the human-data download are explicitly left for
+the other session. Do not start §7.3b in parallel — see the collision log in
+§20.4.
+
+### 21.1 Why this and not the polish queue
+
+The remaining queue is seeds, a single-stream baseline, and extra input-null
+columns. All of it is reviewer-proofing for claims that already stand. §7.3b
+is the only open item that changes what the paper *is*: leg (b) currently
+lives entirely in behaviour (miniEcoset logits) and leg (c) entirely in
+cortex (NSD voxels), and no analysis connects them. Without it the manuscript
+reads as two results about the same network; with it, one.
+
+### 21.2 What has to be built (the estimate in §7.3 was low)
+
+`results/encoding/*.npz` stores per-voxel summary statistics only —
+`fit_banded` returns test R2 and discards the fitted estimators. So the
+cue-conflict images cannot be pushed through the *existing* fits; §7.3b needs
+
+1. `fit_banded` to return (or re-apply) the fitted magno-only, parvo-only and
+   joint estimators;
+2. the same PCA/scaling transform used on the NSD features applied to the
+   cue-conflict features — the band scaling in `prepare_band` is fit on the
+   NSD training set and must be carried over, not refit on 1280 images;
+3. a refit array over the models we want the panel for.
+
+This is a code change plus one array, not a pure analysis pass.
+
+### 21.3 Per-voxel shape-bias index — declared before fitting
+
+For each of the 1280 cue-conflict images the filename gives a shape label S
+and a texture label T (16 levels each, crossed). For every voxel, from its
+*predicted* responses to those images:
+
+    eta2_shape   = between-shape-group variance / total variance
+    eta2_texture = between-texture-group variance / total variance
+    VSB          = (eta2_shape - eta2_texture) / (eta2_shape + eta2_texture)
+
+VSB is the voxel-level analogue of the behavioural B_shape, bounded [-1, +1],
+and needs no original (non-conflict) images.
+
+**The panel**: VSB against SPI across reliable voxels, within subject, then
+the correlation aggregated over the 8 subjects with the same sign-flip test
+used everywhere else.
+
+**Both statistics rule (§8) applies**: report the raw and the noise-ceiling-
+normalised version of the voxel correlation and claim only where they agree.
+
+### 21.4 Pre-declaring the outcomes (§7.4's rule, applied to this panel)
+
+This is written before the fit because the sign is genuinely uncertain and
+deciding afterwards what it means would be storytelling.
+
+- **VSB correlates negatively with SPI** (magno-preferring voxels are *less*
+  shape-selective). This is the outcome the existing maps predict: magno-
+  unique variance peaks in V1/V2 (§7.1) and shape selectivity should peak in
+  LO/hV4. It would mean the stream that drives shape-biased *behaviour*
+  (§18/§20.1, magno 0.878) is not the stream that predicts shape-selective
+  *cortex* — a dissociation, and a genuinely interesting one, but it refutes
+  the simple "same stream, both levels" reading of the working claim.
+- **VSB correlates positively with SPI.** The strong unifying result: the
+  magno stream's shape preference is visible in the cortical voxels it
+  uniquely explains. This is the flagship as originally imagined.
+- **No correlation.** The two legs are independent measurements of the same
+  network and the paper stays two results side by side. Report it; do not
+  re-cut the voxel set looking for a subset that works.
+
+A fourth possibility must also be pre-empted: VSB may be dominated by overall
+predictability rather than by stream preference, since a voxel the model
+predicts poorly has low eta2 on *both* factors. VSB is a ratio so it is
+scale-free by construction, but it will be unstable where the denominator is
+small. **Restrict to the existing reliable mask and additionally report the
+correlation with voxels binned by r2_joint_nc**, so a predictability
+confound is visible rather than hidden.
+
+### 21.5 Model set
+
+Minimum for the panel: `dkl_bcs_seed0` and `thesis_dvd_trans` (the two diet
+cells) against `dkl_base_seed0` (no diet). If the diet cells show the effect
+and the no-diet cell does not, the panel carries §15's claim into cortex as
+well, which is the strongest available version.
+
