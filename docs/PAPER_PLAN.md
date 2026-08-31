@@ -2451,3 +2451,43 @@ rather than against SPI, and it is a real prediction the model can fail.
 
 n = 1 subject, one model, one cell of the design. Nothing above is a group
 claim. 23 tasks outstanding.
+
+### 24.5 Correction to §24.3: the ROI test is circular too (n=2, preliminary)
+
+§24.3 proposed "does predicted VSB rise along V1 -> hV4/LO?" as the
+*independent* test that could fail. It is not independent, and running it makes
+the reason obvious.
+
+Joint-model VSB by ROI, `dkl_bcs_seed0_trained`, subjects 4 and 6 only:
+
+| V1v | V1d | V2v | V2d | V3v | V3d | hV4 | LO |
+|---|---|---|---|---|---|---|---|
+| −0.008 | +0.127 | +0.070 | +0.027 | −0.114 | −0.179 | **−0.529** | **−0.534** |
+
+monotonicity rho over V1v..hV4 = **−0.661** (0/2 subjects positive).
+
+VSB *falls* along the hierarchy. But the joint model's VSB is set by band
+mixing (§24.3), and band mixing across ROIs **is** the §15 gradient — magno
+weighting is highest in V1/V2 and lowest at hV4. So a declining VSB profile is
+the §15 profile re-expressed in shape/texture units, not a second measurement.
+The ROI test inherits exactly the confound §24.3 identified in the voxel test;
+proposing it as the escape from that confound was wrong.
+
+**What this means for §7.3b as a whole.** With this VSB definition the joint
+model's cortical shape/texture profile is largely a re-description of leg (c).
+The panel does not supply an independent cortical test, and the paper should
+not claim one. The genuinely new content of §7.3b is **§24.2** — the per-band
+dissociation, which is a fact about the streams and is *not* determined by the
+variance partition.
+
+**The tension worth reporting anyway** (n=2, must be re-checked at n=8): the
+model predicts a **texture-dominated hV4 and LO** (−0.53, −0.53). Human LO is
+strongly shape/object selective. If this survives to n=8 it is a real,
+interpretable failure of the two-stream model — its shape-carrying stream is
+weighted *out* exactly where cortex is most shape-selective — and it should be
+disclosed as such rather than dropped. It is a consequence of §15's gradient,
+so it is a prediction the architecture actually makes.
+
+A genuinely independent test would need measured shape/texture selectivity in
+the same voxels, which requires cue-conflict fMRI this project does not have.
+Absent that, §7.3b is: leg (a) measured (§24.2), plus a disclosed tension.
