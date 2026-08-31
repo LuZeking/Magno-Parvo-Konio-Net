@@ -11,8 +11,11 @@
 # Model set mirrors the §17 2x2 so leg (b) can be read against leg (a)/(c) on
 # the same conditions: untrained x2 (both front ends), dkl_bcs x3, dkl_base x3,
 # dkl_bcs_swap x2 (converged seeds only), thesis x2.
-# rgb_tsn is excluded: it is a 3-channel RGB two-stream model and this entry
-# point builds the 1-channel DKL front end only.
+# rgb_tsn is now included via --rgb-mode: both streams take the identical
+# untransformed 3-channel image (in_channels=(3,3)), which makes it the
+# architecture-only control -- two streams with no input asymmetry whatsoever.
+# Its channels are DKL lum/rg/by, not R/G/B, because train_array.sh feeds
+# every condition the DKL h5; the condition name is a misnomer.
 #
 # Pure CPU (1280 images, two ResNet18 streams, bootstrap over items).
 #SBATCH --job-name=mpk_cueconf
@@ -21,7 +24,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=02:00:00
-#SBATCH --array=0-13
+#SBATCH --array=0-18
 #SBATCH --output=slurm/logs/cueconf_%A_%a.out
 
 set -euo pipefail
@@ -50,6 +53,11 @@ CONFIG=(
   "thesis_s1_90|$TCK/dkl_blur_cs_s1_90/epoch=147-step=152292.ckpt|--stream1-weight 0.9"
   "dkl_bcs_parvo_highsf_seed1|$RUNS/dkl_bcs_parvo_highsf_seed1/checkpoint_last.pt|--parvo-highsf"
   "dkl_bcs_parvo_highsf_seed2|$RUNS/dkl_bcs_parvo_highsf_seed2/checkpoint_last.pt|--parvo-highsf"
+  "dkl_bcs_swap_seed2|$RUNS/dkl_bcs_swap_seed2/checkpoint_last.pt|--transform-target parvo"
+  "dkl_bcs_parvo_highsf_seed0|$RUNS/dkl_bcs_parvo_highsf_seed0/checkpoint_last.pt|--parvo-highsf"
+  "rgb_tsn_seed0|$RUNS/rgb_tsn_seed0/checkpoint_last.pt|--rgb-mode"
+  "rgb_tsn_seed1|$RUNS/rgb_tsn_seed1/checkpoint_last.pt|--rgb-mode"
+  "rgb_tsn_seed2|$RUNS/rgb_tsn_seed2/checkpoint_last.pt|--rgb-mode"
 )
 
 IFS='|' read -r NAME CK EXTRA <<< "${CONFIG[$SLURM_ARRAY_TASK_ID]}"

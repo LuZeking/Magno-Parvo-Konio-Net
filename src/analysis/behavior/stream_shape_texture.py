@@ -50,6 +50,7 @@ from sklearn.preprocessing import StandardScaler
 from src.analysis.behavior.cue_conflict import (
     list_cue_conflict_images,
     load_images,
+    stream_in_channels,
 )
 from src.analysis.encoding import dkl_frontend, features
 
@@ -83,6 +84,11 @@ def main() -> None:
                         "in_channels=(1,2); required for the "
                         "dkl_bcs_parvo_highsf checkpoints and wrong for "
                         "every other condition.")
+    p.add_argument("--rgb-mode", action="store_true",
+                   help="rgb_tsn architecture-only control: both streams get "
+                        "the identical 3-channel image, in_channels=(3,3). "
+                        "Despite the name the channels are DKL lum/rg/by -- "
+                        "every training condition read the DKL h5.")
     p.add_argument("--pca-dim", type=int, default=256)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--batch-size", type=int, default=32)
@@ -111,13 +117,13 @@ def main() -> None:
         rgb, ch_min, ch_max,
         lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs,
         transform_target=args.transform_target, device="cpu",
-        parvo_highsf=args.parvo_highsf,
+        parvo_highsf=args.parvo_highsf, rgb_mode=args.rgb_mode,
     )
 
     model = features.build_model(
         checkpoint=args.checkpoint, stream1_weight=args.stream1_weight,
         seed=args.seed, device=device,
-        in_channels=(1, 2) if args.parvo_highsf else (1, 1),
+        in_channels=stream_in_channels(args),
     )
     model.eval()
     feats = features.extract_stream_features(

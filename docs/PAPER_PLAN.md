@@ -2622,3 +2622,92 @@ diet builds it". Separating those needs the no-diet trained column
 (`dkl_base_seed0`, tasks 16-23 of 26399760, already running) against this one.
 The three columns together — input-only, no-diet-trained, diet-trained — are
 the same design §19 used, and should be reported the same way.
+
+---
+
+## §27 The architecture-only control is now runnable — and `rgb_tsn` is a misnomer
+
+Written 2026-08-31, this session. Numbered 27 because 21, 23, 24 and 25 are all
+either duplicated or out of order at the tail of this file (see §26.1); 27 is
+the lowest number that collides with nothing.
+
+### 27.1 Why this control matters more than its §7.4 placement suggests
+
+Every claim in leg (a) has the same logical shape: *biologically constrained
+input channels induce stream specialization*. The obvious way that claim dies
+is if a two-stream architecture specializes on its own, for reasons that have
+nothing to do with what enters each stream. Until now that possibility was
+argued against rather than measured, because the entry point built a
+1-channel DKL front end only and `rgb_tsn` could not be run through it.
+
+`rgb_tsn` is the exact control: both streams receive the **identical**
+untransformed 3-channel image. There is no input asymmetry of any kind, so
+the two streams differ by nothing except their random initialization. If a
+shape/texture division appears here anyway, the causal story in §21/§25 is in
+serious trouble. If it does not, the conjunction result is the cleanest it
+can be — specialization requires the input manipulation, full stop.
+
+All three seeds converged at 150/150, so this is available at n=3 immediately.
+
+### 27.2 The name is wrong, and the paper must say so
+
+`slurm/train_array.sh:45,61` feeds `miniecoset_256px_dkl_uint8.h5` to **every**
+condition, `rgb_tsn` included. So the three channels this model sees are the
+DKL axes — luminance, red-green, blue-yellow — not R/G/B. What
+`input_mode="rgb"` actually selects in `standalone_trainer.StreamInputBuilder`
+is "hand both streams the whole 3-channel image and apply no transform".
+
+This is not a bug, and it does not weaken the control — arguably it
+strengthens it, because the comparison against `dkl_base` and `dkl_bcs` now
+holds the *data* fixed and varies only how channels are routed to streams. But
+the manuscript cannot call this condition "RGB". It should be named for what
+it is: **full-input two-stream**, or `dkl_full`. Flagging rather than renaming
+the run directories, which would break every existing checkpoint path.
+
+One further disclosure: `build_augmentations` appends `RandomGrayscale(p=0.5)`
+when `input_mode == "rgb"`, so this condition — and only this condition — was
+trained with an augmentation that averages the three DKL axes together half
+the time. That is a real difference from the other cells, it was not chosen
+deliberately for DKL data, and it belongs in the methods text. It cannot
+manufacture a false negative (it destroys chromatic information, which if
+anything should *encourage* the streams to differentiate), but it is not
+nothing.
+
+### 27.3 Implementation, and the pre-flight that gates it
+
+`dkl_frontend.rgb_to_dkl3` was factored out of `rgb_to_stream_inputs` (which
+now calls it and slices), and `magno_parvo_inputs(rgb_mode=True)` returns that
+full tensor to both streams, ignoring blur/CS because the trained condition
+applies neither. Both behaviour entry points gained `--rgb-mode`, and the
+`in_channels` decision moved into one shared `cue_conflict.stream_in_channels`
+rather than being duplicated as an inline conditional in each file.
+
+`tmp_analysis/check_rgbmode_load.py` gates the run, in the same spirit as the
+`parvo_highsf` pre-flight: a mismatched stem would leave random weights and
+fabricate exactly the "no specialization" answer this control is supposed to
+be able to give honestly. It reports **242/242 tensors matching the
+checkpoint**, 3-channel stems on both streams, and byte-identical stream
+inputs. Verdict SAFE — recorded before the jobs were submitted, not after.
+
+### 27.4 What is reported, and how to read it
+
+Because both streams see the same input, `magno_only` / `parvo_only` are
+misnomers here too; they are stream 1 and stream 2, and the prediction is that
+they are statistically indistinguishable. The quantity of interest is the
+**absolute** stream difference |bias(S1) − bias(S2)| at n=3, against the diet
+cell's ~1.1 (probe) and ~0.46 (behaviour). A near-zero difference here is the
+result the causal claim needs.
+
+Note this control cannot be one-sided-tested into significance at n=3 and is
+not meant to be: it is reported as a magnitude comparison against the diet
+cell, with the seed spread shown, not as a p-value.
+
+### 27.5 Submitted
+
+- `26401266` / `26401267` — probe and cue-conflict for `dkl_bcs_swap_seed2` and
+  `dkl_bcs_parvo_highsf_seed0`, both held on `afterok:26385433` (the last
+  training task, at 148/150 when submitted). These take swap and
+  `parvo_highsf` from n=2 to **n=3**, matching every other cell.
+- `26401311` / `26401312` — probe and cue-conflict for `rgb_tsn` seeds 0–2.
+
+All four on `--partition=main`, no `--gres`, as CPU-only work.

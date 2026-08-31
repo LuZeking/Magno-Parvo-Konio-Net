@@ -91,13 +91,18 @@ def load_nsd_images(image_ids: np.ndarray) -> np.ndarray:
     return imgs_sorted[inverse]
 
 
-def rgb_to_stream_inputs(
+def rgb_to_dkl3(
     rgb_uint8: np.ndarray,
     ch_min: np.ndarray,
     ch_max: np.ndarray,
     image_size: int = IMAGE_SIZE,
-) -> tuple[torch.Tensor, torch.Tensor]:
-    """RGB uint8 (N, H, W, 3) -> (x_lum, x_rg), each (N, 1, S, S) in [0, 1].
+) -> torch.Tensor:
+    """RGB uint8 (N, H, W, 3) -> the full 3-channel DKL image (N, 3, S, S).
+
+    This is the tensor the training dataset actually stores: lum, rg, by,
+    each normalized to [0, 1] with the training-set min/max and quantized to
+    uint8. The stream front ends below slice it; the ``rgb_tsn`` condition
+    hands all three channels to both streams unsliced.
 
     Resizing to the training resolution happens BEFORE the DKL conversion
     (bilinear + antialias), then normalization with the training min/max and
@@ -126,10 +131,18 @@ def rgb_to_stream_inputs(
     dkl_u8 = (dkl * 255.0).round().astype(np.uint8)  # training quantization
     dkl01 = dkl_u8.astype(np.float32) / 255.0
 
-    x = torch.from_numpy(dkl01).permute(0, 3, 1, 2)  # (N, 3, S, S)
-    x_lum = x[:, 0:1]
-    x_rg = x[:, 1:2]
-    return x_lum, x_rg
+    return torch.from_numpy(dkl01).permute(0, 3, 1, 2)  # (N, 3, S, S)
+
+
+def rgb_to_stream_inputs(
+    rgb_uint8: np.ndarray,
+    ch_min: np.ndarray,
+    ch_max: np.ndarray,
+    image_size: int = IMAGE_SIZE,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """RGB uint8 (N, H, W, 3) -> (x_lum, x_rg), each (N, 1, S, S) in [0, 1]."""
+    x = rgb_to_dkl3(rgb_uint8, ch_min, ch_max, image_size)
+    return x[:, 0:1], x[:, 1:2]
 
 
 def apply_gaussian_blur(x: torch.Tensor, sigma: float = BLUR_SIGMA):
@@ -175,6 +188,7 @@ def magno_parvo_inputs(
     device: str = "cpu",
     transform_target: str = "magno",
     parvo_highsf: bool = False,
+    rgb_mode: bool = False,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Full front end: RGB uint8 -> (magno input, parvo input).
 
@@ -186,6 +200,15 @@ def magno_parvo_inputs(
     dissociates "which transformation" from "which chromatic channel" as
     the cause of any stream difference.
 
+    ``rgb_mode=True`` is the ``rgb_tsn`` architecture-only control: BOTH
+    streams receive the identical, untransformed 3-channel image, so the two
+    streams differ by nothing except initialization. Note the name is a
+    misnomer inherited from the training config -- ``slurm/train_array.sh``
+    feeds every condition the DKL h5, so those three channels are lum/rg/by,
+    not R/G/B. What the condition really controls for is "two streams with no
+    input asymmetry at all". Requires ``build_model(in_channels=(3, 3))``, and
+    blur/CS are ignored because the trained condition applies neither.
+
     ``parvo_highsf=True`` is the biologically corrected parvo input: stream 2
     receives UNTRANSFORMED high-acuity luminance stacked with rg (2 channels),
     because real parvocellular cells carry both. It mirrors
@@ -196,6 +219,11 @@ def magno_parvo_inputs(
     """
     if transform_target not in ("magno", "parvo"):
         raise ValueError(f"transform_target={transform_target!r}")
+    if rgb_mode:
+        if parvo_highsf:
+            raise ValueError("rgb_mode and parvo_highsf are exclusive")
+        x = rgb_to_dkl3(rgb_uint8, ch_min, ch_max).to(device)
+        return x, x
     x_lum, x_rg = rgb_to_stream_inputs(rgb_uint8, ch_min, ch_max)
     x_lum = x_lum.to(device)
     x_rg = x_rg.to(device)

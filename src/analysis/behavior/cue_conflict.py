@@ -40,6 +40,20 @@ import torch.nn.functional as F
 
 from src.analysis.encoding import dkl_frontend, features
 
+
+def stream_in_channels(args) -> tuple[int, int]:
+    """Per-stream stem channel counts implied by the front-end flags.
+
+    Mirrors ``standalone_trainer.in_channels_for``; kept here because the
+    analysis entry points select the condition by CLI flag rather than by
+    the trainer's condition dict. A wrong answer is loud, not silent --
+    ``load_state_dict`` raises on a stem shape mismatch regardless of
+    ``strict`` -- so this cannot quietly produce a randomly-initialized stem.
+    """
+    if getattr(args, "rgb_mode", False):
+        return 3, 3
+    return 1, (2 if getattr(args, "parvo_highsf", False) else 1)
+
 CUE_CONFLICT_DIR = os.environ.get(
     "CUE_CONFLICT_DIR",
     "/scratch/byrong/encoding/datasets/geirhos_cue_conflict/stimuli/"
@@ -298,6 +312,11 @@ def main():
                         "in_channels=(1,2); required for the "
                         "dkl_bcs_parvo_highsf checkpoints and wrong for "
                         "every other condition.")
+    p.add_argument("--rgb-mode", action="store_true",
+                   help="rgb_tsn architecture-only control: both streams get "
+                        "the identical 3-channel image, in_channels=(3,3). "
+                        "Despite the name the channels are DKL lum/rg/by -- "
+                        "every training condition read the DKL h5.")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--n-boot", type=int, default=2000)
     p.add_argument("--allow-partial", action="store_true",
@@ -350,7 +369,7 @@ def main():
         legacy_asymmetric_mixing=args.legacy_mixing,
         seed=args.seed,
         device=device,
-        in_channels=(1, 2) if args.parvo_highsf else (1, 1),
+        in_channels=stream_in_channels(args),
     )
 
     all_logits: dict[str, list[np.ndarray]] = {}
@@ -362,7 +381,7 @@ def main():
             lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs,
             age_months=args.age_months, device=device,
             transform_target=args.transform_target,
-            parvo_highsf=args.parvo_highsf,
+            parvo_highsf=args.parvo_highsf, rgb_mode=args.rgb_mode,
         )
         got = stream_logits(model, x_m, x_p, device=device)
         for k, v in got.items():
