@@ -1,0 +1,45 @@
+{
+  "model_name": "rgb_tsn_seed1",
+  "checkpoint": "/scratch/byrong/VST_data/mpk_runs/rgb_tsn_seed1/checkpoint_last.pt",
+  "conditions": {
+    "full": {
+      "n_images": 1200,
+      "n_shape": 286,
+      "n_texture": 334,
+      "n_other": 580,
+      "shape_bias": 0.4612903225806452,
+      "shape_accuracy": 0.23833333333333334,
+      "texture_accuracy": 0.2783333333333333,
+      "shape_bias_ci95": [
+        0.42276255616174585,
+        0.5024722333734778
+      ]
+    },
+    "magno_only": {
+      "n_images": 1200,
+      "n_shape": 286,
+      "n_texture": 335,
+      "n_other": 579,
+      "shape_bias": 0.4605475040257649,
+      "shape_accuracy": 0.23833333333333334,
+      "texture_accuracy": 0.2791666666666667,
+      "shape_bias_ci95": [
+        0.42257783789301756,
+        0.5008437790449395
+      ]
+    },
+    "parvo_only": {
+      "n_images": 1200,
+      "n_shape": 286,
+      "n_texture": 335,
+      "n_other": 579,
+      "shape_bias": 0.4605475040257649,
+      "shape_accuracy": 0.23833333333333334,
+      "texture_accuracy": 0.2791666666666667,
+      "shape_bias_ci95": [
+        0.42257783789301756,
+        0.5008437790449395
+      ]
+    }
+  }
+}

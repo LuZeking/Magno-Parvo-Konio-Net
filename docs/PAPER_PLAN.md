@@ -2691,6 +2691,10 @@ inputs. Verdict SAFE — recorded before the jobs were submitted, not after.
 
 ### 27.4 What is reported, and how to read it
 
+> **SUPERSEDED by §28.2 (2026-09-01).** The test proposed below is
+> vacuous: the two streams are bit-identical at initialization, so
+> with identical inputs they can never diverge. Read §28 instead.
+
 Because both streams see the same input, `magno_only` / `parvo_only` are
 misnomers here too; they are stream 1 and stream 2, and the prediction is that
 they are statistically indistinguishable. The quantity of interest is the
@@ -2815,3 +2819,96 @@ contrast tested here is well covered, but the control is weaker for LO.
 luminance versus red-green input could plausibly produce *both* the
 eccentricity effect and the hV4/LO step by itself. Nothing in §26 is a claim
 about the network until 26401261 says otherwise.
+
+---
+
+## §28 The architecture has no symmetry breaking — §27.4 was the wrong test
+
+Written 2026-09-01. Supersedes §27.4, which framed `rgb_tsn` as an empirical
+test it cannot be.
+
+### 28.1 What came back
+
+All ten queued tasks completed. Every cell is now at **n=3** on both measures:
+
+| cell (what stream 2 receives) | probe S1 | probe S2 | S1−S2 | cc S1 | cc S2 | cc full |
+|---|---|---|---|---|---|---|
+| no diet — rg, untransformed | −0.2261 | −0.5042 | +0.2781 | 0.4210 | 0.3643 | 0.4162 |
+| diet on lum — rg, untransformed | +0.8194 | −0.5183 | **+1.3378** | 0.8778 | 0.4177 | 0.6749 |
+| diet on rg (swap) — rg, transformed | −0.2286 | −0.1453 | −0.0833 | 0.4007 | 0.4949 | 0.4083 |
+| diet + hi-SF parvo — raw lum+rg | +0.8442 | −0.2708 | +1.1150 | 0.7966 | 0.3886 | 0.4859 |
+| no split (`rgb_tsn`) — identical to S1 | −0.1425 | −0.1425 | **+0.0000** | 0.4446 | 0.4446 | 0.4449 |
+
+Seed spread is tight enough to quote: swap −0.0883/−0.0733/−0.0883,
+parvo_highsf +1.1100/+1.1100/+1.1250. The n=2 numbers in §21 and §25 survive
+the third seed without qualification, and the conjunction 2×2 on the S2 cell
+is unchanged: −0.504 (chromatic, no transform), −0.145 (chromatic,
+transform), −0.271 (achromatic, no transform), **+0.819** (achromatic,
+transform). Neither single factor crosses zero; only the conjunction does.
+
+### 28.2 The control's zero is exact, and that is the problem
+
+`rgb_tsn` returned S1 − S2 = **+0.0000 on every fold of every seed**. An
+exact zero is not a measurement, so I checked the weights rather than
+reporting it. Two facts, verified directly:
+
+1. In the trained `rgb_tsn` checkpoints, **all 120 stream-1/stream-2 tensor
+   pairs are bit-identical** (max |S1 − S2| = 0.000e+00, seeds 0 and 1). The
+   diet conditions have max |S1 − S2| of 34–53 over the same pairs.
+2. Reproducing the trainer's own construction, `TwoStreamNetwork` initializes
+   the two streams **bit-identically** — 0/120 pairs differ, for `rgb_tsn`
+   and `dkl_bcs` alike, before and after `patch_stream_input_channels`.
+
+So `rgb_tsn` could never have specialized: identical initialization plus
+identical input gives identical gradients, and the two streams stay the same
+tensor for all 150 epochs. The zero is an algebraic identity, not evidence
+about learning.
+
+**§27.4 is therefore wrong** where it said the quantity of interest is
+|bias(S1) − bias(S2)| tested against the diet cell. That comparison is
+vacuous. What follows replaces it.
+
+### 28.3 What the run is actually worth — and what it must not be said to show
+
+It must **not** be written as "two streams do not spontaneously specialize."
+That hypothesis is untestable in this architecture, and a reviewer who checks
+will find the streams are the same tensor. Claiming it would be an overclaim
+that the code refutes in one line.
+
+What it does establish is narrower and, for this paper, more useful:
+
+> The two streams of the TSN are bit-identical at initialization. Every
+> divergence between them is therefore attributable to the difference in
+> their inputs — not to a lucky draw in one stream's weights.
+
+That eliminates a real alternative explanation *by construction* rather than
+by argument. It is the reason the conjunction 2×2 in §21/§25 has to carry the
+causal weight, and can: since input is the only thing that can differentiate
+the streams, showing *which property* of the input does it (achromatic
+carrier × developmental transform, neither alone) is the whole claim.
+
+The 150-epoch run is still worth one sentence as an empirical confirmation
+that nothing in the training loop — augmentation sampling, dropout,
+non-deterministic kernels — breaks that symmetry in practice. It did not:
+after 150 epochs and ~40k steps the streams were still bit-identical. That is
+a non-trivial check on the implementation, just not the check §27.4 claimed.
+
+### 28.4 The honest limitation, for the paper
+
+If a reviewer asks whether a two-stream architecture would specialize on its
+own, the answer we can support is: *not this one, by construction.* Testing
+the general question needs symmetry broken at initialization — a per-stream
+seed — which is a new set of training runs (3 seeds × ~2 days GPU).
+
+I am **not** queueing that. It answers a question the paper does not ask, the
+narrative is already carried by the conjunction result, and the standing
+research-output rule is to reframe rather than spend compute when the claim
+is the thing that needs fixing. It goes in Limitations as a stated,
+unexplored alternative, with the cost named so a reviewer can judge whether
+the omission is reasonable.
+
+### 28.5 Also still true from §27.2
+
+`rgb_tsn`'s channels are DKL lum/rg/by, not R/G/B, and this condition alone
+was trained with `RandomGrayscale(p=0.5)`. Both remain disclosure items
+regardless of how the condition is now framed.
