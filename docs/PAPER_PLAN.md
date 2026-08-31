@@ -1984,3 +1984,129 @@ cells) against `dkl_base_seed0` (no diet). If the diet cells show the effect
 and the no-diet cell does not, the panel carries §15's claim into cortex as
 well, which is the strongest available version.
 
+
+---
+
+## §22 A CONTAMINATED SUBJECT IN THE NO-DIET CELL (found 2026-08-31)
+
+Found while recovering the original submission commands with `sacct
+--format=SubmitLine` in order to reuse them for §7.3b. Not caused by §7.3b;
+it has been in the results since 2026-08-30 06:06.
+
+### 22.1 What happened
+
+`dkl_base_seed0_trained` subject 1 was killed by the /home disk-quota failure
+(§ the Errno 122 incident, job `26383806_0`, 2026-08-29 19:03). It was
+re-submitted the next morning as
+
+    26386734_0  sbatch --array=0 slurm/encode_subjects.sh \
+                  dkl_base_seed0_trained .../dkl_base_seed0/checkpoint_last.pt
+
+— **without the `--no-lum-blur --no-lum-cs` flags** that the original
+`26383806` array carried on every task. `dkl_base` is the *no-diet* model, so
+those flags are what make its front end match its training diet. Without them
+the run applied the blur + contrast-sensitivity front end to a network trained
+on unblurred input.
+
+The feature cache did not save it. `26386734_0`'s log shows it *extracting*
+features (`features 512/10000`), not hitting a cache, and the cache file's
+mtime (02:38) falls inside that job's window — the quota failure had left no
+usable cache to hit.
+
+### 22.2 Verified directly, not inferred
+
+Recomputing the first six images' features both ways and comparing against the
+cached matrix (`$CLAUDE_JOB_DIR/tmp/check_frontend.py`):
+
+| front end | max abs delta vs cache, magno | parvo |
+|---|---|---|
+| no-blur / no-CS (intended) | 16.1679 | 0 |
+| **blur + CS (what the re-run defaulted to)** | **0** | 0 |
+
+An exact zero on the magno band. The parvo band is identical either way, as
+expected — the blur and CS cut touch luminance only — so the damage is
+confined to the magno stream, which is the band carrying the headline.
+
+### 22.3 Scope: exactly one file
+
+Every other run of a no-blur model carried the flags on all eight tasks
+(`26383806_1..7`, `26386799_0..7` = `dkl_base_seed1`, `26373186_0..7` =
+`untrained_seed0_noblur`, `26391745_0..7` = `gabor_noblur`). `26386734_0` is
+the only offender. Models whose front end *is* blur+CS (`dkl_bcs_*`,
+`thesis_*`) cannot be affected by a missing flag, since the flag's absence is
+their correct setting.
+
+Damage: `results/encoding/dkl_base_seed0_trained_subj01.npz`, and every n=8
+statistic computed from `dkl_base_seed0_trained`.
+
+### 22.4 How much it moved the headline
+
+Per-subject hV4−V1v for the no-diet cell:
+
+| | s1 | s2 | s3 | s4 | s5 | s6 | s7 | s8 |
+|---|---|---|---|---|---|---|---|---|
+| seed0 norm | **−0.830** | −0.102 | −0.038 | −0.100 | −0.057 | −0.138 | +0.019 | −0.088 |
+| seed1 norm (clean) | −0.223 | −0.100 | −0.125 | −0.213 | −0.132 | −0.002 | −0.098 | −0.161 |
+
+Subject 1 of seed0 is a **six-fold outlier** against its own seven siblings and
+against the same subject in the clean seed1 run. Effect of dropping it:
+
+| statistic | n=8 (as reported) | n=7, subj01 dropped |
+|---|---|---|
+| raw | −0.0452 (p=.039) | −0.0281 (p=.078) |
+| norm | **−0.1669** (p=.016) | **−0.0721** (p=.031) |
+
+**The contaminated subject carries 57% of the reported no-diet effect size**,
+and on the raw statistic it is the difference between significant and not. The
+−0.1669 in §15/§17 is not a number the paper can keep.
+
+### 22.5 What this does to the claims — it strengthens §15
+
+Corrected, the no-diet cell moves from −0.167 to roughly −0.07/−0.13 (n=7
+seed0; clean seed1 gives −0.1318 at n=8). The diet-trained cell is −0.859.
+The contamination had made the no-diet model look **more** like the diet model,
+so removing it **widens** the gap that §15 is built on. The direction of every
+§15/§17 claim survives and the dissociation gets cleaner, not weaker.
+
+Two further reassurances:
+- `dkl_base_seed1_trained` is a fully clean n=8 no-diet run and reproduces
+  seed0 on every row of `model_verdict.py` ("same in both" throughout). The
+  no-diet cell was never resting on the broken file alone.
+- §19's input-null comparisons used the *diet* and *gabor* models for their
+  headline; the affected contrast is the already-UNRESOLVED
+  no-diet-trained-vs-input one (§19.4), which must be recomputed anyway.
+
+### 22.6 Root cause and the fix (committed, `ad64e58`)
+
+The feature cache is keyed on `${MODEL_NAME}_subj%02d.npz` and recorded
+**nothing** about the front end the features came from, so a model name and a
+set of flags could disagree with no error at any point. `run_encoding.py` now
+writes `prov_lum_blur / prov_lum_cs / prov_age_months / prov_features /
+prov_checkpoint / prov_stream1_weight / prov_seed` into every cache and
+refuses to reuse a file whose provenance disagrees — or that predates the
+guard and therefore records no provenance at all. It recomputes instead of
+failing, so every existing cache gets one clean regeneration and is
+self-validating from then on.
+
+This is the same *class* of failure as §10.1 (reading `checkpoint_last.pt`
+mid-training): a silent reuse of an artefact that looks right and is not.
+§10.1's fix was `assert_converged`; this is its counterpart for the front end.
+
+### 22.7 Repair, folded into the §7.3b array
+
+`slurm/encode_cue_conflict.sh`, **job 26399760**, array 0-23%6, one array over
+(model x subject), front-end flags selected from the task id:
+
+| tasks | model | front end |
+|---|---|---|
+| 0-7 | `dkl_bcs_seed0_trained` | blur + CS |
+| 8-15 | `thesis_dvd_trans` | blur + CS |
+| 16-23 | `dkl_base_seed0_trained` | **`--no-lum-blur --no-lum-cs`** |
+
+Output goes to `results/encoding_cc/`, not `results/encoding/`, so the
+existing fits are not destroyed and reproducing their R2 in a separate
+directory doubles as a determinism check on subjects 2-8. Tasks 16-23 are the
+repair; task 16 is the file that was wrong.
+
+**Do not re-report any `dkl_base_seed0_trained` n=8 number until 26399760
+lands.** Until then quote seed1, or seed0 at n=7.
