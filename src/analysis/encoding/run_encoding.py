@@ -41,6 +41,16 @@ def parse_args():
     p.add_argument("--no-lum-blur", action="store_true")
     p.add_argument("--no-lum-cs", action="store_true")
     p.add_argument("--age-months", type=int, default=48)
+    p.add_argument("--transform-target", default="magno",
+                   choices=("magno", "parvo"),
+                   help="channel-swap control: put the developmental blur and "
+                        "CS cut on rg instead of lum. Leg (c) had no way to "
+                        "express this, so the swap condition existed for legs "
+                        "(a) and (b) only.")
+    p.add_argument("--parvo-highsf", action="store_true",
+                   help="biologically corrected parvo input: stream 2 gets "
+                        "untransformed luminance stacked with rg (2 channels), "
+                        "in_channels=(1,2).")
     p.add_argument("--pca-dim", type=int, default=1000)
     p.add_argument(
         "--features", choices=("network", "gabor"), default="network",
@@ -96,6 +106,7 @@ def build_extractor(args, device: str):
             stream1_weight=args.stream1_weight,
             seed=args.seed,
             device=device,
+            in_channels=(1, 2) if args.parvo_highsf else (1, 1),
         )
     return ch_min, ch_max, model
 
@@ -121,6 +132,8 @@ def features_from_rgb(args, rgb_uint8, ch_min, ch_max, model, device: str):
             lum_cs=not args.no_lum_cs,
             age_months=args.age_months,
             device=device,
+            transform_target=args.transform_target,
+            parvo_highsf=args.parvo_highsf,
         )
         if args.features == "gabor":
             f = input_bands.extract_input_features(
@@ -151,15 +164,36 @@ def cache_provenance(args) -> dict[str, np.ndarray]:
         "prov_lum_cs": np.asarray(not args.no_lum_cs),
         "prov_age_months": np.asarray(args.age_months),
         "prov_features": np.asarray(args.features),
+        # Recorded because a .npz that does not name its front end cannot be
+        # told apart from another condition's afterwards -- exactly how the
+        # contaminated no-diet subject in §22 went unnoticed.
+        "prov_transform_target": np.asarray(args.transform_target),
+        "prov_parvo_highsf": np.asarray(args.parvo_highsf),
         "prov_checkpoint": np.asarray(args.checkpoint or ""),
         "prov_stream1_weight": np.asarray(args.stream1_weight),
         "prov_seed": np.asarray(args.seed),
     }
 
 
+# Provenance keys added after caches were already on disk, with the value any
+# pre-existing cache must have had. `--transform-target` and `--parvo-highsf`
+# did not exist in this entry point until 2026-09-01, so a cache written
+# before then was necessarily produced with the front-end defaults -- no other
+# value was expressible. Treating an absent key as its default therefore
+# preserves the safety property (asking for a non-default front end against an
+# old cache still MISMATCHES and recomputes) without invalidating every cache
+# on disk, which would have forced feature recomputation on the 17 remaining
+# tasks of the in-flight §22 repair job.
+BACKFILL_DEFAULTS = {
+    "prov_transform_target": "magno",
+    "prov_parvo_highsf": False,
+}
+
+
 def cache_is_valid(z, want: dict[str, np.ndarray]) -> bool:
     """True only if the cache records provenance and it matches."""
-    missing = [k for k in want if k not in z.files]
+    missing = [k for k in want
+               if k not in z.files and k not in BACKFILL_DEFAULTS]
     if missing:
         print(
             "[cache] no provenance recorded in this cache file "
@@ -169,9 +203,15 @@ def cache_is_valid(z, want: dict[str, np.ndarray]) -> bool:
         )
         return False
     for k, v in want.items():
-        if z[k].item() != v.item():
+        if k in z.files:
+            cached = z[k].item()
+        else:
+            cached = BACKFILL_DEFAULTS[k]
+            print(f"[cache] {k} absent, assuming pre-flag default "
+                  f"{cached!r}", flush=True)
+        if cached != v.item():
             print(
-                f"[cache] MISMATCH {k}: cached={z[k].item()!r} "
+                f"[cache] MISMATCH {k}: cached={cached!r} "
                 f"requested={v.item()!r} -- recomputing features",
                 flush=True,
             )
