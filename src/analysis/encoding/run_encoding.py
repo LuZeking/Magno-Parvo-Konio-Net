@@ -26,7 +26,7 @@ import numpy as np
 import torch
 
 from src.analysis.encoding import (banded_ridge, dkl_frontend, features,
-                                    input_bands)
+                                    input_bands, voxel_shape_bias)
 from src.analysis.encoding import nsd_data
 
 
@@ -56,6 +56,12 @@ def parse_args():
                         "himalaya already bounds memory via n_targets_batch, "
                         "and each chunk repeats the per-gamma decomposition, "
                         "so chunking multiplies wall time by the chunk count.")
+    p.add_argument(
+        "--cue-conflict", action="store_true",
+        help="also push the Geirhos cue-conflict set through the fitted "
+             "encoding model and store a per-voxel shape-bias index -- the "
+             "in-silico cue-conflict panel of PAPER_PLAN 7.3b/21",
+    )
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--allow-partial", action="store_true",
                    help="encode a still-training checkpoint on purpose")
@@ -74,15 +80,8 @@ def parse_args():
     return p.parse_args()
 
 
-def get_features_for_images(args, image_ids: np.ndarray, device: str):
-    """Stream features for a set of images, with optional on-disk cache."""
-    if args.feature_cache and os.path.exists(args.feature_cache):
-        z = np.load(args.feature_cache)
-        cached_ids = z["image_ids"]
-        pos = {int(i): k for k, i in enumerate(cached_ids)}
-        idx = np.array([pos[int(i)] for i in image_ids])
-        return z["magno"][idx], z["parvo"][idx]
-
+def build_extractor(args, device: str):
+    """The front-end constants and (for network features) the model."""
     ch_min, ch_max = dkl_frontend.compute_dkl_channel_minmax()
     # A 12-hour fit on a mid-training checkpoint is expensive to discover
     # late, and the output npz records nothing about it (PAPER_PLAN §10.1).
@@ -98,12 +97,22 @@ def get_features_for_images(args, image_ids: np.ndarray, device: str):
             seed=args.seed,
             device=device,
         )
+    return ch_min, ch_max, model
 
+
+def features_from_rgb(args, rgb_uint8, ch_min, ch_max, model, device: str):
+    """RGB uint8 (N, H, W, 3) -> (magno, parvo) feature matrices.
+
+    Shared by the NSD stimuli and the cue-conflict set so both go through the
+    identical front end and the identical feature stage; a cue-conflict panel
+    computed with any other transform would not be comparable with the fit it
+    is projected through.
+    """
     magno_all, parvo_all = [], []
     chunk = 512
-    for start in range(0, len(image_ids), chunk):
-        ids = image_ids[start : start + chunk]
-        rgb = dkl_frontend.load_nsd_images(ids)
+    n = len(rgb_uint8)
+    for start in range(0, n, chunk):
+        rgb = rgb_uint8[start : start + chunk]
         x_m, x_p = dkl_frontend.magno_parvo_inputs(
             rgb,
             ch_min,
@@ -123,14 +132,86 @@ def get_features_for_images(args, image_ids: np.ndarray, device: str):
             )
         magno_all.append(f["magno"])
         parvo_all.append(f["parvo"])
-        print(f"  features {start + len(ids)}/{len(image_ids)}", flush=True)
+        print(f"  features {min(start + chunk, n)}/{n}", flush=True)
+
+    return np.concatenate(magno_all), np.concatenate(parvo_all)
+
+
+def cache_provenance(args) -> dict[str, np.ndarray]:
+    """The settings a cached feature matrix is only valid for.
+
+    The cache path is keyed on model name and subject alone. Nothing in it
+    records the *front end* the features were computed through, so a run whose
+    `--no-lum-blur/--no-lum-cs` flags disagree with the cached file silently
+    reuses features from the wrong front end. That is not hypothetical: it is
+    what happened to `dkl_base_seed0_trained` subject 1 (PAPER_PLAN §22).
+    """
+    return {
+        "prov_lum_blur": np.asarray(not args.no_lum_blur),
+        "prov_lum_cs": np.asarray(not args.no_lum_cs),
+        "prov_age_months": np.asarray(args.age_months),
+        "prov_features": np.asarray(args.features),
+        "prov_checkpoint": np.asarray(args.checkpoint or ""),
+        "prov_stream1_weight": np.asarray(args.stream1_weight),
+        "prov_seed": np.asarray(args.seed),
+    }
+
+
+def cache_is_valid(z, want: dict[str, np.ndarray]) -> bool:
+    """True only if the cache records provenance and it matches."""
+    missing = [k for k in want if k not in z.files]
+    if missing:
+        print(
+            "[cache] no provenance recorded in this cache file "
+            f"(missing {len(missing)} keys) -- recomputing features rather "
+            "than trusting it",
+            flush=True,
+        )
+        return False
+    for k, v in want.items():
+        if z[k].item() != v.item():
+            print(
+                f"[cache] MISMATCH {k}: cached={z[k].item()!r} "
+                f"requested={v.item()!r} -- recomputing features",
+                flush=True,
+            )
+            return False
+    return True
+
+
+def get_features_for_images(args, image_ids: np.ndarray, device: str):
+    """Stream features for a set of NSD images, with optional on-disk cache."""
+    want = cache_provenance(args)
+    if args.feature_cache and os.path.exists(args.feature_cache):
+        z = np.load(args.feature_cache, allow_pickle=False)
+        if cache_is_valid(z, want):
+            cached_ids = z["image_ids"]
+            pos = {int(i): k for k, i in enumerate(cached_ids)}
+            idx = np.array([pos[int(i)] for i in image_ids])
+            print("[cache] hit, provenance verified", flush=True)
+            return z["magno"][idx], z["parvo"][idx]
+
+    ch_min, ch_max, model = build_extractor(args, device)
+
+    magno_all, parvo_all = [], []
+    chunk = 512
+    for start in range(0, len(image_ids), chunk):
+        ids = image_ids[start : start + chunk]
+        rgb = dkl_frontend.load_nsd_images(ids)
+        m, pv = features_from_rgb(args, rgb, ch_min, ch_max, model, device)
+        magno_all.append(m)
+        parvo_all.append(pv)
 
     magno = np.concatenate(magno_all)
     parvo = np.concatenate(parvo_all)
     if args.feature_cache:
         os.makedirs(os.path.dirname(args.feature_cache), exist_ok=True)
         np.savez(
-            args.feature_cache, image_ids=image_ids, magno=magno, parvo=parvo
+            args.feature_cache,
+            image_ids=image_ids,
+            magno=magno,
+            parvo=parvo,
+            **want,
         )
     return magno, parvo
 
@@ -187,6 +268,28 @@ def main():
     Xp_tr, Xp_te = Xp_img[tr_rows], Xp_img[te_rows]
     del Xm_img, Xp_img
 
+    # ---- cue-conflict design (PAPER_PLAN §7.3b / §21) ----
+    # Projected with the PCA fit on the NSD *training* images, never refit on
+    # the cue-conflict set: the panel asks what this fitted model predicts for
+    # those images, so every stage upstream of the ridge must be the one the
+    # ridge was fit through.
+    X_extra = None
+    cc_shapes = cc_textures = None
+    if args.cue_conflict:
+        stage("cue-conflict features")
+        rgb_cc, cc_shapes, cc_textures = voxel_shape_bias.cue_conflict_design()
+        ch_min, ch_max, cc_model = build_extractor(args, device)
+        cc_m, cc_p = features_from_rgb(
+            args, rgb_cc, ch_min, ch_max, cc_model, device
+        )
+        del rgb_cc, cc_model
+        X_extra = [
+            pcam.transform(cc_m).astype(np.float32),
+            pcap.transform(cc_p).astype(np.float32),
+        ]
+        del cc_m, cc_p
+        stage(f"  cue-conflict design {X_extra[0].shape[0]} images")
+
     stage(f"banded ridge over {Y_train.shape[1]} voxels "
           f"(chunk={args.voxel_chunk or 'all'}, folds={args.n_splits})")
     splits = banded_ridge.make_grouped_splits(
@@ -203,11 +306,29 @@ def main():
             [Xm_tr, Xp_tr], Y_train[:, start:stop],
             [Xm_te, Xp_te], Y_test[:, start:stop],
             splits, backend=args.backend, seed=args.seed,
+            X_bands_extra=X_extra,
         )
         for k, v in part_res.items():
             res_chunks.setdefault(k, []).append(v)
         stage(f"  voxels {stop}/{n_vox} done")
-    res = {k: np.concatenate(v) for k, v in res_chunks.items()}
+    # Per-voxel statistics are (n_voxels,) and stack along axis 0; the
+    # cue-conflict predictions are (n_images, n_voxels) and stack along the
+    # voxel axis instead.
+    res = {
+        k: np.concatenate(v, axis=1 if k.startswith("pred_extra_") else 0)
+        for k, v in res_chunks.items()
+    }
+
+    extras: dict[str, np.ndarray] = {}
+    if args.cue_conflict:
+        for band in ("magno", "parvo", "joint"):
+            pred = res.pop(f"pred_extra_{band}")
+            for k, v in voxel_shape_bias.voxel_shape_bias(
+                pred, cc_shapes, cc_textures
+            ).items():
+                extras[f"cc_{band}_{k}"] = v
+        extras["cc_n_images"] = np.asarray(len(cc_shapes))
+        stage("  cue-conflict shape-bias index computed")
 
     part = banded_ridge.variance_partition(
         res["r2_joint"], res["r2_magno"], res["r2_parvo"], noise_ceiling=nc
@@ -229,6 +350,7 @@ def main():
         noise_ceiling=nc,
         **res,
         **{k: v for k, v in part.items()},
+        **extras,
         **rois,
     )
     stage(f"saved -> {out_path}")

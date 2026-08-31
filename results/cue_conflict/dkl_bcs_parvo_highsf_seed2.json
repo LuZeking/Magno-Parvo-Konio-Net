@@ -1,0 +1,45 @@
+{
+  "model_name": "dkl_bcs_parvo_highsf_seed2",
+  "checkpoint": "/scratch/byrong/VST_data/mpk_runs/dkl_bcs_parvo_highsf_seed2/checkpoint_last.pt",
+  "conditions": {
+    "full": {
+      "n_images": 1200,
+      "n_shape": 286,
+      "n_texture": 296,
+      "n_other": 618,
+      "shape_bias": 0.49140893470790376,
+      "shape_accuracy": 0.23833333333333334,
+      "texture_accuracy": 0.24666666666666667,
+      "shape_bias_ci95": [
+        0.45068027210884354,
+        0.5320631967539463
+      ]
+    },
+    "magno_only": {
+      "n_images": 1200,
+      "n_shape": 305,
+      "n_texture": 75,
+      "n_other": 820,
+      "shape_bias": 0.8026315789473685,
+      "shape_accuracy": 0.25416666666666665,
+      "texture_accuracy": 0.0625,
+      "shape_bias_ci95": [
+        0.7621878629500581,
+        0.8413640304029474
+      ]
+    },
+    "parvo_only": {
+      "n_images": 1200,
+      "n_shape": 230,
+      "n_texture": 342,
+      "n_other": 628,
+      "shape_bias": 0.4020979020979021,
+      "shape_accuracy": 0.19166666666666668,
+      "texture_accuracy": 0.285,
+      "shape_bias_ci95": [
+        0.36425841276016335,
+        0.4430853284283511
+      ]
+    }
+  }
+}

@@ -62,8 +62,11 @@ def r2_per_target(Y_true: np.ndarray, Y_pred: np.ndarray) -> np.ndarray:
 
 
 def prepare_band(
-    Xb_train: np.ndarray, Xb_test: np.ndarray, var_tol: float = 1e-6
-) -> tuple[np.ndarray, np.ndarray]:
+    Xb_train: np.ndarray,
+    Xb_test: np.ndarray,
+    Xb_extra: np.ndarray | None = None,
+    var_tol: float = 1e-6,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
     """Center, drop degenerate dimensions, and scale one feature band.
 
     Do NOT z-score PCA output: components whose variance is ~0 (the feature
@@ -74,17 +77,24 @@ def prepare_band(
     scale, which also puts the two bands on comparable footing for the
     banded-ridge group weights.
 
-    All statistics come from the training split only.
+    All statistics come from the training split only. ``Xb_extra`` is an
+    optional further design (e.g. the cue-conflict stimuli of PAPER_PLAN
+    §7.3b) that must receive the *same* centring, dimension drop and scale as
+    the test set -- refitting them on 1280 out-of-distribution images would
+    make its predictions incomparable with the NSD ones.
     """
     mu = Xb_train.mean(axis=0, keepdims=True)
     tr = (Xb_train - mu).astype(np.float64)
     te = (Xb_test - mu).astype(np.float64)
+    ex = None if Xb_extra is None else (Xb_extra - mu).astype(np.float64)
 
     sd = tr.std(axis=0)
     keep = sd > (sd.max() * var_tol if sd.size and sd.max() > 0 else 0.0)
     if not keep.any():
         raise ValueError("feature band has no non-degenerate dimensions")
     tr, te = tr[:, keep], te[:, keep]
+    if ex is not None:
+        ex = ex[:, keep]
     if int(keep.size - keep.sum()):
         print(
             f"[banded_ridge] dropped {int(keep.size - keep.sum())} of "
@@ -95,7 +105,7 @@ def prepare_band(
     scale = np.sqrt((tr**2).sum() / tr.shape[0])
     if scale <= 0:
         raise ValueError("feature band has zero scale")
-    return tr / scale, te / scale
+    return tr / scale, te / scale, (None if ex is None else ex / scale)
 
 
 def fit_banded(
@@ -108,8 +118,17 @@ def fit_banded(
     n_iter: int = 20,
     alphas=np.logspace(-2, 8, 21),
     seed: int = 0,
+    X_bands_extra: list[np.ndarray] | None = None,
 ) -> dict[str, np.ndarray]:
     """Joint banded ridge + per-band single ridge fits; test R2 per voxel.
+
+    ``X_bands_extra`` is an optional design of further stimuli, in the same
+    band order. When given, the *fitted* magno-only, parvo-only and joint
+    estimators are applied to it and the predictions returned under
+    ``pred_extra_{magno,parvo,joint}``, each ``(n_extra, n_voxels)``. This is
+    what PAPER_PLAN §7.3b needs: the estimators are otherwise discarded here,
+    so the cue-conflict images cannot be pushed through an existing fit and
+    the encoding run has to produce the predictions itself.
 
     Cost note: the random search re-decomposes the band-weighted design for
     every sampled gamma, so wall time scales as n_iter * n_folds * SVD cost.
@@ -122,23 +141,31 @@ def fit_banded(
 
     backend_mod = set_backend(backend, on_error="warn")
 
+    extra_in = (
+        [None] * len(X_bands_train) if X_bands_extra is None else X_bands_extra
+    )
     prepared = [
-        prepare_band(tr, te)
-        for tr, te in zip(X_bands_train, X_bands_test)
+        prepare_band(tr, te, ex)
+        for tr, te, ex in zip(X_bands_train, X_bands_test, extra_in)
     ]
     Xtr = [p[0] for p in prepared]
     Xte = [p[1] for p in prepared]
+    Xex = [p[2] for p in prepared]
 
     results: dict[str, np.ndarray] = {}
 
     # ---- single-band ridge fits ----
-    for name, Xb_tr, Xb_te in zip(("magno", "parvo"), Xtr, Xte):
+    for name, Xb_tr, Xb_te, Xb_ex in zip(("magno", "parvo"), Xtr, Xte, Xex):
         ridge = RidgeCV(alphas=alphas, cv=splits)
         ridge.fit(Xb_tr.astype(np.float64), Y_train)
         pred = ridge.predict(Xb_te.astype(np.float64))
         results[f"r2_{name}"] = r2_per_target(
             Y_test, _as_numpy(pred, backend_mod)
         )
+        if Xb_ex is not None:
+            results[f"pred_extra_{name}"] = _as_numpy(
+                ridge.predict(Xb_ex.astype(np.float64)), backend_mod
+            ).astype(np.float32)
 
     # ---- joint banded ridge, PRIMAL space ----
     # With ~1k features per band and tens of thousands of trials, the primal
@@ -168,6 +195,12 @@ def fit_banded(
     banded.fit(Xtr_cat, Y_train)
     pred = banded.predict(Xte_cat)
     results["r2_joint"] = r2_per_target(Y_test, _as_numpy(pred, backend_mod))
+
+    if X_bands_extra is not None:
+        Xex_cat = np.concatenate(Xex, axis=1).astype(np.float64)
+        results["pred_extra_joint"] = _as_numpy(
+            banded.predict(Xex_cat), backend_mod
+        ).astype(np.float32)
 
     return results
 
