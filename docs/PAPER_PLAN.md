@@ -2535,3 +2535,42 @@ an artefact of the variance partition.
 reported. Everything here is provisional until the cell completes; the
 attenuation from −0.184 to −0.088 between the two controls is itself large
 enough that the n=8 numbers could land either side of meaningful.
+
+### 24.7 §24.2 is NOT the first measurement of leg (a) — correcting the claim
+
+§24.2 called the per-band VSB dissociation "leg (a), measured for the first
+time", quoting §7.3's "asserted in the title and tested nowhere". That
+sentence was written 2026-08-28 and was already superseded:
+`src/analysis/behavior/stream_shape_texture.py` is the §7.3a probe, it has
+run, and `results/shape_texture/dkl_bcs_seed0_trained.json` holds a **cleaner
+and stronger** measurement of the same thing on the same 1200 images:
+
+| stream | shape acc | texture acc | bias |
+|---|---|---|---|
+| magno | **0.969** | 0.159 | **+0.810** |
+| parvo | 0.454 | **0.936** | −0.482 |
+
+magno − parvo = **+1.292**, consistent across all 5 folds (1.26–1.35), with
+both streams matched at 256 PCA components so the general-factor confound is
+controlled. Chance is 0.0625.
+
+My VSB version (magno +0.770, parvo −0.748) agrees in sign and ordering, but
+it is a *weaker instrument*: a variance ratio on predicted BOLD rather than a
+cross-validated decoding accuracy, with no fold-level reliability.
+
+**What §24.2 actually contributes**, stated correctly: the stream
+dissociation survives projection through the *voxel-predictive* dimensions —
+the probe shows the information is in the stream features, and VSB shows the
+encoding model's readout preserves it. That is a consistency check between two
+independent methods, worth one sentence, and it is not a first measurement.
+Cite `stream_shape_texture.py` for leg (a); do not lead with VSB.
+
+**Consequence: the real contribution of §7.3b is §24.6**, the cortical VSB
+profile — the model's texture-dominated hV4/LO, surviving residualisation on
+SPI and on predictability. That has no counterpart in
+`stream_shape_texture.py`, which has no cortical axis at all. §7.3b should be
+written up around the profile, with §24.2 as its sanity check.
+
+**Housekeeping**: §7.3's "leg (a) has no direct measurement anywhere in the
+project" is stale and should be struck when that section is next revised, so
+it stops misleading readers of the plan (it misled this session).
