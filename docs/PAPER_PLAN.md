@@ -1604,3 +1604,115 @@ that ever becomes shape-biased, and only the luminance channel can be made so.
   training and are excluded by the convergence guard, which was added to
   `cue_conflict.py` for this run — it had been added to
   `stream_shape_texture.py` after §10.1 but never to this entry point.
+
+---
+
+## §19 THE INPUT-LEVEL NULL MODEL — the trained result survives, the untrained panels do not
+
+§7.2 item 1, "the control that decides how much the network matters", run at
+last. A bank of oriented energy filters (4 scales × 8 orientations, quadrature
+energy, 2048 dims/stream) is applied to **each stream's own transformed input**
+and pushed through the identical PCA → banded-ridge → variance-partition path
+(`--features gabor`, jobs 26391744/26391745, n=8 both front ends). If the
+gradient is carried by the input, the ResNet is doing nothing.
+
+### 19.1 The result, hV4−V1v (norm), n=8
+
+| front end | **Gabor input-only** | untrained net | trained net |
+|---|---|---|---|
+| no-blur (no diet) | **−0.6209** | −0.4877 | −0.1669 (`dkl_base` s0) |
+| blur+CS (diet) | **−0.3666** | −0.4691 | −0.8593 / −0.8618 |
+
+Fit quality, median R²/NC over reliable voxels:
+
+| | Gabor input | untrained net | trained net |
+|---|---|---|---|
+| blur+CS | **0.1408** | **0.1384** | 0.386–0.403 |
+| no-blur | **0.1627** | **0.1610** | 0.424 |
+
+### 19.2 What survives: the trained diet result, on both statistics
+
+`gabor_blur_cs` vs the diet-trained models is the one contrast where the raw
+and scale-free statistics **agree**, which is this project's bar (§8):
+
+| contrast | raw | norm | verdict |
+|---|---|---|---|
+| gabor vs thesis `dvd_trans` | −0.0419 vs −0.1746, **p=.008** | −0.3666 vs −0.8593, **p=.008** | **larger in trained** |
+| gabor vs our `dkl_bcs` s0 | −0.0419 vs −0.1759, **p=.008** | −0.3666 vs −0.8618, **p=.008** | **larger in trained** |
+
+**The headline of §15/§17 survives the control it was most exposed to.** The
+diet-trained network's ventral gradient is roughly 2.3× the input model's on
+the scale-free statistic and 4.2× on the raw one, in both codebases. It is not
+a front-end artefact.
+
+### 19.3 What does not survive: the untrained network adds nothing to fit
+
+The untrained ResNet predicts BOLD **no better than oriented energy on its own
+input** — 0.1384 vs 0.1408 (blur+CS) and 0.1610 vs 0.1627 (no-blur), the input
+model marginally *ahead* in both. Whatever the random network computes, it buys
+zero additional explained variance over a Gabor bank.
+
+This forces a correction to §14.5, which proposed keeping the untrained model as
+"the reference showing the gradient exists before learning and sharpens with
+it". That framing is still available but the wording must change: the
+pre-learning gradient is a property of the **front end**, not of the untrained
+network. Any panel that shows the untrained model as evidence about
+architecture is a front-end validation and must be labelled as one.
+
+### 19.4 Two contrasts where the statistics disagree — both unresolved
+
+Per §8 neither may be claimed.
+
+1. **Untrained net vs input null.** raw says the network roughly *doubles* the
+   absolute gradient (−0.1179 vs −0.0419, p=.008; no-blur −0.2081 vs −0.1009,
+   p=.008); norm says the two are indistinguishable (p=.109 and p=.055). The
+   cause is visible in the denominator: total stream-unique variance is
+   0.0294 for the untrained net against 0.0208 for the input model, so the
+   network moves variance from shared into unique **without predicting better**
+   (§19.3). Absolute and relative statements therefore diverge, and both are
+   true of different quantities. The honest summary is that the untrained
+   network sharpens the *magnitude* of stream separation while leaving the
+   *relative* stream preference profile where the input already had it.
+2. **No-diet trained vs input null.** norm says training drops the model below
+   its own input (−0.1669 vs −0.6209, p=.016); raw says no difference
+   (p=.055). Tempting to read as "learning without the diet actively destroys
+   structure the input handed it for free", and the monotonicity is consistent
+   (input ρ=−0.819, 8/8 negative; no-diet trained ρ=−0.512), but one statistic
+   is not enough. **Do not put this in the paper until it is resolved.**
+
+### 19.5 The eccentricity gradient is a front-end property, confirmed
+
+Gabor +0.2221 vs untrained +0.2518, norm **p=.844** — indistinguishable. (Raw
+disagrees, p=.008, for the §19.4 denominator reason.) §8 already demoted
+eccentricity to a front-end validation on the blur control; the input model
+confirms it directly. It is also *absent* in the trained diet model (+0.1009,
+p=.055), so it is not part of the trained claim at all.
+
+### 19.6 Monotonicity, and a subtlety worth keeping
+
+Spearman ρ along V1→V2→V3→hV4, from the global-centring control:
+
+| model | centred hV4−V1v | dz | ρ |
+|---|---|---|---|
+| Gabor, blur+CS | −0.3666 | −2.93 | −0.326 (7/8) |
+| Gabor, no-blur | −0.6209 | −4.04 | −0.819 (8/8) |
+| untrained net | −0.4691 | −2.56 | −0.698 |
+| diet-trained | −0.8593 | −10.86 | −0.973 (8/8) |
+
+The diet's front end *lowers* the input-level gradient (−0.62 → −0.37) and
+weakens its monotonicity (ρ −0.82 → −0.33): blurring luminance removes the
+fine-scale content that gives V1 its magno advantage. Learning then builds it
+back to −0.86 with ρ=−0.97. So the diet does not hand the network a better
+starting point — it hands it a *worse* one, and the diet-trained network
+overtakes anyway. That is a stronger version of §15's claim, and unlike §19.4
+it rests on the contrast that passes both statistics.
+
+### 19.7 Consequences
+
+1. §15/§17's central claim stands and is now defended against the control the
+   plan predicted a reviewer would demand.
+2. Every untrained-model panel is re-labelled a front-end validation (§19.3).
+3. The eccentricity panel is settled as front-end (§19.5), consistent with §8.
+4. Two contrasts are unresolved pending a statistic that both agree on (§19.4).
+5. Still to do: the input-null column for `dkl_base` seed1 and `dkl_bcs` seed2+,
+   and an input-null run against the `swap` front end once its seeds converge.
