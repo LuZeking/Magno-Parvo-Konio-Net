@@ -2574,3 +2574,51 @@ written up around the profile, with §24.2 as its sanity check.
 **Housekeeping**: §7.3's "leg (a) has no direct measurement anywhere in the
 project" is stale and should be struck when that section is next revised, so
 it stops misleading readers of the plan (it misled this session).
+
+## §25 The input-level null for the §7.3b profile — pre-declared 2026-08-31
+
+§24.7 concluded the real contribution of §7.3b is §24.6's cortical VSB profile
+(texture-dominated hV4/LO, surviving residualisation on SPI and on
+predictability). §19 established that this project cannot report a cortical
+profile without asking whether the *front end alone* produces it — the
+untrained-network panels failed exactly that test and had to be relabelled.
+§24.6 currently has no such column, so it is at present an unguarded claim of
+precisely the kind §19 disallows.
+
+**Job 26401261, `slurm/encode_cc_gabor.sh`, 8 tasks**: `gabor_blur_cs` with
+`--cue-conflict`, i.e. oriented-energy features on each stream's own
+transformed input, blur+CS front end to match `dkl_bcs_seed0`. The Gabor bank
+is the same one used in §19 (`input_bands.py`, 4 scales x 8 orientations,
+2048 dims/stream). Untrained-network columns are *not* run: §19 showed the
+untrained ResNet predicts BOLD no better than this bank (0.1408 vs 0.1384), so
+the bank is the cheaper and stricter null.
+
+### 25.1 Outcomes, written before the fit
+
+- **The Gabor null reproduces the declining profile** (hV4/LO texture-shifted,
+  monotonicity rho negative). Then §24.6 is a **front-end fact**, not a model
+  prediction, and §7.3b collapses to §24.2's consistency check. The
+  "texture-dominated LO contradicts human LO" tension would then be a
+  statement about blurred luminance versus red-green input, not about the
+  trained two-stream network, and must be re-worded accordingly.
+- **The Gabor null is flat, or declines much less.** Then the profile is
+  *built by the network* and §24.6 stands as a genuine model prediction — and
+  the tension with human LO's shape selectivity is a real property of the
+  trained model, worth reporting as a limitation with teeth.
+- **The Gabor null declines more steeply.** The network partially *corrects*
+  an input-level bias, which would be the most interesting outcome of the
+  three and would parallel §19.6 (the diet hands the network a worse starting
+  point and learning overtakes).
+
+Both statistics (§8) and the same residualisation ladder (§24.6 sections 4-5)
+apply to the null exactly as to the trained model; a difference claimed on the
+raw profile but not on the residualised one is not claimed.
+
+### 25.2 Note on what this cannot settle
+
+The Gabor null shares the *front end* with `dkl_bcs_seed0` but not the
+architecture. A flat null therefore licenses "the network builds it", not "the
+diet builds it". Separating those needs the no-diet trained column
+(`dkl_base_seed0`, tasks 16-23 of 26399760, already running) against this one.
+The three columns together — input-only, no-diet-trained, diet-trained — are
+the same design §19 used, and should be reported the same way.
