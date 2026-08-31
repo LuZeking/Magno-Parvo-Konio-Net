@@ -2149,3 +2149,141 @@ Tested before submission, not after:
 Not yet exercised: the voxel-chunked concatenation of `pred_extra_*` along the
 voxel axis (the array runs with `--voxel-chunk 0`, a single chunk, so this
 path is not hit) and the real 1200-image fit.
+
+---
+
+## §25 `parvo_highsf` closes the conjunction into a 2×2 on the INPUT factors
+
+**n=1 so far** (`dkl_bcs_parvo_highsf_seed2`, cue-conflict). Seed 1 is still
+running (26399701_12, stalled on a slow node); seed 0 is at 139/150. Treat the
+numbers as provisional until n=2, but the direction is unambiguous and it is the
+prediction §21.3 was most exposed to.
+
+The condition gives stream 2 **untransformed high-acuity luminance + rg** (2
+channels) — the biologically corrected parvo input, since real parvocellular
+cells carry both. So parvo gets the achromatic *carrier* without the
+developmental *transform*.
+
+| condition | shape bias |
+|---|---|
+| magno_only | 0.803 [.762,.841] |
+| **parvo_only** | **0.402** [.364,.443] |
+| full | 0.491 [.451,.532] |
+
+### 22.1 The prediction holds — and the input factors now form a clean 2×2
+
+§21.3 claimed only an achromatic carrier can be driven into shape bias. The
+sharper test is whether the carrier *alone* suffices. It does not:
+
+| | **no transform** | **with transform** |
+|---|---|---|
+| **chromatic carrier (rg)** | 0.364 (no-diet parvo) | 0.484 (swap parvo) |
+| **achromatic carrier (lum)** | **0.402 (parvo_highsf parvo)** | **0.878 (diet magno)** |
+
+Both single factors land at 0.36–0.48. Only the **conjunction** reaches 0.878.
+That is an interaction, not two additive main effects, and it is now measured on
+all four cells rather than inferred from two. This is the strongest causal
+statement in the project: **the shape bias is produced by the developmental
+low-pass transform applied specifically to an achromatic channel, and neither
+factor alone does anything much.**
+
+### 22.2 The capacity confound is not merely argued away — it is measured
+
+`parvo_highsf` gives stream 2 an extra input channel, an architectural
+difference from every other condition (disclose this). The confound would
+matter if the extra channel were *weakening* parvo and thereby faking the null.
+It is not — the extra channel demonstrably **helped** parvo:
+
+- parvo 16-way accuracy **0.477**, up from ~0.379 in the standard diet models
+- full accuracy 0.485, up from 0.447
+
+So parvo received materially more usable information, got materially better at
+the task, and *still* did not become shape-biased (0.402 vs 0.418 standard).
+A capacity confound can only push parvo's competence up, which is the direction
+that would have *helped* it become shape-biased if the carrier were sufficient.
+The null survives its own most favourable confound.
+
+### 22.3 It independently confirms §20.2's averaging account
+
+The integrated readout **drops** to 0.491, from 0.675 in the standard diet
+models, even though magno is still strongly shape-biased (0.803). §20.2 argued
+the readout is a competence-weighted average rather than a synergy. This is that
+account's prediction: making parvo a *better* classifier gives its
+texture-biased logits more pull, so the integrated shape bias falls. Predicted
+before it was measured, and the accuracy numbers in §22.2 supply the mechanism.
+
+Together with `s1_90` (up-weighting magno raises integrated shape bias to 0.712)
+this brackets the effect from both sides — the readout tracks the mixing weight
+and the relative competence of the streams, and never exceeds its best stream.
+
+### 22.4 One thing to watch at n=2
+
+magno reads 0.803 here against 0.87–0.89 in the standard diet models. If that
+holds at n=2 it is worth a sentence: when parvo is made competent, magno
+specialises *less*, which would be a division-of-labour effect rather than
+noise. Do not claim it from one seed.
+
+---
+
+## §26 Numbering collision, and Figure 1 is quarantined until the repair lands
+
+### 26.1 Duplicate section numbers (two sessions appending concurrently)
+
+The document currently has **two §21s and two §22s**, because two sessions
+appended without seeing each other's headers:
+
+| number | section | author |
+|---|---|---|
+| §21 | The swap probe on converged checkpoints (line ~1822) | this session |
+| §21 | Claiming §7.3b, in-silico cue-conflict → cortex (line ~1902) | other session |
+| §22 | A contaminated subject in the no-diet cell (line ~1990) | other session |
+| §22 → **§25** | `parvo_highsf` closes the conjunction (line ~2155) | this session, **renumbered** |
+
+I renamed only my own newest section (§22 → §25) rather than editing the other
+session's headers, since they may have edits in flight. The remaining duplicate
+§21/§22 pair should be resolved in one pass by whoever next edits the document;
+cross-references in §25 and §26 use the *titles*, not the numbers, so they
+survive renumbering either way. Same root cause as §20.4 — append-only edits to
+a shared file from two sessions.
+
+### 26.2 Figure 1 is quarantined — I own it and I am not regenerating it yet
+
+Acknowledging §22.8 ("Figure 1 contains the contaminated subject", addressed to
+this session). Confirmed: `results/figures/fig1_data.npz` was built at 22:59 on
+2026-08-30, after the bad `dkl_base_seed0_trained_subj01.npz` landed at 06:06,
+so `nodiet_s0__profile / __centred / __rho` include the contaminated subject in
+row 0.
+
+**Numbers I reported that are contaminated, and must be withdrawn:**
+
+- Figure 1's headline no-diet trained value **−0.149** averaged the
+  contaminated `nodiet_s0` (−0.1669) with the clean `nodiet_s1` (−0.1318).
+  Withdrawn. Per §22.7, quote **seed1 at n=8 (−0.1318)** or **seed0 at n=7
+  (−0.0721)** until job 26399760 lands, and no `dkl_base_seed0_trained` n=8
+  number at all.
+- The caption's panel-A sentence "to −0.149 without the diet" and panel-D's
+  no-diet ρ = −0.56 are both computed from the affected arrays.
+
+Not affected: `untrained_nodiet`, `untrained_diet`, `nodiet_s1`,
+`diet_thesis`, `diet_ours_s0`. So panels B and C, and the diet arm throughout,
+stand.
+
+**Direction of the correction**: per §22.5 the contamination made the no-diet
+model look *more* like the diet model, so removing it widens the gap Figure 1 is
+built on. The figure's message does not change and the contrast gets cleaner —
+this is a correction, not a retraction.
+
+**Why I am not regenerating now**: job 26399760 (24 tasks at %6, ~3 h each) is
+~12 h from completion, and regenerating against the seed1-only data would
+produce a third set of numbers that also has to be replaced. One regeneration,
+after the repair, folding in all three pending changes:
+
+1. the repaired `dkl_base_seed0_trained` subject 1 (§22.7),
+2. relabelling the untrained arm as a front-end validation, not evidence about
+   architecture (§20.5, from §19's Gabor null),
+3. adding the swap arm to panel C, now available on converged checkpoints for
+   both measures (§21.4), and the `parvo_highsf` cell if n=2 confirms (§25).
+
+Until then `fig1_diet_gradient.{png,pdf}` and `fig1_caption.md` must not be used
+in any draft. A warning banner has been written into `fig1_caption.md` itself so
+the file cannot be picked up innocently.

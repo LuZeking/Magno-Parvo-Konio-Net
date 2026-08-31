@@ -1,3 +1,28 @@
+> **DO NOT USE — QUARANTINED 2026-08-31.**
+>
+> This figure contains a contaminated subject. `dkl_base_seed0_trained`
+> subject 1 was encoded with the wrong front end (blur + CS applied to a
+> no-diet model, verified by exact-zero feature match; see PAPER_PLAN
+> "A CONTAMINATED SUBJECT IN THE NO-DIET CELL"). `fig1_data.npz` was built
+> after that file landed, so panel A's and panel D's no-diet rows include it.
+>
+> **Withdrawn numbers**: the no-diet trained value **−0.149** below, and
+> panel D's no-diet **ρ = −0.56**. Until the repair job 26399760 lands, quote
+> `dkl_base_seed1_trained` at n=8 (−0.1318) or seed0 at n=7 (−0.0721); do not
+> quote any `dkl_base_seed0_trained` n=8 number.
+>
+> Unaffected: both untrained models, `nodiet_s1`, `diet_thesis`,
+> `diet_ours_s0` — so panels B and C and the entire diet arm stand.
+>
+> The correction WIDENS the diet/no-diet gap (the contamination made the
+> no-diet model look more diet-like), so the figure's message holds and the
+> contrast improves. This is a correction, not a retraction.
+>
+> Regenerate once after 26399760, folding in all three pending changes:
+> the repaired subject; relabelling the untrained arm as a front-end
+> validation (the Gabor null shows it is not evidence about architecture);
+> and the swap arm in panel C.
+
 # Figure 1 — caption
 
 **The developmental visual diet decides whether learning builds or erodes
