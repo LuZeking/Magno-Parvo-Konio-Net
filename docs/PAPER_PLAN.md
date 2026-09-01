@@ -3430,3 +3430,44 @@ this is a read, not a result. The pca64 rung has not started. Recorded now
 because the retention percentages are large enough (100% vs 8%) that the
 direction is unlikely to reverse, and because fixing the interpretation before
 the remaining subjects arrive is the point of §36.4's pre-commitment.
+
+### 39.3 n=5 update — the capacity argument holds for the GROSS step only
+
+Two more pca16 subjects landed. The paired retention percentages moved, and
+not uniformly:
+
+| measure | n=3 (subj 3,4,6) | **n=5 (subj 2,3,4,5,6)** | Gabor (n=4) | diff vs full, p |
+|---|---|---|---|---|
+| hV4−V1 uncorrected | 100.3% | **93.0%** | 8.4% | .4375 |
+| hV4−V1 − SPI x pred | 69.0% | **52.8%** | −3.0% | .1250 |
+| hV4−V1 − SPI x pred x ecc | 63.4% | **27.5%** | 10.7% | .1250 |
+
+(The reference values change with the paired subject subset, so the drift is
+subject sampling, not a computation change.)
+
+**What still holds.** The gross step is capacity-independent: 93% retained at
+16 dimensions, with no detectable difference from the full fit (p=.4375),
+against the Gabor bank's 8.4% at comparable dimensionality. §39.1's refutation
+of the *dimension-count* objection stands on this row, and it is the row with
+the largest separation by an order of magnitude.
+
+**What weakens.** The fully-controlled residual step retains only **27.5%** at
+16 dimensions, down from 63.4% at n=3, against the bank's 10.7%. That
+separation is no longer an order of magnitude and both values are small. So
+for the residualised effect — which §33 and §38 identified as the *real*
+§7.3b contribution — capacity cannot be dismissed as an explanation on this
+evidence.
+
+**Revised claim.** Say: the hV4/LO texture step is not an artefact of feature
+dimensionality (gross step, 93% vs 8%). Do **not** say the residualised
+component is capacity-free; at 16 dimensions it is substantially attenuated,
+and the honest statement is that the residualised effect requires
+representational capacity the Gabor bank does not have — which is a weaker and
+more careful claim than §39 originally implied.
+
+§37.3's independent argument is unaffected: the null's *consistent opposite
+structure* (3/3 subjects, rho +0.65) is not what a capacity ceiling produces,
+and that argument never relied on the ladder.
+
+n=5 of 8 on this rung and n=4 of 8 on the null; the pca64 rung would locate the
+attenuation curve between 16 and 1000 dimensions and has not started.
