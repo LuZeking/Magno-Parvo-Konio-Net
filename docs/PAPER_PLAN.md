@@ -3656,3 +3656,54 @@ point estimate, and do not treat 1.60 as "the" diet value.
 
 Absolute PRs are also worth stating: training raises magno PR from 3.7 to
 159-233, a 43-63x increase, which is the §36 finding at n=8.
+
+## §42 CAPACITY LADDER COMPLETE (pca16, n=8) — the objection is closed, and
+§39.3 was noise
+
+Paired within subject against the full-dimensional fit, all 8 subjects:
+
+| measure | pca16 retained | diff vs full, p | Gabor (n=4) |
+|---|---|---|---|
+| hV4−V1 uncorrected | **101.2%** | .7422 | 8.4% |
+| hV4−V1 − SPI x pred | **106.3%** | .9453 | −3.0% |
+| hV4−V1 − SPI x pred x ecc | **65.1%** | .0547 | 10.7% |
+
+At sixteen PCA dimensions the trained model retains **the entire step** on two
+of three measures — statistically indistinguishable from its own
+full-dimensional fit — and 65% on the strictest, at p=.055.
+
+### 42.1 The trajectory, and the lesson
+
+The fully-controlled row read 63.4% (n=3), 27.5% (n=5), 47.1% (n=6), **65.1%
+(n=8)**. §39.3 treated the n=5 dip as a finding and wrote a correction around
+it; §39.4 caught that and imposed a hold; the completed rung confirms §39.4.
+**§39.3's stated reason is withdrawn** — there is no sharp weakening. Its
+cautious wording was harmless, but it was reasoning from noise.
+
+The lesson is now recorded twice in this document and should be followed:
+do not analyse a partially-filled cell. Every one of this session's
+self-corrections on the ladder (§39.3, §39.4, this section) traces to reading
+an incomplete rung.
+
+### 42.2 What is now established about capacity
+
+A 16-dimensional trained model reproduces the hV4/LO step in full; a
+~15-dimensional Gabor bank reproduces 8% of it. The capacity objection raised
+in §34.1 — that the null's flatness might be a ceiling artefact rather than a
+front-end fact — is **closed**. The null is flat because the front end lacks
+the structure, not because a low-dimensional model cannot express it.
+
+This converges with §37.3's independent argument (the null is *consistently*
+oppositely structured, 3/3 subjects, rho +0.65, which a ceiling does not
+produce). Two unrelated lines, same conclusion.
+
+Remaining caveat, unchanged from §39.1: pca16 and the Gabor bank are matched on
+dimension count but not on information content, and that difference *is* the
+front end plus learning, which is the thing under test.
+
+### 42.3 Outstanding
+
+The Gabor null is at n=4 of 8 and the no-diet column at n=4 of 8; neither is
+yet testable. The pca64 rung has not started. §42 concerns capacity only — it
+says nothing about whether the effect is due to the diet, which only the
+no-diet column can settle.
