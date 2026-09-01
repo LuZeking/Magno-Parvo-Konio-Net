@@ -3563,3 +3563,56 @@ and writing up each result. That produced two corrections (§39.3, §39.4) which
 would both have been avoided by waiting for the complete rung. Hold the ladder
 until n=8 on the pca16 arm; the same applies to the Gabor null (n=4) and the
 no-diet column (n=1).
+
+## §41 Repair confirmed independently by participation ratio; and the diet
+raises magno's effective dimensionality
+
+### 41.1 Fourth independent confirmation of the §22 repair
+
+§36.2 predicted the contaminated subject's magno/parvo PR asymmetry should
+disappear once refit. Measured on the repaired cache (2000 NSD images):
+
+| model / subject | magno PR | parvo PR | ratio |
+|---|---|---|---|
+| `dkl_base_seed0` s1, **repaired** | **173.4** | 189.5 | **0.92** |
+| `dkl_base_seed0` s1, *contaminated* | *32.2* | *189.5* | *0.17* |
+| `dkl_base_seed0` s2, never contaminated | 175.0 | 187.5 | 0.93 |
+| `dkl_base_seed1` s1, independent clean seed | 175.6 | 183.2 | 0.96 |
+
+Magno PR moved 32.2 -> 173.4 and now agrees with its own sibling (175.0) and
+with the same subject in a different seed (175.6) to within 2%. This is the
+fourth independent line confirming §22, after the exact feature-identity match
+(§22.2), the outlier analysis (§22.4) and the seed-agreement check in §40.3 —
+and unlike those it is computed from the feature cache, not from any fit.
+
+Note `dkl_base_seed1`'s cache is still `UNSTAMPED` (written before the §22.6
+guard). The sacct audit in §22.3 confirms its flags were correct on all eight
+tasks and its PR agrees, so it is trusted; it will acquire a stamp whenever it
+is next regenerated.
+
+### 41.2 New: the diet makes the magno stream richer, not poorer
+
+| model | magno PR | parvo PR | magno/parvo |
+|---|---|---|---|
+| `dkl_bcs_seed0` (diet) | **269.9** | 160.1 | **1.69** |
+| `dkl_base_seed0` (no diet) | 173.4 | 189.5 | 0.92 |
+
+Without the diet the two streams end up at comparable effective dimensionality
+(ratio 0.92). With it, magno ends up **56% richer than parvo** and 56% richer
+than its own no-diet counterpart (269.9 vs 173.4).
+
+This is counterintuitive and worth stating plainly: the diet *removes*
+information from the magno input — blur plus a 48-month CSF cut — and the
+network nonetheless learns a **higher**-dimensional magno representation from
+it. The natural reading is that without the diet the two streams converge on
+similar solutions and duplicate each other, while the low-pass constraint
+forces them apart; but that is an interpretation, and the measured fact is the
+PR asymmetry.
+
+It sits alongside §36.6's finding that the diet's front end *lowers* the
+input-level cortical gradient while the trained model overtakes anyway. Both
+say the same thing in different currencies: the diet's value is not that it
+hands the network better inputs.
+
+Measured on subject 1 only. Extend to all 8 subjects and to
+`thesis_dvd_trans` / `swap` before this goes in the manuscript.
