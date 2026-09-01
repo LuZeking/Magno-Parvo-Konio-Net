@@ -3119,3 +3119,48 @@ cannot separate the two.
 
 n=1 of 8 for the null. Seven subjects outstanding, plus the whole no-diet
 column and the capacity ladder. Do not quote §28 outside this file yet.
+
+### 28.5 Correcting §28.1 — the front end sets MAGNO, learning sets PARVO
+
+§28.1 said the dissociation is "mostly a property of what the two channels are
+fed, not of what the network learns", and proposed re-running
+`stream_shape_texture.py` on an untrained front end. That re-run was
+unnecessary — `results/shape_texture/untrained_*.json` already exist — and the
+existing numbers show the summary was too coarse:
+
+| model | magno bias | parvo bias | M − P |
+|---|---|---|---|
+| `untrained_blur_cs` (front end only) | **+0.796** | −0.087 | +0.882 |
+| `dkl_bcs_seed0_trained` (diet, trained) | **+0.810** | **−0.482** | +1.292 |
+| `untrained_noblur` | +0.417 | −0.087 | +0.503 |
+| `dkl_base_seed0_trained` (no diet, trained) | **−0.219** | −0.519 | +0.300 |
+| `rgb_tsn_seed*_trained` (architecture only) | −0.141 | −0.141 | **+0.000** |
+
+Decomposed per stream, the picture is not "mostly front-end" — it is a clean
+division of labour:
+
+- **Magno's shape bias is entirely the front end.** +0.796 untrained ->
+  +0.810 trained: learning adds **+0.014**. The blur + CS cut does all of it.
+- **Parvo's texture specialisation is entirely learning.** −0.087 untrained ->
+  −0.482 trained: learning adds **−0.395**, and the untrained parvo stream is
+  barely biased at all.
+
+So the +0.882 -> +1.292 gain is not a uniform 68/32 split; the two streams
+arrive at their specialisations by different routes. This *is* §12's finding
+("the diet protects magno; training specialises parvo"), now quantified per
+stream, and §28.1 should not have restated it as a single ratio.
+
+**And training without the diet reverses magno outright**: +0.417 untrained ->
+**−0.219** trained. The unblurred magno stream does not merely fail to become
+shape-biased, it becomes *texture*-biased, more so than its own parvo partner
+is in relative terms. That is §15's mechanism visible in the probe.
+
+`rgb_tsn` returning exactly +0.000 is a good architecture-only control: with
+identical input to both streams, two-stream architecture alone buys nothing.
+
+**Revised statement for the manuscript**: the input split is necessary and
+sufficient for magno's shape bias; training is necessary for parvo's texture
+specialisation; and without the diet, training actively destroys the shape
+bias the architecture would otherwise inherit. The Gabor null (§28.1) is
+consistent with this — it has a front end and no learning, and it lands near
+the untrained network.
