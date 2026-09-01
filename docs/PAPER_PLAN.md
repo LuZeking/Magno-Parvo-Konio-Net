@@ -3932,3 +3932,124 @@ figure rather than only in the text.
   for legs (a) and (b) but has no encoding run yet — leg (c) could not express
   `--transform-target` until today (§30-to-be). Once those 8 subjects land,
   panel B gets its third curve.
+
+---
+
+## §45 §41.3 CORRECTED — the diet does not supply the asymmetry, it makes
+training keep it
+
+`tmp_analysis/pr_retention.py`, n=8, 1000 images, Gram-side eigendecomposition.
+
+### 45.1 The error in §41.3
+
+§41.3 concluded "the front end sets the asymmetry, no-diet training destroys
+it" from a table in which **every** trained model was compared against a single
+front-end row, `untrained_seed0` — which is the **diet** front end (blur+CS).
+The no-diet model is not trained through that front end. Referencing it there
+asks the wrong question.
+
+The right reference was already on disk and never read: `untrained_seed0_noblur`
+and `gabor_noblur`, the no-diet front ends. Their asymmetry is **larger**, not
+smaller:
+
+| front end (no training) | magno/parvo PR |
+|---|---|
+| `untrained_seed0` (diet, blur+CS) | 1.40 ±0.09 |
+| `untrained_seed0_noblur` (no diet) | **1.63 ±0.12** |
+| `gabor_blur_cs` (diet, learning-free) | 1.38 ±0.09 |
+| `gabor_noblur` (no diet, learning-free) | **2.23 ±0.13** |
+
+This inverts the causal story. The developmental transform *removes* asymmetry
+from the input — it low-passes the luminance channel, so magno's effective
+dimensionality falls (untrained magno PR 4.3 → 3.7; Gabor 25.1 → 15.5) while
+parvo's rg channel is untouched. **The no-diet network is handed the larger
+magno/parvo asymmetry and still ends up with none.**
+
+### 45.2 Retention: each model against its OWN front end
+
+retention_norm = ratio_trained / ratio_frontend; retention_raw = the difference.
+Both statistics, per §8.
+
+| trained model | diet? | norm | >1 | raw | >0 |
+|---|---|---|---|---|---|
+| `dkl_bcs_seed0` | diet | **1.15** ±0.08 | 8/8 | **+0.20** ±0.10 | 8/8 |
+| `thesis_dvd_trans` | diet | 0.83 ±0.06 | 0/8 | −0.24 ±0.10 | 0/8 |
+| `dkl_base_seed0` | no diet | **0.58** ±0.05 | 0/8 | **−0.69** ±0.13 | 0/8 |
+| `dkl_base_seed1` | no diet | **0.61** ±0.05 | 0/8 | **−0.65** ±0.13 | 0/8 |
+
+Against the learning-free Gabor front end instead of an untrained network, the
+separation is starker still (diet 1.17 / 0.84; no-diet **0.43 / 0.44**, raw
+−1.28 / −1.24), so the conclusion does not rest on one random initialisation.
+
+**Every one of the 16 diet-vs-no-diet contrasts** — 2 diet models × 2 no-diet
+models × 2 front-end references × 2 statistics — gives **p=.0078, 8/8
+subjects**. Both statistics agree everywhere, so §8 is satisfied without
+qualification. This is the most unanimous contrast in the project.
+
+### 45.3 What may and may not be claimed
+
+**May be claimed.** Diet-trained networks retain far more of their front end's
+magno/parvo dimensionality asymmetry than no-diet networks do. No-diet training
+discards roughly 40% of it against an untrained reference and ~57% against the
+input-level bank, on every subject, in both seeds, on both statistics.
+
+**May NOT be claimed.** That the diet *preserves* the asymmetry. The two diet
+models straddle 1.0 — `dkl_bcs_seed0` amplifies it (1.15, 8/8 above 1),
+`thesis_dvd_trans` reduces it (0.83, 0/8 above 1). "Preserves" is true of one
+diet model and false of the other. The defensible statement is comparative
+(diet retains more than no-diet), not absolute (diet retains all of it).
+§41.3's replacement wording — "the diet preserves an asymmetry the input
+transform creates" — is therefore **also wrong on both halves**: the transform
+does not create the asymmetry (it shrinks it), and the diet does not reliably
+preserve it.
+
+**Superseded.** §41.2 ("the diet makes magno richer") and §41.3 ("the front end
+sets the asymmetry") are both withdrawn. §41.1's use of PR to confirm the §22
+repair is unaffected — that is a within-condition comparison and needs no
+front-end reference.
+
+### 45.4 Disclosures
+
+- `thesis_dvd_trans` is referenced to `untrained_seed0`'s front end. If the
+  thesis codebase's diet schedule differs in detail from ours, that reference
+  is approximate — which is itself the most likely explanation for why the two
+  diet models differ (1.60 vs 1.16 trained). Report the diet arm as a range.
+- PR is computed on 1000 images per subject from the feature cache; the subject
+  dimension is a resample of images, not independent brains, so the n=8 paired
+  test speaks to stability across image samples, not to population inference.
+- This is a statement about effective dimensionality of stream features. It is
+  not a claim about task performance, and §43.3's cost disclosure (the diet
+  loses ~13% of explained BOLD variance) still stands alongside it.
+
+### 45.5 PRE-REGISTERED — the front-end 2×2, submitted before it was measured
+
+Job **26406434** (`slurm/encode_frontend_2x2.sh`, array 0-31%8) fills the two
+missing cells of the input-factor 2×2 that §25 established behaviourally, on
+both the Gabor bank and the untrained network, using `--cache-only` so no ridge
+fit is paid for. Smoke-tested first: `swap`'s magno input is bit-identical to
+the no-diet magno (max|Δ| = 0.0000) and `parvo_highsf`'s magno is bit-identical
+to the diet magno, so neither flag is a silent no-op.
+
+| front end | magno stream gets | parvo stream gets | magno/parvo PR |
+|---|---|---|---|
+| `parvo_highsf` | lum, transformed | **lum+rg**, untransformed | *predicted lowest* |
+| `blur_cs` (diet) | lum, transformed | rg, untransformed | 1.38 / 1.40 |
+| `noblur` (no diet) | lum, untransformed | rg, untransformed | 1.63 / 2.23 |
+| `swap` | lum, untransformed | rg, **transformed** | *predicted highest* |
+
+**The prediction, from one principle** — PR tracks the bandwidth of the carrier
+a stream receives, and the developmental transform removes bandwidth from
+whichever stream it is applied to:
+
+> **parvo_highsf < blur_cs < noblur < swap**, with `parvo_highsf` plausibly
+> below 1.0 (parvo gains the luminance carrier outright).
+
+Recording it here **before** the job returns, because the persistent failure
+mode in this document is reading a story into a partially-filled table
+(§39.3, §24.3, §28.1, §41.2, and now §41.3). If the ordering does not hold, the
+"PR follows the carrier" account is wrong and §45.2 stands as a bare empirical
+contrast with no mechanism attached — which is still publishable and must not
+be quietly upgraded.
+
+**Do not read this table until all 32 tasks are COMPLETE.** Partial cells are
+how §41.2 happened.
