@@ -3707,3 +3707,70 @@ The Gabor null is at n=4 of 8 and the no-diet column at n=4 of 8; neither is
 yet testable. The pca64 rung has not started. §42 concerns capacity only — it
 says nothing about whether the effect is due to the diet, which only the
 no-diet column can settle.
+
+## §43 THE DECISIVE CONTRAST — the diet owns the stream dissociation, the
+NETWORK owns the cortical step
+
+`dkl_bcs_seed0_trained` (diet) vs `dkl_base_seed0_trained` (no diet), paired
+within subject, n=8, both statistics. This is the comparison §32.2 identified
+as the one that separates "the network builds it" from "the diet builds it".
+
+| measure | diet | no diet | A−B | p (norm/raw) | verdict |
+|---|---|---|---|---|---|
+| median r2/NC | +0.405 | **+0.464** | −0.059 | .0078 / .0078 | **no-diet fits BETTER** |
+| magno stream | +0.791 | **−0.638** | +1.429 | .0078 / .0078 | diet, 8/8 |
+| parvo stream | −0.743 | −0.748 | +0.005 | .6406 / .0078 | **UNRESOLVED** |
+| **magno − parvo** | **+1.534** | **+0.110** | +1.424 | .0078 / .0078 | **diet, 8/8** |
+| hV4−V1 uncorrected | −0.447 | −0.202 | −0.245 | .0078 / .0234 | diet larger |
+| hV4−V1 − SPI x pred | −0.080 | **−0.159** | +0.079 | .0391 / .0234 | **no-diet larger** |
+| **hV4−V1 − SPI x pred x ecc** | −0.095 | −0.060 | −0.035 | **.1484 / .9453** | **NO DIFFERENCE** |
+
+### 43.1 The diet owns the stream dissociation, decisively
+
+magno−parvo is **+1.534 with the diet and +0.110 without** — the no-diet
+network has essentially no stream dissociation at all. Driven entirely by the
+magno stream (+0.791 vs **−0.638**: without the diet the magno stream is
+*texture*-dominated), while the parvo streams are indistinguishable (−0.743 vs
+−0.748). 8/8 subjects, both statistics, p=.0078.
+
+This confirms §28.5's probe finding inside the encoding model, on independent
+machinery. It is the strongest single result in the §7.3b set.
+
+### 43.2 The cortical step is NOT diet-specific — this is a reframing
+
+Under the full control set the hV4/LO step is **−0.095 with the diet and
+−0.060 without, p=.1484 (norm) and p=.9453 (raw)**. Both statistics agree there
+is no difference, so by §8 the answer is "no difference", not "a trend".
+
+The uncorrected profile *does* look diet-specific (−0.447 vs −0.202), but that
+gap is carried by band weighting — which is itself diet-dependent (§43.1) — and
+it disappears once band preference, fit quality and eccentricity are matched.
+
+**Consequence.** §35.2/§38's cortical result must be reported as a property of
+**training a two-stream network on this input split**, not of the developmental
+diet. §32.2's pre-declaration anticipated exactly this: "a flat null licenses
+'the network builds it', not 'the diet builds it'." The null and ladder
+established the former; this contrast rules out the latter.
+
+The intermediate control (− SPI x pred) actually shows the **no-diet** model
+with the *larger* step (−0.159 vs −0.080, p=.039/.023, both statistics). That
+reverses once eccentricity is matched, so it is not claimed either way, but it
+is further evidence against a diet-specific cortical effect.
+
+### 43.3 The no-diet model predicts BOLD better
+
+median R2/NC **0.464 without the diet against 0.405 with it**, p=.0078 on both
+statistics, 8/8 subjects. The diet costs ~13% of explained variance.
+
+This must be stated plainly in the manuscript. It is consistent with the
+existing "fit quality dissociates from regional structure" result (commit
+6a7543f) and with §36's PR finding, but it is a real cost and a reviewer will
+find it immediately. The diet's case cannot rest on prediction accuracy; it
+rests on the stream dissociation (§43.1) and on the §15/§17 gradient.
+
+### 43.4 One unresolved cell
+
+The parvo stream disagrees between statistics: norm says no difference
+(+0.005, p=.6406) while raw says the diet's parvo is *less* texture-dominated
+(−0.032, p=.0078, 0/8). Recorded as UNRESOLVED per §8. It does not affect
+§43.1, which is carried by magno and is unambiguous on both statistics.
