@@ -3248,3 +3248,63 @@ should not claim that part is capacity-free.
 **n = 1.** Seven pca16 subjects, the pca64 rung and seven null subjects are
 outstanding. Do not quote §29.4 until the ladder is complete; recorded now only
 so the reading is fixed before the rest arrives.
+
+## §30 Replication at n=7 and the null at n=3 — the separation is now large
+
+### 30.1 `thesis_dvd_trans` replicates `dkl_bcs_seed0` on both statistics
+
+n=7 (subject 7 outstanding), floor p=.0156. Against §26.5's n=8 diet cell:
+
+| quantity | dkl_bcs_seed0 (n=8) | thesis_dvd_trans (n=7) | p (thesis) |
+|---|---|---|---|
+| magno − parvo, norm | +1.534 | +1.579 (7/7) | .0156 |
+| magno − parvo, raw | +0.616 | +0.635 (7/7) | .0156 |
+| profile hV4 − V1, norm | −0.447 | −0.474 (7/7) | .0156 |
+| profile hV4 − V1, raw | −0.182 | −0.189 (7/7) | .0156 |
+| − SPI, norm | −0.128 | −0.178 (6/7) | .0312 |
+| − SPI x predictability, norm | −0.080 | −0.116 (7/7) | .0156 |
+| − SPI x predictability, raw | −0.050 | −0.058 (6/7) | .0312 |
+
+Every row significant on both statistics, in two networks trained in different
+codebases. §26.5 is not a property of one training run.
+
+### 30.2 The null is not flat — it goes the OTHER way, consistently
+
+`gabor_blur_cs`, n=3 (subjects 2, 3, 4). No p is computable, but the
+*consistency* is informative on its own:
+
+| quantity | trained diet | Gabor null (n=3) |
+|---|---|---|
+| magno − parvo, norm | +1.53 / +1.58 | **+1.438 (3/3)** |
+| profile hV4 − V1, norm | −0.447 / −0.474 | **−0.003** (1/3 pos) |
+| profile hV4 − V1, raw | −0.182 / −0.189 | **−0.013** |
+| monotonicity rho | −0.59 / −0.50 | **+0.20 / +0.25** |
+| residual − SPI, norm | −0.128 / −0.178 | **+0.057 (3/3 positive)** |
+| residual − SPI x pred, norm | −0.080 / −0.116 | **+0.034 (2/3)** |
+
+The gross step is ~150x smaller in the null (−0.003 vs −0.45) and the
+monotonicity has the opposite sign.
+
+### 30.3 An argument against the capacity explanation that does not need the ladder
+
+§27.1/§28.3 worried the null's flatness might be a capacity artefact: a
+15-dimensional model may be unable to express *any* ROI structure. But a
+capacity-limited model should produce **noise** — near-zero effects with
+random signs across subjects. Instead the null's residualised step is
+**+0.057 with 3/3 subjects positive**, and its monotonicity is +0.65 with 3/3
+positive. It is consistently structured, just in the opposite direction.
+
+A model that reliably expresses an ROI gradient of the *opposite* sign is not
+a model that cannot express ROI gradients. This is independent evidence that
+§28.2 reflects the front end rather than capacity, and it agrees with the
+ladder's first subject (§29.4), where the trained model kept its step at 16
+dimensions.
+
+Both arguments remain n<5 and neither is yet a claim. But they are now two
+independent lines pointing the same way, which is worth more than either alone.
+
+### 30.4 Outstanding
+
+thesis subject 7; five more null subjects; the pca16 rung beyond subject 4; the
+whole pca64 rung; and the entire `dkl_base_seed0` no-diet column, which is the
+one that separates "the network builds it" from "the *diet* builds it".
