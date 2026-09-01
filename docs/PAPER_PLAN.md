@@ -3529,3 +3529,37 @@ Both checks pass and the install proceeded. The general point: a guard that
 blocks is doing its job even when it turns out to be wrong, because the cost of
 investigating a false block is small and the cost of a silent bad install is
 what produced §22 in the first place.
+
+### 39.4 §39.3 over-read an unstable estimate — hold the ladder until n=8
+
+n=6 on the pca16 rung:
+
+| measure | n=3 | n=5 | n=6 | diff vs full, p (n=6) |
+|---|---|---|---|---|
+| hV4−V1 uncorrected | 100.3% | 93.0% | **95.6%** | .6875 |
+| − SPI x pred | 69.0% | 52.8% | **76.5%** | .4375 |
+| − SPI x pred x ecc | 63.4% | 27.5% | **47.1%** | .0625 |
+
+The fully-controlled row has now read 63%, 28% and 47% at three consecutive
+sample sizes. That is not a trend, it is an unstable estimate — the paired
+subject subset changes with each arrival and the residualised quantity is small
+enough that one subject moves it substantially.
+
+**§39.3 was therefore an over-read.** Its conclusion ("the capacity argument
+weakens sharply for the residualised step") was drawn from the n=5 value, which
+the n=6 value does not support. The correct statement at present is that the
+residualised retention **cannot be estimated** from n<=6 with useful precision.
+§39.3's revised *wording* remains the safe one to use — do not claim the
+residualised component is capacity-free — but its stated reason (a sharp
+weakening) is not established.
+
+What is stable across all three sample sizes is the **uncorrected** row: 100%,
+93%, 96%, never significantly different from the full fit, against the Gabor
+bank's 8.4%. §39.1's refutation of the dimension-count objection rests on that
+row and is unaffected.
+
+**Process note.** This session has been re-running the ladder at each arrival
+and writing up each result. That produced two corrections (§39.3, §39.4) which
+would both have been avoided by waiting for the complete rung. Hold the ladder
+until n=8 on the pca16 arm; the same applies to the Gabor null (n=4) and the
+no-diet column (n=1).
