@@ -3616,3 +3616,43 @@ hands the network better inputs.
 
 Measured on subject 1 only. Extend to all 8 subjects and to
 `thesis_dvd_trans` / `swap` before this goes in the manuscript.
+
+### 41.3 n=8 correction to §41.2 — the front end sets the asymmetry, no-diet
+training destroys it
+
+§41.2 said "the diet makes the magno stream richer", from subject 1 alone. At
+n=8 across five models (`tmp_analysis/pr_table.py`, 1000 images, Gram-side
+eigendecomposition) that is the wrong causal reading:
+
+| model | magno PR | parvo PR | magno/parvo |
+|---|---|---|---|
+| `untrained_seed0` (front end, no learning) | 3.7 ±0.1 | 2.6 ±0.1 | **1.40 ±0.09** |
+| `gabor_blur_cs` (input only) | 15.5 ±0.5 | 11.3 ±0.7 | **1.38 ±0.09** |
+| `dkl_bcs_seed0` (diet, trained) | 233.2 ±2.4 | 145.5 ±2.0 | **1.60 ±0.03** |
+| `thesis_dvd_trans` (diet, trained) | 205.9 ±3.8 | 177.9 ±2.4 | **1.16 ±0.03** |
+| `dkl_base_seed0` (no diet, trained) | 158.9 ±1.3 | 168.0 ±5.5 | **0.95 ±0.04** |
+
+Diet vs no-diet ratio: 1.60 vs 0.95, **paired p=.0078, 8/8 subjects**.
+
+**The asymmetry is already in the front end.** Untrained 1.40 and Gabor 1.38 —
+magno is the more dimensional stream before any learning. The diet does not
+create it (1.60 is a modest increase on 1.40); **no-diet training abolishes it**
+(0.95). This is structurally identical to §28.5's finding for shape bias: the
+front end sets the property, diet-training preserves it, no-diet training
+destroys it. §41.2's "the diet makes magno richer" should be replaced with
+"the diet preserves an asymmetry the input transform creates and that training
+otherwise erases".
+
+The §41.2 paradox dissolves with it: the diet is not conjuring dimensionality
+out of blurred input. Blurred luminance is *already* the more dimensional
+channel relative to red-green, and the interesting fact is that unconstrained
+training collapses that difference.
+
+**Caveat — the two diet models disagree here (1.60 vs 1.16).** Every §7.3b
+cortical measure matched between them to three decimals (§38), but this one
+does not. PR is evidently more sensitive to training details (optimiser,
+schedule, codebase) than the cortical measures are. Report the range, not a
+point estimate, and do not treat 1.60 as "the" diet value.
+
+Absolute PRs are also worth stating: training raises magno PR from 3.7 to
+159-233, a 43-63x increase, which is the §36 finding at n=8.
