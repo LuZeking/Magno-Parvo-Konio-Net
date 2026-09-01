@@ -23,7 +23,14 @@ shift 2
 
 PY=/scratch/byrong/anaconda3/envs/mpk/bin/python
 OUT=$SLURM_SUBMIT_DIR/results/encoding
-CACHE=$OUT/feature_cache/${MODEL_NAME}_subj$(printf %02d "$SUBJECT").npz
+# NOT $OUT/feature_cache: $OUT is under the repo on /home, which is quota'd,
+# and a ~1.2 GB-per-subject cache written there is what filled the quota and
+# killed subject 1 of 26383806 with `OSError: [Errno 122] Disk quota
+# exceeded` after 34 minutes. encode_subjects.sh was fixed for this; this
+# script still had the old path. Scratch has hundreds of TB and the cache is
+# regenerable, so it belongs there.
+CACHE_DIR=${MPK_FEATURE_CACHE:-/scratch/byrong/VST_data/mpk_feature_cache}
+CACHE=$CACHE_DIR/${MODEL_NAME}_subj$(printf %02d "$SUBJECT").npz
 RAW=slurm/logs/enc_probe_${SLURM_JOB_ID}_raw.log
 
 # Write the raw stream straight to a file. A previous version piped through
