@@ -3383,3 +3383,50 @@ and the capacity ladder (n=2 of 8+8, §36.4 shows the step surviving at 16
 dims). Whether it is a fact about *the diet* rather than training in general
 rests entirely on the `dkl_base_seed0` column, whose tasks (16-23) are now
 running. Neither is a claim yet.
+
+## §39 The capacity objection is answered (paired ladder, PRELIMINARY n=3/n=4)
+
+`tmp_analysis/cc_ladder.py`, paired within subject against the
+full-dimensional `dkl_bcs_seed0_trained` fit, so between-subject variance —
+the dominant term — is removed.
+
+| rung | n | median fit | uncorrected step | − SPI x pred | − SPI x pred x ecc |
+|---|---|---|---|---|---|
+| `dkl_bcs_seed0_pca16` | 3 | 0.303 | **100.3% retained** | 69.0% | 63.4% |
+| `gabor_blur_cs` | 4 | 0.137 | **8.4% retained** | −3.0% | 10.7% |
+
+A **16-dimensional trained model keeps the entire gross step** (−0.5184 against
+its own reference −0.5166). A **~15-dimensional Gabor model keeps 8%**
+(−0.0414 against −0.4943). Same dimension count, opposite result.
+
+This satisfies §36.4's pre-committed rule — "step present at 16 dims ->
+capacity is not the explanation and §35.2 stands" — and it converges with
+§37.3's independent argument (the null is *consistently* oppositely
+structured, which noise from a capacity ceiling would not be).
+
+### 39.1 Precision about what has been refuted
+
+The objection refuted is specifically **dimension count**: "a ~15-dimensional
+model cannot express ROI structure" is false, because a 16-dimensional trained
+model expresses it in full.
+
+What is *not* refuted, and should not be claimed: the two rungs are not matched
+on **information content**. PCA-16 of a trained network keeps its top sixteen
+principal components — highly informative, learned directions — while the
+Gabor bank's ~15 effective dimensions are whatever oriented energy provides.
+The pca16 rung's fit quality is 0.303 against the bank's 0.137, so it is a
+materially better model at the same dimensionality.
+
+But that difference *is* the front end plus learning, which is the thing under
+test. "The Gabor features carry less of the relevant information" is not a
+competing explanation for §35.2 — it is a restatement of it. The capacity
+objection mattered only because it offered a *methodological* alternative
+(a ceiling artefact) to a *scientific* conclusion; that alternative is closed.
+
+### 39.2 Status
+
+n=3 on the pca16 rung and n=4 on the null, so no p-value is computable and
+this is a read, not a result. The pca64 rung has not started. Recorded now
+because the retention percentages are large enough (100% vs 8%) that the
+direction is unlikely to reverse, and because fixing the interpretation before
+the remaining subjects arrive is the point of §36.4's pre-commitment.
