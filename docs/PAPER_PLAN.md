@@ -4104,6 +4104,19 @@ training collapses the two streams onto each other — in shape/texture selectiv
 instruments is at its exact-test floor with unanimous subject agreement, and
 they use different stimuli, different features, and different statistics.
 
+**AMENDED by §47.4 — convergence on a contrast, not on a construct.** Do not
+read the table as four measurements of one property. §47 ran the PR measure
+across the same four front ends §25 used behaviourally and found they
+**factorise differently**: shape bias needs the carrier×transform conjunction,
+PR is additive in the two factors. The decisive case is `parvo_highsf`, where
+parvo becomes the *more* dimensional stream (ratio 0.56) while staying
+texture-biased (probe −0.266) — high dimensionality does not confer shape bias.
+What instruments 1–4 agree on is the **diet-vs-no-diet contrast**, each at
+p=.0078: no-diet training collapses the streams in shape/texture selectivity
+*and*, separately, in dimensionality. That is a stronger claim than either
+alone, but PR must never be described as the geometric version of the shape
+bias.
+
 ### 46.3 Proposed figure
 
 Replace the commissioned cortical panel with a four-panel convergence figure:
