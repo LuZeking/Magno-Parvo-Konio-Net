@@ -3164,3 +3164,60 @@ specialisation; and without the diet, training actively destroys the shape
 bias the architecture would otherwise inherit. The Gabor null (§28.1) is
 consistent with this — it has a front end and no learning, and it lands near
 the untrained network.
+
+## §29 The untrained network has ~4 effective dimensions — training raises PR ~70x
+
+Checked while considering an untrained-network cue-conflict column as a
+capacity-matched alternative to the Gabor null (§27.1). The check killed that
+plan and produced a more useful number. Participation ratio, 2000 NSD images,
+subject 1:
+
+| model | magno PR | parvo PR |
+|---|---|---|
+| `untrained_seed0` (blur+CS front end) | **3.7** | **2.8** |
+| `untrained_seed0_noblur` | 4.3 | 2.8 |
+| `gabor_blur_cs` | 15.3 | 11.8 |
+| `dkl_bcs_seed0_trained` | **269.9** | **160.1** |
+
+A random ResNet with 15360 output dimensions carries roughly **four**
+effective dimensions of variance across natural images — *fewer than the Gabor
+bank*. Training multiplies that by ~70x.
+
+### 29.1 Consequences, several of them uncomfortable
+
+1. **An untrained cue-conflict column would not have been a capacity-matched
+   control.** It is even lower-dimensional than the bank. Not run; the pca
+   ladder (§27.3) remains the right instrument, and its 16-dim rung is a
+   reasonable match to the bank's 15.3 while still 4x the untrained network's.
+2. **§19 now has a mechanism.** "The untrained ResNet predicts BOLD no better
+   than a Gabor bank" (0.1384 vs 0.1408) is what a 4-dimensional feature space
+   should do. §19.3's relabelling of the untrained panels as front-end
+   validations is not just defensible, it is explained.
+3. **The capacity confound is pervasive, not local to §28.** Every null this
+   project uses — untrained network, Gabor bank — is low-dimensional, and every
+   trained model is high-dimensional. Any trained-vs-null comparison in §14.5,
+   §19, §26 and §28 is confounded to some degree by effective dimensionality.
+   This should be stated once, prominently, in the manuscript's methods rather
+   than defended piecemeal per figure.
+4. **It sharpens §7.2 item 6.** The "general factor" the thesis's RSA lost to is
+   not a subtlety in the untrained network — with PR 3.7 the untrained network
+   very nearly *is* a general factor.
+
+### 29.2 What it does NOT undermine
+
+The trained-vs-trained contrasts are unaffected: `dkl_bcs` vs `dkl_base` vs
+`thesis_dvd_trans` vs `swap` are all trained networks and there is no reason to
+expect the 70x gap between them. §15's headline (diet vs no-diet, both trained)
+and §26.6's two-diet-model replication do not rest on a trained-vs-null
+comparison. The PR of `dkl_base_seed0` should be measured on a *repaired*
+subject to confirm this (its current cache is the §22-contaminated one, §27.2),
+which tasks 16-23 of 26399760 will provide.
+
+### 29.3 Action
+
+- Do not run an untrained cue-conflict column. (Decision recorded so it is not
+  re-proposed.)
+- Measure PR for every model in the paper once the repairs land, and report the
+  table in supplementary methods.
+- The §28.3 reading rule stands unchanged: the pca ladder decides whether the
+  §28.2 flatness is a front-end fact or a capacity artefact.
