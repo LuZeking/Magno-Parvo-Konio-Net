@@ -3774,3 +3774,76 @@ The parvo stream disagrees between statistics: norm says no difference
 (+0.005, p=.6406) while raw says the diet's parvo is *less* texture-dominated
 (−0.032, p=.0078, 0/8). Recorded as UNRESOLVED per §8. It does not affect
 §43.1, which is carried by magno and is unambiguous on both statistics.
+
+## §44 ALL CELLS COMPLETE — final §7.3b verdict, and it is mixed
+
+`gabor_blur_cs` and `dkl_bcs_seed0_pca64` both reached n=8. Every cell of the
+§7.3b design is now full: two diet models, one no-diet model, the input null,
+and two capacity rungs, all at n=8.
+
+### 44.1 Diet vs the input null, n=8 paired, both statistics
+
+| measure | diet | Gabor null | p (norm) | p (raw) | §8 verdict |
+|---|---|---|---|---|---|
+| median r2/NC | +0.405 | +0.132 | .0078 | .0078 | **trained fits 3x better** |
+| magno − parvo | +1.534 | +1.413 | .0078 | .0078 | trained slightly larger |
+| **hV4−V1 uncorrected** | −0.447 | −0.017 | **.0078** | **.0078** | **ESTABLISHED** |
+| hV4−V1 − SPI x pred | −0.080 | +0.015 | .0078 | **.1953** | **UNRESOLVED** |
+| hV4−V1 − SPI x pred x ecc | −0.095 | +0.005 | .0078 | **.1953** | **UNRESOLVED** |
+
+The gross profile difference is established on both statistics and is large
+(−0.447 vs −0.017, 0/8 subjects overlapping). **But the residualised
+comparisons — the ones §33 and §38 identified as the real contribution — are
+UNRESOLVED.** The norm statistic says the null is clearly different; the raw
+statistic says it is not (−0.050 vs −0.024, p=.1953). Per §8 neither may be
+claimed.
+
+### 44.2 The capacity ladder, complete
+
+| rung | uncorrected | − SPI x pred | − SPI x pred x ecc |
+|---|---|---|---|
+| pca16 | 101.2% (p=.74) | 106.3% (p=.95) | 65.1% (p=.055) |
+| pca64 | 84.0% (p=.0078) | 90.6% (p=.95) | 63.4% (p=.023) |
+| Gabor | **3.8%** (p=.0078) | **−18.9%** (p=.0078) | **−5.2%** (p=.0078) |
+
+Note the ladder tests the *norm* statistic only, so its p-values do not
+discharge §8; §44.1 is the authority. Retention is non-monotonic between the
+rungs (pca16 101% vs pca64 84% on the uncorrected row), which is a further sign
+that these retention estimates carry more noise than their tight paired
+p-values suggest. Do not build an argument on the rung ordering.
+
+### 44.3 The three findings, ranked by what survives
+
+1. **The diet determines the stream dissociation.** +1.534 vs +0.110 against
+   no-diet (§43.1), 8/8, both statistics, p=.0078, driven entirely by magno
+   (+0.791 vs −0.638). Replicated in a second diet model and in an entirely
+   separate probe (§28.5). **This is the surviving positive claim.**
+2. **The gross hV4/LO profile is a training effect, not a diet effect and not
+   a front-end effect.** Trained > null on both statistics (§44.1); but diet
+   and no-diet do not differ once controls are matched (§43.2). Report as a
+   property of training a two-stream network on this input split.
+3. **The residualised hV4/LO step does not survive the controls it needs.**
+   Diet vs no-diet: no difference (§43.2, both statistics). Diet vs null:
+   unresolved (§44.1). It cannot carry a claim.
+
+### 44.4 Reframing, per the project's own standard
+
+The research standard says a result a control kills is dead, and the fix for
+messy results is reframing rather than more compute. Applying it:
+
+- **Do not** write §7.3b around the cortical profile. §33/§38 identified the
+  residualised step as the contribution; §43.2 and §44.1 have removed its
+  support from both directions.
+- **Do** write §7.3b around §44.3 item 1, with the encoding model as
+  independent confirmation of `stream_shape_texture.py` — which per §31.7 was
+  always the stronger instrument for that claim.
+- **Do** report item 2 honestly as a training effect, and report the
+  fit-quality cost (§43.3: the diet loses ~13% of explained variance) in the
+  same breath.
+
+What §7.3b bought, stated plainly: it did not produce the flagship cortical
+panel it was commissioned for. It produced a rigorous negative — the cortical
+step is not diet-specific — plus independent confirmation of the stream
+dissociation, plus three methodological artefacts of lasting value (the
+provenance guard §22.6, the PR table §41.3, and the §22 repair). That is a
+smaller result than §31 hoped for and it is the one the data supports.
