@@ -3342,3 +3342,44 @@ section, run
 
 and take the next free number. Prefer citing sections by **title** as well as
 number — §26.1's own advice, and the only thing that survives a renumber.
+
+## §38 BOTH DIET MODELS FINAL AT n=8 — the §7.3b diet cell is closed
+
+`thesis_dvd_trans` completed (job 26399760 tasks 8-15). Both diet models now
+have all 8 subjects. Floor p=.0078.
+
+| quantity | `dkl_bcs_seed0` | `thesis_dvd_trans` | p (both) |
+|---|---|---|---|
+| magno − parvo, norm | +1.534 (8/8) | +1.574 (8/8) | .0078 |
+| magno − parvo, raw | +0.616 (8/8) | +0.631 (8/8) | .0078 |
+| profile hV4 − V1, norm | −0.447 (8/8) | −0.449 (8/8) | .0078 |
+| profile hV4 − V1, raw | **−0.182** (8/8) | **−0.181** (8/8) | .0078 |
+| − SPI, norm | −0.128 | −0.173 (7/8) | .0391 / .0156 |
+| − SPI x predictability, norm | −0.080 | −0.112 (8/8) | .0391 / .0078 |
+| − SPI x predictability x ecc | −0.095 (8/8) | −0.103 (8/8) | .0078 / .0078 |
+
+Two networks, two codebases (standalone trainer vs thesis Lightning
+checkpoint), two independently initialised training runs. The uncorrected raw
+profile agrees to three decimals. Every row significant on both statistics in
+both models.
+
+Eccentricity gradient, `thesis_dvd_trans`: −0.219, −0.209, −0.121, +0.143,
+**+0.404** — matching `dkl_bcs_seed0`'s −0.212 … +0.325 in shape and sign.
+
+Monotonicity after residualisation is again ~0 in both (−0.067/+0.027 norm,
+−0.067/−0.036 raw, 2-4 of 8 positive), confirming §33.2: **a step at hV4/LO,
+not a gradient.**
+
+### 38.1 What is now established, and what is not
+
+**Established** (diet cell, two models, n=8, both statistics, three controls):
+a texture-dominated readout localised to hV4 and LO, not reducible to band
+preference, fit quality or retinotopic eccentricity, replicating across
+training runs and codebases.
+
+**Not established.** Whether it is a fact about *the network* rather than the
+front end rests on the Gabor null (n=4 of 8, §37.2 shows it flat-to-opposite)
+and the capacity ladder (n=2 of 8+8, §36.4 shows the step surviving at 16
+dims). Whether it is a fact about *the diet* rather than training in general
+rests entirely on the `dkl_base_seed0` column, whose tasks (16-23) are now
+running. Neither is a claim yet.
