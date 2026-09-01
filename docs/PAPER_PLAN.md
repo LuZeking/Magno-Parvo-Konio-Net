@@ -4197,3 +4197,121 @@ stands, but the reason changes: the range is not irreducible model-to-model
 noise, it is one clean model plus one with a documented front-end mismatch. If
 the diet arm ever needs a point estimate, `dkl_bcs_seed0` is the defensible one
 and `thesis_dvd_trans` is the one to disclose. Do not average them.
+
+---
+
+## §47 THE FRONT-END 2×2 — pre-registered prediction CONFIRMED, and PR is
+explained entirely by carrier bandwidth
+
+Job 26406434, **32/32 COMPLETED, zero failures**. Read only after all 32 landed,
+per §45.5. `tmp_analysis/pr_frontend_2x2.py`.
+
+### 47.1 The result
+
+magno/parvo participation ratio, n=8 subjects per cell, two references:
+
+| front end | magno gets | parvo gets | Gabor | untrained |
+|---|---|---|---|---|
+| `parvo_highsf` | lum + transform | **lum+rg**, no transform | **0.56** ±0.02 | **0.59** ±0.01 |
+| `blur_cs` (diet) | lum + transform | rg, no transform | 1.38 ±0.09 | 1.40 ±0.09 |
+| `noblur` (no diet) | lum, no transform | rg, no transform | 2.23 ±0.13 | 1.63 ±0.12 |
+| `swap` | lum, no transform | rg + **transform** | **3.37** ±0.16 | **1.91** ±0.12 |
+
+Pre-registered ordering **parvo_highsf < blur_cs < noblur < swap**:
+
+- **CONFIRMED on both references**, in **8/8 subjects**, with every adjacent
+  pair at **p=.0078** (the exact Wilcoxon floor for n=8).
+- `parvo_highsf` falls **below 1.0** as predicted — 0.56 / 0.59, 8/8 subjects
+  below 1. Give parvo the luminance carrier and **parvo becomes the more
+  dimensional stream**. The asymmetry reverses.
+
+### 47.2 The mechanism check — only the stream whose input changed moves
+
+Per-subject PR relative to the `blur_cs` baseline:
+
+| front end | magno | parvo | |
+|---|---|---|---|
+| `parvo_highsf` | **×1.00** | ×2.45 / ×2.39 | parvo gains the lum carrier |
+| `noblur` | ×1.62 / ×1.17 | **×1.00** | magno gains back its high SF |
+| `swap` | ×1.62 / ×1.17 | ×0.66 / ×0.86 | magno gains SF, parvo loses it |
+
+The two **×1.00** entries are exact and are the controls: `parvo_highsf` does
+not touch the magno input and magno does not move; `noblur` does not touch the
+parvo input and parvo does not move. Every cell moves **only** the stream whose
+input actually changed, in the predicted direction, on both references.
+
+**The carrier account is therefore not merely consistent with the ordering — it
+predicts which stream moves in each cell, and it is right four times out of
+four.** There is nothing "magno" about the high-dimensional stream. PR tracks
+the bandwidth of the carrier a stream is handed: luminance beats red-green, and
+the developmental transform subtracts bandwidth from whichever stream it lands
+on.
+
+### 47.3 What this does to §45 — it strengthens the claim by removing a rival
+
+§45.2 showed diet-trained networks retain their front end's asymmetry and
+no-diet networks destroy it (16/16 contrasts, p=.0078). The obvious rival
+explanation was that the asymmetry is some privileged property of the magno
+pathway which the diet protects. §47 kills that: the asymmetry is a generic
+consequence of carrier bandwidth, reproducible with **no network at all** (the
+Gabor rows), and **reversible** — `parvo_highsf` inverts it.
+
+So the diet does not protect anything special about magno. It changes what
+training does to a dimensionality difference that the input hands over for
+purely bandwidth reasons. §45.1's correction stands and is now mechanistic:
+the no-diet front end supplies *more* asymmetry (2.23 vs 1.38 Gabor) precisely
+because it withholds nothing from the luminance carrier — and no-diet training
+still throws it away.
+
+### 47.4 A DISSOCIATION that must be disclosed — PR is not a proxy for shape bias
+
+§25's behavioural 2×2 found an **interaction**: neither the achromatic carrier
+alone (parvo_highsf parvo, probe −0.266) nor the transform alone (swap parvo,
+−0.155) moves parvo across zero; only the conjunction reaches +0.819. §47's PR
+2×2 on the *same four front ends* is **monotone and additive** — each factor
+moves its own stream independently, with no interaction needed.
+
+The two measures therefore factorise **differently over identical inputs**. The
+sharpest case: in `parvo_highsf`, parvo becomes the **more dimensional** stream
+(ratio 0.56) while remaining **texture-biased** (probe −0.266). High effective
+dimensionality does not confer shape bias.
+
+**Consequence for §46.2.** The four-instrument convergence table must not imply
+instrument 4 measures the same property as instruments 1–3. It does not.
+Instruments 1–3 measure shape/texture selectivity; instrument 4 measures
+representational dimensionality; §47 proves these dissociate across input
+conditions. What the four still agree on — and all at p=.0078 — is the
+**diet-vs-no-diet contrast specifically**: no-diet training collapses the two
+streams in *both* respects, which is a stronger statement than either alone,
+but it is convergence on a contrast, not on a construct. §46.2 is amended
+accordingly; do not describe PR as "the geometric version of the shape bias".
+
+### 47.5 Disclosures
+
+- The Gabor reference shows larger spreads than the untrained network
+  (3.37 vs 1.91 at `swap`) because the untrained ResNet compresses everything
+  to PR ≈ 2–6 (§36). The *ordering* is identical; only the dynamic range
+  differs. Claims should use the ordering, not the magnitudes.
+- `parvo_highsf` gives stream 2 a second input channel (§25.5's architectural
+  disclosure applies here too). For the Gabor rows this is not a confound —
+  there is no network and no learned capacity, so the doubled parvo PR is a
+  direct statement about the input's bandwidth.
+- n=8 is 8 image samples from 8 subjects' NSD stimuli, not 8 independent
+  brains; the paired tests speak to stability across image samples.
+
+### 47.6 Coordination — trained `parvo_highsf` is the other session's
+
+`dkl_bcs_parvo_highsf_seed0_trained` feature caches appeared 2026-09-01
+15:24–15:31 (subjects 1–4), i.e. the other session is running trained
+`parvo_highsf` through leg (c) — the gap §25.5 recorded. This session produced
+only the learning-free `gabor_parvo_highsf` / `untrained_parvo_highsf` front
+ends, so there is no duplication.
+
+**The opportunity, for whoever gets there:** when their trained cell reaches
+n=8, §45.2's retention analysis can run on a **third** condition, and the
+prediction is sharp — if the diet's role is to make training keep whatever
+asymmetry the input supplies, then a diet-trained `parvo_highsf` model should
+retain its *inverted* (below-1.0) asymmetry rather than drift back toward
+magno-dominance. That is a falsifiable test of §45.3 on a front end whose
+asymmetry points the other way, and it is the single most informative run left
+in this thread.
