@@ -57,22 +57,50 @@ if os.path.exists(CACHE):
 else:
     print(f"[FAIL] no cache to verify at {CACHE}"); ok = False
 
-sib = []
-for s in range(2, 9):
-    f = f"results/encoding/dkl_base_seed0_trained_subj{s:02d}.npz"
-    if os.path.exists(f):
-        sib.append(cross(np.load(f)))
-sib = np.array([x for x in sib if np.isfinite(x)])
+# Check 3, calibrated against the RIGHT reference.
+#
+# An earlier version compared the repaired subject against the range of its
+# seven siblings and blocked. Investigating showed the guard was wrong, not the
+# data: subject 1 is *systematically* the most extreme subject for the no-diet
+# model. In the clean, never-contaminated `dkl_base_seed1` run it ranks 1/8 at
+# -0.223, while in the diet model it ranks only 4/8. A sibling-range test
+# therefore rejects a legitimate value for this particular subject and model.
+#
+# The principled comparison is the SAME subject in the clean seed, with the
+# tolerance set by how much seeds normally disagree on the same subject.
 new = cross(np.load(SRC))
 old = cross(np.load(QUAR)) if os.path.exists(QUAR) else np.nan
-print(f"[info] siblings hV4-V1 (n={sib.size}): min {sib.min():+.4f} "
-      f"max {sib.max():+.4f} mean {sib.mean():+.4f}")
-print(f"[info] quarantined subj01: {old:+.4f}   repaired subj01: {new:+.4f}")
-lo, hi = sib.min() - 2 * sib.std(), sib.max() + 2 * sib.std()
-if not (lo <= new <= hi):
-    print(f"[FAIL] repaired value outside sibling range [{lo:+.4f}, {hi:+.4f}]"); ok = False
+
+def seed_series(seed):
+    out = {}
+    for s in range(1, 9):
+        f = f"results/encoding/dkl_base_seed{seed}_trained_subj{s:02d}.npz"
+        if os.path.exists(f):
+            out[s] = cross(np.load(f))
+    return out
+
+s0, s1 = seed_series(0), seed_series(1)
+paired = [s for s in s0 if s in s1 and np.isfinite(s0[s]) and np.isfinite(s1[s])]
+gaps = np.array([abs(s0[s] - s1[s]) for s in paired])
+print(f"[info] quarantined subj01 {old:+.4f} -> repaired {new:+.4f}")
+if 1 in s1 and gaps.size >= 3:
+    ref = s1[1]
+    tol = gaps.max()
+    print(f"[info] same subject in clean seed1: {ref:+.4f}; "
+          f"seed-to-seed gap on subjects {paired}: max {tol:.4f}")
+    if abs(new - ref) > tol:
+        print(f"[FAIL] repaired subj01 differs from clean seed1 by "
+              f"{abs(new - ref):.4f} > {tol:.4f}"); ok = False
+    else:
+        print(f"[ok]   repaired value agrees with the clean seed within the "
+              f"normal seed-to-seed gap ({abs(new - ref):.4f} <= {tol:.4f})")
+    if abs(old - ref) <= abs(new - ref):
+        print("[FAIL] repair did not move the value toward the clean seed"); ok = False
+    else:
+        print(f"[ok]   repair moved subj01 toward the clean seed "
+              f"({abs(old - ref):.4f} -> {abs(new - ref):.4f})")
 else:
-    print("[ok]   repaired value is in family with the siblings")
+    print("[FAIL] cannot calibrate: clean seed1 subject 1 unavailable"); ok = False
 
 print(f"\n{'PASS - safe to install' if ok else 'BLOCKED - do not install'}")
 if ok and APPLY:

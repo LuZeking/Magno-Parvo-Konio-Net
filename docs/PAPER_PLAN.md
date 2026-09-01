@@ -3471,3 +3471,61 @@ and that argument never relied on the ladder.
 
 n=5 of 8 on this rung and n=4 of 8 on the null; the pca64 rung would locate the
 attenuation curve between 16 and 1000 dimensions and has not started.
+
+## §40 §22 CLOSED — the no-diet cell repaired, and the corrected numbers
+
+`dkl_base_seed0_trained` subject 1 was refit with the correct front end
+(26399760 task 16), verified, and installed over the contaminated file by
+`tmp_analysis/apply_repair.py`. The model is back to n=8.
+
+### 40.1 The corrected headline
+
+| version | raw | norm | n |
+|---|---|---|---|
+| contaminated (withdrawn) | −0.0452 (p=.039) | **−0.1669** (p=.016) | 8 |
+| interim, subject 1 dropped | −0.0281 (p=.078) | −0.0721 (p=.031) | 7 |
+| **repaired** | **−0.0342** (p=.039) | **−0.1013** (p=.016) | **8** |
+| clean `dkl_base_seed1` | −0.0406 (p=.016) | −0.1318 (p=.008) | 8 |
+
+The repaired seed0 and the never-contaminated seed1 now agree on both
+statistics — `model_verdict.py` reports "same in both", A−B p=.383 (raw) and
+p=.547 (norm). Quote **−0.1013 (norm) / −0.0342 (raw)** for
+`dkl_base_seed0_trained` from here on. The interim n=7 figures in §22.4 are
+superseded and should not be quoted either.
+
+### 40.2 §22.5's prediction was correct, and the gap widened
+
+The diet-trained cell is −0.859. Against a *contaminated* no-diet value of
+−0.167 the ratio was 5.1x; against the **repaired** −0.101 it is **8.5x**. The
+contamination had made the no-diet model look more like the diet model, so
+removing it widens the contrast §15/§17 is built on, exactly as §22.5
+predicted. This is a correction that strengthens the paper's central claim.
+
+Figure 1 must be regenerated with −0.1013 (the other session owns this, §26.2);
+its withdrawn headline of −0.149 averaged the contaminated seed0 with seed1.
+The correct average of the two clean seeds is **−0.1166**.
+
+### 40.3 The verification guard blocked first, and was itself wrong
+
+Worth recording because the lesson generalises. `apply_repair.py` refused to
+install: the repaired value (−0.3053 on the hV4−V1 SPI contrast used for the
+check) fell outside the range of its seven siblings.
+
+Investigation showed the **guard** was miscalibrated, not the data. Subject 1
+is *systematically* the most extreme subject for the no-diet model — in the
+clean, never-contaminated `dkl_base_seed1` it also ranks 1/8 (−0.2234), while
+in the diet model it ranks only 4/8. A sibling-range test therefore rejects a
+legitimate value for this subject and model combination.
+
+Recalibrated to the principled comparison — the same subject in the clean seed,
+with tolerance set by the observed seed-to-seed gap on subjects 2-8:
+
+- repaired −0.3053 vs clean seed1 −0.2234: gap **0.0819**, inside the maximum
+  seed-to-seed gap of **0.1365**;
+- the repair moved subject 1 from **0.6071** away from the clean seed to
+  **0.0819** away, a 7.4x improvement.
+
+Both checks pass and the install proceeded. The general point: a guard that
+blocks is doing its job even when it turns out to be wrong, because the cost of
+investigating a false block is small and the cost of a silent bad install is
+what produced §22 in the first place.
