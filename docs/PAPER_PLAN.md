@@ -1473,6 +1473,13 @@ gives −0.1318. The corrected figure is a mean of **−0.149, a ~69% reduction*
 from −0.4877, not 85%, and the effect remains statistically detectable
 (p=.016, though only 1/8 subjects).
 
+> **SUPERSEDED 2026-09-01 (§29).** That subject-1 file was the contaminated
+> one (§22) — encoded through the diet front end despite being a no-diet
+> model. After re-encoding, seed0 gives **−0.1013**, not −0.1669, and the
+> two-seed mean is **−0.117**, a ~76% reduction. Quote −0.117, not −0.149.
+> The direction of the correction is favourable: the no-diet cell moves
+> *further* from the diet cell.
+
 The claim must therefore be stated as **attenuation, not abolition**:
 
 > Training without the developmental diet reduces the ventral gradient by
@@ -1532,7 +1539,7 @@ N_shape/(N_shape+N_texture), CI from 2000-item bootstrap.
 |---|---|---|---|
 | leg (a) magno shape bias (§13) | +0.796 | **−0.226** | **+0.819** |
 | leg (b) behavioural B_shape (§18) | **0.50** | **0.416** | **0.675** |
-| leg (c) cortical hV4−V1v (§17) | −0.488 | **−0.149** | **−0.860** |
+| leg (c) cortical hV4−V1v (§17) | −0.488 | **−0.117** | **−0.861** |
 
 Behaviour starts at the neutral point — untrained models are at B_shape = 0.50,
 i.e. no preference at all — and training moves it in *opposite directions*
@@ -3847,3 +3854,81 @@ step is not diet-specific — plus independent confirmation of the stream
 dissociation, plus three methodological artefacts of lasting value (the
 provenance guard §22.6, the PR table §41.3, and the §22 repair). That is a
 smaller result than §31 hoped for and it is the one the data supports.
+
+---
+
+## §29 Figure 1 regenerated — the quarantine is lifted
+
+Written 2026-09-01. Closes §22, §26.2 and §20.5.
+
+### 29.1 The repair landed and the correction went the predicted way
+
+Job 26399760 completed all 24 tasks. The contaminated `dkl_base_seed0_trained`
+subject 1 — encoded through the diet front end despite being a no-diet model
+— was re-encoded with `--no-lum-blur --no-lum-cs` (confirmed in the task log,
+not assumed). Its hV4−V1v moves from the contaminated **−0.1669** to
+**−0.1013**.
+
+| | withdrawn | corrected |
+|---|---|---|
+| panel A, no-diet trained | −0.149 | **−0.117** |
+| panel D, no-diet ρ | −0.56 | **−0.554** |
+
+Both p-values stay at the n=8 floor (.0078, 8/8 subjects). §26.2 predicted the
+correction would *widen* the diet/no-diet gap, and it does: the separation
+goes from 0.712 to **0.744**. This was a correction, not a retraction, and the
+figure's claim is stronger after it than before.
+
+The quarantine banner is removed from `fig1_caption.md`. The caption now
+carries a **correction history** paragraph naming both withdrawn numbers and
+why they were wrong, so the record survives in the artefact rather than only
+in this file. §17's two stale `−0.149` references were corrected in place with
+a superseded note; the §22/§26 passages that *describe* the withdrawal are
+history and were left alone.
+
+### 29.2 The untrained arm is relabelled (§20.5)
+
+Panel A's caption now states plainly that the untrained points are a
+**front-end validation, not an architectural baseline**: §19's Gabor
+oriented-energy null reproduces them from each stream's transformed input
+alone, so an untrained network's stream preference reflects the input filter
+and not the architecture. Their job is to show neither front end by itself
+imposes a cortical gradient — which is what licenses reading the
+post-training divergence as an effect of learning. This closes the relabelling
+§20.5 asked for.
+
+### 29.3 The swap arm is in panel C (§21.4)
+
+Panel C had two arms and now has three. This required an `untrained_swap`
+probe, which did not exist — the untrained end of the swap slope. It returned
+magno **+0.4167**, which reproduces `untrained_noblur`'s magno (+0.4167) to
+four decimals, exactly as it must since both hand stream 1 untransformed
+luminance. That agreement is a useful check that the swap front end is doing
+only what it claims.
+
+What the third arm shows:
+
+- **Magno, swap = −0.229 against no-diet's −0.226.** The two lines are
+  collinear from untrained to trained. Taking the transform off luminance
+  returns that channel exactly to its undieted state. Drawn dashed-over-solid
+  so both remain visible; drawn solid the green simply hid the orange and the
+  panel looked like it had one arm fewer.
+- **Parvo, swap = −0.145 against −0.504/−0.515.** Putting the diet on parvo's
+  own channel relieves its texture bias only partially and **does not cross
+  zero**.
+
+So panel C now carries the conjunction directly: neither the transform alone
+nor the achromatic carrier alone produces a shape-biased stream. That is the
+claim §21 and §25 established numerically, and it is now visible in the
+figure rather than only in the text.
+
+### 29.4 What is still open on this figure
+
+- `parvo_highsf` is **not** in panel C. It belongs to the same conjunction and
+  its probe numbers exist (magno +0.844, parvo −0.271, n=3), but a fourth arm
+  makes the panel unreadable. The 2×2 is better served by its own small panel
+  or a table; deferred rather than crammed in.
+- Panel B still shows only untrained / no-diet / diet. The swap profile exists
+  for legs (a) and (b) but has no encoding run yet — leg (c) could not express
+  `--transform-target` until today (§30-to-be). Once those 8 subjects land,
+  panel B gets its third curve.

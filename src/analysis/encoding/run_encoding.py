@@ -51,6 +51,11 @@ def parse_args():
                    help="biologically corrected parvo input: stream 2 gets "
                         "untransformed luminance stacked with rg (2 channels), "
                         "in_channels=(1,2).")
+    p.add_argument("--cache-only", action="store_true",
+                   help="write the feature cache and stop, skipping betas and "
+                        "the ridge fit. The participation-ratio analysis reads "
+                        "only the cache, so a front-end probe does not need "
+                        "(and should not pay for) an encoding fit.")
     p.add_argument("--pca-dim", type=int, default=1000)
     p.add_argument(
         "--features", choices=("network", "gabor"), default="network",
@@ -275,6 +280,21 @@ def main():
     stage("design + betas")
     stim_info = nsd_data.load_stim_info()
     split = nsd_data.build_train_test_split(s, stim_info)
+
+    if args.cache_only:
+        # Deliberately before load_betas: the betas are the expensive part of
+        # this stage and nothing downstream of here is read by the PR analysis.
+        stage("features (cache-only)")
+        get_features_for_images(
+            args,
+            np.unique(np.concatenate(
+                [split["train_image_ids"], split["test_image_ids"]]
+            )),
+            device,
+        )
+        stage("cache written; no fit requested")
+        return
+
     mask = nsd_data.load_mask(s, "nsdgeneral")
     betas = nsd_data.load_betas(s, mask)
     nc = nsd_data.load_noise_ceiling(s, mask)
@@ -388,6 +408,14 @@ def main():
         subject=s,
         model_name=args.model_name,
         noise_ceiling=nc,
+        # The front end this result was computed through. cache_provenance()
+        # records the same settings, but only inside the *feature cache*; the
+        # result file itself carried nothing, so a finished .npz could not be
+        # told apart from another condition's after the fact. That is exactly
+        # the position §22 left us in -- the contaminated no-diet subject had
+        # to be identified by re-deriving features and comparing them to
+        # bit-equality, because the file did not say what produced it.
+        **cache_provenance(args),
         **res,
         **{k: v for k, v in part.items()},
         **extras,

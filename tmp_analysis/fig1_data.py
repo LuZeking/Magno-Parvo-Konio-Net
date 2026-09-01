@@ -64,9 +64,18 @@ for key, model, cell in MODELS:
 probe = {
     "untrained_nodiet": ["untrained_noblur"],
     "untrained_diet":   ["untrained_blur_cs"],
+    # Same architecture, transform moved to rg: the untrained end of the
+    # swap slope. magno here should reproduce untrained_noblur's magno
+    # exactly, since both hand stream 1 untransformed luminance.
+    "untrained_swap":   ["untrained_swap"],
     "trained_nodiet":   [f"dkl_base_seed{s}_trained" for s in (0, 1, 2)],
     "trained_diet":     [f"dkl_bcs_seed{s}_trained" for s in (0, 1, 2)]
                         + ["thesis_dvd_trans"],
+    # The channel-swap control: the identical developmental transform, moved
+    # onto the red-green channel. It is the arm that separates "the diet does
+    # this" from "the diet does this to an ACHROMATIC channel", so panel C is
+    # not interpretable without it.
+    "trained_swap":     [f"dkl_bcs_swap_seed{s}_trained" for s in (0, 1, 2)],
 }
 for cell, names in probe.items():
     m, p = [], []

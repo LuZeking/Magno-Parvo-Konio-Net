@@ -12,7 +12,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=02:00:00
-#SBATCH --array=0-18%4
+#SBATCH --array=0-19%4
 #SBATCH --output=slurm/logs/shptex_%A_%a.out
 
 set -euo pipefail
@@ -56,6 +56,7 @@ CONFIG=(
   "rgb_tsn_seed0_trained|$RUNS/rgb_tsn_seed0/checkpoint_last.pt|--rgb-mode"
   "rgb_tsn_seed1_trained|$RUNS/rgb_tsn_seed1/checkpoint_last.pt|--rgb-mode"
   "rgb_tsn_seed2_trained|$RUNS/rgb_tsn_seed2/checkpoint_last.pt|--rgb-mode"
+  "untrained_swap|-|--transform-target parvo"
 )
 
 IFS='|' read -r NAME CKPT EXTRA <<< "${CONFIG[$SLURM_ARRAY_TASK_ID]}"

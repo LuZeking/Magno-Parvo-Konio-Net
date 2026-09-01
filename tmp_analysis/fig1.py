@@ -35,6 +35,7 @@ D = np.load("results/figures/fig1_data.npz", allow_pickle=True)
 GREY = "#5A5A5A"
 NODIET = "#D55E00"     # vermillion -- learning erodes
 DIET = "#0072B2"       # blue -- learning builds
+SWAP = "#009E73"       # bluish-green -- same diet, wrong channel
 VIS_LABELS = ["V1v", "V1d", "V2v", "V2d", "V3v", "V3d", "hV4"]
 
 plt.rcParams.update({
@@ -129,21 +130,43 @@ axB.text(0.985, 0.04, "↓ parvo", transform=axB.transAxes, ha="right",
 # the same shape. Magno's arms diverge; parvo's land on top of each other.
 axC = fig.add_subplot(gs[1, 0])
 GAP = 2.45
-arms = [("no diet", "nodiet", NODIET), ("with diet", "diet", DIET)]
+# The swap arm carries the causal claim: identical transform, moved onto the
+# chromatic channel. Without it panel C shows only that the diet does
+# something, not that it must act on an ACHROMATIC channel to do it.
+arms = [("no diet", "nodiet", NODIET), ("with diet", "diet", DIET),
+        ("diet on rg", "swap", SWAP)]
 for stream, x0 in (("magno", 0.0), ("parvo", GAP)):
     for label, cell, c in arms:
         u = D[f"probe__untrained_{cell}__{stream}"].mean()
         t = D[f"probe__trained_{cell}__{stream}"].mean()
-        axC.plot([x0, x0 + 1], [u, t], "-", color=c, lw=2.4, zorder=3)
-        axC.plot([x0, x0 + 1], [u, t], "o", color=c, ms=5.0, mec="white",
-                 mew=1.0, zorder=4)
+        swap = cell == "swap"
+        style = dict(dashes=(3.4, 2.2)) if swap else {}
+        axC.plot([x0, x0 + 1], [u, t], "--" if swap else "-", color=c,
+                 lw=1.9 if swap else 2.4, zorder=6 if swap else 3, **style)
+        axC.plot([x0, x0 + 1], [u, t], "o", color=c, ms=4.2 if swap else 5.0,
+                 mec="white", mew=1.0, zorder=6 if swap else 4)
         pts = D[f"probe__trained_{cell}__{stream}"]
         axC.plot([x0 + 1] * len(pts), pts, "o", color="white", ms=2.4,
                  mec=c, mew=0.7, zorder=5)
-        axC.annotate(f"{t:+.2f}", (x0 + 1, t), xytext=(6, 0), fontsize=7,
-                     textcoords="offset points", color=c, va="center",
-                     fontweight="bold")
+        if swap and abs(t - D[f"probe__trained_nodiet__{stream}"].mean()) < 0.02:
+            # Coincides with the no-diet arm; one number, annotated as shared.
+            axC.annotate("swap ≡ no diet", (x0 + 1, t), xytext=(7, -13),
+                         fontsize=6.2, textcoords="offset points", color=c,
+                         va="center", style="italic")
+        else:
+            axC.annotate(f"{t:+.2f}", (x0 + 1, t),
+                         xytext=(6, -10 if swap else 0), fontsize=7,
+                         textcoords="offset points", color=c, va="center",
+                         fontweight="bold")
 
+from matplotlib.lines import Line2D
+axC.legend(handles=[
+    Line2D([], [], color=NODIET, lw=2.4, label="no diet"),
+    Line2D([], [], color=DIET, lw=2.4, label="diet on luminance"),
+    Line2D([], [], color=SWAP, lw=1.9, ls="--", dashes=(3.4, 2.2),
+           label="diet on red-green"),
+], loc="upper right", bbox_to_anchor=(1.0, 0.90), fontsize=6.2,
+    frameon=False, handlelength=1.9, borderpad=0.1, labelspacing=0.28)
 axC.axhline(0, color="#444444", lw=0.9, zorder=2)
 axC.axvline(1.62, color="#DDDDDD", lw=0.9, zorder=1)
 axC.set_xlim(-0.42, GAP + 1.72)
@@ -152,17 +175,19 @@ axC.set_xticklabels(["untr.", "trained", "untr.", "trained"])
 axC.set_ylabel("shape − texture bias")
 axC.set_title("C   Same divergence, in the streams", loc="left",
               fontweight="bold")
-axC.set_ylim(-0.78, 1.12)
-axC.text(0.5, 1.06, "MAGNO", ha="center", fontsize=7.5, fontweight="bold",
+axC.set_ylim(-0.78, 1.34)
+axC.text(0.5, 1.26, "MAGNO", ha="center", fontsize=7.5, fontweight="bold",
          color="#444444")
-axC.text(GAP + 0.5, 1.06, "PARVO", ha="center", fontsize=7.5,
+axC.text(GAP + 0.5, 1.26, "PARVO", ha="center", fontsize=7.5,
          fontweight="bold", color="#444444")
-axC.annotate("shape bias\ndestroyed", (1, -0.226), xytext=(0.62, -0.66),
+axC.annotate("shape bias destroyed",
+             (1, -0.226), xytext=(0.02, -0.60),
              fontsize=6.6, color=NODIET, ha="center",
              arrowprops=dict(arrowstyle="->", color=NODIET, lw=0.9,
                              shrinkA=1, shrinkB=3))
-axC.text(GAP + 0.5, 0.42, "diet irrelevant:\nthe two arms\ncoincide",
-         ha="center", fontsize=6.6, color="#777777", style="italic")
+axC.text(GAP + 0.45, 0.30, "texture bias either way;\nthe swap only partly\n"
+         "relieves it",
+         ha="center", fontsize=6.4, color="#777777", style="italic")
 
 # ---------------------------------------------------------------- panel D
 axD = fig.add_subplot(gs[1, 1])
