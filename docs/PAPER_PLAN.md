@@ -3053,3 +3053,69 @@ count implying every subject was negative. The p-value withholding below n=5 is
 correct and stays; only the count was wrong. No number previously recorded in
 this plan came from that path (all committed tables are n>=5), but the interim
 n=3/n=4 console output in this session's log should not be trusted for counts.
+
+## §28 FIRST NULL RESULT (n=1, subject 3) — the dissociation is front-end, the
+cortical step is not
+
+`gabor_blur_cs` with `--cue-conflict`, job 26401261, subject 3 only. **n=1, no
+statistic is computable, nothing here is a claim.** Recorded now because it
+already separates the two §26 findings in opposite directions, and because
+§25.1's outcomes were pre-declared.
+
+### 28.1 The stream dissociation is largely an input-level fact
+
+| | trained diet (n=8) | Gabor null (n=1) |
+|---|---|---|
+| magno | +0.791 | +0.604 |
+| parvo | −0.750 | −0.815 |
+| **magno − parvo** | **+1.534** | **+1.419** |
+
+The Gabor bank reproduces **~93%** of the stream dissociation. Oriented energy
+on blurred luminance versus red-green input is already shape-dominated in one
+stream and texture-dominated in the other, with no network and no learning.
+
+This qualifies §24.2 and §26.1 substantially, and in the direction §19 warned
+about. The magno/parvo shape-texture split — the project's title claim — is
+mostly a property of **what the two channels are fed**, not of what the network
+learns from them. `stream_shape_texture.py`'s +1.292 (§24.7) should be re-run
+on an untrained/gabor front end before leg (a) is written up as a result about
+representations; if it behaves like this, leg (a) is a statement about the
+input transform. That is still a real and defensible claim — it is the
+biologically motivated part of the design — but it is not "training induces
+specialised streams".
+
+### 28.2 The cortical profile is NOT reproduced
+
+| profile | V1v | V1d | V2v | V2d | V3v | V3d | hV4 | LO | hV4−V1 | rho |
+|---|---|---|---|---|---|---|---|---|---|---|
+| trained (n=8) | −0.055 | +0.048 | −0.046 | −0.033 | −0.227 | −0.148 | **−0.471** | −0.466 | −0.447 | −0.59 |
+| Gabor (n=1) | −0.781 | −0.810 | −0.711 | −0.733 | −0.752 | −0.696 | **−0.809** | −0.689 | **−0.014** | **+0.25** |
+
+The null is **flat**: uniformly texture-dominated at about −0.75 everywhere,
+with hV4 − V1 = −0.014 against the trained model's −0.447, and monotonicity of
+the *opposite* sign. After residualisation the null's residual hV4 − V1 is
+**+0.070** with rho +0.86/+0.93 — it tilts the other way.
+
+This is §25.1's second pre-declared outcome. The hV4/LO texture step is not
+produced by the front end.
+
+### 28.3 Why this is NOT yet "the network builds it"
+
+§27.1 pre-committed the reason: the bank has ~15 effective dimensions against
+the network's ~270/160, so a *failure* to reproduce fine-grained voxel
+structure is exactly what a capacity limit also predicts. The null's flatness
+is equally consistent with "the front end lacks the structure" and "a
+15-dimensional model cannot express any ROI structure at all" — and the fact
+that it is flat at a *constant* −0.75, rather than noisy, is mildly suggestive
+of the latter.
+
+**The capacity ladder (26402571, `dkl_bcs_seed0_pca16/pca64`) decides this**,
+by the rule written down in §27.3 before either result existed: step present at
+16 dims -> capacity is not the explanation and §28.2 stands; step absent at 16
+dims -> §28.2 is uninterpretable and the honest report is that the comparison
+cannot separate the two.
+
+### 28.4 Status
+
+n=1 of 8 for the null. Seven subjects outstanding, plus the whole no-diet
+column and the capacity ladder. Do not quote §28 outside this file yet.
