@@ -4053,3 +4053,108 @@ be quietly upgraded.
 
 **Do not read this table until all 32 tasks are COMPLETE.** Partial cells are
 how §41.2 happened.
+
+---
+
+## §46 THE §7.3b RE-LEAD — what the flagship figure becomes
+
+§44.4 decided to reframe §7.3b around the stream dissociation. This is that
+write-up: the claim, the instruments, the figure, and what is demoted.
+
+### 46.1 The commission, and why it could not be met
+
+§7.3 commissioned §7.3b as "the single panel that makes Track A and the
+behavioural result one paper instead of two": cue-conflict images through the
+fitted encoding models → per-voxel predicted shape-bias index → correlate with
+SPI across voxels. The join was supposed to be **cortical** — the diet-trained
+model's shape bias would be shown to land on the right part of visual cortex.
+
+It does not. §43.2: with controls matched, the hV4/LO step is −0.095 (diet) vs
+−0.060 (no diet), p=.1484 norm / .9453 raw — no difference. §44.1: against the
+input-level null the residualised step is UNRESOLVED (norm .0078, raw .1953).
+The cortical join is dead in both directions, and per the project standard a
+result a control kills is dead.
+
+### 46.2 The join that survives — and it is stronger than the one commissioned
+
+The link between Track A and the behavioural result is not cortical
+*localisation*. It is that **the diet determines whether the two streams stay
+differentiated at all**, and this is now measured in four independent
+currencies that agree:
+
+| # | instrument | stimuli | what it measures | diet vs no diet |
+|---|---|---|---|---|
+| 1 | behavioural cue-conflict (§25) | Geirhos 1200 | shape bias of the readout | 0.878 vs 0.364 (magno vs no-diet parvo), 2×2 interaction |
+| 2 | linear probe on stream features (§25) | Geirhos 1200 | shape−texture decodability | +0.819 vs −0.504, same 2×2 |
+| 3 | **in-silico cue-conflict → BOLD (§43.1)** | Geirhos 1200 | per-voxel VSB, magno−parvo | **+1.534 vs +0.110**, 8/8, both statistics, p=.0078 |
+| 4 | **participation-ratio retention (§45.2)** | NSD naturals | effective-dimensionality asymmetry kept through training | **1.15/0.83 vs 0.58/0.61**, 16/16 contrasts, p=.0078 |
+
+Instruments 3 and 4 are the new ones and they are the reason this is a
+publishable join rather than a restatement. Instrument 3 is the encoding model
+— it is Track A, and it confirms the behavioural claim *through the brain data*
+without needing the cortical gradient to cooperate. Instrument 4 uses **no
+cue-conflict stimuli at all**: it is a purely geometric property of the
+features on natural images, so it cannot be an artefact of the Geirhos set, of
+the shape/texture labels, or of the readout.
+
+**The claim to lead with:** *a developmental visual diet is what makes a
+two-stream network preserve the separation between its streams; without it,
+training collapses the two streams onto each other — in shape/texture selectivity
+(1–3) and in representational dimensionality (4) alike.* Every one of the four
+instruments is at its exact-test floor with unanimous subject agreement, and
+they use different stimuli, different features, and different statistics.
+
+### 46.3 Proposed figure
+
+Replace the commissioned cortical panel with a four-panel convergence figure:
+
+- **(a)** the §25 2×2 on input factors (carrier × transform), behaviour and
+  probe side by side — establishes that the effect needs the conjunction.
+- **(b)** in-silico cue-conflict: per-voxel VSB, magno−parvo, diet vs no-diet,
+  8 subjects paired (§43.1). This is the encoding model's own verdict.
+- **(c)** PR retention (§45.2): each trained model against its own front end,
+  8 subjects paired, with the front-end reference row shown explicitly so the
+  reader can see the no-diet model was handed *more* asymmetry.
+- **(d)** the cost, plotted honestly: r²/NC, diet 0.405 vs no-diet 0.464
+  (§43.3). The diet buys stream differentiation and pays ~13% of explained
+  variance for it.
+
+Panel (d) is not optional. A four-panel figure whose first three panels all
+favour the diet and which omits the one measure that does not would be
+cherry-picking.
+
+### 46.4 Demoted to supplementary, with their negatives intact
+
+- **The cortical VSB profile** (§33, §38, §43.2, §44.1). Report as: the gross
+  hV4/LO profile is a *training* effect (trained > input-level null on both
+  statistics, §44.1), but it is not diet-specific (§43.2) and the residualised
+  version is unresolved. State all three.
+- **The capacity ladder** (§42, §44.2) — it closes a reviewer objection to a
+  panel that is now supplementary, so it goes with it. Keep the caveat that
+  retention is non-monotonic between rungs.
+- **§41.2 / §41.3** are withdrawn outright (§45.3), not demoted. The PR result
+  in the main text is §45.2's retention framing, never §41.3's table.
+
+### 46.5 What this costs the paper, stated plainly
+
+The paper loses its cortical-localisation claim. It cannot say where in visual
+cortex the diet's effect lands, and it should not imply it. What it gains is a
+convergence argument across four instruments, which is a different and in some
+respects sturdier kind of evidence than one panel would have been — but it must
+be sold as convergence, not as localisation.
+
+Still absent and still blocking: **Geirhos human observer data is not in the
+repo**, so no "human-like" comparison can appear in any of the four
+instruments. Either download it or drop the word.
+
+### 46.6 Process note — a second cross-session commit
+
+Commit `7bc7911` (the other session, Figure 1 regeneration) swept up this
+session's then-uncommitted `run_encoding.py` changes (the result-file
+provenance stamp and `--cache-only`). Content verified intact — worktree and
+HEAD agree exactly, all three call sites present. Shared history was **not**
+rewritten. This is the mirror image of §23, where this session's `git add -A`
+captured two of theirs. Two incidents in two days from the same cause: both
+sessions edit one worktree and neither can see the other's staged state. The
+durable fix is path-limited `git add` on both sides; §23 adopted it here, and
+this note records that the other direction is still open.
