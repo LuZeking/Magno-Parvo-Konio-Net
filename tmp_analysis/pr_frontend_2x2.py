@@ -17,7 +17,7 @@ separately, which is the real discriminating test: the carrier account predicts
 WHICH stream moves in each cell, not just which way the ratio goes.
 """
 from __future__ import annotations
-import glob, itertools, os
+import glob, itertools, os, sys
 import numpy as np
 from scipy import stats as sps
 
@@ -73,6 +73,18 @@ WHAT = {
     "noblur":       "magno lum, no transform | parvo rg, no transform",
     "swap":         "magno lum, no transform | parvo rg+TRANSFORM",
 }
+
+# --warm-only computes and caches PRs without printing any table. Needed
+# because §45.5 pre-registered "do not read until all 32 tasks are COMPLETE",
+# and one reference can fill before the other -- warming the store must not
+# become a way to read the result early on a technicality.
+WARM_ONLY = "--warm-only" in sys.argv
+if WARM_ONLY:
+    for cells in CELLS.values():
+        for m in cells.values():
+            streams(m)
+    print("[warm] PR store updated; tables withheld per §45.5")
+    raise SystemExit(0)
 
 for ref, cells in CELLS.items():
     print(f"\n{'='*78}\n{ref.upper()} reference\n{'='*78}")
