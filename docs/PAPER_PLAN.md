@@ -1899,7 +1899,7 @@ with the §20.5 relabelling of the untrained arm. Not yet acted on.
 
 ---
 
-## §21 Claiming §7.3b (in-silico cue-conflict → cortex), 2026-08-31
+## §31 Claiming §7.3b (in-silico cue-conflict → cortex), 2026-08-31
 
 **Coordination (per §20.4): this session is taking §7.3b and nothing else.**
 §20.5 (Figure 1 relabel) and the human-data download are explicitly left for
@@ -2126,7 +2126,7 @@ so the figure's message does not change and its contrast gets cleaner.
 
 Since §20.5 already requires a Figure 1 revision (relabelling the untrained arm
 as a front-end validation after §19), both changes should be made in the same
-pass by whoever owns the figure. This session is not touching it — see §21.
+pass by whoever owns the figure. This session is not touching it — see §31.
 
 ### 22.9 Verification status of the §7.3b code (job 26399760)
 
@@ -2419,7 +2419,7 @@ behavioural decomposition (§18/§20.1: magno B_shape 0.878, parvo 0.484).
       magno band    -0.0495
       parvo band    -0.0021
 
-The joint result falls in §21.4's **positive** branch. But it must not be
+The joint result falls in §31.4's **positive** branch. But it must not be
 reported as the pre-declared "strong unifying result" without this caveat,
 which the within-band rows make unavoidable:
 
@@ -2575,7 +2575,7 @@ written up around the profile, with §24.2 as its sanity check.
 project" is stale and should be struck when that section is next revised, so
 it stops misleading readers of the plan (it misled this session).
 
-## §25 The input-level null for the §7.3b profile — pre-declared 2026-08-31
+## §32 The input-level null for the §7.3b profile — pre-declared 2026-08-31
 
 §24.7 concluded the real contribution of §7.3b is §24.6's cortical VSB profile
 (texture-dominated hV4/LO, surviving residualisation on SPI and on
@@ -2716,7 +2716,7 @@ cell, with the seed spread shown, not as a p-value.
 
 All four on `--partition=main`, no `--gres`, as CPU-only work.
 
-## §26 The §7.3b profile at n=7, both statistics — and what actually survives
+## §33 The §7.3b profile at n=7, both statistics — and what actually survives
 
 `dkl_bcs_seed0_trained`, subjects 1-6 and 8 (subject 7 still running in
 26399760). n=7 puts the exact Wilcoxon floor at p=.0156, so significance is
@@ -2769,19 +2769,19 @@ is localised to exactly the areas where the discrepancy is sharpest.
 ### 26.3 Not yet settled
 
 - Subject 7 outstanding; n=8 will move the floor to p=.0078.
-- **The input-level null (§25, job 26401261) is the control that decides
-  whether any of this is about the network at all.** Nothing in §26 should be
+- **The input-level null (§32, job 26401261) is the control that decides
+  whether any of this is about the network at all.** Nothing in §33 should be
   written into the manuscript before that column exists -- §19 is the
   precedent, where a comparable-looking cortical profile turned out to be a
   property of the front end.
 - The no-diet column (tasks 16-23 of 26399760) is needed to separate "the
-  network builds it" from "the diet builds it" (§25.2).
+  network builds it" from "the diet builds it" (§32.2).
 
 ### 26.4 The hV4/LO step is not an eccentricity artefact
 
 hV4 and LO are foveally biased and this dataset has a strong eccentricity
 gradient (§7.1, §A3.2), so "hV4/LO are texture-shifted" and "foveal voxels are
-texture-shifted" are competing explanations of §26.2. Tested with a third
+texture-shifted" are competing explanations of §33.2. Tested with a third
 control factor (`$CLAUDE_JOB_DIR/tmp/ecc_confound.py`, n=7).
 
 **First, the eccentricity effect is real and large.** Residual VSB by
@@ -2806,7 +2806,7 @@ third residualisation factor:
 | SPI x predictability x **ecc band** | **−0.0926** | **.0156** | **7/7** |
 
 The step barely moves (−0.096 → −0.093) and becomes *more* consistent, not
-less — 7/7 subjects at the n=7 floor. So §26.2 survives three controls: band
+less — 7/7 subjects at the n=7 floor. So §33.2 survives three controls: band
 preference, fit quality, and retinotopic eccentricity. That is a considerably
 harder target for a reviewer than it was an hour ago.
 
@@ -2815,9 +2815,9 @@ so unlabeled voxels form a single residualisation cell rather than being
 eccentricity-matched. hV4 and V1 are retinotopic and largely labeled, so the
 contrast tested here is well covered, but the control is weaker for LO.
 
-**Both of these still await §25's input-level null.** A Gabor bank on blurred
+**Both of these still await §32's input-level null.** A Gabor bank on blurred
 luminance versus red-green input could plausibly produce *both* the
-eccentricity effect and the hV4/LO step by itself. Nothing in §26 is a claim
+eccentricity effect and the hV4/LO step by itself. Nothing in §33 is a claim
 about the network until 26401261 says otherwise.
 
 ---
@@ -2948,7 +2948,7 @@ The eccentricity gradient itself is stable at n=8: −0.212, −0.222, −0.110,
 the second diet model will provide a within-cell replication; the no-diet
 column and the Gabor null remain outstanding.
 
-## §27 Participation ratio — the §25 comparison is not dimensionality-matched
+## §34 Participation ratio — the §32 comparison is not dimensionality-matched
 
 §7.2 item 6 asked for participation ratio per stream, to close the
 general-factor objection that defeated the thesis's RSA. Computed from the
@@ -2960,12 +2960,12 @@ feature caches (2000 NSD images, subject 1):
 | `gabor_blur_cs` | 2048 | **15.3** | 2048 | 11.8 |
 | `dkl_base_seed0_trained` (subj01, contaminated) | 15360 | **32.2** | 15360 | 189.5 |
 
-### 27.1 Consequence for §25, stated before the null lands
+### 27.1 Consequence for §32, stated before the null lands
 
 The Gabor bank has roughly **18x fewer effective dimensions** than the trained
 network. Both are projected to 1000 PCA components, but PCA cannot manufacture
 dimensions the bank does not have. So the two columns are *not* matched in
-representational capacity, and §25's comparison inherits that.
+representational capacity, and §32's comparison inherits that.
 
 The caveat is **asymmetric**, which is what makes it tolerable:
 
@@ -2979,7 +2979,7 @@ The caveat is **asymmetric**, which is what makes it tolerable:
   information. That outcome cannot be reported as "the network builds it"
   without a capacity-matched control.
 
-So §25.1's second and third outcomes both require a follow-up if they occur:
+So §32.1's second and third outcomes both require a follow-up if they occur:
 refit the trained model with its PCA truncated to the bank's effective
 dimensionality (~16 components), and check the step survives. That is one
 extra array and should be pre-committed now rather than argued about later.
@@ -3008,7 +3008,7 @@ should disappear, and that is a cheap post-hoc verification the repair worked.
 | 0-7 | `dkl_bcs_seed0_pca16` | 16 (matched to the bank's PR ~15) |
 | 8-15 | `dkl_bcs_seed0_pca64` | 64 (intermediate) |
 
-Run **before** the null reports, deliberately: §27.1 says a negative null would
+Run **before** the null reports, deliberately: §34.1 says a negative null would
 be uninterpretable without it, and pre-committing removes any appearance of
 having chosen the control after seeing which way the result went.
 
@@ -3043,7 +3043,7 @@ different training runs, same diet:
 
 The raw statistic agrees to three decimals on two independent rows. n=4 admits
 no Wilcoxon (floor is p=.125 at n=4, and even that needs 4/4), so this is
-descriptive — but the agreement is close enough that the §26.5 result is
+descriptive — but the agreement is close enough that the §33.5 result is
 clearly not a property of one training run.
 
 **Bug fixed in `tmp_analysis/cc_panel.py`.** Its `wil()` helper returned a
@@ -3054,13 +3054,13 @@ correct and stays; only the count was wrong. No number previously recorded in
 this plan came from that path (all committed tables are n>=5), but the interim
 n=3/n=4 console output in this session's log should not be trusted for counts.
 
-## §28 FIRST NULL RESULT (n=1, subject 3) — the dissociation is front-end, the
+## §35 FIRST NULL RESULT (n=1, subject 3) — the dissociation is front-end, the
 cortical step is not
 
 `gabor_blur_cs` with `--cue-conflict`, job 26401261, subject 3 only. **n=1, no
 statistic is computable, nothing here is a claim.** Recorded now because it
-already separates the two §26 findings in opposite directions, and because
-§25.1's outcomes were pre-declared.
+already separates the two §33 findings in opposite directions, and because
+§32.1's outcomes were pre-declared.
 
 ### 28.1 The stream dissociation is largely an input-level fact
 
@@ -3074,7 +3074,7 @@ The Gabor bank reproduces **~93%** of the stream dissociation. Oriented energy
 on blurred luminance versus red-green input is already shape-dominated in one
 stream and texture-dominated in the other, with no network and no learning.
 
-This qualifies §24.2 and §26.1 substantially, and in the direction §19 warned
+This qualifies §24.2 and §33.1 substantially, and in the direction §19 warned
 about. The magno/parvo shape-texture split — the project's title claim — is
 mostly a property of **what the two channels are fed**, not of what the network
 learns from them. `stream_shape_texture.py`'s +1.292 (§24.7) should be re-run
@@ -3096,12 +3096,12 @@ with hV4 − V1 = −0.014 against the trained model's −0.447, and monotonicit
 the *opposite* sign. After residualisation the null's residual hV4 − V1 is
 **+0.070** with rho +0.86/+0.93 — it tilts the other way.
 
-This is §25.1's second pre-declared outcome. The hV4/LO texture step is not
+This is §32.1's second pre-declared outcome. The hV4/LO texture step is not
 produced by the front end.
 
 ### 28.3 Why this is NOT yet "the network builds it"
 
-§27.1 pre-committed the reason: the bank has ~15 effective dimensions against
+§34.1 pre-committed the reason: the bank has ~15 effective dimensions against
 the network's ~270/160, so a *failure* to reproduce fine-grained voxel
 structure is exactly what a capacity limit also predicts. The null's flatness
 is equally consistent with "the front end lacks the structure" and "a
@@ -3110,19 +3110,19 @@ that it is flat at a *constant* −0.75, rather than noisy, is mildly suggestive
 of the latter.
 
 **The capacity ladder (26402571, `dkl_bcs_seed0_pca16/pca64`) decides this**,
-by the rule written down in §27.3 before either result existed: step present at
-16 dims -> capacity is not the explanation and §28.2 stands; step absent at 16
-dims -> §28.2 is uninterpretable and the honest report is that the comparison
+by the rule written down in §34.3 before either result existed: step present at
+16 dims -> capacity is not the explanation and §35.2 stands; step absent at 16
+dims -> §35.2 is uninterpretable and the honest report is that the comparison
 cannot separate the two.
 
 ### 28.4 Status
 
 n=1 of 8 for the null. Seven subjects outstanding, plus the whole no-diet
-column and the capacity ladder. Do not quote §28 outside this file yet.
+column and the capacity ladder. Do not quote §35 outside this file yet.
 
-### 28.5 Correcting §28.1 — the front end sets MAGNO, learning sets PARVO
+### 28.5 Correcting §35.1 — the front end sets MAGNO, learning sets PARVO
 
-§28.1 said the dissociation is "mostly a property of what the two channels are
+§35.1 said the dissociation is "mostly a property of what the two channels are
 fed, not of what the network learns", and proposed re-running
 `stream_shape_texture.py` on an untrained front end. That re-run was
 unnecessary — `results/shape_texture/untrained_*.json` already exist — and the
@@ -3148,7 +3148,7 @@ division of labour:
 So the +0.882 -> +1.292 gain is not a uniform 68/32 split; the two streams
 arrive at their specialisations by different routes. This *is* §12's finding
 ("the diet protects magno; training specialises parvo"), now quantified per
-stream, and §28.1 should not have restated it as a single ratio.
+stream, and §35.1 should not have restated it as a single ratio.
 
 **And training without the diet reverses magno outright**: +0.417 untrained ->
 **−0.219** trained. The unblurred magno stream does not merely fail to become
@@ -3161,14 +3161,14 @@ identical input to both streams, two-stream architecture alone buys nothing.
 **Revised statement for the manuscript**: the input split is necessary and
 sufficient for magno's shape bias; training is necessary for parvo's texture
 specialisation; and without the diet, training actively destroys the shape
-bias the architecture would otherwise inherit. The Gabor null (§28.1) is
+bias the architecture would otherwise inherit. The Gabor null (§35.1) is
 consistent with this — it has a front end and no learning, and it lands near
 the untrained network.
 
-## §29 The untrained network has ~4 effective dimensions — training raises PR ~70x
+## §36 The untrained network has ~4 effective dimensions — training raises PR ~70x
 
 Checked while considering an untrained-network cue-conflict column as a
-capacity-matched alternative to the Gabor null (§27.1). The check killed that
+capacity-matched alternative to the Gabor null (§34.1). The check killed that
 plan and produced a more useful number. Participation ratio, 2000 NSD images,
 subject 1:
 
@@ -3187,16 +3187,16 @@ bank*. Training multiplies that by ~70x.
 
 1. **An untrained cue-conflict column would not have been a capacity-matched
    control.** It is even lower-dimensional than the bank. Not run; the pca
-   ladder (§27.3) remains the right instrument, and its 16-dim rung is a
+   ladder (§34.3) remains the right instrument, and its 16-dim rung is a
    reasonable match to the bank's 15.3 while still 4x the untrained network's.
 2. **§19 now has a mechanism.** "The untrained ResNet predicts BOLD no better
    than a Gabor bank" (0.1384 vs 0.1408) is what a 4-dimensional feature space
    should do. §19.3's relabelling of the untrained panels as front-end
    validations is not just defensible, it is explained.
-3. **The capacity confound is pervasive, not local to §28.** Every null this
+3. **The capacity confound is pervasive, not local to §35.** Every null this
    project uses — untrained network, Gabor bank — is low-dimensional, and every
    trained model is high-dimensional. Any trained-vs-null comparison in §14.5,
-   §19, §26 and §28 is confounded to some degree by effective dimensionality.
+   §19, §33 and §35 is confounded to some degree by effective dimensionality.
    This should be stated once, prominently, in the manuscript's methods rather
    than defended piecemeal per figure.
 4. **It sharpens §7.2 item 6.** The "general factor" the thesis's RSA lost to is
@@ -3208,9 +3208,9 @@ bank*. Training multiplies that by ~70x.
 The trained-vs-trained contrasts are unaffected: `dkl_bcs` vs `dkl_base` vs
 `thesis_dvd_trans` vs `swap` are all trained networks and there is no reason to
 expect the 70x gap between them. §15's headline (diet vs no-diet, both trained)
-and §26.6's two-diet-model replication do not rest on a trained-vs-null
+and §33.6's two-diet-model replication do not rest on a trained-vs-null
 comparison. The PR of `dkl_base_seed0` should be measured on a *repaired*
-subject to confirm this (its current cache is the §22-contaminated one, §27.2),
+subject to confirm this (its current cache is the §22-contaminated one, §34.2),
 which tasks 16-23 of 26399760 will provide.
 
 ### 29.3 Action
@@ -3219,8 +3219,8 @@ which tasks 16-23 of 26399760 will provide.
   re-proposed.)
 - Measure PR for every model in the paper once the repairs land, and report the
   table in supplementary methods.
-- The §28.3 reading rule stands unchanged: the pca ladder decides whether the
-  §28.2 flatness is a front-end fact or a capacity artefact.
+- The §35.3 reading rule stands unchanged: the pca ladder decides whether the
+  §35.2 flatness is a front-end fact or a capacity artefact.
 
 ### 29.4 Capacity ladder, first subject (PRELIMINARY, n=1 — subject 4)
 
@@ -3235,7 +3235,7 @@ Same subject, three capacities, so nothing is confounded by subject:
 **The gross hV4/LO step is capacity-independent**: −0.600 at 16 PCA dimensions
 against −0.591 at 1000. A 16-dimensional *trained* model produces it; a
 15-dimensional *Gabor* model does not (−0.014). By the rule pre-committed in
-§27.3, the §28.2 flatness of the null is therefore a front-end fact, not a
+§34.3, the §35.2 flatness of the null is therefore a front-end fact, not a
 capacity artefact — the trained model does not need 270 dimensions to show the
 step.
 
@@ -3246,14 +3246,14 @@ quality and retinotopy does shrink when capacity is cut, and the manuscript
 should not claim that part is capacity-free.
 
 **n = 1.** Seven pca16 subjects, the pca64 rung and seven null subjects are
-outstanding. Do not quote §29.4 until the ladder is complete; recorded now only
+outstanding. Do not quote §36.4 until the ladder is complete; recorded now only
 so the reading is fixed before the rest arrives.
 
-## §30 Replication at n=7 and the null at n=3 — the separation is now large
+## §37 Replication at n=7 and the null at n=3 — the separation is now large
 
 ### 30.1 `thesis_dvd_trans` replicates `dkl_bcs_seed0` on both statistics
 
-n=7 (subject 7 outstanding), floor p=.0156. Against §26.5's n=8 diet cell:
+n=7 (subject 7 outstanding), floor p=.0156. Against §33.5's n=8 diet cell:
 
 | quantity | dkl_bcs_seed0 (n=8) | thesis_dvd_trans (n=7) | p (thesis) |
 |---|---|---|---|
@@ -3266,7 +3266,7 @@ n=7 (subject 7 outstanding), floor p=.0156. Against §26.5's n=8 diet cell:
 | − SPI x predictability, raw | −0.050 | −0.058 (6/7) | .0312 |
 
 Every row significant on both statistics, in two networks trained in different
-codebases. §26.5 is not a property of one training run.
+codebases. §33.5 is not a property of one training run.
 
 ### 30.2 The null is not flat — it goes the OTHER way, consistently
 
@@ -3287,7 +3287,7 @@ monotonicity has the opposite sign.
 
 ### 30.3 An argument against the capacity explanation that does not need the ladder
 
-§27.1/§28.3 worried the null's flatness might be a capacity artefact: a
+§34.1/§35.3 worried the null's flatness might be a capacity artefact: a
 15-dimensional model may be unable to express *any* ROI structure. But a
 capacity-limited model should produce **noise** — near-zero effects with
 random signs across subjects. Instead the null's residualised step is
@@ -3296,8 +3296,8 @@ positive. It is consistently structured, just in the opposite direction.
 
 A model that reliably expresses an ROI gradient of the *opposite* sign is not
 a model that cannot express ROI gradients. This is independent evidence that
-§28.2 reflects the front end rather than capacity, and it agrees with the
-ladder's first subject (§29.4), where the trained model kept its step at 16
+§35.2 reflects the front end rather than capacity, and it agrees with the
+ladder's first subject (§36.4), where the trained model kept its step at 16
 dimensions.
 
 Both arguments remain n<5 and neither is yet a claim. But they are now two
@@ -3308,3 +3308,37 @@ independent lines pointing the same way, which is worth more than either alone.
 thesis subject 7; five more null subjects; the pca16 rung beyond subject 4; the
 whole pca64 rung; and the entire `dkl_base_seed0` no-diet column, which is the
 one that separates "the network builds it" from "the *diet* builds it".
+
+### 37.5 Numbering collision resolved (2026-09-01)
+
+§26.1 (other session) flagged duplicate §21/§22 and renumbered its own newest
+section. Since then the collision had grown to **five duplicated numbers** —
+§21, §25, §26, §27 and §28 each existed twice — because both sessions kept
+appending.
+
+Resolved by following §26.1's stated convention: **renumber only your own
+headers, never the other session's.** This session's sections moved
+
+    §21 → §31    §25 → §32    §26 → §33    §27 → §34
+    §28 → §35    §29 → §36    §30 → §37
+
+and every `§N.x` cross-reference *inside this session's own line ranges* was
+remapped with them. The other session's sections — §21 (swap probe), §25
+(`parvo_highsf`), §26 (numbering/Figure 1), §27 (`rgb_tsn`), §28 (architecture
+symmetry) — are **byte-identical**, verified line by line against a pre-edit
+copy: 49 lines changed, all inside this session's ranges, none outside.
+
+Scoping mattered and was not cosmetic: §26.2 cites "§21.4" meaning the *other*
+session's §21, so a document-wide find-and-replace would have silently
+redirected their reference. Anyone repeating this exercise must scope by line
+range, not by pattern.
+
+§29 and §30 are now unused; the gap is deliberate and harmless.
+
+**Convention going forward, for both sessions**: before appending a numbered
+section, run
+
+    grep -n "^## §\?[0-9]" docs/PAPER_PLAN.md | tail -5
+
+and take the next free number. Prefer citing sections by **title** as well as
+number — §26.1's own advice, and the only thing that survives a renumber.
