@@ -86,6 +86,11 @@ venv/
 # Large analysis artefacts (regenerable; caches are ~1.1 GB per subject)
 results/encoding/feature_cache/
 results/encoding/*.npz
+# Quarantined fits (PAPER_PLAN §22) live in a subdirectory so load_results'
+# non-recursive glob cannot see them; the data stays ignored, the README that
+# explains WHY a file was pulled is tracked.
+results/encoding/quarantine/*.npz
+results/encoding_cc/*.npz
 results/eeg_rsa/*/per_subject_rsa.csv.gz
 slurm/logs/
 tmp_analysis/train_timing/
