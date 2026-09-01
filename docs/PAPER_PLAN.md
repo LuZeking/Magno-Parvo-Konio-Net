@@ -3221,3 +3221,30 @@ which tasks 16-23 of 26399760 will provide.
   table in supplementary methods.
 - The §28.3 reading rule stands unchanged: the pca ladder decides whether the
   §28.2 flatness is a front-end fact or a capacity artefact.
+
+### 29.4 Capacity ladder, first subject (PRELIMINARY, n=1 — subject 4)
+
+Same subject, three capacities, so nothing is confounded by subject:
+
+| model | median r2_joint_nc | magno − parvo | hV4 − V1 raw | − SPI x pred | − SPI x pred x ecc |
+|---|---|---|---|---|---|
+| `dkl_bcs_seed0_pca16` | 0.337 | +1.528 | **−0.600** | −0.016 | −0.059 |
+| `dkl_bcs_seed0_trained` (1000) | 0.423 | +1.537 | **−0.591** | −0.072 | −0.096 |
+| `gabor_blur_cs` (PR 15.3) | — | +1.419 | **−0.014** | — | — |
+
+**The gross hV4/LO step is capacity-independent**: −0.600 at 16 PCA dimensions
+against −0.591 at 1000. A 16-dimensional *trained* model produces it; a
+15-dimensional *Gabor* model does not (−0.014). By the rule pre-committed in
+§27.3, the §28.2 flatness of the null is therefore a front-end fact, not a
+capacity artefact — the trained model does not need 270 dimensions to show the
+step.
+
+**The residualised step is partly capacity-dependent**: −0.096 -> −0.059 with
+the full control set (~60% retained), and −0.072 -> −0.016 without the
+eccentricity factor. So the component that survives band preference, fit
+quality and retinotopy does shrink when capacity is cut, and the manuscript
+should not claim that part is capacity-free.
+
+**n = 1.** Seven pca16 subjects, the pca64 rung and seven null subjects are
+outstanding. Do not quote §29.4 until the ladder is complete; recorded now only
+so the reading is fixed before the rest arrives.
