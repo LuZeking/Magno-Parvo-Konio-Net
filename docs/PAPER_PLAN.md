@@ -4158,3 +4158,42 @@ captured two of theirs. Two incidents in two days from the same cause: both
 sessions edit one worktree and neither can see the other's staged state. The
 durable fix is path-limited `git add` on both sides; §23 adopted it here, and
 this note records that the other direction is still open.
+
+### 45.6 Front-end audit of the §45.2 references — and a disclosure corrected
+
+Two of the four front-end references are UNSTAMPED (written before the §22.6
+guard). Audited by submit line, the method §22.3 and §41.1 established:
+
+| reference | stamp | submit line | front end |
+|---|---|---|---|
+| `untrained_seed0` | unstamped | `encode_subjects.sh untrained_seed0` (no extra args, all submissions) | defaults = blur+CS @48 |
+| `untrained_seed0_noblur` | unstamped | `... untrained_seed0_noblur --no-lum-blur --no-lum-cs` | no diet |
+| `gabor_blur_cs` | stamped | `--features gabor`, defaults | blur+CS @48 |
+| `gabor_noblur` | stamped | `--features gabor --no-lum-blur --no-lum-cs` | no diet |
+
+All four are what §45.2 assumed. The retention result stands as reported.
+
+**§45.4's first disclosure was wrong and is replaced.** It said
+`thesis_dvd_trans` is referenced to `untrained_seed0`'s front end
+"approximately". The cache is stamped, and the stamp says otherwise:
+
+    thesis_dvd_trans      prov_lum_blur=True  prov_lum_cs=True  age=48
+    dkl_bcs_seed0_trained prov_lum_blur=True  prov_lum_cs=True  age=48
+
+The *extraction* front end is identical to the other diet model's, and to
+`untrained_seed0`'s. The reference is **exact**, not approximate.
+
+The real caveat is a different and more interesting one. `thesis_dvd_trans` was
+**trained** by the thesis codebase under its own DVD schedule, but its features
+are **extracted** here through blur+CS @48. Where those two disagree the model
+is being read out through a front end it was not trained under. That is a
+train/extract mismatch specific to this one model, and it is a better
+explanation for the diet arm's spread (1.60 vs 1.16 trained; 1.15 vs 0.83
+retention) than anything about the reference. `dkl_bcs_seed0` has no such
+mismatch — it was trained and extracted under the same front end.
+
+**Consequence for §45.3.** The instruction to report the diet arm as a range
+stands, but the reason changes: the range is not irreducible model-to-model
+noise, it is one clean model plus one with a documented front-end mismatch. If
+the diet arm ever needs a point estimate, `dkl_bcs_seed0` is the defensible one
+and `thesis_dvd_trans` is the one to disclose. Do not average them.
