@@ -115,11 +115,11 @@ for label, (is_diet, rows, fv) in table.items():
         continue
     means = np.array([v.mean() for _, v in rows])
     print(f"  {label:22s} seed means {np.array2string(means, precision=3)}  "
-          f"range={means.ptp():.3f}  sd={means.std(ddof=1):.3f}")
+          f"range={np.ptp(means):.3f}  sd={means.std(ddof=1):.3f}")
 allm = {l: np.array([v.mean() for _, v in r]) for l, (d, r, f) in table.items() if r}
 if "diet / normal" in allm and "diet / parvo_highsf" in allm:
     gap = abs(allm["diet / normal"].mean() - allm["diet / parvo_highsf"].mean())
-    spread = max(allm["diet / normal"].ptp(), allm["diet / parvo_highsf"].ptp())
+    spread = max(np.ptp(allm["diet / normal"]), np.ptp(allm["diet / parvo_highsf"]))
     print(f"\n  gap between the two diet-on-luminance arms : {gap:.3f}")
     print(f"  largest within-arm seed range              : {spread:.3f}")
     print(f"  -> the 'converge to within 2%' reading is "

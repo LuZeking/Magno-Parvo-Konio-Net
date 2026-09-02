@@ -5489,3 +5489,140 @@ would not have a trial-level human-likeness claim.
 
 If H1 is supported, the diet gains a genuinely human-facing result of the kind
 NHB weights most heavily, and it belongs in the abstract.
+
+---
+
+## §58 SEED REPLICATION OF THE PR SET POINT — the level is noise, the side is not
+
+Job 26413641 (56 cache-only tasks, all COMPLETED) -> `tmp_analysis/pr_seeds.py`.
+n=8 subjects x 3 seeds x 4 conditions, NIMG=1000. This is the first time the
+seed axis has been measured on any instrument in this project.
+
+### §58.1 The table
+
+| arm | front end | seed 0 | seed 1 | seed 2 | seed range |
+|---|---|---|---|---|---|
+| diet / luminance | 1.402 | 1.603 | 2.507 | 1.823 | **0.904** |
+| diet / parvo_highsf | **0.586** | 1.640 | 1.497 | 1.664 | 0.166 |
+| diet / red−green (swap) | 1.909 | 2.225 | 4.383 | 1.995 | **2.388** |
+| no diet | 1.634 | 0.947 | 0.988 | 0.914 | 0.074 |
+
+### §58.2 Q1 — the side of parity replicates 12/12
+
+Every one of the nine diet seeds is above parity in **8/8 subjects**. All three
+no-diet seeds are below parity in the mean (subject-level 7/8, 5/8, 8/8 below).
+Seed-level diet-vs-no-diet is **complete separation for all three diet arms**,
+p=0.100 — the exact two-sided 3v3 floor, i.e. the strongest value the test can
+return. The §2.2 claim, as currently worded, survives without amendment.
+
+Note the honest wrinkle: no-diet seed 1 has only 5/8 subjects below parity and a
+mean of 0.988. "Collapses to parity" is the accurate phrase; "falls below parity"
+would not be.
+
+### §58.3 Q2 — two claims die here, one of them mine and one of them §50's
+
+**§49.4's "the two diet-on-luminance arms converge to within 2%" is dead.** The
+gap was 0.037. The within-arm seed range on that same arm is **0.904**, ~24x
+larger. The gap was never distinguishable from seed noise, and no run had
+measured that noise. Withdrawn.
+
+**§50's "the set point is channel-specific" is not established either.** That
+claim rested on swap 2.225 against luminance 1.603, both n=1. Across seeds,
+swap spans 1.995–4.383 and luminance spans 1.603–2.507 — overlapping ranges.
+The swap mean is higher (2.867 vs 1.978) and may well be a real effect, but
+n=3 seeds cannot separate them. Not refuted; **not established**.
+
+This is the symmetric outcome. §50 correctly caught that my §49 was selective;
+the seed axis now shows that the counter-claim rested on the same n=1 footing.
+What survives is what both accounts agreed on and neither tested: the SIDE.
+
+### §58.4 Why this strengthens rather than weakens the paper
+
+A claim about a *level* would have been unreproducible — a reviewer running one
+more seed would have broken it. The claim the draft actually makes is about
+which side of parity training ends on, and that is now replicated across three
+seeds in four conditions with complete separation. The restructure that demoted
+the level to mechanism was made before this ran; the result vindicates it.
+
+Consequence for the draft: every "after training" number in §2.2 must be
+reported as a seed range, never as a condition constant. No compression factor,
+no set point, no "converges to" anywhere in the paper.
+
+### §58.5 The developmental-schedule check (`tmp_analysis/schedule_check.py`)
+
+Our diet is a STATIC front end at age 48 months, not a trajectory. The most
+likely reviewer objection is that nothing in the paper develops. `thesis_dvd_trans`
+— the BA checkpoint, trained on an actual progressive age transition, in a
+different codebase — lands at **1.158, 8/8 subjects above parity**: the same
+side as every diet arm, at a level below all of them.
+
+So the schedule does not change the side, which is the claim. Reported as a
+convergent check across independent implementations (§45.6), not as a matched
+arm, because the codebase and architecture differ.
+
+---
+
+## §59 ERROR CONSISTENCY — OUTCOME: H1 REFUTED, and §57.5 is now binding
+
+`tmp_analysis/error_consistency.py`. Pre-registered in §57 before running.
+
+### §59.1 Validation, run before the result was read
+
+- The 10 observers reproduce the **published 0.958** shape bias exactly
+  (mean 0.958, range 0.919–0.987). The parser is right.
+- kappa returns **+1.000** for identical raters, **−0.043** for independent
+  raters at a matched 0.9 rate, negative for anti-correlated. The metric is right.
+- A simulated model matching a human's rate exactly but choosing independently
+  scores **−0.036**. Rate-matching alone earns nothing, which is the point.
+
+### §59.2 The result
+
+Human–human ceiling: **kappa = 0.234** (45 pairs, sd 0.095).
+
+| | shape bias | kappa vs human | % of ceiling |
+|---|---|---|---|
+| diet, whole model (3 seeds) | 0.646–0.692 | 0.023–0.032 | 10–14% |
+| no diet, whole model | 0.394–0.433 | 0.031–0.037 | 13–16% |
+| diet, magno stream | 0.870–0.892 | −0.015–0.036 | −6–15% |
+| no diet, magno stream | 0.398–0.434 | 0.036–0.041 | 15–18% |
+| *AlexNet (published)* | *0.429* | *0.032* | *14%* |
+| *GoogLeNet (published)* | *0.312* | *0.025* | *11%* |
+| *VGG (published)* | *0.172* | *0.017* | *7%* |
+
+**H1 is refuted, in both readouts.** The diet-trained model is not more
+consistent with human observers than the no-diet control; it is numerically
+*less* so on the stream readout (0.009 vs 0.039). No model of ours exceeds
+AlexNet.
+
+### §59.3 What this means, stated plainly
+
+Our diet stream carries **twice AlexNet's shape bias** (0.872 vs 0.429) and
+**no more agreement with human decisions** (0.036 vs 0.032). Matching the human
+shape-bias rate buys nothing at the trial level. The models that Geirhos showed
+were texture-biased and the model we built to be shape-biased are equally far
+from human decision structure.
+
+### §59.4 Honouring §57.5
+
+The commitment made before running: if kappa is near zero, **"human-like" comes
+out of the title**, the claim is restricted to the aggregate rate, and the null
+goes in the main text. All three are now done. The title drops the phrase; §2.1's
+human comparison is relabelled as a rate comparison between a stream and an
+observer (§57.2); the null becomes §2.6.
+
+### §59.5 The caveat that does NOT rescue it
+
+Kappa is compressed when marginals are skewed, and humans are at 0.958. That is
+real — it is why the human–human ceiling is only 0.234 rather than something
+near 1. It is handled by reporting every model as a **percentage of that
+ceiling**, which is the same skew. It does not explain why the diet model scores
+*below* its own no-diet control.
+
+### §59.6 Why this is a result and not a wound
+
+It converts a soft claim ("our model is human-like") into a sharp one: **shape
+bias, the field's most-cited human-alignment metric for vision models, does not
+track human decision structure at all.** Across six models spanning 0.17 to 0.89
+shape bias — a 5x range — human agreement is flat at 7–18% of ceiling. That is
+the third and cleanest of the paper's dissociations, and unlike the other two it
+directly concerns human behaviour, which is the axis NHB weights most.
