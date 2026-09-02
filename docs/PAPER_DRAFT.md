@@ -294,10 +294,20 @@ Three points make this more than a single fitted number:
   vs +0.727), yet the strong regional gradient is in the model whose global bias
   points the other way (§17.2).
 
-**(c) Behaviour.** The integrated readout's cue-conflict shape bias is
-**0.675 ±0.025** with the diet against **0.416 ±0.020** without, across three
-seeds each. The thesis checkpoint reproduces at 0.697 against its reported 0.677,
-inside our bootstrap CI (§18.2).
+**(c) Behaviour, against human observers.** The integrated readout's
+cue-conflict shape bias is **0.675 ±0.025** with the diet against **0.416
+±0.020** without, across three seeds each. The thesis checkpoint reproduces at
+0.697 against its reported 0.677, inside our bootstrap CI (§18.2).
+
+On the identical measure and stimuli, Geirhos et al.'s ten human observers give
+**0.958 ±0.019** (range 0.919–0.987), and the CNNs from that release give
+0.429 (AlexNet), 0.312 (GoogLeNet) and 0.172 (VGG-16) — values our pipeline
+reproduces, which is how we check our arithmetic against theirs. The
+diet-trained **magno stream reaches 0.878**, closing most of the distance from
+the CNN regime to human observers; the no-diet model stays inside that regime.
+**No match is claimed:** 0.878 is below the lowest individual human, and
+integration costs 0.203 of shape bias (0.878 → 0.675), which is 72% of the
+remaining gap. See §2.5 and §52.3.
 
 Three instruments — representations, cortex, behaviour — three data types, one
 pattern.
@@ -332,11 +342,14 @@ what the data support.
 bias (0.675) sits below the magno stream's (0.87–0.89). We therefore do not
 write that integration *yields* shape-biased behaviour.
 
-**No human comparison is made.** Human observer data for these stimuli is not in
-our possession, so the paper makes a *directional* statement — the diet moves the
-network toward the human end of the shape/texture axis and the no-diet model sits
-in the texture-biased CNN regime — and **no matching statement**. No human number
-appears anywhere in this manuscript.
+**The human comparison is directional, and now quantified.** Human observer data
+is in hand (§52), so the gap is measured rather than gestured at: the best stream
+sits **0.080 below the human mean** and below the lowest individual human, and
+the integrated readout sits 0.283 below. The paper therefore states that the diet
+moves the network most of the way from the texture-biased CNN regime toward human
+observers and that the no-diet model stays in that regime, **with the numbers
+given**. It does not claim a match, does not use "human-like", and does not
+report any stream as falling in the human range.
 
 ---
 
@@ -420,7 +433,10 @@ appears anywhere in this manuscript.
    is computed on each subject's cached image set, so the paired test speaks to
    stability across image samples, not to population inference. The encoding and
    behavioural results are not affected.
-7. **No human observer data**, hence no human-likeness claim (§2.5).
+7. **The human comparison is directional only.** The best stream (0.878) is
+   below the lowest individual human observer (0.919), and the integrated readout
+   (0.675) is far below. Human data is in hand and cited (§52); what is not
+   available is any basis for a matching claim.
 8. **Single-trainer accuracy discrepancy, unexplained.** The thesis checkpoint's
    *behavioural* number reproduces (§18.2) but its *accuracy* does not; the
    discrepancy is isolated to the classification evaluation path, not the
@@ -446,8 +462,15 @@ Recorded so the omissions are visible rather than silent.
 
 ## Open items before submission
 
-- [ ] Obtain Geirhos human observer data, or keep every human reference
-      directional. **Blocks any use of the word "human-like".**
+- [x] **Geirhos human observer data obtained** (2026-09-02) —
+      `/scratch/byrong/VST_data/geirhos_human_data/cue_conflict`, computed by
+      `tmp_analysis/geirhos_humans.py`, recorded in PLAN §52. Human mean 0.958;
+      our CNN recomputation reproduces the published values. Every human
+      reference stays directional; "human-like" stays out.
+- [ ] Cite the **data release** as well as the ICLR paper, and confirm its
+      licence file before submission (§52.4).
+- [ ] Decide whether the human benchmark belongs in the abstract. It is currently
+      in §2.4(c) and §2.5 only.
 - [x] **Figure 1 built** — `results/figures/fig1_convergence.{png,pdf}`, caption
       in `fig1_convergence_caption.md`, built by `tmp_analysis/fig1{,_data}.py`
       (PLAN §51). Panel (c) is the set point as a front-end→trained slopegraph,

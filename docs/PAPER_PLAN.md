@@ -4851,3 +4851,75 @@ remain, on caches this session had already used for a different purpose, and it
 overturned the headline. The failure was not the analysis; it was declaring a
 thread closed while an unused instrument×condition cell existed. Before writing
 "closed" again, enumerate the cells.
+
+## §52 THE GEIRHOS HUMAN DATA IS IN HAND — the blocker in §20.3 and §46.5 is
+lifted, and the number is 0.958
+
+Downloaded 2026-09-02 to `/scratch/byrong/VST_data/geirhos_human_data/cue_conflict`
+(13 files, 1.4 MB, on scratch not `/home` per the Data Saving Rules and §48.6).
+Computed by `tmp_analysis/geirhos_humans.py`.
+
+### 52.1 Why it was hard to find
+
+`rgeirhos/texture-vs-shape` has **no directory called `cue-conflict`**. The
+cue-conflict stimuli *are* the style-transfer images, so the human data lives in
+
+    raw-data/style-transfer-512-nomask-experiment/
+
+as `..._subject-01_session_1.csv` … `subject-10`, plus `alexnet`, `googlenet`
+and `vgg` from the same experiment. That naming is the entire reason this sat
+open as a blocker for four days.
+
+### 52.2 The numbers, and the check that our arithmetic matches theirs
+
+Shape bias as Geirhos defines it: over trials answered as either the shape or
+the texture category, the fraction that were shape. Non-conflict trials (shape
+category == texture category) excluded.
+
+| observer | shape bias | decided / 1200 |
+|---|---|---|
+| **10 human observers** | **0.9576 ±0.0191** | 791–1055 |
+| | range 0.919–0.987 | |
+| AlexNet | 0.4294 | 659 |
+| GoogLeNet | 0.3119 | 731 |
+| VGG-16 | 0.1722 | 755 |
+
+**The three CNN rows reproduce the published values.** That is the point of
+computing them: it verifies our parser, our conflict-trial exclusion and our
+denominator against numbers Geirhos already reported, rather than trusting a
+pipeline we wrote against data we had never seen.
+
+### 52.3 What may now be said — and it is still directional
+
+| | shape bias | vs human mean |
+|---|---|---|
+| human | 0.958 | — |
+| **diet, magno stream** | **0.878** | **−0.080** |
+| diet, integrated readout | 0.675 | −0.283 |
+| no diet, integrated | 0.416 | −0.542 |
+| no diet, parvo stream | 0.364 | −0.594 |
+
+The diet-trained magno stream reaches **0.878 against a human mean of 0.958**,
+closing most of the distance from the texture-biased CNN regime (0.17–0.43) to
+human observers. But **0.878 is below the lowest individual human (0.919)**, and
+the integrated readout falls back to 0.675.
+
+**Therefore: still directional, now quantified.** The permitted statement is that
+the diet moves the network most of the way from the CNN regime toward human
+observers on this measure and the no-diet model stays in the CNN regime — with
+the numbers given. The forbidden statement is unchanged: no match, no
+"human-like", no claim that any stream is in the human range. §20.3 stands as
+written; what changes is that the gap is now measured (−0.080 for the best
+stream) instead of gestured at.
+
+Note also that §20.2 is sharpened by this: integration costs 0.203 of shape bias
+(0.878 → 0.675), which is 72% of the remaining distance to humans. "Integration
+loses shape bias" now has a magnitude attached and is worth a sentence.
+
+### 52.4 Citation
+
+Geirhos, Rubisch, Michaelis, Bethge, Wichmann & Brendel (2019), *ImageNet-trained
+CNNs are biased towards texture; increasing shape bias improves accuracy and
+robustness*, ICLR. Data: github.com/rgeirhos/texture-vs-shape (CC-BY 4.0 — confirm
+the licence file before submission). **The paper must cite the data release, not
+only the paper.**
