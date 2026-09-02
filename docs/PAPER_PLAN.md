@@ -5030,3 +5030,121 @@ runtime and to find that the original high-pass severities saturated at chance
 (σ=3.0 gave 0.008, chance is 0.009); the family was rescaled to σ 30→3 as a
 result. No second model was run, so the diet-vs-no-diet contrast that §53.4
 predicts is unseen at the time of writing.
+
+---
+
+## §51 HUMAN OBSERVER DATA IS IN — "human-like" is unblocked, and the same
+numbers refute leg (b) as it was originally framed
+
+`tmp_analysis/human_shapebias.py`. Data: bethgelab/model-vs-human
+`raw-data/cue-conflict/`, the standardized release of Geirhos et al. 2018's
+human experiment, 10 observers × 1280 trials, downloaded to
+`/scratch/byrong/encoding/datasets/geirhos_cue_conflict/human_raw_data/`
+(scratch, beside the stimuli, per the Data Saving Rules). 10/10 files, 1281
+lines each, byte counts verified.
+
+§46.5 and the draft's *Claims deliberately not made* both blocked on this.
+It is no longer blocking.
+
+### 51.1 The comparison is legitimate, not rhetorical
+
+Both sides use the identical statistic and the identical exclusion: drop the 80
+of 1280 trials whose shape and texture category coincide, leaving the canonical
+1200; among the rest report n_shape / (n_shape + n_texture).
+`src/analysis/behavior/cue_conflict.py` already restricts model decisions to
+the 16 categories and applies that rule, and its JSONs already record
+`n_images = 1200`, so nothing was re-scored — the model side is read as
+committed.
+
+**Parsing check:** the human mean comes out at **0.9576**, reproducing the
+published ~0.96 to three decimals. That is the evidence the imagename parsing
+(`..._bird2-clock3.png` → shape bird, texture clock) is right.
+
+### 51.2 The human reference
+
+| | value |
+|---|---|
+| human shape bias, n=10 observers | **0.9576** ± 0.0191 (sd) |
+| 95% CI (t, df=9) | **0.9439 .. 0.9713** |
+| per-observer range | 0.919 .. 0.987 |
+| in-pair decision rate | **0.803** ± 0.069 |
+
+### 51.3 Every model arm sits outside the human CI
+
+| arm | condition | shape bias (k=3 seeds) | gap to human | decided |
+|---|---|---|---|---|
+| diet on lum | **magno only** | **0.8778** ±0.0122 | **−0.080** | 0.41 |
+| diet on lum | full (integrated) | 0.6749 ±0.0249 | −0.283 | 0.40 |
+| diet on lum | parvo only | 0.4177 | −0.540 | 0.29 |
+| parvo_highsf | magno only | 0.7966 | −0.161 | — |
+| no diet | magno only | 0.4210 | −0.537 | 0.49 |
+| no diet | full | 0.4162 | −0.541 | 0.49 |
+| diet on rg (swap) | magno only | 0.4007 | −0.557 | 0.52 |
+| rgb (arch control) | full | 0.4449 | −0.513 | 0.50 |
+| `thesis_dvd_trans` | magno only | 0.9109 | −0.047 | 0.50 |
+| untrained (either front end) | full | ~0.50 | −0.46 | **0.12** |
+
+**Not one arm falls inside the human 95% CI**, including the closest
+(`thesis_dvd_trans` magno, 0.911). Our own best is the diet-trained magno
+stream at 0.878, a residual gap of 0.080 — 8.3% of the human value.
+
+What the diet buys, in human units: it closes **85%** of the distance from the
+no-diet magno baseline (0.421) to humans (0.958). That is the sentence the data
+support.
+
+### 51.4 The finding that costs us leg (b) — integration DILUTES the shape bias
+
+The project's working claim has always had leg (b) as *"their integration
+yields human-like shape-biased behavior"*. The data say the opposite about
+integration:
+
+    diet on lum, magno stream alone   0.8778
+    diet on lum, integrated readout   0.6749      -0.203
+
+The integrated network is **substantially less** shape-biased than its own
+magno stream, in 3/3 seeds, and closes only **47%** of the no-diet→human
+distance against the magno stream's 85%. Summing the streams before the shared
+FC does not combine a shape-biased and a texture-biased stream into human-like
+behaviour — it averages them toward the texture-biased one.
+
+**Leg (b) as originally worded is therefore refuted by our own measurement and
+must not be written.** What survives is a statement about the stream, not the
+network: *the developmental diet produces a stream whose shape bias approaches
+the human level; the network's integrated readout does not inherit it.* This is
+a narrower claim and it is the honest one. It also makes the paper's existing
+positioning better, not worse — §46.2's join is about whether the streams stay
+*differentiated*, and a diluting integration is exactly what differentiated
+streams plus a summing readout would produce.
+
+### 51.5 The caveat that must travel with every "human-like" sentence
+
+Humans decide in-pair on **80%** of cue-conflict trials. These models decide on
+**24–53%** (untrained: 12%). The diet-trained magno stream decides on ~41%.
+
+Shape bias is a ratio computed **only over decided trials**. So the model
+numbers condition on roughly half as many trials as the human numbers, and on a
+subset that is not guaranteed to be a random half. A model and a human with the
+same shape bias are not thereby behaving alike. Every reported model shape bias
+must carry its decision rate, and no arm may be described as "matching" or
+"human-level" on the strength of the ratio alone. **"Approaches", with the
+residual 0.080 gap and the decision rate stated, is the strongest admissible
+wording.**
+
+### 51.6 A bonus: the behavioural numbers ARE seed-stable
+
+Across 3 seeds the diet arm's magno shape bias is 0.8718 / 0.8918 / 0.8697,
+**sd 0.0122**; the integrated readout 0.6922 / 0.6861 / 0.6464, sd 0.0249. This
+is the first seed-variance estimate anywhere in the project, and it is
+reassuring — but it applies to the *behavioural* instrument only. The PR and
+cortical numbers still rest on one checkpoint per condition, which job
+**26413641** (§ next) is measuring. Do not transfer this stability to those.
+
+### 51.7 What to change in the draft
+
+- `docs/PAPER_DRAFT.md` *Claims deliberately not made* lists "That integration
+  produces human-like shape bias". Keep it listed as not claimed, but the
+  reason changes from **absent data** to **measured and contradicted** (51.4),
+  which is a stronger and more citable position.
+- §46.2's instrument-1 row (0.878 vs 0.364) can now be given its human anchor:
+  0.958, with both models outside the human CI.
+- The word "human-like" may now appear, subject to 51.5's constraints.
