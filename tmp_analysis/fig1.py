@@ -105,6 +105,7 @@ series = [
      GREY, "--"),
     ("trained, no diet", ctr(nodiet_tr), NODIET, "-"),
     ("trained, with diet", ctr(diet_tr), DIET, "-"),
+    ("trained, diet on rg", ctr(D["swap_s0__profile"]), SWAP, "--"),
 ]
 for label, p, c, ls in series:
     m = np.nanmean(p, 0)
@@ -181,8 +182,8 @@ axC.text(0.5, 1.26, "MAGNO", ha="center", fontsize=7.5, fontweight="bold",
 axC.text(GAP + 0.5, 1.26, "PARVO", ha="center", fontsize=7.5,
          fontweight="bold", color="#444444")
 axC.annotate("shape bias destroyed",
-             (1, -0.226), xytext=(0.02, -0.60),
-             fontsize=6.6, color=NODIET, ha="center",
+             (1, -0.226), xytext=(-0.38, -0.62),
+             fontsize=6.6, color=NODIET, ha="left",
              arrowprops=dict(arrowstyle="->", color=NODIET, lw=0.9,
                              shrinkA=1, shrinkB=3))
 axC.text(GAP + 0.45, 0.30, "texture bias either way;\nthe swap only partly\n"

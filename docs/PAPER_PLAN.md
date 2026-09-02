@@ -4328,3 +4328,129 @@ retain its *inverted* (below-1.0) asymmetry rather than drift back toward
 magno-dominance. That is a falsifiable test of §45.3 on a front end whose
 asymmetry points the other way, and it is the single most informative run left
 in this thread.
+
+## §48 LEG (c) CONTROLS COMPLETE (n=8) — the diet owns the cortical gradient,
+but both controls destroy the two-stream decomposition and that must be said
+
+Jobs 26407250 / 26407256 (8 subjects each) plus 26411650 (one repair). The two
+front-end controls that §29.4 left unencoded now have full NSD encoding runs,
+so leg (c) has the same 2×2 the behaviour (§25) and PR (§47) legs already had.
+
+### 48.1 The result
+
+Voxelwise banded ridge, `prf-visualrois` V1v→hV4, `norm` = median(Um−Up) /
+median(Um+Up), noise-ceiling > 0.1. Um / Up are the median unique variance of
+each stream over all retinotopic voxels. n=8 subjects, seed0 throughout.
+
+| condition | what parvo gets | Um | Up | level | hV4−V1v | ρ |
+|---|---|---|---|---|---|---|
+| no diet | rg, no transform | 0.164 | 0.013 | +0.838 | −0.101 | −0.502 |
+| **diet on luminance** | rg, no transform | 0.041 | 0.121 | −0.454 | **−0.862** | **−0.964** |
+| swap | rg + **transform** | 0.288 | **0.006** | +0.957 | −0.027 | −0.259 |
+| `parvo_highsf` | **lum+rg**, no transform | **0.007** | 0.186 | −0.909 | −0.119 | −0.780 |
+
+Paired Wilcoxon, diet against each control, n=8 (exact floor p=.0078):
+
+| contrast | gradient p | ρ p |
+|---|---|---|
+| diet vs no diet | **.0078** | **.0078** |
+| diet vs swap | **.0078** | **.0078** |
+| diet vs `parvo_highsf` | **.0078** | .0274 |
+
+The diet arm's gradient is 7–33× larger than every control's and separates from
+all three at the floor. **Leg (c)'s central claim survives its own controls.**
+
+### 48.2 The caveat that must not be buried — both controls kill a stream
+
+Read the Um / Up columns, not just the gradient. In `swap` the parvo stream
+contributes Up = 0.006 — a twentieth of the diet arm's 0.121, and four times
+*less* than the no-diet arm's already small 0.013. In `parvo_highsf` the magno
+stream contributes Um = 0.007. **Each control leaves one stream contributing
+essentially nothing unique.**
+
+This matters because `norm` is a ratio. When one stream is ~0 everywhere the
+statistic saturates (level +0.957 and −0.909 respectively, against −0.454 for
+the diet) and there is almost no dynamic range left in which a gradient could
+appear. So the honest statement is **not** "the controls abolish the gradient",
+which would credit the manipulation with an effect the statistic could not have
+shown either way. It is:
+
+> Only the diet-on-luminance configuration yields two streams that *both* carry
+> substantial unique cortical variance **and** a hierarchical gradient between
+> them. The controls do not relocate the diet within a fixed two-stream
+> decomposition — they destroy the decomposition.
+
+That is a narrower claim than the one §29.4 anticipated, and it is the one the
+data support.
+
+### 48.3 ρ separates the two controls, and only one of them is really flat
+
+`swap` collapses on both measures: ρ = −0.259, below even the no-diet arm's
+−0.502. `parvo_highsf` does not — it retains ρ = −0.780, between diet (−0.964)
+and no diet, while its amplitude is 7× smaller than the diet's. Because ρ is
+rank-based it survives the saturation that flattens the amplitude, so it is the
+fairer cross-condition read here, and by ρ the ordering is
+
+    diet (−0.964)  >  parvo_highsf (−0.780)  >  no diet (−0.502)  >  swap (−0.259)
+
+Note the diet-vs-`parvo_highsf` ρ contrast is p = .0274, the only one of the six
+tests above the floor. **Do not write that the controls flatten the gradient.**
+`parvo_highsf` keeps a real monotonic ordering; what it loses is amplitude, and
+what it loses completely is its magno stream.
+
+### 48.4 Convergence with §47 — the carrier account predicts which stream dies
+
+§47 established on PR that a stream's dimensionality tracks the bandwidth of the
+carrier it is handed, and that the transform subtracts bandwidth from whichever
+stream it lands on. The encoding data agree, on a different instrument:
+
+| condition | §47 PR ratio (magno/parvo) | §48 dominant stream |
+|---|---|---|
+| `swap` | 3.37 — magno far more dimensional | magno (Um 0.288, Up 0.006) |
+| `parvo_highsf` | 0.56 — **parvo** more dimensional | parvo (Up 0.186, Um 0.007) |
+
+The stream holding the full-bandwidth luminance carrier dominates both the PR
+and the unique cortical variance, and `parvo_highsf` inverts both together. So
+§48.2's degeneracy is **not an artifact of the encoding model** — it is what
+§47's carrier account predicts: hand a stream a gutted carrier (rg blurred at
+σ=4 in `swap`; dieted luminance competing against a parvo stream holding raw
+luminance in `parvo_highsf`) and it has nothing unique left to contribute.
+
+This is convergence on a *mechanism*, and unlike §46.2's four-instrument table
+it is not vulnerable to §47.4's dissociation warning, because the claim here is
+about which stream carries information, not about shape bias.
+
+### 48.5 Provenance — every file now says what produced it
+
+All 16 outputs carry the nine `prov_*` keys added in `5b42163` (27 arrays each:
+18 base + 9 provenance), recording `transform_target`, `parvo_highsf`, and the
+exact checkpoint. The pre-existing `parvo_highsf` subject 1 from validation job
+26402643 had **18 arrays and no provenance** — its feature cache was labelled
+but its output was not, because the cache patch (01:38) preceded the output
+patch. It was deliberately re-run rather than kept, so no unlabelled file sits
+in a set of labelled ones. That is the §22 lesson applied prospectively.
+
+### 48.6 Operational — the §22 disk-quota failure recurred, and why
+
+`26407250_7` (swap subject 8) died with `OSError: [Errno 122] Disk quota
+exceeded` **at the final `np.savez`**, after its full 7595 s fit had completed,
+leaving a 0-byte output. `/home` had reached 410G against a 400G soft / 410G
+hard quota. The dominant consumer is **`~/projects/feedback_vlm` at 247G**;
+this repo is 12G. Nothing in this project can fix that and it will recur.
+
+Two further points worth recording:
+
+- 2.1G of stale one-epoch AMP/timing benchmark checkpoints was archived off
+  `/home` to `/scratch/byrong/VST_data/tmp_analysis_archive/`. The first attempt
+  used a bare `mv` of the tree, which the Data Saving Rules forbid; it was
+  interrupted having copied 2 of 7 subdirectories and removed nothing, so no
+  data was lost. Redone with `rsync` + a verify-before-delete gate. That gate
+  then fired a *false* mismatch because `du -sb` counts directory entries and
+  Lustre directories are 33280 B against `/home`'s 4096 B — comparing file bytes
+  only, all four matched exactly.
+- The repair run then wedged **twice** on specific nodes (c165, c123): CPU,
+  RSS and disk-read counters frozen byte-identical across 45 min, at 2 s of CPU
+  in 46 min of wall clock. `/scratch` was healthy throughout and the same job
+  ran normally on c132 (86% CPU). Node-local I/O stalls, not a code or
+  filesystem fault. If an encoding task shows a flat `sstat` AveCPU, cancel and
+  resubmit with `--exclude=` rather than waiting out the 12 h wall clock.

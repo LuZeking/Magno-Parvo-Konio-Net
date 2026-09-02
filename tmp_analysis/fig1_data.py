@@ -25,6 +25,7 @@ MODELS = [
     ("nodiet_s1",        "dkl_base_seed1_trained",  "trained_nodiet"),
     ("diet_thesis",      "thesis_dvd_trans",        "trained_diet"),
     ("diet_ours_s0",     "dkl_bcs_seed0_trained",   "trained_diet"),
+    ("swap_s0",          "dkl_bcs_swap_seed0_trained", "trained_swap"),
 ]
 VIS = [1, 2, 3, 4, 5, 6, 7]          # V1v V1d V2v V2d V3v V3d hV4
 HIER = np.array([1, 1, 2, 2, 3, 3, 4], float)

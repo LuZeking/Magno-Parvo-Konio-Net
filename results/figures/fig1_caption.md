@@ -25,7 +25,25 @@ divergence as an effect of learning.
 profile has its own across-ROI mean removed, so the curves are compared on
 *shape*, not level; this is necessary because the two trained models sit on
 opposite sides of the global stream-bias axis (no-diet is magno-dominant in 7/8
-subjects, diet-trained parvo-dominant in 0/8). Shaded bands are ±1 SEM.
+subjects, diet-trained parvo-dominant in 0/8). Shaded bands are ±1 SEM, n=8
+subjects per curve.
+
+The green dashed curve is the channel-swap control — the *same* transform moved
+onto red-green — and it is **flat**. Only the diet on luminance produces the
+V1→hV4 descent (hV4−V1v **−0.862**, ρ **−0.964**); the swap gives **−0.027**
+and ρ **−0.259**, and the two differ in 8/8 subjects (p=.0078, paired
+Wilcoxon). **An important caveat belongs with this curve.** The swap does not
+merely fail to produce a gradient — it leaves the parvo stream contributing
+almost no unique variance at all (median Uₚ **0.006**, against **0.121** for
+the diet arm). Because the plotted statistic is a ratio, a condition in which
+one stream is ≈0 everywhere has little dynamic range in which a gradient could
+appear. The honest reading is therefore not "the swap abolishes the gradient"
+but that *only the diet on luminance yields two streams that both carry
+substantial unique cortical variance and a hierarchical gradient between them*.
+A fourth front end tested in the same runs but not plotted here
+(`parvo_highsf`, where parvo receives raw luminance) behaves differently again:
+it kills the **magno** stream (Uₘ 0.007) yet retains a real monotonic ordering,
+ρ **−0.780**. See §48.
 
 **(C)** The same divergence measured in the networks' own representations.
 Linear-probe accuracy for shape label minus texture label, on Geirhos
