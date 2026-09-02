@@ -5297,7 +5297,7 @@ flag the one contrast (55.4) whose significance depends on the statistic
 chosen, rather than leaving it in a list of p-values where it looks like the
 others.
 
-## §54 OUTCOME C — the diet's shape bias does NOT buy robustness. It costs it.
+## §56 OUTCOME C — the diet's shape bias does NOT buy robustness. It costs it.
 
 Job array 26413592, **12/12 COMPLETED, zero failures**, ~2h per model on `main`.
 `tmp_analysis/ood_verdict.py`. Scored against §53.4/§53.5 as written.
