@@ -15,7 +15,7 @@ views of one property.
   (c) which side of parity training ends on (§49, corrected by §50). A
       slopegraph, because the result is about where arms START versus where
       they END. Four arms enter spanning 0.59-1.91 and every diet arm leaves
-      above parity while both no-diet arms leave at it. The parity line is the
+      above parity while every no-diet seed lands at it. The parity line is the
       message, so it is drawn heavier than a normal reference rule.
 
       NOT "a set point": §50 showed the diet-on-rg arm lands at 2.23, not with
@@ -165,32 +165,53 @@ panel_tag("R", "T", "b", "…and it is visible through cortex")
 
 # ============================================================== panel (c)
 axC = fig.add_subplot(outer[1, 0])
-# dy is the label offset in points: the two diet arms converge to within 0.04
-# and would print on top of each other at any shared offset.
-ARMS = [("nodiet",      NODIET, "no diet",                  0),
-        ("diet_normal", DIET,   "diet on lum",             -8),
-        ("diet_highsf", DIETHS, "diet on lum,\ninverted front end", +8),
-        ("diet_swap",   DIETRG, "diet on rg",               0)]
-# Parity is the claim, not a decoration: every diet arm ends above it and every
-# no-diet arm ends at it. Drawn heavier than the reference rules in other panels.
-axC.axhline(1.0, color="#9A9A9A", lw=1.1, ls=(0, (4, 3)), zorder=1)
-# On the left: at y=1.0 the right-hand side is occupied by the no-diet value
-# label, and the left margin at that height is empty.
-axC.text(-1.38, 1.02, "parity", fontsize=6.8, color=MUTED, va="bottom", ha="left")
+# Four arms x THREE SEEDS. §58: the trained level is not reproducible across
+# seeds, so this panel deliberately labels no level. It shows where each arm
+# STARTS, the spread of where its seeds LAND, and the parity line they land
+# relative to. Labelling a mean here would re-assert the retired set point.
+# Labels sit on the RIGHT beside the seed points, not on the left beside the
+# front end: the four front-end means are 0.59/1.40/1.63/1.91 and the top three
+# are too close to carry two-line labels without colliding, whereas the trained
+# means fan out to 0.95/1.60/1.98/2.87. dy separates the two that stay close.
+ARMS = [("nodiet",      NODIET, "no diet",                         -11),
+        ("diet_highsf", DIETHS, "diet on lum,\ninverted front end",   0),
+        ("diet_normal", DIET,   "diet on lum",                      +14),
+        ("diet_swap",   DIETRG, "diet on rg",                         0)]
+# Parity is the claim. The shaded band separates the two outcomes at a glance.
+axC.axhspan(1.0, 5.6, color="#0072B2", alpha=0.045, lw=0, zorder=0)
+axC.axhline(1.0, color="#7A7A7A", lw=1.2, ls=(0, (4, 3)), zorder=2)
+# Left margin is now free, so both reference labels live there.
+axC.text(-1.02, 1.07, "magno-dominant", fontsize=6.5, color=MUTED,
+         va="bottom", ha="left", style="italic")
+axC.text(-1.02, 0.90, "parity", fontsize=6.8, color=MUTED, va="top", ha="left")
+
 for key, c, lab, dy in ARMS:
-    f, t = D[f"c__{key}__front"], D[f"c__{key}__trained"]
-    paired(axC, f, t, c)
-    axC.annotate(f"{t.mean():.2f}", (1, t.mean()), xytext=(9, dy),
-                 textcoords="offset points", color=c, fontsize=8,
-                 fontweight="bold", va="center", ha="left")
-    axC.annotate(lab, (0, f.mean()), xytext=(-10, 0), textcoords="offset points",
-                 color=c, fontsize=7.2, va="center", ha="right")
+    f = D[f"c__{key}__front"]
+    fm = float(f.mean())
+    sm = D[f"c__{key}__seedmeans"]
+    axC.plot([0, 0], [f.min(), f.max()], "-", color=c, lw=1.0, alpha=0.45, zorder=3)
+    axC.plot([0], [fm], "o", color=c, ms=5.0, mec="white", mew=0.8, zorder=5)
+    for v in sm:
+        axC.plot([0, 1], [fm, v], "-", color=c, lw=1.0, alpha=0.55, zorder=3)
+        axC.plot([1], [v], "o", color=c, ms=4.2, mec="white", mew=0.7, zorder=5)
+    # The only annotation is the CLAIM: which side, in how many subject-seeds.
+    n_ok = sum(int(D[f"c__{key}__above{sd}"][0]) for sd in (0, 1, 2))
+    n_tot = sum(int(D[f"c__{key}__above{sd}"][1]) for sd in (0, 1, 2))
+    if key == "nodiet":
+        n_ok = n_tot - n_ok                       # no diet: count at/below parity
+    axC.annotate(f"{lab}   {n_ok}/{n_tot}", (1, float(sm.mean())),
+                 xytext=(12, dy), textcoords="offset points", color=c,
+                 fontsize=7.2, va="center", ha="left")
+
 axC.set_xticks([0, 1])
-axC.set_xticklabels(["front end\n(no training)", "after training"])
-axC.set_xlim(-1.42, 1.72)
-axC.set_ylim(0.48, 2.44)
+axC.set_xticklabels(["front end", "after training\n(3 seeds)"])
+axC.set_xlim(-1.05, 2.85)
+axC.set_ylim(0.36, 5.60)
 axC.set_ylabel("effective dimensionality\nratio (magno / parvo)", fontsize=7.5)
 axC.tick_params(length=2.5)
+axC.text(0.5, 0.975, "no level is claimed \u2014 seed range reaches 2.39",
+         transform=axC.transAxes, ha="center", va="top",
+         fontsize=6.4, color=MUTED, style="italic")
 panel_tag("L", "B", "c", "The diet fixes which side of parity")
 
 # ============================================================== panel (d)

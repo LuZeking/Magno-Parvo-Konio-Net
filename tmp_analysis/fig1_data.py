@@ -105,17 +105,30 @@ def ratio(model):
          for k, v in _pr.items() if k.partition("|subj")[0] == model}
     return np.array([d[s] for s in sorted(d)])
 
-# Four arms, not three. §50 added the diet-on-rg arm (`swap`) and it does NOT
-# join the other two diet arms -- it lands at 2.225. Plotting only the two that
-# converge would be the cherry-pick §50.3 caught in the draft's abstract.
-ARMS = [("diet_normal",  "untrained_seed0",        "dkl_bcs_seed0_trained"),
-        ("diet_highsf",  "untrained_parvo_highsf", "dkl_bcs_parvo_highsf_seed0_trained"),
-        ("diet_swap",    "untrained_swap",         "dkl_bcs_swap_seed0_trained"),
-        ("nodiet",       "untrained_seed0_noblur", "dkl_base_seed0_trained")]
+# Four arms, three SEEDS each. §58 replicated this panel's instrument across
+# training seeds and found the trained LEVEL is not reproducible (the diet-on-lum
+# arm spans 1.603-2.507; diet-on-rg spans 1.995-4.383). Earlier versions of this
+# panel labelled one seed's level per arm, which asserted a set point the text
+# has since withdrawn. The panel now plots every seed and claims only the SIDE
+# of parity -- which does replicate, 12/12 seeds, 8/8 subjects each.
+ARMS = [("diet_normal",  "untrained_seed0",        "dkl_bcs_seed{}_trained"),
+        ("diet_highsf",  "untrained_parvo_highsf", "dkl_bcs_parvo_highsf_seed{}_trained"),
+        ("diet_swap",    "untrained_swap",         "dkl_bcs_swap_seed{}_trained"),
+        ("nodiet",       "untrained_seed0_noblur", "dkl_base_seed{}_trained")]
 for key, front, trained in ARMS:
-    f, t = ratio(front), ratio(trained)
-    out[f"c__{key}__front"], out[f"c__{key}__trained"] = f, t
-    print(f"(c) {key:12s} front {f.mean():.3f} -> trained {t.mean():.3f}  (n={len(f)})")
+    f = ratio(front)
+    out[f"c__{key}__front"] = f
+    seed_means = []
+    for sd in (0, 1, 2):
+        t = ratio(trained.format(sd))
+        out[f"c__{key}__trained{sd}"] = t
+        seed_means.append(t.mean())
+        # the claim, per seed: how many subjects land on the diet side of parity
+        out[f"c__{key}__above{sd}"] = np.array([(t > 1.0).sum(), len(t)])
+    out[f"c__{key}__seedmeans"] = np.array(seed_means)
+    print(f"(c) {key:12s} front {f.mean():.3f} -> trained seeds "
+          f"{np.array2string(np.array(seed_means), precision=3)}  "
+          f"range {np.ptp(seed_means):.3f}")
 
 # ---------------------------------------------------------------- panel (d)
 # The cost. Median r2_joint/NC over reliable voxels, per subject.

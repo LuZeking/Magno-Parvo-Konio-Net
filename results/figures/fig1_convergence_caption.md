@@ -45,26 +45,30 @@ no readout.
 
 **(c) The diet fixes which side of parity training ends on.** Effective
 dimensionality ratio (participation ratio of magno features ÷ parvo features,
-1,000 NSD images per subject), before and after training. Thin lines are
-subjects, thick lines the mean. The four arms *enter* spanning 0.59 to 1.91;
-every diet arm *leaves* above parity and both no-diet arms leave at it.
+1,000 NSD images per subject). Left: each arm's front end before any training,
+marker at the subject mean with the subject range as a whisker. Right: **one
+point per training seed**, each the mean over 8 subjects, fanned from the front
+end it started at. Counts are subject-seeds on the claimed side of parity
+(diet arms above, no diet at or below) out of 24 = 8 subjects × 3 seeds.
 
 The pale blue arm shows the input's asymmetry is not what training carries
 forward: its front end is inverted — parvo is the more dimensional stream, below
-parity in 8/8 subjects — and after training it has flipped to 1.64, *overtaking*
-a model handed 1.40, with 0/8 subjects still inverted. The green arm shows the
-diet does not converge on one value either: the identical transform applied to
-the chromatic channel lands at 2.23, differing from both diet-on-luminance arms
-at p=.0078, 8/8 (per-subject 2.09–2.38). It is the best-controlled arm in the
-panel — provenance-exact reference, and architecture-matched to the diet arm
-unlike `parvo_highsf` — so it is drawn rather than set aside.
+parity in 8/8 subjects — and after training every seed has flipped above parity,
+*overtaking* a model handed 1.40.
 
-What is invariant is the side of parity: three diet arms above it from front ends
-spanning 3.26×, two no-diet arms at it from the most magno-dominant front end in
-the set. All six diet × no-diet contrasts on the trained ratio are p=.0078, 8/8.
-**No compression factor is quoted**: the diet-on-luminance pair compresses 22×
-but all three diet arms together compress only 2.1×, and reporting the former
-alone would be selective (§50.3).
+**No level, set point or compression factor is quoted anywhere in this panel,
+and this is deliberate.** Seed replication (PLAN §58) showed the trained level is
+not reproducible: the diet-on-luminance arm spans 1.603–2.507 across seeds and
+the diet-on-red−green arm spans 1.995–4.383, a range of 2.39. Earlier versions
+of this figure labelled one seed's level per arm and so asserted a set point;
+they also supported a "channel-specific" reading that the overlapping seed
+ranges cannot establish. Both are withdrawn.
+
+What replicates is the side: **24/24 subject-seeds above parity for every one of
+the three diet arms**, from front ends spanning 3.26×, against 20/24 at or below
+it for no diet — which enters from the *most* magno-dominant front end in the
+set. Seed-level separation between every diet arm and no diet is complete
+(p=0.100, the exact two-sided 3×3 floor).
 
 *This panel varies architecture alongside the front end.* The `parvo_highsf`
 condition gives its second stream two input channels rather than one, so input
@@ -91,11 +95,11 @@ is made only where the normalised and raw statistics agree (PAPER_PLAN §8).
 
 **Colour.** Okabe-Ito, validated for colour-vision-deficiency separation and for
 contrast against the panel surface. Identity is never carried by colour alone:
-every arm in (c) and every mean in (b) and (d) is directly labelled.
+every arm in (c) carries its own label and count, and every mean in (b) and (d) is directly labelled.
 
 **Provenance.** `tmp_analysis/fig1_data.py` → `results/figures/fig1_data.npz` →
 `tmp_analysis/fig1.py`. Sources: (a) PAPER_PLAN §25 and §51; (b) §43.1;
-(c) §47.1, §49.2 and §50.2; (d) §43.3.
+(c) §47.1, §49.2, §50.2 and §58; (d) §43.3.
 
 **Correction history.** The `swap` cell in (a) is n=3, superseding the n=2 in
 §25.1. `dkl_bcs_swap_seed2` was excluded there by the convergence guard while

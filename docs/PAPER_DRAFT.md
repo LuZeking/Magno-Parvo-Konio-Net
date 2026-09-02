@@ -163,11 +163,19 @@ Linear probe, stream shape−texture bias (zero is the sign flip). Means of
 
 | | no transform | with transform |
 |---|---|---|
-| **chromatic carrier (L−M)** | −0.518 [0.067] | −0.145 [0.043] |
-| **achromatic carrier (lum)** | **−0.226** [0.033] | **+0.819** [0.014] |
+| **chromatic carrier (L−M)** | −0.504 [0.035] | −0.145 [0.043] |
+| **achromatic carrier (lum)** | **−0.271** [0.023] | **+0.819** [0.014] |
+
+Cells are read out on stream 2 in three of four cases and on the diet's magno in
+the fourth, so the input factors vary while the stream role is held fixed
+(§25.1): chromatic/no-transform is the no-diet parvo, achromatic/no-transform is
+`parvo_highsf`'s stream 2, chromatic/transform is `swap`'s parvo.
 
 Behavioural cue-conflict shape bias on the same four cells replicates it
-independently: 0.418 [0.032] / 0.495 [0.038] / 0.421 [0.036] / **0.878** [0.022].
+independently: 0.364 [0.080] / 0.495 [0.038] / 0.396 [0.012] / **0.878** [0.022].
+(`parvo_highsf` seed 0 is excluded from the behavioural row only — it decided
+139/150 images when the convergence guard ran, so its denominator is not
+comparable; the probe classifies every image and keeps all three seeds.)
 
 The probe separates the conjunction cell from all three others by **+0.936**
 with no seed overlap, and the behaviour by **+0.353**. On the behavioural row
