@@ -4494,8 +4494,8 @@ same seed, two front ends 2.4× apart**:
 | diet | `dkl_bcs_seed0` | 1.402 ±0.09 | **1.603** ±0.032 |
 | diet | `dkl_bcs_parvo_highsf_seed0` | **0.586** ±0.013 | **1.640** ±0.030 |
 | diet | `thesis_dvd_trans` | 1.402 ±0.09 | 1.158 ±0.034 |
-| no diet | `dkl_base_seed0` | 1.626 ±0.12 | 0.947 ±0.035 |
-| no diet | `dkl_base_seed1` | 1.626 ±0.12 | 0.988 ±0.040 |
+| no diet | `dkl_base_seed0` | 1.634 ±0.118 | 0.947 ±0.035 |
+| no diet | `dkl_base_seed1` | 1.634 ±0.118 | 0.988 ±0.040 |
 
 The two `dkl_bcs` models are handed front ends that differ by **0.816** in
 magno/parvo PR (2.39×, p=.0078). After training they differ by **0.037** —
