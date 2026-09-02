@@ -12,10 +12,15 @@ views of one property.
       lines are non-parallel, and non-parallelism is the thing bars hide.
   (b) in-silico cue conflict -> BOLD (§43.1). Paired, because the pairing is
       the inference: same 8 subjects, two models.
-  (c) the set point (§49). A slopegraph, because the result IS a convergence
-      from divergent starts -- three arms enter from 0.59 / 1.40 / 1.63 and two
-      of them leave at the same place. A bar chart of trained values alone
-      would delete the entire argument.
+  (c) which side of parity training ends on (§49, corrected by §50). A
+      slopegraph, because the result is about where arms START versus where
+      they END. Four arms enter spanning 0.59-1.91 and every diet arm leaves
+      above parity while both no-diet arms leave at it. The parity line is the
+      message, so it is drawn heavier than a normal reference rule.
+
+      NOT "a set point": §50 showed the diet-on-rg arm lands at 2.23, not with
+      the other two diet arms at ~1.62. Three arms would have shown a set point
+      and the fourth refutes it; the fourth is drawn.
   (d) the cost (§43.3). Not optional: three panels favour the diet and this one
       does not. Omitting it would be cherry-picking (§46.3).
 
@@ -37,7 +42,8 @@ D = np.load("results/figures/fig1_data.npz", allow_pickle=True)
 # surface; #56B4E9 sits below 3:1 and therefore carries a direct label, which
 # every arm in panel (c) has.
 DIET   = "#0072B2"   # blue      -- diet, normal front end
-DIETHS = "#56B4E9"   # sky blue  -- diet, inverted (parvo_highsf) front end
+DIETHS = "#56B4E9"   # sky blue  -- diet on lum, inverted (parvo_highsf) front end
+DIETRG = "#009E73"   # green     -- diet on rg (swap): diet-like in sign, own level
 NODIET = "#D55E00"   # vermillion
 GREY   = "#5A5A5A"
 INK    = "#1A1A1A"
@@ -161,11 +167,16 @@ panel_tag("R", "T", "b", "…and it is visible through cortex")
 axC = fig.add_subplot(outer[1, 0])
 # dy is the label offset in points: the two diet arms converge to within 0.04
 # and would print on top of each other at any shared offset.
-ARMS = [("nodiet",      NODIET, "no diet",              0),
-        ("diet_normal", DIET,   "diet",                 -8),
-        ("diet_highsf", DIETHS, "diet,\ninverted front end", +8)]
-axC.axhline(1.0, color="#CCCCCC", lw=0.8, ls=(0, (3, 3)), zorder=1)
-axC.text(1.34, 1.0, "parity", fontsize=6.8, color=MUTED, va="center", ha="left")
+ARMS = [("nodiet",      NODIET, "no diet",                  0),
+        ("diet_normal", DIET,   "diet on lum",             -8),
+        ("diet_highsf", DIETHS, "diet on lum,\ninverted front end", +8),
+        ("diet_swap",   DIETRG, "diet on rg",               0)]
+# Parity is the claim, not a decoration: every diet arm ends above it and every
+# no-diet arm ends at it. Drawn heavier than the reference rules in other panels.
+axC.axhline(1.0, color="#9A9A9A", lw=1.1, ls=(0, (4, 3)), zorder=1)
+# On the left: at y=1.0 the right-hand side is occupied by the no-diet value
+# label, and the left margin at that height is empty.
+axC.text(-1.38, 1.02, "parity", fontsize=6.8, color=MUTED, va="bottom", ha="left")
 for key, c, lab, dy in ARMS:
     f, t = D[f"c__{key}__front"], D[f"c__{key}__trained"]
     paired(axC, f, t, c)
@@ -176,11 +187,11 @@ for key, c, lab, dy in ARMS:
                  color=c, fontsize=7.2, va="center", ha="right")
 axC.set_xticks([0, 1])
 axC.set_xticklabels(["front end\n(no training)", "after training"])
-axC.set_xlim(-1.30, 1.62)
-axC.set_ylim(0.50, 1.92)
+axC.set_xlim(-1.42, 1.72)
+axC.set_ylim(0.48, 2.44)
 axC.set_ylabel("effective dimensionality\nratio (magno / parvo)", fontsize=7.5)
 axC.tick_params(length=2.5)
-panel_tag("L", "B", "c", "The diet installs a set point")
+panel_tag("L", "B", "c", "The diet fixes which side of parity")
 
 # ============================================================== panel (d)
 axD = fig.add_subplot(outer[1, 1])

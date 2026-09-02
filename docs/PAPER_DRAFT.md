@@ -33,14 +33,15 @@ shape/texture boundary (probe bias −0.266 and −0.145 for the single factors,
 **+0.819** for the conjunction).
 
 Second, we build a front end whose stream asymmetry is *inverted* and train a
-network on it. The diet does not preserve whatever asymmetry the input supplies
-— it **installs one**. Two networks sharing a training recipe and seed, handed
-front ends 2.39× apart in effective-dimensionality ratio (1.402 and 0.586, the
-latter inverted in 8/8 subjects), converge after training on 1.603 and 1.640: a
-front-end gap of 0.816 becomes 0.037, a 22-fold compression, and the inverted
-case flips in every subject. Networks trained without the diet converge instead
-on parity (0.947, 0.988) from the *most* magno-dominant front end in the set
-(1.634).
+network on it. The diet does not preserve whatever asymmetry the input supplies:
+a network handed an inverted front end (0.586, parvo-dominant in 8/8 subjects)
+ends **magno-dominant** (1.640), overtaking a network handed 1.402. But neither
+does it drive training to one value — applying the identical transform to the
+chromatic channel instead lands at 2.225. What the diet fixes is **which side of
+parity training ends on**: all three diet-trained arms end magno-dominant
+(≥1.60) across a 3.26× spread in what they were handed, while both no-diet arms
+collapse to parity (0.947, 0.988) from the *most* magno-dominant front end in
+the set (1.634). Six of six diet × no-diet contrasts, p=.0078, 8/8 subjects.
 
 Third, the divergence is measurable through human visual cortex. Passing
 cue-conflict images through per-stream voxelwise encoding models yields a stream
@@ -148,7 +149,7 @@ non-conjunction behavioural cells are read as **"no strong preference"** rather
 than as precise values; the interaction is carried by the conjunction cell being
 unambiguous, not by fine distinctions among the other three. The probe does not
 have this problem — it classifies every image — and gives the same pattern,
-which is why both modalities are reported (§50.3).
+which is why both modalities are reported (§51.3).
 
 *Capacity control.* `parvo_highsf` gives its second stream an extra input
 channel. The confound that would matter is if the extra channel *weakened* that
@@ -196,9 +197,9 @@ dimensional** one (0.56) while remaining **texture-biased** (probe −0.266). Hi
 effective dimensionality does not confer shape bias, and we do not present these
 as two views of one construct.
 
-### 2.3 The diet installs a representational set point — it does not preserve the input's
+### 2.3 The diet fixes which side of parity training ends on
 
-*Source: PAPER_PLAN §45, §49. This is the paper's mechanistic core.*
+*Source: PAPER_PLAN §45, §49, §50. This is the paper's mechanistic core.*
 
 §2.2 establishes that different front ends hand a network very different stream
 asymmetries before any learning. What does training do with them?
@@ -213,38 +214,48 @@ way — so *keep* and *install* predicted the same outcome.
 subjects). We pre-registered the prediction that a diet-trained network on that
 front end would stay inverted. **It does not.**
 
-| arm | model | front end | after training |
-|---|---|---|---|
-| diet | `dkl_bcs_seed0` | 1.402 ±0.09 | **1.603** ±0.032 |
-| diet | `dkl_bcs_parvo_highsf_seed0` | **0.586** ±0.013 | **1.640** ±0.030 |
-| no diet | `dkl_base_seed0` | 1.634 ±0.118 | 0.947 ±0.035 |
-| no diet | `dkl_base_seed1` | 1.634 ±0.118 | 0.988 ±0.040 |
+| arm | diet applied to | model | front end | after training |
+|---|---|---|---|---|
+| diet | luminance | `dkl_bcs_seed0` | 1.402 ±0.089 | **1.603** ±0.032 |
+| diet | luminance | `dkl_bcs_parvo_highsf_seed0` | **0.586** ±0.013 | **1.640** ±0.030 |
+| diet | **red−green** | `dkl_bcs_swap_seed0` | **1.909** ±0.125 | **2.225** ±0.079 |
+| no diet | — | `dkl_base_seed0` | 1.634 ±0.118 | 0.947 ±0.035 |
+| no diet | — | `dkl_base_seed1` | 1.634 ±0.118 | 0.988 ±0.040 |
 
-The two diet models share a training recipe and a seed and are handed front ends
-**2.39× apart** (p=.0078). After training they differ by 0.037 — a **22×
-compression** of the input gap. The inverted case flips completely: 8/8 subjects
-below 1.0 before training, **0/8 after**.
+The inverted case flips completely: 8/8 subjects below parity before training,
+**0/8 after**, ending at 1.640 — *above* a model handed 1.402. So the input's
+asymmetry is not what training carries forward.
 
-Meanwhile the no-diet models, handed the *most* magno-dominant front end in the
-set (1.634), converge on parity — 0.947 and 0.988, i.e. two streams of equal
-effective dimensionality. Every diet × no-diet contrast on the trained ratio is
-p=.0078, 8/8 subjects.
+But the diet does not drive training to a single value either. Moving the
+identical transform onto the chromatic channel (`swap`) lands at **2.225**,
+differing from both diet-on-luminance arms at p=.0078, 8/8 (per-subject
+2.09–2.38). That arm is the best-controlled of the four — provenance-exact
+reference, and unlike `parvo_highsf` it is architecture-matched — so it cannot
+be set aside.
+
+What is invariant is the **side of parity**. All three diet arms end
+magno-dominant (≥1.60) from front ends spanning **3.26×**; both no-diet arms end
+at parity (0.947, 0.988) from the most magno-dominant front end in the set. All
+**six** diet × no-diet contrasts on the trained ratio: p=.0078, 8/8 subjects.
 
 > **The claim.** A developmental visual diet does not preserve the stream
-> asymmetry its front end supplies. It installs one. Diet-trained networks
-> converge on a magno-dominant geometry from front ends that are magno-dominant
-> *and* from front ends that are parvo-dominant; no-diet networks converge on
-> parity from a front end that is strongly magno-dominant. **What training ends
-> with is set by the diet, not by the input.**
+> asymmetry its front end supplies, and does not converge on one universal
+> value. What it fixes is **which side of parity training ends on** — every
+> diet-trained model ends magno-dominant regardless of a 3.26× spread in what it
+> was handed, and every no-diet model collapses to parity from a strongly
+> magno-dominant front end. The **level** reached is set by *which channel the
+> diet is applied to* (~1.62 on luminance, 2.23 on red−green), not by the input
+> asymmetry and not by the schedule alone.
 
 This is what rules out the filtering account. The diet is not supplying a better
 input representation — §2.2 shows it *removes* bandwidth, and the no-diet front
 end hands over more asymmetry, not less. It is a constraint on the solution
 learning converges to.
 
-*The reference here is exact.* `untrained_parvo_highsf` carries provenance
-identical to the trained model on every recorded key except the checkpoint, so
-this is a matched front-end pairing rather than an approximate one (§49.2).
+*The references are exact for the two decisive arms.* `untrained_parvo_highsf`
+and `untrained_swap` each carry provenance identical to their trained model on
+every recorded key except the checkpoint, so those are matched front-end
+pairings rather than approximate ones (§49.2, §50.1).
 
 ### 2.4 The divergence is measurable through human visual cortex
 
@@ -393,13 +404,18 @@ appears anywhere in this manuscript.
    confound that would fake the result is ruled out (§2.1), but the comparison
    is not architecture-matched. This qualifies §2.3's decisive case and must
    travel with it.
-4. **The set point is per-recipe, not universal.** The independent thesis
-   checkpoint converges to 1.158 rather than ~1.62 on the same front end; it is a
-   different codebase and diet schedule and was feature-extracted through a
-   schedule that is not its own. The tight-convergence claim is made for the two
-   matched models; the diet-vs-no-diet claim holds across all three (§49.4).
-5. **The two diet arms are not statistically identical** (1.603 vs 1.640,
-   p=.0391). The claim is "converge to within 2%", never "identical".
+4. **The convergence level is channel-specific, and there is no universal set
+   point.** The two diet-on-luminance arms agree to within 2% (1.603 vs 1.640;
+   they still differ, p=.0391, so "converge to within 2%" is the claim, never
+   "identical"), but the diet-on-red−green arm lands at 2.225. Reporting the
+   22-fold compression of the diet-on-luminance pair without the third arm would
+   be selective: over all three diet arms the compression is 2.1× (untrained
+   reference) or 4.5× (Gabor). The paper reports the side-of-parity claim, which
+   holds over all three, and does not report a compression factor (§50.3).
+5. **The independent thesis checkpoint converges to 1.158**, not ~1.62, on the
+   same front end — a different codebase and diet schedule, feature-extracted
+   through a schedule that is not its own. It is the least comparable arm; the
+   diet-vs-no-diet claim holds across it too (§49.4).
 6. **n=8 is subjects-as-image-samples for the PR analyses** — participation ratio
    is computed on each subject's cached image set, so the paired test speaks to
    stability across image samples, not to population inference. The encoding and
@@ -434,10 +450,10 @@ Recorded so the omissions are visible rather than silent.
       directional. **Blocks any use of the word "human-like".**
 - [x] **Figure 1 built** — `results/figures/fig1_convergence.{png,pdf}`, caption
       in `fig1_convergence_caption.md`, built by `tmp_analysis/fig1{,_data}.py`
-      (PLAN §50). Panel (c) is the set point as a front-end→trained slopegraph,
+      (PLAN §51). Panel (c) is the set point as a front-end→trained slopegraph,
       superseding §46.3's retention spec per §49.
 - [ ] Renumber the ventral-gradient figure (`fig1_diet_gradient`) — it is no
-      longer Figure 1 but is still §2.4(b)'s evidence (PLAN §50.4).
+      longer Figure 1 but is still §2.4(b)'s evidence (PLAN §51.4).
 - [ ] Decide venue; PLAN targets NMI / NeurIPS tier.
 - [ ] Expand Methods from PLAN §1 and the run logs; add per-condition seed counts.
 - [ ] Supplementary: the VSB cortical profile with its negatives intact; the

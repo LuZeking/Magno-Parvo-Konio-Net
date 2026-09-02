@@ -43,18 +43,28 @@ stream is *texture*-dominated); the parvo streams are indistinguishable (−0.74
 vs −0.748). This is the encoding model's own verdict on (a), using no probe and
 no readout.
 
-**(c) The diet installs a representational set point rather than preserving the
-input's.** Effective dimensionality ratio (participation ratio of magno features
-÷ parvo features, 1,000 NSD images per subject), before and after training. Thin
-lines are subjects, thick lines the mean. The three arms *enter* at 1.63, 1.40
-and 0.59 and two of them *leave* at the same place. The pale blue arm is the
-decisive one: its front end is inverted — parvo is the more dimensional stream,
-below parity in 8/8 subjects — and after training it has flipped to 1.64, within
-2% of the same recipe trained on a front end 2.4× higher (1.60), with 0/8
-subjects still inverted. A front-end gap of 0.816 becomes 0.037: a 22-fold
-compression. Meanwhile the no-diet arm, handed the *most* magno-dominant front
-end in the set, converges on parity. Every diet × no-diet contrast on the trained
-ratio is p=.0078, 8/8.
+**(c) The diet fixes which side of parity training ends on.** Effective
+dimensionality ratio (participation ratio of magno features ÷ parvo features,
+1,000 NSD images per subject), before and after training. Thin lines are
+subjects, thick lines the mean. The four arms *enter* spanning 0.59 to 1.91;
+every diet arm *leaves* above parity and both no-diet arms leave at it.
+
+The pale blue arm shows the input's asymmetry is not what training carries
+forward: its front end is inverted — parvo is the more dimensional stream, below
+parity in 8/8 subjects — and after training it has flipped to 1.64, *overtaking*
+a model handed 1.40, with 0/8 subjects still inverted. The green arm shows the
+diet does not converge on one value either: the identical transform applied to
+the chromatic channel lands at 2.23, differing from both diet-on-luminance arms
+at p=.0078, 8/8 (per-subject 2.09–2.38). It is the best-controlled arm in the
+panel — provenance-exact reference, and architecture-matched to the diet arm
+unlike `parvo_highsf` — so it is drawn rather than set aside.
+
+What is invariant is the side of parity: three diet arms above it from front ends
+spanning 3.26×, two no-diet arms at it from the most magno-dominant front end in
+the set. All six diet × no-diet contrasts on the trained ratio are p=.0078, 8/8.
+**No compression factor is quoted**: the diet-on-luminance pair compresses 22×
+but all three diet arms together compress only 2.1×, and reporting the former
+alone would be selective (§50.3).
 
 *This panel varies architecture alongside the front end.* The `parvo_highsf`
 condition gives its second stream two input channels rather than one, so input
@@ -84,11 +94,11 @@ contrast against the panel surface. Identity is never carried by colour alone:
 every arm in (c) and every mean in (b) and (d) is directly labelled.
 
 **Provenance.** `tmp_analysis/fig1_data.py` → `results/figures/fig1_data.npz` →
-`tmp_analysis/fig1.py`. Sources: (a) PAPER_PLAN §25 and §50; (b) §43.1;
-(c) §47.1 and §49.2; (d) §43.3.
+`tmp_analysis/fig1.py`. Sources: (a) PAPER_PLAN §25 and §51; (b) §43.1;
+(c) §47.1, §49.2 and §50.2; (d) §43.3.
 
 **Correction history.** The `swap` cell in (a) is n=3, superseding the n=2 in
 §25.1. `dkl_bcs_swap_seed2` was excluded there by the convergence guard while
 still training; it was re-run after converging and now decides *more* images
 than seeds 0 and 1. Including it moves the cell by +0.011 (behaviour, 0.484 →
-0.495) and +0.010 (probe, −0.155 → −0.145) and changes no claim. See §50.
+0.495) and +0.010 (probe, −0.155 → −0.145) and changes no claim. See §51.

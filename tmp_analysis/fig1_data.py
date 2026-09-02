@@ -105,8 +105,12 @@ def ratio(model):
          for k, v in _pr.items() if k.partition("|subj")[0] == model}
     return np.array([d[s] for s in sorted(d)])
 
+# Four arms, not three. §50 added the diet-on-rg arm (`swap`) and it does NOT
+# join the other two diet arms -- it lands at 2.225. Plotting only the two that
+# converge would be the cherry-pick §50.3 caught in the draft's abstract.
 ARMS = [("diet_normal",  "untrained_seed0",        "dkl_bcs_seed0_trained"),
         ("diet_highsf",  "untrained_parvo_highsf", "dkl_bcs_parvo_highsf_seed0_trained"),
+        ("diet_swap",    "untrained_swap",         "dkl_bcs_swap_seed0_trained"),
         ("nodiet",       "untrained_seed0_noblur", "dkl_base_seed0_trained")]
 for key, front, trained in ARMS:
     f, t = ratio(front), ratio(trained)

@@ -4580,6 +4580,16 @@ used for here: as the falsifying case.
 
 ### 49.6 Status of the thread
 
+> **CORRECTED BY §50 (same day).** The paragraph below was wrong twice over.
+> There *was* a cheap measurement left — `dkl_bcs_swap_seed0_trained` had full
+> 8-subject caches from §48 and had never been put on the PR instrument — and it
+> *did* change §49.2's claim. The diet-on-rg arm lands at 2.225, not with the
+> other two diet arms at ~1.62, so there is no single set point; §49.2's 22×
+> compression figure is computed on the two arms that agree and must not be
+> quoted alone. Read §50.4 for the claim that survives (which side of parity),
+> and §50.3 for what is withdrawn. §49.1's falsification of the KEEP account is
+> unaffected, and §49.3's reframing of §45.2 stands.
+
 §47.6 called this "the single most informative run left in this thread." It
 was, and it cost one analysis script on caches that already existed. The thread
 is now closed: there is no cheap measurement left that would change §49.2's
@@ -4723,7 +4733,7 @@ alone. §49.2–§49.4 are **not** rewritten here — 50.4 states what should re
 the claim, and one owner should apply it to §49 and to the draft's abstract
 together.
 
-## §50 FIGURE 1 REBUILT AS THE FOUR-PANEL CONVERGENCE FIGURE — and one cell
+## §51 FIGURE 1 REBUILT AS THE FOUR-PANEL CONVERGENCE FIGURE — and one cell
 grew a seed
 
 `tmp_analysis/fig1_data.py` + `tmp_analysis/fig1.py` →
@@ -4731,7 +4741,7 @@ grew a seed
 `fig1_convergence_caption.md`. Built to §46.3's spec with panel (c) replaced
 per §49.
 
-### 50.1 What changed from §46.3's spec
+### 51.1 What changed from §46.3's spec
 
 §46.3 specified panel (c) as "PR retention (§45.2): each trained model against
 its own front end". §49 superseded the retention framing: retention divides by
@@ -4744,7 +4754,7 @@ The form matters here. A bar chart of trained values alone would delete the
 entire argument, because the argument *is* that the starting points differ and
 the endpoints do not.
 
-### 50.2 A seed rejoined the swap cell — §25.1's table is superseded
+### 51.2 A seed rejoined the swap cell — §25.1's table is superseded
 
 Building panel (a) surfaced that `dkl_bcs_swap_seed2` now has both a
 cue-conflict and a probe result on disk (re-run 2026-08-31 22:50/22:51), where
@@ -4762,7 +4772,7 @@ Neither moves a claim: the cell is still far below the conjunction's 0.878 /
 rather than withdrawn — they were correct for the two seeds available then.
 `PAPER_DRAFT.md` §2.1 quotes the new values.
 
-### 50.3 A denominator caveat that the 2×2 had not made explicit
+### 51.3 A denominator caveat that the 2×2 had not made explicit
 
 The four cells' behavioural shape bias rests on very different numbers of
 decided images — the count of images the stream answers as shape *or* texture:
@@ -4786,7 +4796,7 @@ modalities are drawn.
 
 Added to the caption. This is a caveat §25 should have carried and did not.
 
-### 50.4 The old Figure 1 is not deleted
+### 51.4 The old Figure 1 is not deleted
 
 `fig1_diet_gradient.{png,pdf}` and its caption remain. That figure is the
 ventral-gradient result (§17/§29/§48), which `PAPER_DRAFT.md` §2.4(b) still
@@ -4795,3 +4805,49 @@ survives its front-end controls. It is no longer *Figure 1*; renumber it when
 the figure order is fixed. Do not confuse it with the VSB cortical step
 (§43.2/§44.1), which is the measure that does not survive and which the main
 text does not raise.
+
+### 51.5 Panel (c) rebuilt after §50 — and the numbering collision
+
+Two things happened between §51's first build and this amendment, both from the
+parallel session's §50 landing (`8cad8cf`) while this figure was being drawn.
+
+**The numbering collided.** Both sessions wrote a §50 within two hours. Theirs
+was committed first, so this section renumbered itself to §51; references in
+`fig1_convergence_caption.md` and `PAPER_DRAFT.md` were updated with it. This is
+the third cross-session collision in three days (§20.4, §23, §46.6) and the first
+on section numbers rather than files. No content was lost either way.
+
+**Panel (c) was wrong and is rebuilt.** As first drawn it showed three arms —
+two diet-on-luminance and one no-diet — and was titled "The diet installs a set
+point". §50 added the diet-on-rg arm at 2.225, which does not join the other two
+diet arms, and the panel as drawn would have shown a set point only because the
+refuting arm was absent. It now draws **four** arms and is titled "The diet fixes
+which side of parity". The parity rule is drawn heavier than the reference rules
+in the other panels because it is now the claim rather than a decoration.
+
+The swap arm was **verified independently in this session** before the figure was
+changed, rather than taken on the other session's word: front end 1.909 ±0.125 →
+trained 2.225 ±0.079, per-subject 2.09–2.38, p=.0078 8/8 against both
+diet-on-luminance arms and both no-diet arms, three-arm compression 2.1×.
+Provenance checked first per §45.6 — `untrained_swap` matches
+`dkl_bcs_swap_seed0_trained` on every `prov_*` key but the checkpoint. All
+figures agree with §50.2 exactly.
+
+**Consequences carried into the draft**, so the correction is not left in this
+file only:
+
+- The abstract's "a front-end gap of 0.816 becomes 0.037 after training" is
+  **deleted**. It was arithmetically correct on two of three diet arms and
+  selective by this project's standard — §50.3 caught it in the draft, which is
+  the correct outcome of writing the draft before the analysis thread was closed.
+- §2.3 is retitled and restated around the side-of-parity claim, with the swap
+  arm in its table.
+- Limitation 4 now says there is **no universal set point** and states why no
+  compression factor is reported anywhere in the paper.
+
+**The process lesson, which is the one worth keeping.** §49.6 declared the thread
+closed on the grounds that no cheap measurement remained. A cheap measurement did
+remain, on caches this session had already used for a different purpose, and it
+overturned the headline. The failure was not the analysis; it was declaring a
+thread closed while an unused instrument×condition cell existed. Before writing
+"closed" again, enumerate the cells.
