@@ -5418,3 +5418,74 @@ the manipulations that produce it.
 That is a real, positive, falsifiable claim, and it is the honest thing this
 experiment bought. It also fits the through-line the project keeps finding:
 properties assumed to travel together do not.
+
+---
+
+## §57 PRE-REGISTRATION — error consistency against the 10 human observers
+
+Written and committed BEFORE the analysis is run. §53's OOD pre-registration is
+the template: the prediction, the decision rule, and the outcome that would
+damage the paper are all fixed in advance.
+
+### §57.1 Why this, and why now
+
+The draft's title claims **"human-like"** shape bias. The evidence for that word
+is currently a *rate*: a shape-bias scalar near the human one. Geirhos et al.
+(2020, "Beyond accuracy") showed precisely why a matching rate is weak evidence
+— two decision-makers can produce the same shape-bias fraction while agreeing
+on no particular image beyond chance. Their remedy is **error consistency**,
+Cohen's kappa on trial-by-trial agreement, which subtracts exactly the agreement
+that the two marginal rates force.
+
+An NHB reviewer will ask this. Better that we ask it.
+
+### §57.2 A comparison error found while setting this up — and corrected
+
+The abstract compares model **0.878** to human **0.958**. Checking
+`results/cue_conflict/dkl_bcs_seed0.json`: 0.872 (seed 0) is the `magno_only`
+readout — ONE STREAM with the other lesioned. The whole model's shape bias is
+`full` = **0.692**. A whole human observer is not a lesioned stream, so
+0.878-vs-0.958 flatters us by comparing different units.
+
+The 2x2 of §2.1 is internally consistent (all four cells are stream readouts,
+which is the right unit for an *interaction* about carriers), so §2.1 stands.
+What must change is the HUMAN comparison, which has to be made at the whole-
+system level, or explicitly labelled as a stream-vs-observer comparison. Both
+numbers are now to be reported wherever the human benchmark appears.
+
+### §57.3 The metric
+
+Per image, each decision-maker chooses shape or texture; images decided as
+neither are dropped for that pair. For a model-human pair with observed
+agreement c_obs and marginal shape rates p_m, p_h:
+
+    c_exp  = p_m * p_h + (1 - p_m) * (1 - p_h)
+    kappa  = (c_obs - c_exp) / (1 - c_exp)
+
+Ceiling: human-human kappa over all 45 observer pairs. A model kappa is
+meaningful only relative to that ceiling.
+
+Computed for BOTH readouts (`full` and `magno_only`), reported for both. n=3
+seeds per condition; four conditions; 10 observers.
+
+### §57.4 Predictions and decision rule
+
+- **H1 (the one that matters).** Diet > no-diet in model-human kappa.
+  SUPPORTED only on complete separation at the seed level (all 3 diet seeds
+  above all 3 no-diet seeds) in BOTH readouts, per the §8 two-statistics rule.
+- **H2.** Diet kappa is a non-trivial fraction of the human-human ceiling.
+  Descriptive; no threshold pre-set, because none is defensible in advance.
+
+### §57.5 The outcome that damages the paper, named in advance
+
+If every model's kappa is near zero — which is what Geirhos found for standard
+CNNs against humans — then no model here matches human trial-by-trial structure,
+and **"human-like" in the title and abstract is not earned at the trial level**.
+The commitment, made now: in that case the word is removed from the title, the
+claim is restricted explicitly to the aggregate rate, and the null is reported
+in the main text, not the supplement. The paper would still have its
+interaction, its mechanism, its cortex result and its two dissociations; it
+would not have a trial-level human-likeness claim.
+
+If H1 is supported, the diet gains a genuinely human-facing result of the kind
+NHB weights most heavily, and it belongs in the abstract.
