@@ -351,6 +351,59 @@ observers and that the no-diet model stays in that regime, **with the numbers
 given**. It does not claim a match, does not use "human-like", and does not
 report any stream as falling in the human range.
 
+### 2.6 The shape bias does not confer robustness — a second dissociation
+
+*Source: PAPER_PLAN §53 (pre-registered), §54. Reported in the main text, not
+the supplement, because a reader who accepts §2.1 will otherwise assume the
+robustness follows.*
+
+The standard reading of Geirhos et al. is that shape bias buys out-of-
+distribution robustness. We pre-registered that prediction and tested it:
+corruptions applied to the image *before* the front end, scored in the models'
+own 112-way label space, **3 seeds per condition** on all four cells of §2.1's
+2×2.
+
+Relative accuracy (accuracy under corruption ÷ clean accuracy), area under the
+degradation curve:
+
+| corruption | diet | no diet | swap | `parvo_highsf` |
+|---|---|---|---|---|
+| uniform noise | 0.687 | 0.729 | 0.745 | 0.767 |
+| high-pass | **0.619** | 0.827 | 0.821 | 0.783 |
+| phase-scrambling | 0.351 | 0.373 | 0.368 | 0.382 |
+| rotation | 0.552 | 0.615 | 0.602 | 0.611 |
+| false colour | 0.842 | 0.938 | 0.969 | 0.874 |
+| *low-pass (trained-in)* | *0.441* | *0.356* | *0.349* | *0.386* |
+
+**The diet-trained model is less robust on every corruption it was not trained
+on**, in both statistics, with complete seed separation on four of five. The two
+conditions without a shape bias (`swap`, `parvo_highsf`) pattern with the
+no-diet model throughout, so this is not a quirk of one arm.
+
+The **only** corruption on which the diet is more robust is low-pass — which we
+declared trained-in before running, because the diet *is* a low-pass blur. The
+experiment finds robustness exactly where robustness was trained in and nowhere
+else, which is the strongest available evidence that the other five nulls are
+real rather than a broken measurement.
+
+The diet also costs more than previously measured: 112-way accuracy **0.439
+±0.091 against 0.695 ±0.006**, a 37% relative cost, and the diet arm spans
+0.336–0.503 across seeds while every other condition spans under 0.02. It
+destabilises training as well as lowering it.
+
+> **The claim.** Shape bias and OOD robustness are not intrinsically coupled.
+> This does not contradict Geirhos et al., who showed that *Stylized-ImageNet
+> training* produces models that are both shape-biased and robust. It shows the
+> coupling is a property of that route, not of shape bias: a developmental route
+> to comparable shape bias (probe +0.819, behaviour 0.878 against a human 0.958)
+> delivers **none** of the robustness. "Increase shape bias to get robustness"
+> does not generalise across the manipulations that produce it.
+
+This is the paper's second dissociation of properties the field treats as
+coupled — §2.2 separated shape bias from representational dimensionality over
+identical inputs, and §2.6 separates it from robustness.
+
+
 ---
 
 ## 3. Discussion
@@ -371,10 +424,18 @@ report any stream as falling in the human range.
   are frequently discussed as though richer representations were more
   shape-like. §2.2's `parvo_highsf` cell is a direct counterexample: the more
   dimensional stream is the texture-biased one.
-- **What generalises.** The set-point result predicts that any manipulation
+- **Two dissociations, one lesson.** Shape bias, representational
+  dimensionality and OOD robustness are routinely discussed as a package. This
+  paper separates them twice over identical inputs (§2.2, §2.6). The practical
+  consequence is that "shape bias" is not a single thing a model has more or
+  less of — what produced it determines what else comes with it.
+- **What generalises.** The side-of-parity result predicts that any manipulation
   changing *what learning converges to*, rather than what the input supplies,
-  should show the same compression signature. That is a testable prediction for
-  other developmental manipulations (chromatic onset, acuity schedules).
+  should show the same signature. Testable for other developmental
+  manipulations (chromatic onset, acuity schedules).
+- **What does not.** Nothing here supports using a developmental diet to make
+  models better. It makes them less accurate, less stable and less robust
+  (§2.6). Its interest is as a model of development, not as a training method.
 - **Limits.** See §2.5 and *Limitations*.
 
 ---
@@ -407,8 +468,10 @@ report any stream as falling in the human range.
 
 ## Limitations
 
-1. **The diet costs ~13% of explained BOLD variance** (§2.5). Stated in the main
-   text, not buried.
+1. **The diet costs, on every engineering axis we measured.** ~13% of explained
+   BOLD variance (§2.5); 37% relative classification accuracy and markedly
+   higher seed variance (§2.6); and robustness on every corruption it was not
+   trained on (§2.6). The paper makes no claim that the diet improves a model.
 2. **Two front-end controls are degenerate on the cortical instrument** (§2.5),
    which narrows the control claim.
 3. **`parvo_highsf` varies architecture alongside the front end** — its second
