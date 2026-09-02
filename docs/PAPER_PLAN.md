@@ -5296,3 +5296,125 @@ claims by p. Do not substitute rank-biserial r — it saturates identically. And
 flag the one contrast (55.4) whose significance depends on the statistic
 chosen, rather than leaving it in a list of p-values where it looks like the
 others.
+
+## §54 OUTCOME C — the diet's shape bias does NOT buy robustness. It costs it.
+
+Job array 26413592, **12/12 COMPLETED, zero failures**, ~2h per model on `main`.
+`tmp_analysis/ood_verdict.py`. Scored against §53.4/§53.5 as written.
+
+### 54.1 The result, in the statistic that matters
+
+Relative accuracy (accuracy at severity ÷ clean accuracy), area under the
+degradation curve, mean over **3 seeds** per condition:
+
+| family | counts | diet | no diet | swap | parvo_highsf | diet − no diet |
+|---|---|---|---|---|---|---|
+| uniform-noise | yes | 0.687 | 0.729 | 0.745 | 0.767 | **−0.042** |
+| high-pass | yes | 0.619 | 0.827 | 0.821 | 0.783 | **−0.208** |
+| phase-scrambling | yes | 0.351 | 0.373 | 0.368 | 0.382 | **−0.023** |
+| rotation | yes | 0.552 | 0.615 | 0.602 | 0.611 | **−0.063** |
+| false-colour | yes | 0.842 | 0.938 | 0.969 | 0.874 | **−0.096** |
+| low-pass | **NO — trained-in** | **0.441** | 0.356 | 0.349 | 0.386 | **+0.085** |
+| contrast | **NO — trained-in** | 0.327 | 0.549 | 0.528 | 0.511 | −0.222 |
+
+**The diet is less robust on every counted family**, in both statistics
+(absolute agrees everywhere, and more strongly). Complete seed separation on
+4 of 5; uniform-noise overlaps. §8 is satisfied for the negative direction.
+
+### 54.2 H1 refuted. H2's "support" is vacuous and must not be claimed.
+
+**H1 is refuted outright** — the diet degrades *faster*, not slower, on
+uniform-noise, high-pass and false-colour.
+
+**H2 must not be reported as supported.** The mechanical scorer marks it so
+because the diet does degrade more under phase-scrambling, as predicted. But
+§53.4 predicted a **crossover** — better under noise, worse under scrambling —
+and there is no crossover. The diet is worse in the same direction on every
+family, so the phase-scrambling result carries no information about shape
+reliance; it is the same main effect. **Recording this because the temptation
+to bank H2 as a hit is exactly the failure mode §39.3 and §41.2 are in this
+document for.**
+
+**H3 holds, 9/10.** `swap` and `parvo_highsf` — the two conditions with no
+shape bias — pattern with no-diet throughout (the single exception is
+`parvo_highsf` on false-colour, which is unsurprising given it is the condition
+whose second stream carries luminance). The controls behave, so this is not a
+quirk of one condition.
+
+### 54.3 The positive control fires exactly where it should
+
+The **only** family on which the diet is more robust is `low-pass`
+(+0.085, complete separation) — the family we declared trained-in before
+running, because the diet *is* a low-pass blur. The experiment detects
+robustness precisely where robustness was literally trained in, and nowhere
+else. That is the strongest available evidence that the null on the other five
+families is a real null and not a broken measurement.
+
+`contrast` is the instructive counterpart: the diet is much **worse** (−0.222)
+despite carrying a contrast-sensitivity cut. A fixed CS cut at 48 months does
+not confer tolerance to further contrast reduction; it consumes the headroom.
+
+### 54.4 A robustness check on our own verdict, and it strengthens it
+
+`dkl_bcs_seed1` has anomalous clean accuracy (0.336 against 0.503 and 0.479).
+Dropping it entirely:
+
+| family | diet (n=2) | no diet | |
+|---|---|---|---|
+| uniform-noise | 0.653 | 0.729 | overlap **resolves** — diet lower |
+| high-pass | 0.638 | 0.827 | diet lower |
+| phase-scrambling | 0.348 | 0.373 | diet lower |
+| rotation | 0.560 | 0.615 | diet lower |
+| false-colour | 0.843 | 0.938 | diet lower |
+
+The one overlap in §54.1 traces entirely to that seed, and removing it makes
+the verdict **cleaner**, not weaker. Disclosed rather than used: the headline
+table keeps all three seeds.
+
+### 54.5 The accuracy cost is larger than §18 recorded
+
+112-way MiniEcoset test accuracy, 3 seeds: **diet 0.439 ±0.091 against no-diet
+0.695 ±0.006** — a 37% relative cost, not the ~25% §18 estimated from 16-way
+cue-conflict accuracy. `swap` (0.692) and `parvo_highsf` (0.696) sit with
+no-diet, so the cost is specific to the diet on luminance.
+
+Note also the **variance**: the diet arm spans 0.336–0.503 across seeds while
+every other condition spans <0.02. The diet does not only cost accuracy, it
+destabilises training. Neither fact was visible before this run because no
+condition had ever been evaluated on its own test set at seed level.
+
+### 54.6 Consequences, per §53.5 — and they are not negotiable
+
+- **Drop the NeurIPS/NMI framing.** There is no machine-learning payoff. There
+  is a machine-learning *cost*: less accurate, less stable, less robust. A
+  venue that wants "and therefore the model is better" has no result here.
+- **The paper is a neuroscience paper.** NHB is the target; eLife / PLoS CB /
+  Journal of Vision the comfortable fallback.
+- **This is reported, not buried.** It goes in the main text, not the supplement.
+  §53.5 said "report as a negative in the supplement"; that was too weak. A
+  reader who takes the shape-bias result seriously will assume robustness
+  follows, because that is what the field assumes. Leaving the correction to a
+  supplement would let the assumption stand.
+
+### 54.7 What this actually buys the paper — a second dissociation
+
+This is not merely a null. The paper now contains two dissociations of
+properties the field treats as coupled:
+
+- **§47.4** — shape bias and representational dimensionality factorise
+  differently over identical inputs.
+- **§54** — shape bias and OOD robustness come apart: a developmental route to
+  shape bias produces a strongly shape-biased stream (probe +0.819, behaviour
+  0.878 against a human 0.958) that is *less* robust than a texture-biased
+  control on every corruption it was not trained on.
+
+Stated carefully, this does **not** contradict Geirhos et al. They showed that
+*Stylized-ImageNet training* yields models that are both shape-biased and more
+robust. We show the coupling is not intrinsic to shape bias: **a different
+route to comparable shape bias delivers none of the robustness.** The route
+matters, and "increase shape bias to get robustness" does not generalise across
+the manipulations that produce it.
+
+That is a real, positive, falsifiable claim, and it is the honest thing this
+experiment bought. It also fits the through-line the project keeps finding:
+properties assumed to travel together do not.
