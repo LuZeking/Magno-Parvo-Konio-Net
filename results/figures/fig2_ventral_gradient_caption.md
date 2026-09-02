@@ -1,4 +1,4 @@
-# Figure 1 — caption
+# Figure 2 — caption
 
 **The developmental visual diet decides whether learning builds or erodes
 cortical correspondence.**

@@ -2126,7 +2126,7 @@ bad `dkl_base_seed0_trained_subj01.npz` landed at 06:06 that morning. Its
 and therefore include the contaminated subject in row 0. The `nodiet_s1`,
 `diet_thesis`, `diet_ours_s0` and both `untrained_*` panels are unaffected.
 
-`fig1_diet_gradient.pdf/png` and the caption must be regenerated once 26399760
+`fig2_ventral_gradient.pdf/png` and the caption must be regenerated once 26399760
 lands. This is not a redraw for taste — one of the four trained rows is wrong.
 Per §22.5 the correction moves the no-diet row *further* from the diet rows,
 so the figure's message does not change and its contrast gets cleaner.
@@ -2341,8 +2341,8 @@ after the repair, folding in all three pending changes:
 3. adding the swap arm to panel C, now available on converged checkpoints for
    both measures (§21.4), and the `parvo_highsf` cell if n=2 confirms (§25).
 
-Until then `fig1_diet_gradient.{png,pdf}` and `fig1_caption.md` must not be used
-in any draft. A warning banner has been written into `fig1_caption.md` itself so
+Until then `fig2_ventral_gradient.{png,pdf}` and `fig2_ventral_gradient_caption.md` must not be used
+in any draft. A warning banner has been written into `fig2_ventral_gradient_caption.md` itself so
 the file cannot be picked up innocently.
 
 ---
@@ -3879,7 +3879,7 @@ correction would *widen* the diet/no-diet gap, and it does: the separation
 goes from 0.712 to **0.744**. This was a correction, not a retraction, and the
 figure's claim is stronger after it than before.
 
-The quarantine banner is removed from `fig1_caption.md`. The caption now
+The quarantine banner is removed from `fig2_ventral_gradient_caption.md`. The caption now
 carries a **correction history** paragraph naming both withdrawn numbers and
 why they were wrong, so the record survives in the artefact rather than only
 in this file. §17's two stale `−0.149` references were corrected in place with
@@ -4798,7 +4798,7 @@ Added to the caption. This is a caveat §25 should have carried and did not.
 
 ### 51.4 The old Figure 1 is not deleted
 
-`fig1_diet_gradient.{png,pdf}` and its caption remain. That figure is the
+`fig2_ventral_gradient.{png,pdf}` and its caption remain. That figure is the
 ventral-gradient result (§17/§29/§48), which `PAPER_DRAFT.md` §2.4(b) still
 leads with — it is diet-specific, replicates across codebases to 0.0025, and
 survives its front-end controls. It is no longer *Figure 1*; renumber it when

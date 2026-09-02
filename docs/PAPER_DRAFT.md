@@ -795,17 +795,33 @@ Recorded so the omissions are visible rather than silent.
       `tmp_analysis/geirhos_humans.py`, recorded in PLAN §52. Human mean 0.958;
       our CNN recomputation reproduces the published values. Every human
       reference stays directional; "human-like" stays out.
-- [ ] Cite the **data release** as well as the ICLR paper, and confirm its
-      licence file before submission (§52.4).
-- [ ] Decide whether the human benchmark belongs in the abstract. It is currently
-      in §2.3(c) and §2.7 only.
+- [ ] Cite the Geirhos **data release** as well as the ICLR paper. **Licence
+      not yet confirmed:** only the per-observer CSVs were fetched into
+      `/scratch/byrong/VST_data/geirhos_human_data/`, and no LICENSE or README
+      came with them, so the terms must be checked at the source repository
+      before submission. Do not assert a licence in the manuscript until then.
+- [x] **Human benchmark is in the abstract** (2026-09-02), but as a *rate*
+      comparison carrying its own qualification — the whole-model figure (0.692)
+      is given alongside the stream figure (0.878), and the error-consistency
+      null (§2.6) is stated in the same paragraph.
 - [x] **Figure 1 built** — `results/figures/fig1_convergence.{png,pdf}`, caption
       in `fig1_convergence_caption.md`, built by `tmp_analysis/fig1{,_data}.py`
       (PLAN §51). Panel (c) is the set point as a front-end→trained slopegraph,
       superseding §46.3's retention spec per §49.
-- [ ] Renumber the ventral-gradient figure (`fig1_diet_gradient`) — it is no
-      longer Figure 1 but is still §2.3(b)'s evidence (PLAN §51.4).
-- [ ] Decide venue; PLAN targets NMI / NeurIPS tier.
-- [ ] Expand Methods from PLAN §1 and the run logs; add per-condition seed counts.
+- [x] **Ventral-gradient figure renumbered** (2026-09-03) —
+      `fig1_diet_gradient.{png,pdf}` → `fig2_ventral_gradient.{png,pdf}`,
+      caption → `fig2_ventral_gradient_caption.md`. It is §2.3(b)'s evidence;
+      Figure 1 is the four-panel convergence figure (PLAN §51.4).
+- [x] **Venue decided: NHB** (2026-09-02). NeurIPS/NMI dropped — there is no ML
+      payoff to report, only costs on accuracy, stability and robustness
+      (PLAN §56.6). The human-facing claims are what carry the paper.
+- [x] **Methods expanded** (2026-09-03) — §4.1–4.7, every parameter read from
+      the code and run scripts rather than from memory; 3 seeds per condition
+      stated, and the subject vs seed inferential axes separated in §4.7.
 - [ ] Supplementary: the VSB cortical profile with its negatives intact; the
       capacity ladder (PLAN §42) with its non-monotonicity caveat.
+- [ ] **Cortical seed replication in flight** — array 26416428, 32 tasks
+      (`dkl_bcs_seed{1,2}` and `dkl_base_seed{1,2}` × 8 subjects) on
+      `results/encoding_cc`. ~3 h per task at a %6 throttle, so ~16 h total.
+      §2.3 stays flagged as the least-replicated claim until this returns; it is
+      the last n=1 result in the paper.
