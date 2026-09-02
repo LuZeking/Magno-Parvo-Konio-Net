@@ -617,18 +617,23 @@ report any stream as falling in the human range.
    confound that would fake the result is ruled out (§2.1), but the comparison
    is not architecture-matched. This qualifies §2.2's decisive case and must
    travel with it.
-4. **The convergence level is channel-specific, and there is no universal set
-   point.** The two diet-on-luminance arms agree to within 2% (1.603 vs 1.640;
-   they still differ, p=.0391, so "converge to within 2%" is the claim, never
-   "identical"), but the diet-on-red−green arm lands at 2.225. Reporting the
-   22-fold compression of the diet-on-luminance pair without the third arm would
-   be selective: over all three diet arms the compression is 2.1× (untrained
-   reference) or 4.5× (Gabor). The paper reports the side-of-parity claim, which
-   holds over all three, and does not report a compression factor (§50.3).
-5. **The independent thesis checkpoint converges to 1.158**, not ~1.62, on the
-   same front end — a different codebase and diet schedule, feature-extracted
-   through a schedule that is not its own. It is the least comparable arm; the
-   diet-vs-no-diet claim holds across it too (§49.4).
+4. **There is no set point, and the trained level is not reproducible across
+   seeds.** Earlier drafts of this work reported the two diet-on-luminance arms
+   as converging to within 2% (a gap of 0.037), and then that the level was
+   channel-specific (red−green at 2.225 against luminance at 1.603). The seed
+   replication retires both: the within-arm seed range on the luminance arm is
+   **0.904**, ~24× that gap, and the red−green and luminance ranges overlap
+   (1.995–4.383 vs 1.603–2.507), so n=3 seeds cannot establish
+   channel-specificity either. The paper therefore reports **no level, no set
+   point and no compression factor anywhere** — only the side of parity, which
+   replicates 12/12 seeds with complete separation (§2.2, PLAN §58.3).
+5. **The independent thesis checkpoint lands at 1.158** — below every one of our
+   diet seeds (1.497–4.383) but on the same side of parity, in 8/8 subjects. It
+   is a different codebase and a real age schedule rather than our fixed age 48,
+   feature-extracted through a schedule that is not its own, so it is the least
+   comparable arm. It is reported as a convergent check on the *side* claim, and
+   as the paper's only evidence that a genuine developmental trajectory behaves
+   like our static front end (§2.2, PLAN §58.5).
 6. **n=8 is subjects-as-image-samples for the PR analyses** — participation ratio
    is computed on each subject's cached image set, so the paired test speaks to
    stability across image samples, not to population inference. The encoding and
