@@ -4454,3 +4454,135 @@ Two further points worth recording:
   ran normally on c132 (86% CPU). Node-local I/O stalls, not a code or
   filesystem fault. If an encoding task shows a flat `sstat` AveCPU, cancel and
   resubmit with `--exclude=` rather than waiting out the 12 h wall clock.
+
+## §49 THE §47.6 PREDICTION IS FALSIFIED — and what replaces it is better:
+the diet sets a dimensionality SET POINT, it does not retain the input's
+
+`tmp_analysis/pr_retention_highsf.py`, n=8, NIMG=1000, Gram-side. Run the
+moment `dkl_bcs_parvo_highsf_seed0_trained` reached 8/8 subjects (2026-09-02).
+
+### 49.1 The prediction, and its failure
+
+§47.6 pre-registered the sharpest available test of §45.3. If the diet's role
+is to make training **keep** whatever asymmetry the input supplies, then a
+diet-trained model on the `parvo_highsf` front end — whose asymmetry is
+*inverted*, magno/parvo = 0.59, below 1.0 in 8/8 subjects (§47.1) — should
+stay inverted rather than drift back toward magno-dominance.
+
+It does not. It flips completely.
+
+| | front end | trained | below 1.0 |
+|---|---|---|---|
+| `dkl_bcs_parvo_highsf_seed0` | **0.586** ±0.013 | **1.640** ±0.030 | front 8/8 → trained **0/8** |
+
+Paired Wilcoxon trained vs its own front end: p = .0078. Per-subject trained
+ratios 1.60–1.68, not one below 1.0. **The KEEP account is falsified**, and it
+was this session's own account, pre-registered in writing before the trained
+cell existed.
+
+### 49.2 What the same numbers say instead — a set point
+
+The reference is exact here in a way none of §45.2's were: `untrained_parvo_highsf`
+carries provenance identical to the trained model on every key except
+`prov_checkpoint` (`lum_blur=True, lum_cs=True, parvo_highsf=True, age=48,
+seed=0`). So this is the cleanest front-end pairing in the series, and the
+comparison it licenses is the informative one — **the same training recipe, the
+same seed, two front ends 2.4× apart**:
+
+| arm | model | front end | trained |
+|---|---|---|---|
+| diet | `dkl_bcs_seed0` | 1.402 ±0.09 | **1.603** ±0.032 |
+| diet | `dkl_bcs_parvo_highsf_seed0` | **0.586** ±0.013 | **1.640** ±0.030 |
+| diet | `thesis_dvd_trans` | 1.402 ±0.09 | 1.158 ±0.034 |
+| no diet | `dkl_base_seed0` | 1.626 ±0.12 | 0.947 ±0.035 |
+| no diet | `dkl_base_seed1` | 1.626 ±0.12 | 0.988 ±0.040 |
+
+The two `dkl_bcs` models are handed front ends that differ by **0.816** in
+magno/parvo PR (2.39×, p=.0078). After training they differ by **0.037** —
+a **22× compression**. Training does not carry the input asymmetry forward;
+it drives the ratio to a value the input does not choose.
+
+**Every diet × no-diet contrast on the trained ratio** (3 diet models × 2
+no-diet models) is **p=.0078, 8/8 subjects**, and diet trained (1.62 ±0.04 for
+the two `dkl_bcs` models) sits far above no-diet trained (0.97 ±0.04). The
+no-diet models land essentially at parity — 0.95 and 0.99 — i.e. the two
+streams end up equally dimensional, which is the collapse §46.2 describes,
+measured directly rather than as a ratio-of-ratios.
+
+**The claim that replaces §45.3's:**
+
+> A developmental visual diet does not preserve the magno/parvo dimensionality
+> asymmetry the front end supplies. It installs one. Diet-trained networks
+> converge on a magno-dominant ratio (~1.6 for our recipe) from front ends that
+> are magno-dominant (1.40) *and* from front ends that are parvo-dominant
+> (0.59); no-diet networks converge on parity (~0.97) from a front end that is
+> strongly magno-dominant (1.63). What training ends with is set by the diet,
+> not by the input.
+
+This is a stronger statement than retention, and it is the one the data
+support. It also explains the anomaly §45.3 had to concede: the two diet models
+"straddled 1.0" in *retention* only because retention divides by a moving
+denominator. Their **trained** values are the stable quantity.
+
+### 49.3 §45.2 is reframed, not withdrawn
+
+§45.2's 16/16 contrasts at p=.0078 are arithmetically correct and stand as
+computed. What changes is their interpretation: "diet retains more of the
+input's asymmetry" was the right description of a two-condition dataset in
+which every front end happened to be magno-dominant, so *retain* and *install*
+made the same prediction. §47.6's third condition separates them and selects
+*install*. Report the trained ratios (49.2's table) as the primary quantity and
+retention as a derived one, never the reverse.
+
+§45.1's correction of §41.3 is untouched and is now doubly safe: the no-diet
+front end supplies more asymmetry and no-diet training still ends at parity.
+
+### 49.4 Disclosures — four, and the third is the one that limits the claim
+
+1. **The set point is per-recipe, not universal.** `thesis_dvd_trans` lands at
+   1.158, not ~1.62, on the same front end as `dkl_bcs_seed0`. It is a
+   different codebase and diet schedule (§45.4), and it was extracted through
+   blur+CS@48 rather than its own training schedule (§45.6) — so it is the
+   least comparable row in the table. The tight convergence claim is made for
+   the two `dkl_bcs` models only; the diet-vs-no-diet claim holds across all
+   three diet models.
+2. **The two diet arms are not statistically identical** — 1.603 vs 1.640,
+   p = .0391, 8/8. They differ. The point is the magnitude: a 2.3% difference
+   in the trained ratio from a 139% difference in the input. Do not write
+   "identical"; write "converge to within 2%".
+3. **`parvo_highsf` changes the architecture, not only the front end.** Stream
+   2 receives 2 input channels instead of 1 (§25.2). So this row varies input
+   *and* first-layer fan-in together, and the two cannot be separated with the
+   models that exist. §25.2 measured that the extra channel *helped* parvo
+   (16-way accuracy 0.486 vs ~0.379), which rules out the confound that would
+   fake the effect here — a weakened parvo stream — but it does not make the
+   comparison architecture-matched. **State this wherever 49.2's table appears.**
+4. **n=8 is subjects-as-image-samples**, not independent brains (§45.4). PR is
+   computed on 1000 NSD images per subject from the feature cache; the paired
+   test speaks to stability across image samples.
+
+### 49.5 Convergence with §48, and what it costs
+
+§48 found on the encoding side that `parvo_highsf` leaves the *magno* stream
+contributing essentially no unique cortical variance (Um = 0.007 vs Up = 0.186)
+— parvo dominates the cortex in that condition. §47.1 found the same inversion
+in the front end's PR (0.56). But §49 now shows the **trained** network's PR
+inverts back to magno-dominance (1.64) in that same condition.
+
+These are not in conflict — they are different objects (§48's Um/Up are unique
+*cortical* variance from the fitted encoding model; §49's PR is the geometry of
+the features themselves) — but the combination is awkward for any narrative
+that treats the two as one story, and it must not be smoothed over. The honest
+summary is that `parvo_highsf` is a condition where the input, the trained
+feature geometry, and the cortical fit do **not** point the same way, and it is
+therefore poor material for a headline panel. Its value is exactly what it was
+used for here: as the falsifying case.
+
+### 49.6 Status of the thread
+
+§47.6 called this "the single most informative run left in this thread." It
+was, and it cost one analysis script on caches that already existed. The thread
+is now closed: there is no cheap measurement left that would change §49.2's
+claim. The remaining gaps are §46.5's (Geirhos human observer data absent, so
+no "human-like" comparison may be written) and the fact that **no manuscript
+text exists yet** — the project has results and no draft.
