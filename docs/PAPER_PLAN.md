@@ -4586,3 +4586,139 @@ is now closed: there is no cheap measurement left that would change §49.2's
 claim. The remaining gaps are §46.5's (Geirhos human observer data absent, so
 no "human-like" comparison may be written) and the fact that **no manuscript
 text exists yet** — the project has results and no draft.
+
+---
+
+## §50 THE SET POINT IS CHANNEL-SPECIFIC, NOT RECIPE-LEVEL — §49.2's headline
+compression figure is selective and must be restated
+
+`tmp_analysis/pr_setpoint_swap.py`, n=8, NIMG=1000, Gram-side, on caches that
+already existed. Prediction and the three admissible outcomes were written into
+the script docstring and committed as `6baad39` **before** the run, so nothing
+here was fitted to the result.
+
+### 50.1 Why a fourth front end was available at zero cost
+
+§49.6 closed the PR thread with "there is no cheap measurement left that would
+change §49.2's claim." That was wrong on one point. `dkl_bcs_swap_seed0_trained`
+had full 8-subject feature caches from §48's encoding runs and had **never** been
+put on the PR instrument. It is the best-qualified fourth case in the set:
+
+- Its front end is the **most extreme of the four** (§47.1): 1.91 untrained /
+  3.37 gabor, against `parvo_highsf`'s 0.59. Diet-trained front ends now span
+  **3.26×** instead of 2.4×.
+- It dissociates *diet-trained* from *diet on the achromatic carrier*. Every arm
+  in §49.2's table confounds the two; swap puts the identical transform on rg
+  and leaves luminance untouched.
+- Its reference is **provenance-exact** — `untrained_swap` matches the trained
+  model on every `prov_*` key but `prov_checkpoint`. Only the `parvo_highsf`
+  pair is this clean; the diet/normal arm's reference is unstamped and audited
+  only by submit line (§45.6).
+- Unlike `parvo_highsf` it is **architecture-matched** to the diet arm — same
+  channel counts, same first-layer fan-in, only the transform target differs.
+  It therefore carries none of §49.4's disclosure-3 confound.
+
+### 50.2 The result
+
+| arm | model | front end (untr / gabor) | **trained** |
+|---|---|---|---|
+| diet on lum | `dkl_bcs_seed0` | 1.40 / 1.38 | 1.603 ±0.032 |
+| diet on lum | `dkl_bcs_parvo_highsf_seed0` | 0.59 / 0.56 | 1.640 ±0.030 |
+| **diet on rg** | **`dkl_bcs_swap_seed0`** | **1.91 / 3.37** | **2.225 ±0.079** |
+| no diet | `dkl_base_seed0` | 1.63 / 2.23 | 0.947 ±0.035 |
+| no diet | `dkl_base_seed1` | 1.63 / 2.23 | 0.988 ±0.040 |
+
+swap trained is **2.225**, and it differs from **both** diet-on-luminance arms
+at **p=.0078, 8/8 subjects** (per-subject 2.09–2.38, not one below 2.0). It does
+not join the set point. Outcome **A is refuted** — and so is outcome B: it does
+not collapse to parity either (vs no diet, p=.0078, 8/8).
+
+The pre-declared outcome that fits is the third, in its milder form: swap is
+diet-like in **sign** but has its **own level**.
+
+### 50.3 What this kills — and it is in the abstract right now
+
+§49.2's compression figure is computed on the two arms that agree. With the
+third diet arm included it does not survive:
+
+| reference | arms used | front-end span | trained span | compression |
+|---|---|---|---|---|
+| untrained | two diet-on-lum only | 0.816 | 0.037 | **22.1×** |
+| untrained | **all three diet arms** | 1.324 | 0.622 | **2.1×** |
+| gabor | two diet-on-lum only | 0.814 | 0.037 | 22.1× |
+| gabor | **all three diet arms** | 2.803 | 0.622 | **4.5×** |
+
+`docs/PAPER_DRAFT.md`'s abstract currently reads "A front-end gap of 0.816
+becomes 0.037 after training." That sentence is arithmetically correct and
+selects the two arms out of three that happen to converge. **Reporting 22×
+while a third, cheaper, better-provenanced diet arm on the same instrument
+gives 2.1× is cherry-picking by this project's own standard.** Either report
+the three-arm number, or state explicitly that the 22× figure is the
+diet-on-luminance pair and that the diet-on-rg arm lands elsewhere. The
+abstract sentence must not stand as written.
+
+### 50.4 What survives, and it is stronger than before
+
+The claim §49.2 actually leads with — the diet-vs-no-diet contrast on the
+**trained** ratio — is untouched and now rests on three front ends instead of
+two:
+
+| | vs `dkl_base_seed0` (0.947) | vs `dkl_base_seed1` (0.988) |
+|---|---|---|
+| diet on lum (1.603) | p=.0078, 8/8 | p=.0078, 8/8 |
+| diet on lum/highsf (1.640) | p=.0078, 8/8 | p=.0078, 8/8 |
+| diet on rg (2.225) | p=.0078, 8/8 | p=.0078, 8/8 |
+
+**6/6 contrasts at the exact-test floor with unanimous subject agreement**,
+across diet-trained front ends spanning 3.26×. Every diet arm ends
+magno-dominant (≥1.60); both no-diet arms end at parity (0.95, 0.99).
+
+**The claim that replaces §49.2's:**
+
+> A developmental visual diet does not preserve the magno/parvo dimensionality
+> asymmetry the front end supplies — a diet-trained network handed an inverted
+> front end (0.59) ends magno-dominant (1.64), overtaking a model handed 1.40.
+> But neither does it drive training to one universal value. What the diet
+> fixes is **which side of parity training ends on**: every diet-trained model
+> ends magno-dominant regardless of a 3.26× spread in what it was handed, and
+> every no-diet model collapses to parity from a front end that is strongly
+> magno-dominant. The *level* it converges to is set by **which channel the
+> diet is applied to** — ~1.62 on luminance, 2.23 on red-green — not by the
+> input asymmetry and not by the schedule alone.
+
+This is weaker than "a set point" and stronger than "retention". It is what
+three front ends support.
+
+### 50.5 A second reason not to lean on direction-of-movement
+
+§47.5 warned that the untrained ResNet compresses magnitudes while the Gabor
+bank does not, so claims should use ordering rather than magnitudes. §50 shows
+the warning has teeth: swap's direction of movement from its front end **flips
+sign with the reference** — up against `untrained_swap` (1.91→2.23), down
+against `gabor_swap` (3.37→2.23). The two diet-on-luminance arms move up on
+both references and both no-diet arms move down on both.
+
+So "the diet moves the ratio up" is **not reference-robust**. Only the
+diet-vs-no-diet contrast on the *trained level* (50.4) is reference-free, which
+is a further reason to make that the reported quantity and to drop retention
+and compression framings entirely.
+
+### 50.6 Process note — a decision rule that printed the wrong verdict
+
+The script's first verdict rule was `|swap − setpoint| < |swap − parity| / 2`,
+i.e. "closer to the set point than to parity". It printed **A: SET POINT IS
+RECIPE-LEVEL** for a value that differs from both diet arms at p=.0078. The
+rule was satisfiable by almost anything above ~1.3 and encoded no test of the
+claim. Replaced with the actual test — outcome A requires swap to be
+statistically *indistinguishable* from the two diet-on-luminance arms — which
+returns "neither A nor B". Recorded because a pre-registered outcome rule that
+cannot fail is worse than none: it launders a refutation as a confirmation.
+
+### 50.7 Coordination
+
+The PR thread is the other session's (§47, §49). This section adds a
+measurement on caches that already existed and touches no prose of theirs;
+`fig1_data.py` was modified in their worktree while this ran and was left
+alone. §49.2–§49.4 are **not** rewritten here — 50.4 states what should replace
+the claim, and one owner should apply it to §49 and to the draft's abstract
+together.

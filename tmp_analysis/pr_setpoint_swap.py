@@ -150,10 +150,56 @@ d_sp, d_nd = abs(tv.mean() - setpoint), abs(tv.mean() - nodiet)
 print(f"\n  §49.2 set point (two diet arms) = {setpoint:.3f}")
 print(f"  no-diet trained parity          = {nodiet:.3f}")
 print(f"  swap trained sits {d_sp:.3f} from the set point and {d_nd:.3f} from parity")
-verdict = ("A: SET POINT IS RECIPE-LEVEL" if d_sp < d_nd / 2 else
-           "B: SET POINT NEEDS THE ACHROMATIC CARRIER" if d_nd < d_sp / 2 else
-           "C: TRACKS ITS FRONT END / AMBIGUOUS -- read the rows")
+# The distance comparison above is NOT a decision rule -- "closer to the set
+# point than to parity" is satisfied by almost anything above 1.3, and on the
+# first run it printed A for a value that differs from both diet arms at the
+# exact-test floor. Outcome A requires swap to be STATISTICALLY
+# INDISTINGUISHABLE from the two diet-on-luminance arms; that is the test.
+p_lum = sps.wilcoxon(tv - diet_lum)[1]
+p_hsf = sps.wilcoxon(tv - diet_hsf)[1]
+p_nd0 = sps.wilcoxon(tv - tab["dkl_base_seed0_trained"][0])[1]
+joins_setpoint = p_lum > 0.05 and p_hsf > 0.05
+joins_parity = p_nd0 > 0.05
+verdict = ("A: SET POINT IS RECIPE-LEVEL (swap joins the diet arms)" if joins_setpoint else
+           "B: SET POINT NEEDS THE ACHROMATIC CARRIER (swap collapses to parity)" if joins_parity else
+           "NEITHER A NOR B: swap is diet-like in SIGN but has its own level "
+           "-- the numeric set point is channel-specific, see below")
 print(f"  -> outcome {verdict}")
+print(f"     swap vs diet/lum p={p_lum:.4f}   vs diet/highsf p={p_hsf:.4f}"
+      f"   vs no-diet p={p_nd0:.4f}")
+
+print("\n" + "=" * 100)
+print("WHAT SURVIVES AND WHAT DOES NOT")
+print("=" * 100)
+# Robustness of the two candidate claims across BOTH references, since §47.5
+# warns that the untrained ResNet compresses magnitudes and the gabor bank
+# does not. A claim that flips sign between references is not reportable.
+print("  (i) diet-vs-no-diet on the TRAINED ratio -- reference-free:")
+allsub = [("diet/lum", diet_lum), ("diet/highsf", diet_hsf), ("diet/rg", tv)]
+for lab, arr in allsub:
+    for nd in ("dkl_base_seed0_trained", "dkl_base_seed1_trained"):
+        ov = tab[nd][0]
+        print(f"      {lab:12s} vs {nd:24s} {arr.mean():.3f} vs {ov.mean():.3f} "
+              f"p={sps.wilcoxon(arr - ov)[1]:.4f}  {int((arr > ov).sum())}/8")
+
+print("\n  (ii) direction of movement from the front end -- REFERENCE-DEPENDENT:")
+for arm, trained, front, gab in ARMS:
+    t_, f_, g_, s_, _ = tab[trained]
+    du = "up  " if t_.mean() > f_.mean() else "down"
+    dg = "up  " if t_.mean() > g_.mean() else "down"
+    print(f"      {arm:11s} {trained[:34]:34s} vs untrained {du}  vs gabor {dg}")
+
+print("\n  (iii) the §49.2 compression figure, recomputed with swap included:")
+for ref_name, idx in (("untrained", 1), ("gabor", 2)):
+    fes_ = [tab[a[1]][idx].mean() for a in ARMS if a[0].startswith("diet")]
+    trs_ = [tab[a[1]][0].mean() for a in ARMS if a[0].startswith("diet")]
+    two = [tab["dkl_bcs_seed0_trained"], tab["dkl_bcs_parvo_highsf_seed0_trained"]]
+    f2 = abs(two[0][idx].mean() - two[1][idx].mean())
+    t2 = abs(two[0][0].mean() - two[1][0].mean())
+    print(f"      ref={ref_name:9s} two diet-on-lum arms only: {f2:.3f} -> {t2:.3f} = {f2/t2:5.1f}x")
+    print(f"      ref={ref_name:9s} all three diet arms:       "
+          f"{max(fes_)-min(fes_):.3f} -> {max(trs_)-min(trs_):.3f} = "
+          f"{(max(fes_)-min(fes_))/(max(trs_)-min(trs_)):5.1f}x")
 
 print("\n  contrasts on the trained ratio (paired, n=8):")
 for name in ("dkl_bcs_seed0_trained", "dkl_bcs_parvo_highsf_seed0_trained",
