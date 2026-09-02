@@ -600,27 +600,129 @@ report any stream as falling in the human range.
 
 ## 4. Methods
 
-> OUTLINE — to be expanded from `PAPER_PLAN.md` §1 (A1) and the run logs.
+> Parameters below are read from the code and run scripts, not from memory:
+> `src/training/standalone_trainer.py`, `slurm/train_array.sh`,
+> `src/analysis/encoding/{run_encoding,dkl_frontend}.py`,
+> `src/analysis/behavior/{cue_conflict,stream_shape_texture}.py`.
 
-- **Architecture.** Two-stream ResNet-18 backbones, DKL front end
-  (RGB→XYZ(D65)→LMS(HPE)→DKL). Magno = luminance + blur σ=4 + 48-month CSF cut;
-  parvo = L−M untransformed. Note and handle the legacy asymmetric-mixing forward
-  (`src/models/pytorch_models.py`) for thesis checkpoints (PLAN §0).
-- **Front-end conditions.** `blur_cs` (diet), `noblur` (no diet), `swap`
-  (transform on the chromatic channel), `parvo_highsf` (stream 2 receives lum+rg).
-- **Training.** MiniEcoset 256px, 112 classes. Seeds as reported per condition.
-- **Behaviour.** Geirhos cue-conflict, 1,200 images, 16-way. Bootstrap CIs.
-- **Probe.** Linear shape−texture probe on stream features.
-- **Participation ratio.** (Σλ)²/Σλ² on the feature covariance, computed
-  Gram-side, 1,000 NSD images per subject.
-- **Encoding.** NSD b3 betas, PSC + per-session voxel z-scoring, `nsdgeneral`
-  mask; split by 73k image id, test = shared-515; banded ridge (himalaya) with
-  GroupKFold by image id; noise ceiling from NSD `ncsnr`; stream-wise variance
-  partitioning.
-- **Statistics.** Paired exact Wilcoxon within subject, n=8 (exact floor
-  p=.0078). **Two-statistics rule:** every claim is made only where the
-  normalised and raw statistics agree; disagreements are reported as unresolved
-  (PLAN §8).
+### 4.1 Front end
+
+RGB is converted to DKL through RGB→XYZ (D65)→LMS (Hunt–Pointer–Estévez)→DKL, at
+256×256. **Stream 1 (magno)** receives the luminance channel under two
+transforms: an isotropic Gaussian blur (σ = 4 px, kernel 8σ, reflect padding) and
+a scale-free contrast-sensitivity cut evaluated at a **fixed age of 48 months**
+(`cs_logspan_start` = 5×10⁻³, decomposition mode "keep"). **Stream 2 (parvo)**
+receives the L−M chromatic channel untransformed.
+
+Age is fixed rather than scheduled. This is deliberate — it separates the
+transform from the trajectory — and its consequence is examined in §2.2 against
+a schedule-trained checkpoint.
+
+Four front-end conditions are used throughout:
+
+| condition | stream 1 | stream 2 |
+|---|---|---|
+| `dkl_bcs` (diet) | luminance + blur + CS cut | L−M |
+| `dkl_base` (no diet) | luminance, untransformed | L−M |
+| `dkl_bcs_swap` | luminance, untransformed | L−M **+ blur + CS cut** |
+| `dkl_bcs_parvo_highsf` | luminance + blur + CS cut | L−M **+ untransformed luminance** (2 ch) |
+
+`parvo_highsf` gives stream 2 two input channels rather than one; this
+architectural difference is measured rather than argued away (§2.1, capacity
+control).
+
+### 4.2 Architecture and training
+
+Two ResNet-18 backbones, one per stream, with a joint classification head.
+MiniEcoset at 256 px, 112 classes, pre-converted to DKL (`uint8`, with per-channel
+min/max stored so that NSD stimuli are normalised identically at analysis time).
+
+150 epochs, batch 256, Adam (lr 1×10⁻⁴, β₁ = 0.9), cross-entropy. Augmentation is
+the thesis DVD-B set applied on GPU via kornia: horizontal flip (p = 0.25),
+rotation ±15° (p = 0.25), colour jitter (brightness 0.4, p = 0.5), random
+equalise (p = 0.5), perspective 0.3 (p = 0.5), sharpness 0.5 (p = 0.5). Random
+grayscale is applied for RGB inputs only and is skipped for DKL. **Three seeds
+per condition** (0, 1, 2); all twelve checkpoints are used in the seed analyses
+of §2.1 and §2.2.
+
+### 4.3 Behaviour and probe
+
+**Cue conflict.** The Geirhos style-transfer set, restricted to the 16 categories
+present in MiniEcoset and to images whose shape and texture categories differ
+(1,200 images). Model logits are restricted to those 16 columns and the argmax is
+scored as a shape or texture response; images decided as neither are excluded
+from the denominator, and that count is reported per cell because it varies ~4×.
+Streams are read out individually (`magno_only`, `parvo_only`) and jointly
+(`full`). Bootstrap 95% CIs over images.
+
+**Human observers.** The ten observers of the same release, 1,280 trials each,
+scored by the identical rule. Our recomputation reproduces the published shape
+bias (0.958) and the published AlexNet/GoogLeNet/VGG values.
+
+**Error consistency** (§2.6). Cohen's kappa on the binary shape/texture choice
+over images both parties decided: κ = (c_obs − c_exp)/(1 − c_exp) with
+c_exp = p_m·p_h + (1−p_m)(1−p_h). The reference is the human–human κ over all 45
+observer pairs, and every model is additionally reported as a percentage of it.
+
+**Linear probe.** Stream features reduced to 256 PCA components (fit per stream,
+so both streams are probed at equal dimensionality), then multinomial logistic
+regression (C = 1.0, max_iter = 2000) under 5-fold stratified CV, predicting
+shape and texture labels separately. Bias = shape accuracy − texture accuracy;
+zero is the sign flip. The same CV partition is used for both streams so the
+difference is a within-fold contrast.
+
+### 4.4 Effective dimensionality
+
+Participation ratio, (Σλ)²/Σλ², on the stream feature matrix for 1,000 NSD images
+per subject. Computed Gram-side (n_images × n_images) since features outnumber
+images. Reported as the magno/parvo ratio, with 1.0 — parity — as the reference.
+Subjects are the replication unit within a seed; seeds are reported separately
+and never pooled (§2.2).
+
+### 4.5 Encoding
+
+NSD `betas_fithrf_GLMdenoise_RR` (b3), converted to percent signal change and
+z-scored per session per voxel, `nsdgeneral` mask. Splits are by 73k image id
+with the shared-515 images held out as test, so no image appears in both.
+
+Stream features are extracted for each subject's stimuli, reduced by PCA to 1,000
+components per stream (fit on training images only, never refit on test), and
+entered as two feature bands into a banded ridge (himalaya), 3-fold GroupKFold by
+image id, with per-voxel alphas and per-voxel band weights. Noise ceiling from
+NSD `ncsnr`; voxels below NC 0.1 are excluded, and any ROI cell with fewer than
+20 surviving voxels is reported as missing rather than estimated.
+
+Stream-wise variance partitioning gives the per-voxel shape-bias index (VSB) used
+in §2.3, computed by pushing the cue-conflict set through each fitted encoding
+model.
+
+### 4.6 Out-of-distribution robustness
+
+Corruptions are applied to RGB **before** the front end, so each model sees the
+corruption through its own front end, and are scored in the models' native 112-way
+label space to avoid stacking a domain shift on top of the corruption. Five
+families were declared untrained-on before the run (uniform noise, high-pass,
+phase scrambling, rotation, false colour) and two as trained-in positive controls
+(low-pass, contrast), since the diet *is* a low-pass and contrast manipulation.
+Reported as relative accuracy AUC across severities. The RGB→DKL path was gated
+on an exact reproduction of the training h5 before any number was recorded.
+
+### 4.7 Statistics
+
+Within-subject comparisons use the paired exact Wilcoxon signed-rank test, n = 8
+(exact two-sided floor p = .0078). Seed-level comparisons use the exact
+Mann–Whitney U, n = 3 v 3 (exact two-sided floor p = 0.100, reached only on
+complete separation); seeds are never pooled with subjects, and a seed-level claim
+requires the within-seed subject test to hold in all three seeds independently.
+
+**Two-statistics rule.** Every claim is made only where the normalised and raw
+statistics agree; disagreements are reported as unresolved rather than resolved
+in the favourable direction.
+
+**Pre-registration.** The front-end 2×2 (§2.1), the inverted-front-end prediction
+(§2.2), the OOD families (§2.5) and the error-consistency hypothesis (§2.6) were
+each written down before the corresponding analysis was run. Two of the four
+predictions failed and are reported as failures in the sections above.
 
 ---
 
