@@ -158,16 +158,29 @@ already; we built the other two (`swap`, which applies the transform to the
 chromatic channel, and `parvo_highsf`, which hands the second stream an
 untransformed high-acuity achromatic carrier alongside its chromatic one).
 
-Linear probe, stream shape−texture bias (zero is the sign flip; n=2 seeds
-agreeing to 0.017):
+Linear probe, stream shape−texture bias (zero is the sign flip). Means of
+**3 training seeds**, with the seed range in brackets:
 
 | | no transform | with transform |
 |---|---|---|
-| **chromatic carrier (L−M)** | −0.504 | −0.145 |
-| **achromatic carrier (lum)** | **−0.266** | **+0.819** |
+| **chromatic carrier (L−M)** | −0.518 [0.067] | −0.145 [0.043] |
+| **achromatic carrier (lum)** | **−0.226** [0.033] | **+0.819** [0.014] |
 
 Behavioural cue-conflict shape bias on the same four cells replicates it
-independently (0.364 / 0.495 / 0.396 / **0.878**).
+independently: 0.418 [0.032] / 0.495 [0.038] / 0.421 [0.036] / **0.878** [0.022].
+
+The probe separates the conjunction cell from all three others by **+0.936**
+with no seed overlap, and the behaviour by **+0.353**. On the behavioural row
+the chromatic-transform cell straddles 0.5 across seeds (0.478–0.516), which is
+the denominator caveat below rather than a texture preference: that cell decides
+only 165 of 1,200 images and returns something near a coin flip by construction.
+
+*A note on which instruments are seed-stable.* The conjunction cell's probe bias
+varies by **0.014** across seeds — the tightest number in this paper. The same
+three checkpoints vary by **0.904** on the magno/parvo dimensionality ratio of
+§2.2. Seed instability is a property of the dimensionality measure, not of these
+models, which is why §2.2 claims a side rather than a level while §2.1 can quote
+values.
 
 **Both single factors move a stream substantially toward neutral and neither
 crosses zero. Only the conjunction crosses, and it goes all the way.** This is an
