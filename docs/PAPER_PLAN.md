@@ -5626,3 +5626,174 @@ track human decision structure at all.** Across six models spanning 0.17 to 0.89
 shape bias — a 5x range — human agreement is flat at 7–18% of ceiling. That is
 the third and cleanest of the paper's dissociations, and unlike the other two it
 directly concerns human behaviour, which is the axis NHB weights most.
+
+---
+
+## §60 WHY §58's SEED SPREAD HAPPENED — the flagship arm never converged, and
+§10.1's guard is necessary but not sufficient
+
+`tmp_analysis/pr_seed_variance.py` plus the checkpoint histories. Additive to
+§58, which measured the spread; this section explains it and records three
+consequences §58 does not cover. §58's table is independently reproduced here
+to four decimals from a separate script and is not restated.
+
+### 60.1 §10.1's convergence guard passes, and is still not enough
+
+§10.1 installed the rule *"any probe that reads `checkpoint_last.pt` must first
+assert `history.json` has the full epoch count"*, after a swap model was probed
+at ~epoch 28 of 150. That assertion **passes for all twelve checkpoints used in
+§58**: every one reports epoch 149 with 150 history entries.
+
+It is nevertheless insufficient. A full epoch count does not mean converged, and
+`dkl_bcs` — the flagship diet arm, the model behind legs (a), (b) and (c) — is
+still oscillating at epoch 149:
+
+| condition | sd(val_top1) over epochs 130–149 | best − last | best epoch |
+|---|---|---|---|
+| **diet / luminance** | **0.0417 – 0.0709** | **0.060 / 0.246 / 0.136** | **120, 59, 141** |
+| diet / parvo_highsf | 0.0054 – 0.0085 | 0.000 / 0.003 / 0.016 | 149, 146, 143 |
+| diet / red−green | 0.0060 – 0.0095 | 0.015 / 0.012 / 0.008 | 137, 93, 128 |
+| no diet | 0.0065 – 0.0098 | 0.008 / 0.013 / 0.003 | 145, 142, 138 |
+
+`dkl_bcs` is the **only** condition that has not settled: its late-training
+scatter is ~8× every other arm's, its final epoch sits 0.06–0.25 below its own
+best, and its best epoch lands at 120 / 59 / 141 rather than at the end. Every
+other condition finishes within 0.016 of its best.
+
+**The rule §10.1 should have installed**, and which should now replace it: assert
+the full epoch count *and* that sd(val_top1) over the last 20 epochs is below a
+stated threshold, and record both in any output the probe writes.
+
+### 60.2 So §58's spread is checkpoint timing, not learned-solution variability
+
+Two facts separate those two readings, and they point the same way.
+
+**(i) What the condition achieves is stable; where the last checkpoint lands is
+not.** Across the three diet/lum seeds:
+
+| | seed 0 | seed 1 | seed 2 | sd |
+|---|---|---|---|---|
+| val_top1 at epoch 149 | 0.5273 | 0.3470 | 0.4595 | **0.0911** |
+| val_top1 at that run's best | 0.5877 | 0.5929 | 0.5957 | **0.0041** |
+
+The *best* accuracies agree to 0.004 — as tight as any converged arm. Only the
+*last* accuracies scatter, by 22×  more. The three seeds are therefore not
+finding different solutions; they are being sampled at different phases of the
+same oscillation.
+
+**(ii) The PR ratio ranks inversely with how well that particular checkpoint
+scored.** Within diet/lum, Spearman(PR ratio, val_top1) = **−1.00** (n=3):
+
+| run | PR ratio | val_top1 |
+|---|---|---|
+| `dkl_bcs_seed0` | 1.603 | 0.5273 |
+| `dkl_bcs_seed2` | 1.823 | 0.4595 |
+| `dkl_bcs_seed1` | 2.507 | 0.3470 |
+
+n=3 makes this suggestive, not established. But it is the wrong direction for
+§58's spread to be read as seed-to-seed variability in a learned target: the
+ratio is tracking checkpoint quality, and the worst checkpoint gives the most
+extreme ratio. §49.2's "set point at 1.62" came from `seed0`, which is the
+*best* of the three — i.e. the arm's reported level was, unknowingly, the
+best-case draw.
+
+The same ordering holds in diet/rg (Spearman −1.00) and no diet (−1.00), where
+the accuracy spread is only ~0.010, so the effect is not confined to the
+unstable arm. It does **not** hold in diet/parvo_highsf (−0.50), the fourth
+arm — stated because with n=3 seeds a −1.00 is one of only three possible
+values and three arms out of four agreeing is weak evidence, not a result.
+Across all 12 runs Spearman(PR, val_top1) = −0.65.
+
+### 60.3 §10.2's accuracy table completed, and the cost halves under a fair
+checkpoint
+
+§10.2 recorded `dkl_bcs` as "~0.43–0.48 at ep 146 (still training)" and was
+never revisited. Completed, val_top1 on held-out miniEcoset (112 classes):
+
+| condition | seed 0 | seed 1 | seed 2 | mean ± sd | vs no diet |
+|---|---|---|---|---|---|
+| no diet | 0.6998 | 0.6982 | 0.7055 | 0.7012 ± 0.0038 | — |
+| diet / parvo_highsf | 0.7054 | 0.6991 | 0.6948 | 0.6998 ± 0.0053 | **−0.001** |
+| diet / red−green | 0.6920 | 0.6895 | 0.6996 | 0.6937 ± 0.0053 | **−0.008** |
+| diet / luminance | 0.5273 | 0.3470 | 0.4595 | 0.4446 ± 0.0911 | **−0.257** |
+
+Two corrections to §10.2 follow.
+
+**The ~25-point cost is not a cost of "the diet".** It is a cost of the diet
+applied to luminance *only*. Moving the same transform to red−green (−0.008) or
+restoring raw luminance into stream 2 (−0.001) costs essentially nothing. The
+plausible mechanism, consistent with but not established by these numbers: the
+diet blurs the sole channel carrying high spatial frequency, and red−green is
+inherently low-SF, so `dkl_bcs` alone is starved of high-SF information
+altogether. `parvo_highsf` restores it and recovers the accuracy exactly.
+
+**And the size of the cost depends on the checkpoint.** Against best-epoch
+accuracies (0.5921 vs no diet's 0.7089) the gap is **−0.117**, not −0.257. So
+§10.2's "~25 points" is a last-checkpoint artefact of an oscillating run; the
+defensible figure is ~12 points, and the paper should quote whichever it uses
+with the checkpoint rule stated. This matters directly for §10.2's own warning
+that every `dkl_bcs` claim must be defended against "this model is simply
+worse" — the defence is roughly twice as strong as recorded.
+
+### 60.4 §49.2's compression figure does not merely shrink — it inverts
+
+§58.3 withdrew "converge to within 2%" and correctly declined to establish
+§50's channel-specific level. Neither computes what the compression figure
+becomes with all nine diet checkpoints, which is worth stating because §49.2's
+22× is the number that reached the draft abstract:
+
+| reference | front-end span | trained span (9 diet ckpts) | ratio |
+|---|---|---|---|
+| untrained | 1.324 | 2.885 | **0.46× — training EXPANDS the spread 2.2×** |
+| gabor | 2.803 | 2.885 | **0.97× — no change** |
+
+Trained diet checkpoints span **1.497 – 4.383**, wider than the 0.586 – 1.909
+front-end range that fed them. So the direction of §49.2's claim is wrong, not
+just its magnitude: on this instrument, training does not pull heterogeneous
+front ends toward a common level. **No compression factor, in either direction,
+should appear in the paper** — the honest statement is that the level is not
+measurable from these checkpoints at all.
+
+### 60.5 The exposure this creates for leg (c), and the control now running
+
+Every cortical number in §48 and every variance-partitioning result in legs (a)
+and (c) is computed from **`dkl_bcs_seed0_trained` — one draw from the one
+oscillating run**. §58 did not reach this because it measured PR only.
+
+The features themselves have never been checked for epoch stability, so the
+exposure is unquantified in either direction. **Job 26416534**
+(`slurm/cache_epoch_jitter.sh`, 40 elements, cache-only) measures it:
+`dkl_bcs_seed0` at epochs 100 / 125 / 150 and `dkl_base_seed0` at 100 / 125,
+all 8 subjects. Pre-registered reading, before the result:
+
+- If PR moves across epochs within `seed0` as much as it moves across seeds
+  (range ≈ 0.9), the level is a checkpoint-timing artefact, §49.2/§49.4 are
+  withdrawn rather than re-worded, and every leg-(c) number needs an
+  epoch-stability disclosure.
+- If PR is flat across epochs, §58's spread is genuine seed-to-seed variability
+  in the learned solution and is reportable as such.
+- `dkl_base_seed0` is the control: it is converged, so its PR must be flat. If
+  it is not, the instrument is epoch-sensitive and none of this is about the
+  diet.
+- `dkl_bcs_seed0` @ epoch 150 is a **reproduction check**: it must return 1.603,
+  the value already cached from `checkpoint_last.pt`. If it does not, those two
+  files are not the same weights and nothing else here is believed until that
+  is resolved.
+
+### 60.6 A note on §58.2's seed-level test
+
+§58.2 reports the side-of-parity result as a 3-vs-3 seed-level comparison at
+p=0.100, "the exact two-sided 3v3 floor". That is a sound test but the weakest
+available framing of the strongest result in the section. Run instead within
+each seed, so every p-value keeps n=8 subject pairs, the same claim gives:
+
+- **27/27** diet × no-diet seed pairings at p=.0078 with 8/8 subjects positive,
+  smallest mean difference **+0.509**;
+- all three diet arms above parity in **8/8 subjects in all 3 seeds** (72/72
+  model-subject cells), no-diet above parity in only 1, 3 and 0 of 8.
+
+This needs no pooling and inflates no n — it is sign-consistency across 27
+independent subject-level tests. Prefer it to the 3v3 p=0.100. Conversely,
+`diet/rg` vs `diet/lum` — §50's channel-specific claim — holds in only **6/9**
+pairings and reverses in 3, which is the same conclusion §58.3 reached by
+inspecting overlapping ranges, now with a test attached.
