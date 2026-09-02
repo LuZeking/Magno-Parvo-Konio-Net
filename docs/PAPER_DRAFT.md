@@ -1,4 +1,4 @@
-# Human-like shape bias requires a conjunction of achromatic carrier and developmental transform
+# Shape bias requires a conjunction of achromatic carrier and developmental transform
 
 **Status: FIRST DRAFT, 2026-09-02.** Structure and argument are settled; prose is
 first-pass. Every number is tagged with its `PAPER_PLAN.md` section so it can be
@@ -34,34 +34,43 @@ the transform is applied to it gives four front ends. Neither factor alone moves
 a stream across the shape/texture boundary (linear-probe bias −0.266 and −0.145);
 only the conjunction crosses, and it crosses decisively (**+0.819**).
 Cue-conflict behaviour on the same four cells replicates this independently
-(0.364 / 0.495 / 0.396 / **0.878**, against 0.958 for human observers on the
-identical stimuli). Shape bias is therefore not a property of the
-magnocellular channel, which is the reading the two-condition literature invites.
+(0.364 / 0.495 / 0.396 / **0.878**, mean of 3 seeds; human observers on these
+identical stimuli are at 0.958, though that compares a whole observer to our
+single stream,
+and the whole model sits at 0.692). Shape bias is therefore not a property of
+the magnocellular channel, which is the reading the two-condition literature
+invites.
 
 **What the diet contributes is a constraint on learning, not better input.** A
 front end whose stream asymmetry is *inverted* (0.586, parvo-dominant in 8/8
-subjects) trains to **magno-dominant** (1.640), overtaking a network handed
-1.402; applying the identical transform to the chromatic channel instead lands
-at 2.225. The diet does not preserve the asymmetry it is handed, nor drive
-training to one value. It fixes **which side of parity** training ends on: all
-three diet arms end magno-dominant across a 3.26× spread in what they were
-handed, while both no-diet arms collapse to parity (0.947, 0.988) from the *most*
-magno-dominant front end in the set (1.634). Six of six diet × no-diet contrasts,
-p=.0078, 8/8 subjects. The divergence is measurable through human visual cortex:
+subjects) trains to **magno-dominant**, overtaking a network handed 1.402. The
+diet does not preserve the asymmetry it is handed, nor drive training to any
+particular value — across three training seeds the trained level ranges over
+2.39 in a single condition. What replicates is **which side of parity** training
+ends on: all nine diet seeds end magno-dominant in 8/8 subjects, across a 3.26×
+spread in what they were handed, while all three no-diet seeds collapse to
+parity from the *most* magno-dominant front end in the set (1.634). Seed-level
+separation is complete for every diet arm (p=0.100, the exact 3×3 floor), and a
+model trained on a real developmental schedule in an independent codebase lands
+on the same side. The divergence is measurable through human visual cortex:
 per-stream voxelwise encoding models yield a stream dissociation of **+1.534**
 with the diet and **+0.110** without (p=.0078, 8/8), and the diet-trained
 network's division of labour tracks the human ventral hierarchy (hV4−V1v −0.862)
 where the no-diet network's does not (−0.117).
 
-**Two properties the field treats as coupled to shape bias do not follow from
-it.** Over these same four front ends, effective dimensionality is explained
-entirely by carrier bandwidth and is reproduced with no trained network at all,
-dissociating it from shape bias. And across five corruption families the model
-was not trained on, the diet-trained network is *less* robust than every control,
-not more — while winning only on the low-pass family the diet literally installs.
-A developmental route to human-like shape bias thus delivers none of the
-robustness that a stylisation route delivers, locating that coupling in the route
-rather than in shape bias itself.
+**Three properties the field treats as coupled to shape bias do not follow from
+it.** Effective dimensionality over these same front ends is explained entirely
+by carrier bandwidth and is reproduced with no trained network at all. Across
+five corruption families the model was not trained on, the diet-trained network
+is *less* robust than every control — winning only on the low-pass family the
+diet literally installs — so a developmental route to shape bias delivers none
+of the robustness a stylisation route delivers, locating that coupling in the
+route rather than in shape bias. And against the 10 human observers who viewed
+these stimuli, error consistency is flat: across six models spanning a 5× range
+of shape bias (0.17–0.89), trial-by-trial agreement with humans stays at 7–18%
+of the human–human ceiling, with our shape-biased stream no better than AlexNet.
+We pre-registered the opposite prediction. Matching the human shape-bias rate
+does not confer human decision structure.
 
 The diet's effect is not a filtering artefact and not a property of any
 privileged channel. It is a constraint on what learning converges to — bought at
@@ -110,7 +119,7 @@ tested. Distinguishing them requires a front end whose asymmetry points the
 **Contributions.**
 
 1. A four-cell causal decomposition (achromatic carrier × developmental
-   transform) showing that human-like shape bias is an **interaction**, not a
+   transform) showing that shape bias is an **interaction**, not a
    property of either factor — measured on all four cells, in a linear probe and
    in cue-conflict behaviour, against published human observers (§2.1).
 2. The inheritance/installation test, using a front end whose asymmetry is
@@ -119,13 +128,15 @@ tested. Distinguishing them requires a front end whose asymmetry points the
    (§2.2).
 3. Confirmation of the stream divergence through human visual cortex, on
    independent machinery (§2.3).
-4. **Two dissociations.** Over identical inputs, shape bias separates from
-   effective dimensionality — which is explained by carrier bandwidth and
-   reproducible with no network at all (§2.4) — and from out-of-distribution
-   robustness, where the diet-trained network is *less* robust than every
-   control on five corruption families it was not trained on (§2.5). Properties
-   the field treats as a package do not travel together.
-5. An honest accounting of what the diet costs (§2.6).
+4. **Three dissociations.** Over identical inputs, shape bias separates from
+   effective dimensionality — explained by carrier bandwidth and reproducible
+   with no network at all (§2.4); from out-of-distribution robustness, where the
+   diet-trained network is *less* robust than every control on five corruption
+   families it was not trained on (§2.5); and from human decision structure,
+   where a 5× range of shape bias across six models leaves trial-by-trial
+   agreement with 10 human observers flat at 7–18% of the human–human ceiling
+   (§2.6). Properties the field treats as a package do not travel together.
+5. An honest accounting of what the diet costs (§2.7).
 
 ---
 
@@ -208,16 +219,36 @@ front end would stay inverted. **It does not.**
 | no diet | — | `dkl_base_seed0` | 1.634 ±0.118 | 0.947 ±0.035 |
 | no diet | — | `dkl_base_seed1` | 1.634 ±0.118 | 0.988 ±0.040 |
 
-> **PENDING SEED CONFIRMATION.** Every "after training" level above is a single
-> checkpoint (dispersion is across the 8 subjects, sd). Array 26413641 extracted
-> seeds 1–2 for all four conditions and the replication is running. The first
-> cell back — `dkl_bcs_seed1` at **2.507** against seed 0's 1.603 — already shows
-> seed-to-seed spread of ~0.9, roughly 24× the 0.037 gap that PLAN §49.4 wanted
-> to read as "convergence to within 2%". That reading is withdrawn. These levels
-> must be reported as ranges over seeds, not as condition constants. The *side*
-> of parity is so far unaffected (2.507 is 8/8 above 1.0), which is why the
-> section claims a side and not a value.
+**Seed replication (n=8 subjects x 3 seeds x 4 conditions).** Every level above
+is one checkpoint. Array 26413641 extracted seeds 1-2 for all four conditions;
+the levels turn out not to be reproducible, and the side does:
 
+| arm | front end | seed 0 | seed 1 | seed 2 | seed range |
+|---|---|---|---|---|---|
+| diet / luminance | 1.402 | 1.603 | 2.507 | 1.823 | 0.904 |
+| diet / parvo_highsf | **0.586** | 1.640 | 1.497 | 1.664 | 0.166 |
+| diet / red−green | 1.909 | 2.225 | 4.383 | 1.995 | 2.388 |
+| no diet | 1.634 | 0.947 | 0.988 | 0.914 | 0.074 |
+
+All nine diet seeds are above parity in **8/8 subjects**. All three no-diet seeds
+sit at or below it. Seed-level separation between the diet arms and no-diet is
+**complete** for all three arms (p=0.100, the exact two-sided 3x3 floor).
+
+We therefore report no level, no set point, and no compression factor anywhere:
+the within-arm seed range reaches 2.39, so any statement of the form "training
+converges to X" is unsupported. What replicates is the side, and that is what
+this section claims. *(This retires two earlier readings of our own data — a
+"convergence to within 2%" between the two diet-on-luminance arms, whose 0.037
+gap is ~24x smaller than the seed noise on that same arm, and a channel-specific
+set point, which n=3 seeds cannot separate: PLAN §58.3.)*
+
+*Does anything develop?* Our diet is a **static** front end matched to 48-month
+acuity, not a trajectory — a deliberate choice that isolates the mechanism from
+the schedule. `thesis_dvd_trans`, trained on an actual progressive age transition
+in a different codebase, lands at **1.158, 8/8 subjects above parity**: the same
+side as every diet arm, at a lower level. The schedule does not change the side,
+which is the claim. Reported as a convergent check across implementations, not a
+matched arm (§45.6).
 
 The inverted case flips completely: 8/8 subjects below parity before training,
 **0/8 after**, ending at 1.640 — *above* a model handed 1.402. So the input's
@@ -256,6 +287,13 @@ pairings rather than approximate ones (§49.2, §50.1).
 
 ### 2.3 The divergence is measurable through human visual cortex
 
+> **SEED STATUS.** The cortical numbers below are one checkpoint per arm.
+> §2.2 has just shown that single-checkpoint *levels* on this project's
+> instruments are not reproducible across training seeds, so this contrast is
+> being replicated (array 26416428: seeds 1–2 of the diet and no-diet arms,
+> 32 tasks, running). Until it returns, §2.3 is the paper's least-replicated
+> claim and is flagged as such rather than quoted as settled.
+
 
 *Source: PAPER_PLAN §43.1, §17, §48, §29.*
 
@@ -286,7 +324,7 @@ Three points make this more than a single fitted number:
   augmentation pipelines, two seeds, agreeing to 0.0025 (§17).
 - **It survives its front-end controls.** Against `swap` (−0.027) and
   `parvo_highsf` (−0.119) as well as no-diet (−0.101), the diet arm separates at
-  p=.0078 on all three (§48.1). See §2.6 for what those controls cost.
+  p=.0078 on all three (§48.1). See §2.7 for what those controls cost.
 - **It is not explained by a global stream preference.** The diet-trained and
   no-diet models sit on *opposite* sides of the global stream-bias axis (−0.454
   vs +0.727), yet the strong regional gradient is in the model whose global bias
@@ -297,6 +335,9 @@ cue-conflict shape bias is **0.675 ±0.025** with the diet against **0.416
 ±0.020** without, across three seeds each. The thesis checkpoint reproduces at
 0.697 against its reported 0.677, inside our bootstrap CI (§18.2).
 
+§2.6 qualifies everything in this subsection: the agreement below is one of
+aggregate *rates*, and does not survive at the trial level.
+
 On the identical measure and stimuli, Geirhos et al.'s ten human observers give
 **0.958 ±0.019** (range 0.919–0.987), and the CNNs from that release give
 0.429 (AlexNet), 0.312 (GoogLeNet) and 0.172 (VGG-16) — values our pipeline
@@ -305,7 +346,7 @@ diet-trained **magno stream reaches 0.878**, closing most of the distance from
 the CNN regime to human observers; the no-diet model stays inside that regime.
 **No match is claimed:** 0.878 is below the lowest individual human, and
 integration costs 0.203 of shape bias (0.878 → 0.675), which is 72% of the
-remaining gap. See §2.6 and §52.3.
+remaining gap. See §2.7 and §52.3.
 
 Three instruments — representations, cortex, behaviour — three data types, one
 pattern.
@@ -396,7 +437,9 @@ destabilises training as well as lowering it.
 > This does not contradict Geirhos et al., who showed that *Stylized-ImageNet
 > training* produces models that are both shape-biased and robust. It shows the
 > coupling is a property of that route, not of shape bias: a developmental route
-> to comparable shape bias (probe +0.819, behaviour 0.878 against a human 0.958)
+> to comparable shape bias *in rate* (probe +0.819, behaviour 0.878 against a
+> human 0.958 — though §2.6 shows the rate match does not extend to trial-level
+> agreement)
 > delivers **none** of the robustness. "Increase shape bias to get robustness"
 > does not generalise across the manipulations that produce it.
 
@@ -407,7 +450,60 @@ identical inputs, and the present section separates it from robustness.
 
 ---
 
-### 2.6 What the diet costs
+### 2.6 Matching the human shape-bias rate is not matching human decisions — a third dissociation
+
+*Source: PAPER_PLAN §57 (pre-registered), §59. Reported in the main text, not
+the supplement, because it qualifies this paper's own headline comparison.*
+
+A shape-bias *rate* near the human one is weak evidence for human-likeness: two
+decision-makers with the same marginal rate can agree on no individual image
+beyond what those rates force. Geirhos et al. (2020) measure the difference with
+**error consistency** — Cohen's kappa on trial-by-trial agreement, which
+subtracts exactly that forced agreement. We applied it to the 10 human observers
+who viewed these identical stimuli.
+
+Human–human ceiling: **kappa = 0.234** (45 observer pairs, sd 0.095).
+
+| | shape bias | kappa vs human | % of ceiling |
+|---|---|---|---|
+| diet, whole model (3 seeds) | 0.646–0.692 | 0.023–0.032 | 10–14% |
+| no diet, whole model | 0.394–0.433 | 0.031–0.037 | 13–16% |
+| diet, magno stream | 0.870–0.892 | −0.015–0.036 | −6–15% |
+| no diet, magno stream | 0.398–0.434 | 0.036–0.041 | 15–18% |
+| *AlexNet* (published) | *0.429* | *0.032* | *14%* |
+| *GoogLeNet* (published) | *0.312* | *0.025* | *11%* |
+| *VGG* (published) | *0.172* | *0.017* | *7%* |
+
+**We pre-registered the prediction that the diet-trained model would be more
+human-consistent than its control. It is not.** It is numerically less so on the
+stream readout, and no model of ours exceeds AlexNet. Our shape-biased stream
+carries **twice AlexNet's shape bias and no more agreement with human
+decisions**.
+
+Across all six models the shape-bias rate spans 0.17 to 0.89 — a 5× range —
+while human agreement stays flat at 7–18% of ceiling. **Shape bias, the field's
+most-cited human-alignment metric for vision models, does not track human
+decision structure.** That is this paper's third dissociation and the only one
+that concerns human behaviour directly.
+
+*Validation, run before the result was read.* The 10 observers reproduce the
+published shape bias of 0.958 exactly (range 0.919–0.987); kappa returns +1.000
+for identical raters, −0.043 for independent raters at a matched rate, and
+−0.036 for a simulated model matching a human's rate but choosing independently.
+The pipeline was checked against published values before it was trusted.
+
+*The caveat that does not rescue it.* Kappa compresses when marginals are skewed,
+and humans are at 0.958 — which is why the human–human ceiling is 0.234 and not
+something near 1. This is handled by reporting every model as a percentage of
+that same ceiling. It does not explain why the diet model scores *below* its own
+no-diet control.
+
+*Consequence for this paper.* The word "human-like" has been removed from the
+title. §2.1's comparison against human observers is a comparison of aggregate
+**rates**, and additionally compares a single stream to a whole observer; both
+qualifications are now stated wherever that comparison appears.
+
+### 2.7 What the diet costs
 
 
 *Source: PAPER_PLAN §43.3, §48.2, §20.2, §20.3.*
@@ -477,7 +573,7 @@ report any stream as falling in the human range.
 - **What does not.** Nothing here supports using a developmental diet to make
   models better. It makes them less accurate, less stable and less robust
   (§2.5). Its interest is as a model of development, not as a training method.
-- **Limits.** See §2.6 and *Limitations*.
+- **Limits.** See §2.7 and *Limitations*.
 
 ---
 
@@ -510,10 +606,10 @@ report any stream as falling in the human range.
 ## Limitations
 
 1. **The diet costs, on every engineering axis we measured.** ~13% of explained
-   BOLD variance (§2.6); 37% relative classification accuracy and markedly
+   BOLD variance (§2.7); 37% relative classification accuracy and markedly
    higher seed variance (§2.5); and robustness on every corruption it was not
    trained on (§2.5). The paper makes no claim that the diet improves a model.
-2. **Two front-end controls are degenerate on the cortical instrument** (§2.6),
+2. **Two front-end controls are degenerate on the cortical instrument** (§2.7),
    which narrows the control claim.
 3. **`parvo_highsf` varies architecture alongside the front end** — its second
    stream has two input channels rather than one, so input and first-layer
@@ -559,8 +655,8 @@ Recorded so the omissions are visible rather than silent.
   analysis is reported in supplementary material rather than the main text. Note
   this is a *different* measure from §2.3(b)'s stream-bias gradient, which is
   diet-specific and survives its controls.
-- **That integration produces human-like shape bias** (§2.6).
-- **That the diet improves neural predictivity** — it does not (§2.6).
+- **That integration produces human-like shape bias** (§2.7).
+- **That the diet improves neural predictivity** — it does not (§2.7).
 
 ---
 
@@ -574,7 +670,7 @@ Recorded so the omissions are visible rather than silent.
 - [ ] Cite the **data release** as well as the ICLR paper, and confirm its
       licence file before submission (§52.4).
 - [ ] Decide whether the human benchmark belongs in the abstract. It is currently
-      in §2.3(c) and §2.6 only.
+      in §2.3(c) and §2.7 only.
 - [x] **Figure 1 built** — `results/figures/fig1_convergence.{png,pdf}`, caption
       in `fig1_convergence_caption.md`, built by `tmp_analysis/fig1{,_data}.py`
       (PLAN §51). Panel (c) is the set point as a front-end→trained slopegraph,
