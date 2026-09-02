@@ -5031,120 +5031,129 @@ runtime and to find that the original high-pass severities saturated at chance
 result. No second model was run, so the diet-vs-no-diet contrast that §53.4
 predicts is unseen at the time of writing.
 
+
 ---
 
-## §51 HUMAN OBSERVER DATA IS IN — "human-like" is unblocked, and the same
-numbers refute leg (b) as it was originally framed
+## §54 FOUR ADDITIONS TO §52 — the decision-rate caveat, all arms against the
+human CI, seed stability, and what integration costs leg (b)
 
-`tmp_analysis/human_shapebias.py`. Data: bethgelab/model-vs-human
-`raw-data/cue-conflict/`, the standardized release of Geirhos et al. 2018's
-human experiment, 10 observers × 1280 trials, downloaded to
-`/scratch/byrong/encoding/datasets/geirhos_cue_conflict/human_raw_data/`
-(scratch, beside the stimuli, per the Data Saving Rules). 10/10 files, 1281
-lines each, byte counts verified.
+§52 is the section of record for the human reference; nothing here restates it.
+This section was written independently and in parallel (the two sessions
+downloaded the same experiment from two different mirrors within the same hour
+— see 54.4), so it is deliberately trimmed to the four things §52 does not
+cover. `tmp_analysis/human_shapebias.py`, reading §52's canonical copy.
 
-§46.5 and the draft's *Claims deliberately not made* both blocked on this.
-It is no longer blocking.
+### 54.1 The decision-rate caveat — the models decide far less often than
+either humans or the ImageNet CNNs
 
-### 51.1 The comparison is legitimate, not rhetorical
+§52.2 records `decided / 1200` for humans (791–1055) and for the three
+reference CNNs (659–755). It does not record it for **our** models, and that is
+where the problem is:
 
-Both sides use the identical statistic and the identical exclusion: drop the 80
-of 1280 trials whose shape and texture category coincide, leaving the canonical
-1200; among the rest report n_shape / (n_shape + n_texture).
-`src/analysis/behavior/cue_conflict.py` already restricts model decisions to
-the 16 categories and applies that rule, and its JSONs already record
-`n_images = 1200`, so nothing was re-scored — the model side is read as
-committed.
-
-**Parsing check:** the human mean comes out at **0.9576**, reproducing the
-published ~0.96 to three decimals. That is the evidence the imagename parsing
-(`..._bird2-clock3.png` → shape bird, texture clock) is right.
-
-### 51.2 The human reference
-
-| | value |
+| | in-pair decision rate |
 |---|---|
-| human shape bias, n=10 observers | **0.9576** ± 0.0191 (sd) |
-| 95% CI (t, df=9) | **0.9439 .. 0.9713** |
-| per-observer range | 0.919 .. 0.987 |
-| in-pair decision rate | **0.803** ± 0.069 |
+| human observers | **0.803** ± 0.069 |
+| AlexNet / GoogLeNet / VGG-16 (§52.2) | 0.55 – 0.63 |
+| **our models, all arms** | **0.24 – 0.53** |
+| diet on lum, magno stream | **0.41** |
+| untrained (either front end) | **0.12** |
 
-### 51.3 Every model arm sits outside the human CI
+Shape bias is a ratio computed **only over decided trials**. Our diet-trained
+magno stream therefore reaches 0.878 on ~41% of the stimuli, against the human
+0.958 on ~80% of them — the two ratios have denominators differing by a factor
+of two, and the model's decided subset is not guaranteed to be a random half of
+the trials.
 
-| arm | condition | shape bias (k=3 seeds) | gap to human | decided |
+**Consequence.** Every model shape bias in the paper must carry its decision
+rate. §52.3's forbidden-statement list is correct and this is a second,
+independent reason for it: even if a stream *had* landed inside the human
+range, equal ratios on unequal denominators would not license "behaves like".
+The untrained rows (12%) are the extreme case and should not be reported as
+shape biases at all — a ratio over 12% of trials is noise with a decimal point.
+
+### 54.2 All arms against the human CI, not just four
+
+§52.3 tabulates four rows. The full set, all k=3 seeds where they exist, gives
+the human 95% CI as **0.9439 .. 0.9713** and:
+
+| arm | condition | shape bias | gap | inside human CI |
 |---|---|---|---|---|
-| diet on lum | **magno only** | **0.8778** ±0.0122 | **−0.080** | 0.41 |
-| diet on lum | full (integrated) | 0.6749 ±0.0249 | −0.283 | 0.40 |
-| diet on lum | parvo only | 0.4177 | −0.540 | 0.29 |
-| parvo_highsf | magno only | 0.7966 | −0.161 | — |
-| no diet | magno only | 0.4210 | −0.537 | 0.49 |
-| no diet | full | 0.4162 | −0.541 | 0.49 |
-| diet on rg (swap) | magno only | 0.4007 | −0.557 | 0.52 |
-| rgb (arch control) | full | 0.4449 | −0.513 | 0.50 |
-| `thesis_dvd_trans` | magno only | 0.9109 | −0.047 | 0.50 |
-| untrained (either front end) | full | ~0.50 | −0.46 | **0.12** |
+| diet on lum | magno only | 0.8778 ±0.0122 | −0.080 | no |
+| diet on lum | integrated | 0.6749 ±0.0249 | −0.283 | no |
+| `thesis_dvd_trans` | magno only | 0.9109 | −0.047 | no |
+| `thesis_s1_90` | magno only | 0.9035 | −0.054 | no |
+| parvo_highsf | magno only | 0.7966 | −0.161 | no |
+| rgb (arch control) | integrated | 0.4449 | −0.513 | no |
+| diet on rg (swap) | magno only | 0.4007 | −0.557 | no |
+| no diet | magno only | 0.4210 | −0.537 | no |
+| no diet | parvo only | 0.3643 | −0.593 | no |
 
-**Not one arm falls inside the human 95% CI**, including the closest
-(`thesis_dvd_trans` magno, 0.911). Our own best is the diet-trained magno
-stream at 0.878, a residual gap of 0.080 — 8.3% of the human value.
+**Not one arm of any condition falls inside the human 95% CI**, the closest
+being `thesis_dvd_trans` at −0.047. This is the stronger form of §52.3's point
+that 0.878 is below the lowest individual human: it holds for every model we
+have, not only the best one, so the "still directional" verdict is not an
+artefact of which model was picked.
 
-What the diet buys, in human units: it closes **85%** of the distance from the
-no-diet magno baseline (0.421) to humans (0.958). That is the sentence the data
-support.
+Note the two thesis-codebase checkpoints (0.911, 0.904) beat our own best
+(0.878) on this measure. §45.6's train/extract mismatch does not apply here —
+cue-conflict is a behavioural readout with no feature extraction — so this is a
+real, unexplained advantage for the thesis recipe on the behavioural
+instrument, and it should not be quietly omitted from a table that otherwise
+leads with our models.
 
-### 51.4 The finding that costs us leg (b) — integration DILUTES the shape bias
+### 54.3 Integration and leg (b)
 
-The project's working claim has always had leg (b) as *"their integration
-yields human-like shape-biased behavior"*. The data say the opposite about
-integration:
+§52's note that "integration costs 0.203 of shape bias" is arithmetically the
+same observation as this, but the framing matters for the paper's claim
+structure. The project's working claim has carried leg **(b)** since §7.3:
+*"integration yields human-like shape-biased behaviour."*
 
-    diet on lum, magno stream alone   0.8778
-    diet on lum, integrated readout   0.6749      -0.203
+    diet on lum, magno stream alone   0.8778   closes 85% of no-diet -> human
+    diet on lum, integrated readout   0.6749   closes 47%
 
-The integrated network is **substantially less** shape-biased than its own
-magno stream, in 3/3 seeds, and closes only **47%** of the no-diet→human
-distance against the magno stream's 85%. Summing the streams before the shared
-FC does not combine a shape-biased and a texture-biased stream into human-like
-behaviour — it averages them toward the texture-biased one.
+Integration moves the readout **away** from humans, in 3/3 seeds. **Leg (b) as
+worded is refuted by our own data and must not be written in any form.** What
+survives is a claim about the *stream*: the diet produces a stream whose shape
+bias approaches the human level; the summing readout does not inherit it.
 
-**Leg (b) as originally worded is therefore refuted by our own measurement and
-must not be written.** What survives is a statement about the stream, not the
-network: *the developmental diet produces a stream whose shape bias approaches
-the human level; the network's integrated readout does not inherit it.* This is
-a narrower claim and it is the honest one. It also makes the paper's existing
-positioning better, not worse — §46.2's join is about whether the streams stay
-*differentiated*, and a diluting integration is exactly what differentiated
-streams plus a summing readout would produce.
+This is not merely a subtraction. §46.2's surviving join is about whether the
+two streams stay *differentiated*, and a readout that averages a shape-biased
+stream with a texture-biased one toward the middle is precisely what
+differentiated streams plus a summing FC predict. The refutation of leg (b) is
+evidence **for** the differentiation account. Say it that way rather than
+burying it.
 
-### 51.5 The caveat that must travel with every "human-like" sentence
+### 54.4 Provenance strength: two mirrors, one number
 
-Humans decide in-pair on **80%** of cue-conflict trials. These models decide on
-**24–53%** (untrained: 12%). The diet-trained magno stream decides on ~41%.
+This session pulled the experiment from **bethgelab/model-vs-human**
+`raw-data/cue-conflict/` (10 observer files); §52 pulled it from
+**rgeirhos/texture-vs-shape** `raw-data/style-transfer-512-nomask-experiment/`
+(10 observers + 3 CNNs). Different repositories, different filename
+conventions, two independently written parsers. Both return
 
-Shape bias is a ratio computed **only over decided trials**. So the model
-numbers condition on roughly half as many trials as the human numbers, and on a
-subset that is not guaranteed to be a random half. A model and a human with the
-same shape bias are not thereby behaving alike. Every reported model shape bias
-must carry its decision rate, and no arm may be described as "matching" or
-"human-level" on the strength of the ratio alone. **"Approaches", with the
-residual 0.080 gap and the decision rate stated, is the strongest admissible
-wording.**
+    mean 0.9576, sd 0.0191, range 0.919-0.987, decision rate 0.803
 
-### 51.6 A bonus: the behavioural numbers ARE seed-stable
+to four decimals. Together with §52.2's reproduction of the published
+AlexNet/GoogLeNet/VGG values, the human reference is now about as well
+validated as it can be without re-running the experiment.
+
+The duplicate download was **deleted** (`/scratch/byrong/encoding/datasets/
+geirhos_cue_conflict/human_raw_data`, 38 KB) so that one copy and one citation
+remain; `human_shapebias.py` reads §52's path. §52.4's citation requirement
+covers both mirrors — cite the data release, and prefer the `rgeirhos` one that
+§52.4 names.
+
+### 54.5 Seed stability — behavioural only
 
 Across 3 seeds the diet arm's magno shape bias is 0.8718 / 0.8918 / 0.8697,
-**sd 0.0122**; the integrated readout 0.6922 / 0.6861 / 0.6464, sd 0.0249. This
-is the first seed-variance estimate anywhere in the project, and it is
-reassuring — but it applies to the *behavioural* instrument only. The PR and
-cortical numbers still rest on one checkpoint per condition, which job
-**26413641** (§ next) is measuring. Do not transfer this stability to those.
+**sd 0.0122**; the integrated readout 0.6922 / 0.6861 / 0.6464, **sd 0.0249**.
+This is the first seed-variance estimate anywhere in the project and it is
+reassuring.
 
-### 51.7 What to change in the draft
-
-- `docs/PAPER_DRAFT.md` *Claims deliberately not made* lists "That integration
-  produces human-like shape bias". Keep it listed as not claimed, but the
-  reason changes from **absent data** to **measured and contradicted** (51.4),
-  which is a stronger and more citable position.
-- §46.2's instrument-1 row (0.878 vs 0.364) can now be given its human anchor:
-  0.958, with both models outside the human CI.
-- The word "human-like" may now appear, subject to 51.5's constraints.
+**It licenses nothing about the other instruments.** The PR ratios (§47, §49,
+§50) and the cortical numbers (§48) each rest on one checkpoint per condition,
+and §50 made that load-bearing: §49.4 asks for "converge to within 2%" on a
+0.037 gap that has never been compared against seed noise. Job **26413641**
+(56 elements, `--cache-only`, seeds 1–2 of the three diet conditions plus
+`dkl_base_seed2`) is measuring exactly that. Do not transfer 54.5's stability
+to those tables before it lands.

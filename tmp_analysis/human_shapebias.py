@@ -32,7 +32,15 @@ import os
 import numpy as np
 from scipy import stats as sps
 
-HUMAN = "/scratch/byrong/encoding/datasets/geirhos_cue_conflict/human_raw_data"
+# The canonical copy is the one §52 downloaded and cites (rgeirhos/
+# texture-vs-shape, raw-data/style-transfer-512-nomask-experiment). This
+# script originally pulled the same experiment from its other mirror,
+# bethgelab/model-vs-human raw-data/cue-conflict, and got a human mean
+# identical to eight decimals -- an independent check on both parsers, noted
+# in §54.4. That duplicate copy was then deleted so there is ONE source of
+# truth and one citation.
+HUMAN = "/scratch/byrong/VST_data/geirhos_human_data/cue_conflict"
+HUMAN_GLOB = "*subject-*.csv"
 MODELS = "results/cue_conflict"
 
 
@@ -43,7 +51,7 @@ def _strip_digits(s: str) -> str:
 def human_observers() -> list[dict]:
     """Per-observer shape bias, plus the in-pair decision rate."""
     out = []
-    for f in sorted(glob.glob(f"{HUMAN}/*.csv")):
+    for f in sorted(glob.glob(f"{HUMAN}/{HUMAN_GLOB}")):
         rows = list(csv.DictReader(open(f)))
         ns = nt = nother = 0
         for r in rows:
@@ -59,7 +67,8 @@ def human_observers() -> list[dict]:
             else:
                 nother += 1
         n = ns + nt + nother
-        out.append(dict(who=os.path.basename(f)[13:23], n_images=n,
+        who = "subject-" + os.path.basename(f).split("subject-")[1][:2]
+        out.append(dict(who=who, n_images=n,
                         n_shape=ns, n_texture=nt, n_other=nother,
                         shape_bias=ns / (ns + nt),
                         decided=(ns + nt) / n))
