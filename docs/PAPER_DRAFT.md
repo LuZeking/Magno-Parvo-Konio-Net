@@ -566,35 +566,92 @@ report any stream as falling in the human range.
 
 ## 3. Discussion
 
-> DRAFT — points fixed, prose to be written.
+### What a developmental constraint actually does
 
-- **Reframing what a developmental constraint does.** The intuitive account of
-  developmental low-pass input is informational: coarse input first means the
-  learner is protected from high-frequency texture. §2.2 is not that. The diet
-  *removes* bandwidth and *reduces* the input's stream asymmetry, and the network
-  ends up more asymmetric than its input — converging to the same place from an
-  inverted start. The mechanism is about the attractor, not the diet.
-- **Against channel essentialism.** §2.1 and §2.4 jointly rule out "magno is the
-  shape pathway". Shape bias needs a carrier × transform conjunction; effective
-  dimensionality needs only bandwidth and reverses when the carrier moves. Both
-  properties are relational, not intrinsic to a labelled channel.
-- **Two properties that look alike and are not.** Dimensionality and shape bias
-  are frequently discussed as though richer representations were more
-  shape-like. §2.4's `parvo_highsf` cell is a direct counterexample: the more
-  dimensional stream is the texture-biased one.
-- **Two dissociations, one lesson.** Shape bias, representational
-  dimensionality and OOD robustness are routinely discussed as a package. This
-  paper separates them twice over identical inputs (§2.4, §2.5). The practical
-  consequence is that "shape bias" is not a single thing a model has more or
-  less of — what produced it determines what else comes with it.
-- **What generalises.** The side-of-parity result predicts that any manipulation
-  changing *what learning converges to*, rather than what the input supplies,
-  should show the same signature. Testable for other developmental
-  manipulations (chromatic onset, acuity schedules).
-- **What does not.** Nothing here supports using a developmental diet to make
-  models better. It makes them less accurate, less stable and less robust
-  (§2.5). Its interest is as a model of development, not as a training method.
-- **Limits.** See §2.7 and *Limitations*.
+The intuitive account of developmental low-pass input is informational: a learner
+given coarse input first is protected from high-frequency texture, and so learns
+shape. Our results do not support that account, and §2.2 is where it breaks. The
+diet *removes* bandwidth rather than adding structure, and it *reduces* the
+stream asymmetry of the input it is applied to. Yet networks trained under it end
+up more asymmetric than what they were handed — including one that begins
+parvo-dominant in 8/8 subjects and ends magno-dominant in every seed.
+
+The constraint therefore acts on what learning converges to, not on what the
+input supplies. This is a different kind of claim from the usual developmental
+argument, and it makes a different prediction: what matters is not how much
+information the early input carries, but which solutions it makes reachable.
+
+We are careful about how far this generalises. What replicates across seeds is
+the *side* of parity, not a level. Across three seeds a single condition's
+trained ratio ranges over 2.39, and two readings we ourselves previously
+advanced — a convergence "to within 2%", and a channel-specific set point — do
+not survive that spread. A reader should take from §2.2 that the diet decides a
+direction, and nothing about a destination.
+
+### Against channel essentialism
+
+The two-condition literature invites the reading that the magnocellular channel
+*is* the shape pathway. §2.1 and §2.4 jointly rule that out. Shape bias requires
+a carrier × transform conjunction: an achromatic carrier alone does not produce
+it, and the transform alone does not produce it, and only their combination
+crosses the boundary — by +0.936 with no seed overlap. Effective dimensionality,
+meanwhile, needs only bandwidth, and reverses when the carrier moves.
+
+Both properties are relational — facts about what a stream receives, not about
+what it is called. This matters beyond our architecture, because "magno-like" and
+"parvo-like" are routinely used as if they named intrinsic computational roles.
+
+### Three dissociations, one lesson
+
+Shape bias, representational dimensionality, out-of-distribution robustness and
+human-likeness are routinely discussed as a package: a model that has more of one
+is assumed to have more of the others. Over identical inputs, this paper
+separates them three times.
+
+Dimensionality and shape bias come apart in the direction opposite to intuition:
+§2.4's `parvo_highsf` cell is more dimensional and more texture-biased, so richer
+is not more shape-like. Robustness comes apart from shape bias in a way that is
+sharpened by its own control: our diet-trained network is less robust than every
+comparison on all five corruption families it was not trained on, and more robust
+on exactly the one family the diet installs. And human agreement comes apart from
+shape bias most cleanly of all — across six models spanning a 5× range of shape
+bias, trial-by-trial agreement with human observers stays flat at 7–18% of the
+human–human ceiling.
+
+The lesson is not that shape bias is uninteresting. It is that **"shape bias" is
+not a quantity a model has more or less of.** What produced it determines what
+travels with it. Geirhos et al.'s stylisation route yields shape bias together
+with robustness; our developmental route yields comparable shape bias in rate and
+none of the robustness. Both are real; the coupling belongs to the route.
+
+This has a direct methodological consequence. Shape bias is currently the most
+cited human-alignment metric for vision models, and §2.6 shows it does not track
+human decision structure at all. A model can be moved to the human *rate* without
+moving toward human *behaviour*. Reporting error consistency alongside shape bias
+should be standard, and is cheap wherever the human trial data exist.
+
+### What generalises, and what does not
+
+The side-of-parity result predicts that any manipulation changing what learning
+converges to — rather than what the input supplies — should show the same
+signature: a trained asymmetry that is insensitive to the input's asymmetry but
+consistent in direction. Chromatic onset and acuity schedules are the natural
+next tests, and a schedule-trained checkpoint from an independent codebase
+already lands on the predicted side (§2.2).
+
+What does not generalise is any recommendation to use a developmental diet as a
+training method. It makes models less accurate (0.439 vs 0.695 in 112-way
+classification), markedly less stable across seeds, and less robust on every
+corruption it was not trained on. Nothing here is an argument that this is a
+better way to train a network. Its interest is as a model of development.
+
+### Limits
+
+The cortical result (§2.3) is the least-replicated claim in the paper and is
+flagged as such. The `parvo_highsf` condition varies architecture alongside the
+front end. Our diet is a fixed 48-month front end rather than a trajectory. Human
+comparisons are against published observers rather than an experiment of our own,
+and are comparisons of aggregate rate. See *Limitations* for the full accounting.
 
 ---
 
