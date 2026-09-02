@@ -4722,3 +4722,76 @@ measurement on caches that already existed and touches no prose of theirs;
 alone. §49.2–§49.4 are **not** rewritten here — 50.4 states what should replace
 the claim, and one owner should apply it to §49 and to the draft's abstract
 together.
+
+## §50 FIGURE 1 REBUILT AS THE FOUR-PANEL CONVERGENCE FIGURE — and one cell
+grew a seed
+
+`tmp_analysis/fig1_data.py` + `tmp_analysis/fig1.py` →
+`results/figures/fig1_convergence.{png,pdf}`, caption in
+`fig1_convergence_caption.md`. Built to §46.3's spec with panel (c) replaced
+per §49.
+
+### 50.1 What changed from §46.3's spec
+
+§46.3 specified panel (c) as "PR retention (§45.2): each trained model against
+its own front end". §49 superseded the retention framing: retention divides by
+a moving denominator, and the stable quantity is the **trained ratio**. Panel
+(c) is therefore a front-end → trained slopegraph over three arms, which shows
+the convergence directly — three arms enter at 1.63 / 1.40 / 0.59 and two leave
+at the same place. Retention is a derived quantity and is not plotted.
+
+The form matters here. A bar chart of trained values alone would delete the
+entire argument, because the argument *is* that the starting points differ and
+the endpoints do not.
+
+### 50.2 A seed rejoined the swap cell — §25.1's table is superseded
+
+Building panel (a) surfaced that `dkl_bcs_swap_seed2` now has both a
+cue-conflict and a probe result on disk (re-run 2026-08-31 22:50/22:51), where
+§20.2 had excluded it by the convergence guard at "96/150". On the re-run it
+decides **182/1200** images — *more* than seeds 0 (159) and 1 (155) — so it
+passes the guard and belongs in the cell.
+
+| swap parvo | §25.1 (n=2) | now (n=3) |
+|---|---|---|
+| behavioural shape bias | 0.484 | **0.495** |
+| probe shape−texture | −0.155 | **−0.145** |
+
+Neither moves a claim: the cell is still far below the conjunction's 0.878 /
++0.819, and the probe still does not cross zero. §25.1's numbers are superseded
+rather than withdrawn — they were correct for the two seeds available then.
+`PAPER_DRAFT.md` §2.1 quotes the new values.
+
+### 50.3 A denominator caveat that the 2×2 had not made explicit
+
+The four cells' behavioural shape bias rests on very different numbers of
+decided images — the count of images the stream answers as shape *or* texture:
+
+| cell | decided / 1200 |
+|---|---|
+| chromatic + transform (`swap` parvo) | **165** |
+| chromatic, no transform (no-diet parvo) | 270 |
+| achromatic + transform (diet magno) | 488 |
+| achromatic, no transform (`parvo_highsf` parvo) | 583 |
+
+§18.5 and §20.3 made this point about the *untrained* models (~150/1200, "read
+it as no preference, not as a precise 0.50"). It applies with equal force to the
+`swap` cell at 165. The consequence is favourable to the claim but must be
+stated the right way round: the three non-conjunction cells should be read as
+**"no strong preference"**, not as precise values, and the interaction is
+carried by the conjunction cell being unambiguous rather than by fine
+distinctions among the other three. The probe has no such problem — it
+classifies every image — and gives the same pattern, which is why both
+modalities are drawn.
+
+Added to the caption. This is a caveat §25 should have carried and did not.
+
+### 50.4 The old Figure 1 is not deleted
+
+`fig1_diet_gradient.{png,pdf}` and its caption remain. That figure is the
+ventral-gradient result (§17/§29/§48), which `PAPER_DRAFT.md` §2.4(b) still
+leads with — it is diet-specific, replicates across codebases to 0.0025, and
+survives its front-end controls. It is no longer *Figure 1*; renumber it when
+the figure order is fixed. Do not confuse it with the VSB cortical step
+(§43.2/§44.1), which is the measure that does not survive and which the main
+text does not raise.

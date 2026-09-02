@@ -29,7 +29,7 @@ evaluated against eight subjects of the Natural Scenes Dataset.
 First, the resulting shape-biased stream is not a property of the achromatic
 channel at all. It requires the **conjunction** of an achromatic carrier and the
 developmental transform: neither factor alone moves a stream across the
-shape/texture boundary (probe bias −0.266 and −0.155 for the single factors,
+shape/texture boundary (probe bias −0.266 and −0.145 for the single factors,
 **+0.819** for the conjunction).
 
 Second, we build a front end whose stream asymmetry is *inverted* and train a
@@ -127,11 +127,11 @@ agreeing to 0.017):
 
 | | no transform | with transform |
 |---|---|---|
-| **chromatic carrier (L−M)** | −0.504 | −0.155 |
+| **chromatic carrier (L−M)** | −0.504 | −0.145 |
 | **achromatic carrier (lum)** | **−0.266** | **+0.819** |
 
 Behavioural cue-conflict shape bias on the same four cells replicates it
-independently (0.364 / 0.484 / 0.396 / **0.878**).
+independently (0.364 / 0.495 / 0.396 / **0.878**).
 
 **Both single factors move a stream substantially toward neutral and neither
 crosses zero. Only the conjunction crosses, and it goes all the way.** This is an
@@ -139,6 +139,16 @@ interaction, measured on all four cells rather than inferred from two, and it is
 the strongest causal statement in the paper about *what* produces the shape bias:
 the developmental low-pass transform applied specifically to an achromatic
 channel.
+
+*Denominator caveat.* Cue-conflict shape bias is computed only over images a
+stream decides as shape *or* texture, and that count varies ~4× across the four
+cells (165 / 270 / 583 / 488 of 1,200). A stream deciding ~13% of the set
+returns something near a coin flip by construction, so the three
+non-conjunction behavioural cells are read as **"no strong preference"** rather
+than as precise values; the interaction is carried by the conjunction cell being
+unambiguous, not by fine distinctions among the other three. The probe does not
+have this problem — it classifies every image — and gives the same pattern,
+which is why both modalities are reported (§50.3).
 
 *Capacity control.* `parvo_highsf` gives its second stream an extra input
 channel. The confound that would matter is if the extra channel *weakened* that
@@ -422,10 +432,12 @@ Recorded so the omissions are visible rather than silent.
 
 - [ ] Obtain Geirhos human observer data, or keep every human reference
       directional. **Blocks any use of the word "human-like".**
-- [ ] Figure 1: four-panel convergence figure (PLAN §46.3) — panels (a) input
-      2×2, (b) in-silico cue conflict, (c) the set point (§2.3's table as paired
-      per-subject lines, front-end reference row shown), (d) the variance cost.
-      Panel (d) is not optional.
+- [x] **Figure 1 built** — `results/figures/fig1_convergence.{png,pdf}`, caption
+      in `fig1_convergence_caption.md`, built by `tmp_analysis/fig1{,_data}.py`
+      (PLAN §50). Panel (c) is the set point as a front-end→trained slopegraph,
+      superseding §46.3's retention spec per §49.
+- [ ] Renumber the ventral-gradient figure (`fig1_diet_gradient`) — it is no
+      longer Figure 1 but is still §2.4(b)'s evidence (PLAN §50.4).
 - [ ] Decide venue; PLAN targets NMI / NeurIPS tier.
 - [ ] Expand Methods from PLAN §1 and the run logs; add per-condition seed counts.
 - [ ] Supplementary: the VSB cortical profile with its negatives intact; the

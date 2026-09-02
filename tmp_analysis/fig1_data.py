@@ -1,97 +1,130 @@
-"""Extract everything Figure 1 needs into one small cache.
+"""Extract everything the four-panel Figure 1 needs into one cache.
 
-Loading eight subject npz files per model is slow, and the figure needs
-several passes over the same arrays, so the extraction is separated from the
-drawing. Run this once; iterate on fig1.py freely.
+PAPER_PLAN §46.3, as amended by §47.4 and §49. The figure is a CONVERGENCE
+figure: four instruments that agree on the diet-vs-no-diet contrast. It is not
+four measurements of one construct -- §47.4 showed shape bias and effective
+dimensionality factorise differently over identical inputs, so the panels are
+laid out as separate instruments and the caption must say so.
+
+  (a) §25  the input 2x2 -- behaviour and probe side by side
+  (b) §43.1 in-silico cue conflict -> BOLD, per-subject magno-parvo VSB
+  (c) §49  the set point -- front end vs trained, three conditions
+  (d) §43.3 the cost -- median r2/NC, diet vs no diet
+
+Panel (d) is not optional (§46.3). A four-panel figure whose panels all favour
+the diet, omitting the one measure that does not, would be cherry-picking.
 
 Writes results/figures/fig1_data.npz
 """
-
 from __future__ import annotations
-
-import json
-import os
-
+import glob, json, os
 import numpy as np
-from scipy import stats as sps
 
 from src.analysis.encoding.stats import load_results
 
-# (key, model name, cell) -- cell drives colour/grouping in the figure
-MODELS = [
-    ("untrained_diet",   "untrained_seed0",         "untrained"),
-    ("untrained_nodiet", "untrained_seed0_noblur",  "untrained"),
-    ("nodiet_s0",        "dkl_base_seed0_trained",  "trained_nodiet"),
-    ("nodiet_s1",        "dkl_base_seed1_trained",  "trained_nodiet"),
-    ("diet_thesis",      "thesis_dvd_trans",        "trained_diet"),
-    ("diet_ours_s0",     "dkl_bcs_seed0_trained",   "trained_diet"),
-    ("swap_s0",          "dkl_bcs_swap_seed0_trained", "trained_swap"),
-]
-VIS = [1, 2, 3, 4, 5, 6, 7]          # V1v V1d V2v V2d V3v V3d hV4
-HIER = np.array([1, 1, 2, 2, 3, 3, 4], float)
 NC_MIN, MIN_VOX = 0.1, 20
-
-
-def norm_stat(z, sel):
-    """Scale-free stream preference: median(Um-Up) / median(Um+Up)."""
-    um, up = z["unique_magno"], z["unique_parvo"]
-    v = sel & (z["noise_ceiling"] > NC_MIN) & np.isfinite(um) & np.isfinite(up)
-    if v.sum() < MIN_VOX:
-        return np.nan
-    a, b = um[v], up[v]
-    den = np.median(a + b)
-    return np.median(a - b) / den if den > 1e-4 else np.nan
-
-
 out = {}
-for key, model, cell in MODELS:
+
+# ---------------------------------------------------------------- panel (a)
+# The 2x2 on INPUT factors. Each cell is the stream that receives the named
+# carrier: for three cells that is the parvo stream, for the diet cell it is
+# magno. Seeds are the replication unit here (not subjects) -- these are model
+# properties measured on the Geirhos set, with no brain data involved.
+#
+# parvo_highsf seed 0 is EXCLUDED: its cue-conflict run decided only 139/150
+# images when the convergence guard ran, so its shape-bias denominator is not
+# comparable. Seeds 1 and 2 agree to 0.012.
+#
+# swap seed 2 IS included, and §25's table (n=2) is superseded. It was excluded
+# there by the same guard while still training (§20.2, "96/150"); it was re-run
+# 2026-08-31 22:50 after converging and now decides 182/1200 images -- MORE than
+# seeds 0 and 1 (159, 155). Including it moves the cell by +0.011 (behaviour)
+# and +0.010 (probe) and changes no claim. See §50.
+#
+# The decided-image count is carried through to the figure because it varies
+# 4x across cells (155-595) and it bounds how precisely each behavioural point
+# can be read: a stream that answers "shape or texture" for only ~13% of the
+# set returns something near a coin flip by construction (§18.5, §20.3).
+CELLS = {                       # (carrier, transform) -> (models, which stream)
+    ("chromatic", "none"):      ([f"dkl_base_seed{s}" for s in (0, 1, 2)], "parvo"),
+    ("chromatic", "transform"): ([f"dkl_bcs_swap_seed{s}" for s in (0, 1, 2)], "parvo"),
+    ("achromatic", "none"):     ([f"dkl_bcs_parvo_highsf_seed{s}" for s in (1, 2)], "parvo"),
+    ("achromatic", "transform"):([f"dkl_bcs_seed{s}" for s in (0, 1, 2)], "magno"),
+}
+for (carrier, trans), (models, stream) in CELLS.items():
+    beh, prb, dec = [], [], []
+    for m in models:
+        fb = f"results/cue_conflict/{m}.json"
+        fp = f"results/shape_texture/{m}_trained.json"
+        if os.path.exists(fb):
+            c = json.load(open(fb))["conditions"][f"{stream}_only"]
+            beh.append(c["shape_bias"])
+            dec.append(c["n_shape"] + c["n_texture"])
+        else:
+            print(f"  MISSING {fb}")
+        if os.path.exists(fp):
+            prb.append(json.load(open(fp))["streams"][stream]["bias"])
+        else:
+            print(f"  MISSING {fp}")
+    k = f"a__{carrier}__{trans}"
+    out[k + "__beh"] = np.array(beh)
+    out[k + "__probe"] = np.array(prb)
+    out[k + "__decided"] = np.array(dec)
+    print(f"(a) {carrier:>10s} x {trans:<9s} [{stream:5s}] "
+          f"behaviour {np.mean(beh):.3f} (n={len(beh)})   probe {np.mean(prb):+.3f}"
+          f"   decided {int(np.mean(dec))}/1200")
+
+# ---------------------------------------------------------------- panel (b)
+# In-silico cue conflict through the fitted encoding models. Per subject, the
+# median VSB of each stream over reliable voxels; the contrast is magno-parvo.
+def cc_streams(model):
+    subs, mg, pv = [], [], []
+    for f in sorted(glob.glob(f"results/encoding_cc/{model}_subj*.npz")):
+        z = np.load(f)
+        ok = (z["noise_ceiling"] > NC_MIN)
+        def med(v):
+            v = v[ok & np.isfinite(v)]
+            return np.median(v) if v.size >= MIN_VOX else np.nan
+        subs.append(int(f.rsplit("subj", 1)[1][:2]))
+        mg.append(med(z["cc_magno_vsb"])); pv.append(med(z["cc_parvo_vsb"]))
+    return np.array(subs), np.array(mg), np.array(pv)
+
+for key, model in [("diet", "dkl_bcs_seed0_trained"), ("nodiet", "dkl_base_seed0_trained")]:
+    s, mg, pv = cc_streams(model)
+    out[f"b__{key}__subs"], out[f"b__{key}__magno"], out[f"b__{key}__parvo"] = s, mg, pv
+    print(f"(b) {key:6s} n={len(s)}  magno {mg.mean():+.3f}  parvo {pv.mean():+.3f}  "
+          f"magno-parvo {np.mean(mg - pv):+.3f}")
+
+# ---------------------------------------------------------------- panel (c)
+# The set point. Read from the PR store built by pr_retention_highsf.py so the
+# eigendecompositions are not repeated; each entry is (magno PR, parvo PR).
+STORE = os.path.join(os.environ.get("CLAUDE_JOB_DIR", "/tmp"), "tmp", "pr_store.npz")
+_pr = dict(np.load(STORE))
+def ratio(model):
+    d = {int(k.partition("|subj")[2]): v[0] / v[1]
+         for k, v in _pr.items() if k.partition("|subj")[0] == model}
+    return np.array([d[s] for s in sorted(d)])
+
+ARMS = [("diet_normal",  "untrained_seed0",        "dkl_bcs_seed0_trained"),
+        ("diet_highsf",  "untrained_parvo_highsf", "dkl_bcs_parvo_highsf_seed0_trained"),
+        ("nodiet",       "untrained_seed0_noblur", "dkl_base_seed0_trained")]
+for key, front, trained in ARMS:
+    f, t = ratio(front), ratio(trained)
+    out[f"c__{key}__front"], out[f"c__{key}__trained"] = f, t
+    print(f"(c) {key:12s} front {f.mean():.3f} -> trained {t.mean():.3f}  (n={len(f)})")
+
+# ---------------------------------------------------------------- panel (d)
+# The cost. Median r2_joint/NC over reliable voxels, per subject.
+for key, model in [("diet", "dkl_bcs_seed0_trained"), ("nodiet", "dkl_base_seed0_trained")]:
     R = load_results("results/encoding", model)
     subs = sorted(R)
-    prof = np.array([[norm_stat(R[s], R[s]["roi_prf-visualrois"] == k)
-                      for k in VIS] for s in subs])
-    centred = prof - np.nanmean(prof, axis=1, keepdims=True)
-    rho = np.array([sps.spearmanr(HIER[np.isfinite(r)],
-                                  r[np.isfinite(r)]).statistic
-                    for r in prof])
-    out[f"{key}__profile"] = prof
-    out[f"{key}__centred"] = centred
-    out[f"{key}__rho"] = rho
-    out[f"{key}__subs"] = np.array(subs)
-    out[f"{key}__cell"] = np.array([cell])
-    print(f"{model:<26} n={len(subs)}  hV4-V1v={np.nanmean(prof[:, 6] - prof[:, 0]):+.4f}  "
-          f"rho={rho.mean():+.3f}", flush=True)
-
-# Leg (a): stream shape/texture bias from the probe
-probe = {
-    "untrained_nodiet": ["untrained_noblur"],
-    "untrained_diet":   ["untrained_blur_cs"],
-    # Same architecture, transform moved to rg: the untrained end of the
-    # swap slope. magno here should reproduce untrained_noblur's magno
-    # exactly, since both hand stream 1 untransformed luminance.
-    "untrained_swap":   ["untrained_swap"],
-    "trained_nodiet":   [f"dkl_base_seed{s}_trained" for s in (0, 1, 2)],
-    "trained_diet":     [f"dkl_bcs_seed{s}_trained" for s in (0, 1, 2)]
-                        + ["thesis_dvd_trans"],
-    # The channel-swap control: the identical developmental transform, moved
-    # onto the red-green channel. It is the arm that separates "the diet does
-    # this" from "the diet does this to an ACHROMATIC channel", so panel C is
-    # not interpretable without it.
-    "trained_swap":     [f"dkl_bcs_swap_seed{s}_trained" for s in (0, 1, 2)],
-}
-for cell, names in probe.items():
-    m, p = [], []
-    for n in names:
-        fp = f"results/shape_texture/{n}.json"
-        if not os.path.exists(fp):
-            print(f"  missing {fp}")
-            continue
-        d = json.load(open(fp))
-        m.append(d["streams"]["magno"]["bias"])
-        p.append(d["streams"]["parvo"]["bias"])
-    out[f"probe__{cell}__magno"] = np.array(m)
-    out[f"probe__{cell}__parvo"] = np.array(p)
-    print(f"probe {cell:<18} magno {np.mean(m):+.3f}  parvo {np.mean(p):+.3f}  "
-          f"(n={len(m)})")
+    v = []
+    for s in subs:
+        z = R[s]
+        ok = (z["noise_ceiling"] > NC_MIN) & np.isfinite(z["r2_joint_nc"])
+        v.append(np.median(z["r2_joint_nc"][ok]))
+    out[f"d__{key}__subs"], out[f"d__{key}__r2nc"] = np.array(subs), np.array(v)
+    print(f"(d) {key:6s} n={len(subs)}  median r2/NC {np.mean(v):.3f}")
 
 os.makedirs("results/figures", exist_ok=True)
 np.savez("results/figures/fig1_data.npz", **out)

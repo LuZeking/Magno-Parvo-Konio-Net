@@ -1,24 +1,26 @@
-"""Figure 1: the developmental diet decides what learning does to cortical
-stream correspondence.
+"""Figure 1: four instruments converge on the diet contrast.
 
-Panel A (lead) is a slopegraph because the result IS a divergence: both
-untrained models start at the same place and training moves them in opposite
-directions. A bar chart of four cells would hide the pairing; the slopegraph
-shows it is the same subject moving, in every subject.
+PAPER_PLAN §46.3, amended by §47.4 and §49.
 
-Panel B shows the gradient itself along the ventral hierarchy, so the reader
-can see that panel A's summary statistic is not hiding a non-monotonic mess.
+The figure argues a CONVERGENCE, not a construct. §47.4 showed that shape bias
+and effective dimensionality factorise differently over identical inputs, so
+the panels are drawn as four separate instruments that agree on one contrast --
+diet vs no diet -- and the caption says exactly that. Do not draw them as four
+views of one property.
 
-Panel C is the representational mechanism (leg a) that panel A's cortical
-result mirrors -- magno's shape bias crosses zero without the diet.
-
-Panel D is the control that matters most: after removing each subject's global
-stream bias, is the ordering along the hierarchy still there? A general stream
-factor was what defeated the thesis's RSA, so it gets a panel, not a footnote.
+  (a) the input 2x2 (§25). An INTERACTION plot, not bars: the claim is that the
+      lines are non-parallel, and non-parallelism is the thing bars hide.
+  (b) in-silico cue conflict -> BOLD (§43.1). Paired, because the pairing is
+      the inference: same 8 subjects, two models.
+  (c) the set point (§49). A slopegraph, because the result IS a convergence
+      from divergent starts -- three arms enter from 0.59 / 1.40 / 1.63 and two
+      of them leave at the same place. A bar chart of trained values alone
+      would delete the entire argument.
+  (d) the cost (§43.3). Not optional: three panels favour the diet and this one
+      does not. Omitting it would be cherry-picking (§46.3).
 
 Usage: PYTHONPATH=. python tmp_analysis/fig1.py
 """
-
 from __future__ import annotations
 
 import os
@@ -31,213 +33,180 @@ from scipy import stats as sps
 
 D = np.load("results/figures/fig1_data.npz", allow_pickle=True)
 
-# Okabe-Ito: safe under the common colour-vision deficiencies.
-GREY = "#5A5A5A"
-NODIET = "#D55E00"     # vermillion -- learning erodes
-DIET = "#0072B2"       # blue -- learning builds
-SWAP = "#009E73"       # bluish-green -- same diet, wrong channel
-VIS_LABELS = ["V1v", "V1d", "V2v", "V2d", "V3v", "V3d", "hV4"]
+# Okabe-Ito. Validated for CVD separation and contrast against the panel
+# surface; #56B4E9 sits below 3:1 and therefore carries a direct label, which
+# every arm in panel (c) has.
+DIET   = "#0072B2"   # blue      -- diet, normal front end
+DIETHS = "#56B4E9"   # sky blue  -- diet, inverted (parvo_highsf) front end
+NODIET = "#D55E00"   # vermillion
+GREY   = "#5A5A5A"
+INK    = "#1A1A1A"
+MUTED  = "#767676"
 
 plt.rcParams.update({
-    "font.size": 8, "axes.labelsize": 8.5, "axes.titlesize": 9,
-    "xtick.labelsize": 7.5, "ytick.labelsize": 7.5, "legend.fontsize": 7.5,
+    "font.size": 8, "axes.labelsize": 8.5, "axes.titlesize": 8.5,
+    "xtick.labelsize": 7.5, "ytick.labelsize": 7.5, "legend.fontsize": 7,
     "axes.spines.top": False, "axes.spines.right": False,
-    "axes.linewidth": 0.8, "xtick.major.width": 0.8,
-    "ytick.major.width": 0.8, "figure.dpi": 200,
-    "font.family": "DejaVu Sans",
+    "axes.linewidth": 0.8, "xtick.major.width": 0.8, "ytick.major.width": 0.8,
+    "axes.edgecolor": "#999999", "text.color": INK,
+    "axes.labelcolor": INK, "xtick.color": MUTED, "ytick.color": MUTED,
+    "figure.dpi": 200, "font.family": "DejaVu Sans",
+    "legend.frameon": False,
 })
 
-fig = plt.figure(figsize=(7.2, 5.4))
-gs = fig.add_gridspec(2, 2, width_ratios=[1.0, 1.15], height_ratios=[1, 1],
-                      hspace=0.52, wspace=0.42,
-                      left=0.085, right=0.985, top=0.90, bottom=0.085)
+fig = plt.figure(figsize=(7.2, 6.4))
+outer = fig.add_gridspec(2, 2, hspace=0.58, wspace=0.38,
+                         left=0.090, right=0.960, top=0.855, bottom=0.070)
 
-# Trained cells average their two independent models per subject, so a line is
-# "this subject, this condition", not "this subject, this checkpoint".
-nodiet_tr = np.nanmean([D["nodiet_s0__profile"], D["nodiet_s1__profile"]], 0)
-diet_tr = np.nanmean([D["diet_thesis__profile"], D["diet_ours_s0__profile"]], 0)
-cross = lambda p: p[:, 6] - p[:, 0]
+# Panel titles live in FIGURE coordinates. Anchoring them to an axis makes a
+# two-sub-axis panel (a) collide with its own sub-labels; this cannot.
+TAG_X = {"L": 0.020, "R": 0.520}
+TAG_Y = {"T": 0.905, "B": 0.400}
 
-pairs = [
-    ("no diet", D["untrained_nodiet__profile"], nodiet_tr, NODIET),
-    ("with diet", D["untrained_diet__profile"], diet_tr, DIET),
-]
 
-# ---------------------------------------------------------------- panel A
-axA = fig.add_subplot(gs[0, 0])
-for label, unt, tr, c in pairs:
-    a, b = cross(unt), cross(tr)
-    for i in range(len(a)):
-        axA.plot([0, 1], [a[i], b[i]], "-", color=c, lw=0.9, alpha=0.42,
-                 solid_capstyle="round", zorder=2)
-    axA.plot([0, 1], [a.mean(), b.mean()], "-", color=c, lw=2.6, zorder=4)
-    axA.plot([0, 1], [a.mean(), b.mean()], "o", color=c, ms=5.5,
-             mec="white", mew=1.0, zorder=5, label=label)
-    axA.annotate(f"{b.mean():+.2f}", (1, b.mean()), xytext=(7, 0),
+def panel_tag(col, row, letter, title):
+    x, y = TAG_X[col], TAG_Y[row]
+    fig.text(x, y, letter, fontsize=11, fontweight="bold", va="bottom",
+             ha="left", color=INK)
+    fig.text(x + 0.028, y, title, fontsize=8.5, va="bottom", ha="left",
+             color=INK)
+
+
+def mean_label(ax, x, v, colour, side, fmt="{:+.2f}"):
+    """Value labels go OUTSIDE the point column, never on top of it."""
+    dx, ha = (-8, "right") if side == "left" else (8, "left")
+    ax.annotate(fmt.format(v), (x, v), xytext=(dx, 0),
+                textcoords="offset points", color=colour, fontsize=8.5,
+                fontweight="bold", va="center", ha=ha)
+
+
+def paired(ax, left, right, colour, subs_lw=0.85):
+    """Per-subject lines plus the mean. The pairing is the inference."""
+    for a, b in zip(left, right):
+        ax.plot([0, 1], [a, b], "-", color=colour, lw=subs_lw, alpha=0.35,
+                solid_capstyle="round", zorder=2)
+    ax.plot([0, 1], [left.mean(), right.mean()], "-", color=colour, lw=2.6,
+            zorder=4, solid_capstyle="round")
+    ax.plot([0, 1], [left.mean(), right.mean()], "o", color=colour, ms=6,
+            mec="white", mew=1.1, zorder=5)
+
+
+# ============================================================== panel (a)
+# Two sub-axes, NOT one axis with two y-scales. The measures have different
+# units and ranges; a dual axis would be the single worst thing this figure
+# could do.
+gsa = outer[0, 0].subgridspec(1, 2, wspace=0.55)
+CARRIER = [("chromatic", NODIET, "chromatic carrier (L−M)"),
+           ("achromatic", DIET, "achromatic carrier (lum)")]
+X = [0, 1]
+
+for j, (measure, ylab, neutral, ylim) in enumerate(
+        [("beh", "cue-conflict shape bias", 0.5, (0.28, 0.97)),
+         ("probe", "probe shape − texture", 0.0, (-0.62, 0.97))]):
+    ax = fig.add_subplot(gsa[0, j])
+    ax.axhline(neutral, color="#CCCCCC", lw=0.8, ls=(0, (3, 3)), zorder=1)
+    for carrier, c, _lab in CARRIER:
+        y = [D[f"a__{carrier}__{t}__{measure}"] for t in ("none", "transform")]
+        for xi, v in zip(X, y):                       # individual seeds
+            ax.plot([xi] * len(v), v, "o", color=c, ms=2.6, alpha=0.55,
+                    mec="none", zorder=3)
+        m = [v.mean() for v in y]
+        ax.plot(X, m, "-", color=c, lw=2.2, zorder=4, solid_capstyle="round")
+        ax.plot(X, m, "o", color=c, ms=6, mec="white", mew=1.1, zorder=5)
+    # Label only the conjunction and its nearest rival: a number on every point
+    # is noise.
+    conj = D[f"a__achromatic__transform__{measure}"].mean()
+    ax.annotate(f"{conj:+.2f}" if measure == "probe" else f"{conj:.2f}",
+                (1, conj), xytext=(0, 8), textcoords="offset points",
+                color=DIET, fontsize=8, fontweight="bold", ha="center")
+    ax.set_xticks(X)
+    ax.set_xticklabels(["no\ntransform", "with\ntransform"])
+    ax.set_xlim(-0.28, 1.28)
+    ax.set_ylim(*ylim)
+    ax.set_ylabel(ylab, fontsize=7.5)
+    ax.tick_params(length=2.5)
+    ax.set_title("behaviour" if j == 0 else "linear probe", fontsize=7.5,
+                 color=MUTED, pad=4)
+
+panel_tag("L", "T", "a", "Shape bias needs the conjunction")
+
+handles = [plt.Line2D([], [], color=c, lw=2.2, marker="o", ms=5, mec="white",
+                      mew=1.0, label=lab) for _, c, lab in CARRIER]
+fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.020, 0.985),
+           ncol=2, columnspacing=1.6, handlelength=1.6)
+
+# ============================================================== panel (b)
+axB = fig.add_subplot(outer[0, 1])
+bd = D["b__diet__magno"] - D["b__diet__parvo"]
+bn = D["b__nodiet__magno"] - D["b__nodiet__parvo"]
+axB.axhline(0, color="#CCCCCC", lw=0.8, ls=(0, (3, 3)), zorder=1)
+for a, b in zip(bn, bd):
+    axB.plot([0, 1], [a, b], "-", color=GREY, lw=0.85, alpha=0.40, zorder=2)
+axB.plot([0] * len(bn), bn, "o", color=NODIET, ms=5, mec="white", mew=1.0, zorder=4)
+axB.plot([1] * len(bd), bd, "o", color=DIET, ms=5, mec="white", mew=1.0, zorder=4)
+for x, v, c, side in [(0, bn, NODIET, "left"), (1, bd, DIET, "right")]:
+    axB.plot([x - 0.18, x + 0.18], [v.mean()] * 2, "-", color=c, lw=2.4, zorder=5)
+    mean_label(axB, x, v.mean(), c, side)
+p = sps.wilcoxon(bd - bn).pvalue
+axB.set_xticks([0, 1]); axB.set_xticklabels(["no diet", "with diet"])
+axB.set_xlim(-0.72, 1.72)
+axB.set_ylim(-0.18, 1.78)
+axB.set_ylabel("stream dissociation\n(magno − parvo VSB)", fontsize=7.5)
+axB.tick_params(length=2.5)
+axB.text(0.03, 0.93, f"$p$ = {p:.4f}, {int((bd > bn).sum())}/{len(bd)} subjects",
+         transform=axB.transAxes, ha="left", fontsize=7, color=MUTED)
+panel_tag("R", "T", "b", "…and it is visible through cortex")
+
+# ============================================================== panel (c)
+axC = fig.add_subplot(outer[1, 0])
+# dy is the label offset in points: the two diet arms converge to within 0.04
+# and would print on top of each other at any shared offset.
+ARMS = [("nodiet",      NODIET, "no diet",              0),
+        ("diet_normal", DIET,   "diet",                 -8),
+        ("diet_highsf", DIETHS, "diet,\ninverted front end", +8)]
+axC.axhline(1.0, color="#CCCCCC", lw=0.8, ls=(0, (3, 3)), zorder=1)
+axC.text(1.34, 1.0, "parity", fontsize=6.8, color=MUTED, va="center", ha="left")
+for key, c, lab, dy in ARMS:
+    f, t = D[f"c__{key}__front"], D[f"c__{key}__trained"]
+    paired(axC, f, t, c)
+    axC.annotate(f"{t.mean():.2f}", (1, t.mean()), xytext=(9, dy),
                  textcoords="offset points", color=c, fontsize=8,
-                 fontweight="bold", va="center")
+                 fontweight="bold", va="center", ha="left")
+    axC.annotate(lab, (0, f.mean()), xytext=(-10, 0), textcoords="offset points",
+                 color=c, fontsize=7.2, va="center", ha="right")
+axC.set_xticks([0, 1])
+axC.set_xticklabels(["front end\n(no training)", "after training"])
+axC.set_xlim(-1.30, 1.62)
+axC.set_ylim(0.50, 1.92)
+axC.set_ylabel("effective dimensionality\nratio (magno / parvo)", fontsize=7.5)
+axC.tick_params(length=2.5)
+panel_tag("L", "B", "c", "The diet installs a set point")
 
-axA.axhline(0, color="#BBBBBB", lw=0.7, zorder=1)
-axA.set_xlim(-0.46, 1.42)
-axA.set_xticks([0, 1])
-axA.set_xticklabels(["untrained", "trained"])
-axA.set_ylabel("hV4 − V1v  (stream preference)")
-axA.set_title("A   Learning diverges on the diet", loc="left", fontweight="bold")
-axA.legend(frameon=False, loc="lower left", handlelength=1.2)
-axA.text(0.5, 0.97, "same start, opposite ends", transform=axA.transAxes,
-         ha="center", va="top", fontsize=7, color="#666666", style="italic")
-axA.text(-0.42, np.mean([cross(D["untrained_nodiet__profile"]).mean(),
-                         cross(D["untrained_diet__profile"]).mean()]),
-         "−0.48", fontsize=8, color=GREY, va="center", ha="left",
-         fontweight="bold")
-
-# ---------------------------------------------------------------- panel B
-axB = fig.add_subplot(gs[0, 1])
-x = np.arange(7)
-# Centred within subject: each profile has its own across-ROI mean removed,
-# so the three curves are compared on SHAPE, not on level. The trained models
-# sit on opposite sides of the global-bias axis (§17.2) and plotting them raw
-# would let that offset masquerade as the gradient.
-ctr = lambda p: p - np.nanmean(p, axis=1, keepdims=True)
-series = [
-    ("untrained", ctr(np.nanmean([D["untrained_nodiet__profile"],
-                                  D["untrained_diet__profile"]], 0)),
-     GREY, "--"),
-    ("trained, no diet", ctr(nodiet_tr), NODIET, "-"),
-    ("trained, with diet", ctr(diet_tr), DIET, "-"),
-    ("trained, diet on rg", ctr(D["swap_s0__profile"]), SWAP, "--"),
-]
-for label, p, c, ls in series:
-    m = np.nanmean(p, 0)
-    se = np.nanstd(p, 0, ddof=1) / np.sqrt(np.isfinite(p).sum(0))
-    axB.plot(x, m, ls, color=c, lw=2.0, label=label, zorder=3)
-    axB.fill_between(x, m - se, m + se, color=c, alpha=0.16, lw=0, zorder=2)
-axB.axhline(0, color="#BBBBBB", lw=0.7, zorder=1)
-axB.set_xticks(x)
-axB.set_xticklabels(VIS_LABELS)
-axB.set_xlabel("retinotopic area  (V1 → hV4)")
-axB.set_ylabel("stream preference\n(relative to each subject's mean)")
-axB.set_title("B   The gradient, global bias removed", loc="left",
-              fontweight="bold")
-axB.legend(frameon=False, loc="lower left", handlelength=1.6)
-axB.text(0.985, 0.94, "↑ magno", transform=axB.transAxes, ha="right",
-         fontsize=7, color="#666666")
-axB.text(0.985, 0.04, "↓ parvo", transform=axB.transAxes, ha="right",
-         fontsize=7, color="#666666")
-
-# ---------------------------------------------------------------- panel C
-# Mirrors panel A deliberately: same slopegraph idiom, same colours, so the
-# reader can see that the cortical divergence and the representational one are
-# the same shape. Magno's arms diverge; parvo's land on top of each other.
-axC = fig.add_subplot(gs[1, 0])
-GAP = 2.45
-# The swap arm carries the causal claim: identical transform, moved onto the
-# chromatic channel. Without it panel C shows only that the diet does
-# something, not that it must act on an ACHROMATIC channel to do it.
-arms = [("no diet", "nodiet", NODIET), ("with diet", "diet", DIET),
-        ("diet on rg", "swap", SWAP)]
-for stream, x0 in (("magno", 0.0), ("parvo", GAP)):
-    for label, cell, c in arms:
-        u = D[f"probe__untrained_{cell}__{stream}"].mean()
-        t = D[f"probe__trained_{cell}__{stream}"].mean()
-        swap = cell == "swap"
-        style = dict(dashes=(3.4, 2.2)) if swap else {}
-        axC.plot([x0, x0 + 1], [u, t], "--" if swap else "-", color=c,
-                 lw=1.9 if swap else 2.4, zorder=6 if swap else 3, **style)
-        axC.plot([x0, x0 + 1], [u, t], "o", color=c, ms=4.2 if swap else 5.0,
-                 mec="white", mew=1.0, zorder=6 if swap else 4)
-        pts = D[f"probe__trained_{cell}__{stream}"]
-        axC.plot([x0 + 1] * len(pts), pts, "o", color="white", ms=2.4,
-                 mec=c, mew=0.7, zorder=5)
-        if swap and abs(t - D[f"probe__trained_nodiet__{stream}"].mean()) < 0.02:
-            # Coincides with the no-diet arm; one number, annotated as shared.
-            axC.annotate("swap ≡ no diet", (x0 + 1, t), xytext=(7, -13),
-                         fontsize=6.2, textcoords="offset points", color=c,
-                         va="center", style="italic")
-        else:
-            axC.annotate(f"{t:+.2f}", (x0 + 1, t),
-                         xytext=(6, -10 if swap else 0), fontsize=7,
-                         textcoords="offset points", color=c, va="center",
-                         fontweight="bold")
-
-from matplotlib.lines import Line2D
-axC.legend(handles=[
-    Line2D([], [], color=NODIET, lw=2.4, label="no diet"),
-    Line2D([], [], color=DIET, lw=2.4, label="diet on luminance"),
-    Line2D([], [], color=SWAP, lw=1.9, ls="--", dashes=(3.4, 2.2),
-           label="diet on red-green"),
-], loc="upper right", bbox_to_anchor=(1.0, 0.90), fontsize=6.2,
-    frameon=False, handlelength=1.9, borderpad=0.1, labelspacing=0.28)
-axC.axhline(0, color="#444444", lw=0.9, zorder=2)
-axC.axvline(1.62, color="#DDDDDD", lw=0.9, zorder=1)
-axC.set_xlim(-0.42, GAP + 1.72)
-axC.set_xticks([0, 1, GAP, GAP + 1])
-axC.set_xticklabels(["untr.", "trained", "untr.", "trained"])
-axC.set_ylabel("shape − texture bias")
-axC.set_title("C   Same divergence, in the streams", loc="left",
-              fontweight="bold")
-axC.set_ylim(-0.78, 1.34)
-axC.text(0.5, 1.26, "MAGNO", ha="center", fontsize=7.5, fontweight="bold",
-         color="#444444")
-axC.text(GAP + 0.5, 1.26, "PARVO", ha="center", fontsize=7.5,
-         fontweight="bold", color="#444444")
-axC.annotate("shape bias destroyed",
-             (1, -0.226), xytext=(-0.38, -0.62),
-             fontsize=6.6, color=NODIET, ha="left",
-             arrowprops=dict(arrowstyle="->", color=NODIET, lw=0.9,
-                             shrinkA=1, shrinkB=3))
-axC.text(GAP + 0.45, 0.30, "texture bias either way;\nthe swap only partly\n"
-         "relieves it",
-         ha="center", fontsize=6.4, color="#777777", style="italic")
-
-# ---------------------------------------------------------------- panel D
-axD = fig.add_subplot(gs[1, 1])
-rho_sets = [
-    ("untrained", np.concatenate([D["untrained_nodiet__rho"],
-                                  D["untrained_diet__rho"]]), GREY),
-    ("trained,\nno diet", np.concatenate([D["nodiet_s0__rho"],
-                                          D["nodiet_s1__rho"]]), NODIET),
-    ("trained,\nwith diet", np.concatenate([D["diet_thesis__rho"],
-                                            D["diet_ours_s0__rho"]]), DIET),
-]
-rng = np.random.default_rng(0)
-for i, (lab, v, c) in enumerate(rho_sets):
-    axD.plot(i + rng.uniform(-0.13, 0.13, len(v)), v, "o", color=c, ms=3.4,
-             alpha=0.62, mec="none", zorder=3)
-    axD.plot([i - 0.26, i + 0.26], [v.mean()] * 2, "-", color=c, lw=2.4,
-             zorder=4, solid_capstyle="round")
-    axD.annotate(f"{v.mean():+.2f}", (i, v.mean()), xytext=(0, 11),
-                 textcoords="offset points", ha="center", color=c,
-                 fontsize=7.5, fontweight="bold", zorder=6,
-                 bbox=dict(boxstyle="round,pad=0.12", fc="white", ec="none",
-                           alpha=0.85))
-axD.axhline(-1, color="#BBBBBB", lw=0.7, ls=":", zorder=1)
-axD.set_xticks(range(3))
-axD.set_xticklabels([r[0] for r in rho_sets])
-axD.set_ylabel("ρ (hierarchy)  per subject")
-axD.set_ylim(-1.12, 0.28)
-axD.set_title("D   Not a global stream bias", loc="left", fontweight="bold")
-axD.set_xlim(-0.55, 2.80)
-axD.text(0.5, 0.965, "rank-based: unchanged by ANY global stream bias",
-         transform=axD.transAxes, ha="center", va="top", fontsize=6.6,
-         color="#666666", style="italic")
-axD.text(2.78, -1.0, "perfectly\nmonotonic", fontsize=6.2,
-         color="#AAAAAA", va="center", ha="right")
-
-fig.suptitle("The developmental visual diet decides whether learning builds "
-             "or erodes cortical correspondence",
-             fontsize=10, fontweight="bold", x=0.085, ha="left", y=0.975)
+# ============================================================== panel (d)
+axD = fig.add_subplot(outer[1, 1])
+dd, dn = D["d__diet__r2nc"], D["d__nodiet__r2nc"]
+for a, b in zip(dn, dd):
+    axD.plot([0, 1], [a, b], "-", color=GREY, lw=0.85, alpha=0.40, zorder=2)
+axD.plot([0] * len(dn), dn, "o", color=NODIET, ms=5, mec="white", mew=1.0, zorder=4)
+axD.plot([1] * len(dd), dd, "o", color=DIET, ms=5, mec="white", mew=1.0, zorder=4)
+for x, v, c, side in [(0, dn, NODIET, "left"), (1, dd, DIET, "right")]:
+    axD.plot([x - 0.18, x + 0.18], [v.mean()] * 2, "-", color=c, lw=2.4, zorder=5)
+    mean_label(axD, x, v.mean(), c, side, fmt="{:.3f}")
+pd_ = sps.wilcoxon(dd - dn).pvalue
+axD.set_xticks([0, 1]); axD.set_xticklabels(["no diet", "with diet"])
+axD.set_xlim(-0.72, 1.72)
+_lo, _hi = min(dd.min(), dn.min()), max(dd.max(), dn.max())
+axD.set_ylim(_lo - 0.03 * (_hi - _lo), _hi + 0.22 * (_hi - _lo))
+axD.set_ylabel("median $r^2$ / noise ceiling", fontsize=7.5)
+axD.tick_params(length=2.5)
+axD.text(0.03, 0.95,
+         f"the diet costs {100 * (1 - dd.mean() / dn.mean()):.0f}%  "
+         f"($p$ = {pd_:.4f}, {int((dd < dn).sum())}/{len(dd)})",
+         transform=axD.transAxes, ha="left", fontsize=7, color=MUTED)
+panel_tag("R", "B", "d", "…and this is what it costs")
 
 os.makedirs("results/figures", exist_ok=True)
 for ext in ("png", "pdf"):
-    fig.savefig(f"results/figures/fig1_diet_gradient.{ext}",
-                bbox_inches="tight")
-print("wrote results/figures/fig1_diet_gradient.{png,pdf}")
-
-# Numbers quoted in the caption, printed so the caption cannot drift from them.
-print("\ncaption numbers")
-for label, unt, tr, _ in pairs:
-    a, b = cross(unt), cross(tr)
-    d = b - a
-    print(f"  {label:<10} untrained {a.mean():+.4f}  trained {b.mean():+.4f}  "
-          f"p={sps.wilcoxon(d)[1]:.4f}  n={len(a)}")
+    fig.savefig(f"results/figures/fig1_convergence.{ext}", bbox_inches="tight")
+print("wrote results/figures/fig1_convergence.{png,pdf}")
+print(f"  (b) p={p:.4f}   (d) p={pd_:.4f}")
