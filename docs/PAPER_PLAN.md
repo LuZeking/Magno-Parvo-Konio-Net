@@ -4923,3 +4923,110 @@ CNNs are biased towards texture; increasing shape bias improves accuracy and
 robustness*, ICLR. Data: github.com/rgeirhos/texture-vs-shape (CC-BY 4.0 — confirm
 the licence file before submission). **The paper must cite the data release, not
 only the paper.**
+
+## §53 PRE-REGISTERED — does the diet's shape bias buy OOD robustness?
+
+Written and committed **before** the comparison was run. `tmp_analysis/ood_robustness.py`,
+`slurm/ood_robustness.sh`, job array 0-11 (4 conditions × 3 seeds).
+
+This is the experiment §7 never commissioned and the one that decides the
+venue. Geirhos et al.'s claim is that shape bias buys robustness. This project
+established the shape bias (§25) and never tested the robustness.
+
+### 53.1 Design, and why not the model-vs-human OOD sets
+
+Corruptions are applied to the RGB image **before the front end** — that is
+where a real corruption happens; the retina sees the corrupted world — and
+evaluated in the models' **own 112-way MiniEcoset label space**.
+
+The obvious alternative was Geirhos's 17 OOD datasets. Rejected: they are
+16-class ImageNet-derived, our models are MiniEcoset-trained, and that stacks a
+domain shift on top of the corruption. The cue-conflict evaluation already pays
+that cost (shape accuracy ~0.31) because it must — those stimuli are the
+measure. For robustness there is no such obligation, so the corruption is
+applied to the models' own test distribution and nothing else changes.
+
+**n = 3 seeds per condition.** This is the first result in the project with
+seed-level replication on all four cells, which is the gap the internal review
+flagged as the most serious methodological hole (the PR and encoding results
+are n=1 per arm). Whatever this experiment shows, it shows it over training
+runs, not over a resample of one run.
+
+### 53.2 Families, and which ones may support a claim
+
+| family | severities | counts? |
+|---|---|---|
+| uniform-noise | 0 → 0.35 | **yes** |
+| high-pass | none → σ=3 | **yes** |
+| phase-scrambling | 0° → 180° | **yes** |
+| rotation | 0/90/180/270 | **yes** |
+| false-colour (opponent inversion) | off / on | **yes** |
+| low-pass | σ 0 → 15 | **no — trained-in** |
+| contrast | 1.0 → 0.03 | **no — trained-in** |
+
+**The diet IS a low-pass blur plus a contrast-sensitivity cut on luminance.**
+Low-pass and contrast robustness are therefore partly trained in, and cannot
+support a robustness claim. They are run and reported because hiding them would
+be worse, and they are never counted.
+
+### 53.3 Two statistics, and here it is not a formality
+
+The diet costs clean accuracy (§18: 0.37–0.45 vs 0.47–0.51), so absolute
+accuracy under corruption is confounded by where each model starts.
+
+    absolute = top-1 accuracy at severity s
+    relative = accuracy(s) / accuracy(clean)
+
+`relative` is the one that asks "is this model more robust" rather than "is
+this model better". Per §8 a claim is made only where both agree.
+
+### 53.4 THE PREDICTIONS, declared now
+
+**H1 (Geirhos).** If shape bias confers robustness, the diet arm degrades more
+slowly than no-diet in `relative` terms on uniform-noise, high-pass and
+false-colour.
+
+**H2 (the sharp one — a crossover, not a main effect).** Phase-scrambling
+destroys global form while preserving local texture and the amplitude spectrum.
+A shape-reliant model should therefore degrade **more**. So the signature of
+genuine shape reliance is a **crossover**: diet better under noise and
+high-pass, **worse** under phase-scrambling. A uniform "diet wins everywhere"
+would be evidence for a generic regularisation account, not for shape.
+
+**H3 (the causal control, and the one that decides the interpretation).**
+`swap` applies the identical developmental transform to the chromatic channel
+and has **no** shape bias (§25: probe −0.145). `parvo_highsf` likewise
+(−0.266). If robustness tracks shape bias, both must pattern with **no-diet**.
+If `swap` patterns with the diet instead, then the transform is acting as a
+generic blur regulariser and the shape bias is incidental to the robustness.
+
+### 53.5 Outcomes, declared in advance
+
+- **A.** Diet > no-diet on the counted families, `swap`/`parvo_highsf` with
+  no-diet, and diet < no-diet on phase-scrambling. → Shape bias confers
+  robustness, causally isolated by the 2×2. This is the NMI/NeurIPS result.
+- **B.** Diet > no-diet everywhere *including* `swap`. → The transform is a
+  generic regulariser; robustness is real but not attributable to shape bias.
+  A different, weaker, still-publishable claim.
+- **C.** No `relative` difference. → **The diet's shape bias does not buy
+  robustness.** Then the paper is a neuroscience paper, the NeurIPS framing
+  should be dropped, and this section is reported as a negative result in the
+  supplement rather than quietly not run.
+
+C is a real possibility and it is written down here so that it cannot later be
+described as something we always expected. Whatever lands, §53.4's predictions
+are the ones on record.
+
+### 53.6 Validation gate, and what was seen before pre-registering
+
+The script refuses to report numbers unless our RGB→DKL front end reproduces
+the h5 the models were actually trained on. It does, **exactly**: mean and max
+absolute difference 0.000 uint8 levels over the first 64 test images, and the
+RGB and DKL test labels are identical. So the corruption is being pushed through
+the same retina the weights were fitted for, and the two h5s are the same split.
+
+**Disclosed:** a 128-image smoke test was run on `dkl_bcs_seed0` alone to check
+runtime and to find that the original high-pass severities saturated at chance
+(σ=3.0 gave 0.008, chance is 0.009); the family was rescaled to σ 30→3 as a
+result. No second model was run, so the diet-vs-no-diet contrast that §53.4
+predicts is unseen at the time of writing.
