@@ -5157,3 +5157,142 @@ and §50 made that load-bearing: §49.4 asks for "converge to within 2%" on a
 (56 elements, `--cache-only`, seeds 1–2 of the three diet conditions plus
 `dkl_base_seed2`) is measuring exactly that. Do not transfer 54.5's stability
 to those tables before it lands.
+
+---
+
+## §55 EFFECT SIZES — the p-values are uninformative by construction, §48 is
+independently reproduced, and one of its six tests is fragile
+
+`tmp_analysis/effect_sizes.py`. No new compute; per-subject values from
+`results/encoding`, the PR store and `fig1_data.npz`.
+
+### 55.1 The problem this fixes
+
+With n=8 the two-sided exact paired Wilcoxon has a **floor of p=.0078**,
+attained whenever all 8 pairs agree in sign. Nearly every contrast in this
+project attains it. PAPER_PLAN currently reports p=.0078 for the cortical
+gradient, the PR set point, the in-silico cue-conflict dissociation, the
+front-end orderings and the leg-(c) controls alike — so the reported statistic
+**cannot distinguish an enormous effect from a merely consistent one**, and a
+reader cannot tell which claims are load-bearing.
+
+The matched-pairs rank-biserial correlation does **not** fix this: it is ±1.0
+exactly when all pairs agree, so it saturates on the same contrasts. The
+quantity that separates them is the standardized paired difference
+**d_z = mean(diff) / sd(diff)**, reported with an interval on the raw
+difference in its own units.
+
+Worked demonstration: five headline contrasts all report the identical
+p=.0078 while their |d_z| runs from **5.95 to 28.20**, a factor of 4.7. The
+p-value is constant across that range by construction.
+
+### 55.2 §48 reproduced exactly, from the raw encoding outputs
+
+Recomputed independently from `results/encoding/*.npz` using §48's `norm`
+statistic — median(Uₘ−Uₚ)/median(Uₘ+Uₚ), guarded at den>1e-4, as implemented
+in `tmp_analysis/apply_repair.py`:
+
+| arm | ρ (here) | ρ (§48) | hV4−V1v (here) | hV4−V1v (§48) |
+|---|---|---|---|---|
+| diet | −0.9637 | −0.964 | −0.8618 | −0.8618 |
+| no diet | −0.5025 | −0.502 | −0.1013 | −0.1013 |
+| swap | −0.2593 | −0.259 | −0.0265 | −0.0265 |
+| parvo_highsf | −0.7801 | −0.780 | −0.1186 | −0.1186 |
+
+**Eight of eight to four decimals.** §48 stands as computed.
+
+One numerical note: §48.1 quotes the diet-vs-`parvo_highsf` ρ test as p=.0274.
+This recomputation gives **p=.0312 (6/8)**. For n=8 the achievable exact
+two-sided p-values are multiples of 1/128 (.0078, .0156, .0234, .0312), so
+.0274 is not an attainable exact value and presumably came from a different
+`scipy.stats.wilcoxon` mode or tie correction. The conclusion §48 drew from it
+("above the floor") is unaffected; the number should be corrected to .0312.
+
+**A trap worth recording.** Two stream-preference statistics live in this
+codebase and are *not* interchangeable: `norm` (ratio of medians, above) and
+`visualrois.py`'s `spi` (median of per-voxel ratios, with a per-voxel
+(Uₘ+Uₚ)>1e-3 filter). They agree on the diet arm to four decimals and diverge
+on the degenerate controls, where one stream contributes almost nothing unique
+and per-voxel ratios saturate at ±1 (§48.2). This section's first draft used
+the per-voxel one and appeared to contradict §48 before the cause was found.
+Any future recomputation must state which statistic it uses.
+
+### 55.3 The effect sizes, and what they reorder
+
+**Cortical gradient, hV4−V1v (`norm`).** All three at p=.0078, 8/8:
+
+| contrast | mean diff | 95% CI | d_z |
+|---|---|---|---|
+| diet vs swap | −0.8353 | [−0.895, −0.776] | **−11.70** |
+| diet vs parvo_highsf | −0.7432 | [−0.814, −0.672] | **−8.74** |
+| diet vs no diet | −0.7605 | [−0.867, −0.654] | **−5.95** |
+
+The p-values are identical; d_z differs twofold. Note the ordering: the
+**swap** control produces the largest, tightest separation and **no diet** the
+smallest and widest — the reverse of the emphasis the write-ups give, where
+no-diet is treated as the primary comparison. All three are overwhelming, but
+if a single contrast is quoted it should be diet-vs-swap, not diet-vs-no-diet.
+
+**PR trained ratio.** Six diet×no-diet contrasts, all p=.0078, 8/8, with d_z
+from **+13.78 to +28.20** — the largest effects anywhere in the project. The
+two diet-on-luminance arms against each other give d_z **+1.02**, CI
+[+0.0067, +0.0672] on a raw gap of 0.037, p=.0391. That modest d_z is the
+quantitative support for §49.4's "converge to within 2%" instruction, and it is
+the right way to state it: not "indistinguishable", but a small standardized
+difference against enormous between-condition ones.
+
+**Other instruments.** In-silico cue-conflict magno−parvo, diet vs no diet:
++1.4236, d_z **+23.53**. The r²/NC cost: −0.0590, CI [−0.068, −0.050], d_z
+**−5.42** — the cost is small in raw units but highly consistent, which is
+exactly why it must be disclosed rather than dismissed as noise.
+
+### 55.4 The fragile test — diet vs `parvo_highsf` on ρ
+
+This is the weakest link in leg (c) and it should be stated as such:
+
+| statistic | mean diff | 95% CI | d_z | p | sign |
+|---|---|---|---|---|---|
+| `norm` (published) | −0.1836 | **[−0.443, +0.076]** | −0.59 | .0312 | 6/8 |
+| per-voxel ratio | −0.0734 | [−0.205, +0.058] | −0.47 | .3125 | 4/8 |
+
+Three independent reasons for caution converge: the 95% CI on the raw
+difference **includes zero** under the published statistic despite the rank
+test's p=.0312; the effect flips to clearly non-significant under an equally
+defensible statistic; and d_z is small (−0.59) where every other leg-(c)
+contrast exceeds 5.
+
+**Consequence for §48.3.** Its instruction *"Do not write that the controls
+flatten the gradient"* is **reinforced** — `parvo_highsf` retains ρ ≈ −0.78
+(`norm`) to −0.89 (per-voxel), nowhere near flat. But its further claim that ρ
+*separates the diet arm from* `parvo_highsf` is **not supportable**: on ρ the
+two are statistically indistinguishable once the CI and the statistic choice
+are taken into account. What kills the `parvo_highsf` control is the
+**gradient** (d_z −8.74, p=.0078, 8/8), not ρ.
+
+The clean statement: `parvo_highsf` loses the *magnitude* of the cortical
+gradient decisively while retaining its *monotonic ordering*. Both halves are
+now backed by the appropriate statistic, and neither is being carried by a
+test that a change of statistic overturns.
+
+### 55.5 Disclosures
+
+- n=8 makes the bootstrap CI on d_z coarse (percentile, 10k resamples of
+  subjects, seed fixed). It is reported to show the ordering is not fragile,
+  not as a precise interval.
+- d_z is a within-subject standardized difference and is **not** comparable
+  across instruments in different units. Compare within a block only; the
+  PR block's d_z ≈ 20 and the gradient block's d_z ≈ 8 do not mean PR is
+  "more significant".
+- For the PR block, n=8 is 8 image samples from 8 subjects' NSD stimuli, not 8
+  independent brains (§47.5, §49.4). The same caveat that limits the p-values
+  limits these intervals.
+
+### 55.6 What the manuscript should do
+
+Report the **raw difference with its 95% CI** as the primary quantity, **d_z**
+as the standardized effect, and give the p-value **once** with a footnote that
+.0078 is the n=8 exact floor and that many contrasts attain it. Do not rank
+claims by p. Do not substitute rank-biserial r — it saturates identically. And
+flag the one contrast (55.4) whose significance depends on the statistic
+chosen, rather than leaving it in a list of p-values where it looks like the
+others.
