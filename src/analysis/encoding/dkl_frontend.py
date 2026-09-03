@@ -42,6 +42,11 @@ NSD_STIMULI_H5 = os.environ.get(
 )
 IMAGE_SIZE = 256
 BLUR_SIGMA = 4.0
+
+# Which DKL opponent axis stream 2 receives. The dataset stores all three
+# channels (lum, rg, by) -- see rgb_to_dkl3 -- so the koniocellular S-(L+M)
+# input needs no new data conversion, only a different slice.
+CHROMA_INDEX = {"rg": 1, "by": 2}
 CS_LOGSPAN_START = 5e-3
 DEFAULT_AGE_MONTHS = 48
 
@@ -139,10 +144,63 @@ def rgb_to_stream_inputs(
     ch_min: np.ndarray,
     ch_max: np.ndarray,
     image_size: int = IMAGE_SIZE,
+    chroma_channel: str = "rg",
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """RGB uint8 (N, H, W, 3) -> (x_lum, x_rg), each (N, 1, S, S) in [0, 1]."""
+    """RGB uint8 (N, H, W, 3) -> (x_lum, x_chroma), each (N, 1, S, S) in [0, 1].
+
+    ``chroma_channel`` selects the opponent axis for stream 2: "rg" (L-M,
+    parvocellular, the trained default) or "by" (S-(L+M), koniocellular).
+    Stream 1 is the luminance channel either way, so switching this changes
+    exactly one thing about the model.
+    """
+    if chroma_channel not in CHROMA_INDEX:
+        raise ValueError(
+            f"chroma_channel={chroma_channel!r}; expected one of "
+            f"{sorted(CHROMA_INDEX)}"
+        )
     x = rgb_to_dkl3(rgb_uint8, ch_min, ch_max, image_size)
-    return x[:, 0:1], x[:, 1:2]
+    j = CHROMA_INDEX[chroma_channel]
+    return x[:, 0:1], x[:, j:j + 1]
+
+
+def match_chroma_contrast(
+    x_chroma: torch.Tensor, x_rg: torch.Tensor
+) -> torch.Tensor:
+    """Rescale ``x_chroma`` about its per-image mean to the per-image RMS
+    contrast of ``x_rg``, image by image.
+
+    WHY THIS EXISTS. Every DKL channel is normalised to [0, 1] with its OWN
+    global min/max (see ``rgb_to_dkl3``), and those ranges differ a lot --
+    rg spans 1.048 of cone contrast, by spans 8.189. The normalisation does
+    not equalise what the network sees, it just re-centres it, so on NSD
+    stimuli the by channel arrives with **2.05x** the per-image RMS contrast
+    of rg (0.0941 vs 0.0460) and 3.5x the absolute power above 1/8 cyc/px.
+    A konio stream that explains MORE cortical variance than the parvo
+    stream would therefore be uninterpretable: the chromatic axis and the
+    input contrast would be confounded, and the confound points the way that
+    flatters the new arm.
+
+    Matching is a pure contraction here (rg has the lower contrast), so no
+    value leaves [0, 1] and no clipping is applied. It happens AFTER the
+    uint8 quantisation inside ``rgb_to_dkl3``, deliberately: the quantisation
+    is part of what training saw and is not re-applied, so the matched
+    channel is a rescaled version of the exact tensor the unmatched arm uses.
+
+    Both channels come from the same image, so the target is defined per
+    image rather than as a dataset-wide constant -- a global factor would
+    leave the per-image contrast ratio varying with image content.
+    """
+    if x_chroma.shape != x_rg.shape:
+        raise ValueError(f"{x_chroma.shape} != {x_rg.shape}")
+    n = x_chroma.shape[0]
+    mu = x_chroma.reshape(n, -1).mean(dim=1).reshape(n, 1, 1, 1)
+    sd_c = x_chroma.reshape(n, -1).std(dim=1).reshape(n, 1, 1, 1)
+    sd_t = x_rg.reshape(n, -1).std(dim=1).reshape(n, 1, 1, 1)
+    # A flat image has sd 0 and no contrast to match; leave it alone rather
+    # than dividing by zero and producing NaNs that would poison the PCA.
+    scale = torch.where(sd_c > 1e-8, sd_t / sd_c.clamp_min(1e-8),
+                        torch.ones_like(sd_c))
+    return mu + (x_chroma - mu) * scale
 
 
 def apply_gaussian_blur(x: torch.Tensor, sigma: float = BLUR_SIGMA):
@@ -189,6 +247,8 @@ def magno_parvo_inputs(
     transform_target: str = "magno",
     parvo_highsf: bool = False,
     rgb_mode: bool = False,
+    chroma_channel: str = "rg",
+    chroma_rescale: str = "none",
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Full front end: RGB uint8 -> (magno input, parvo input).
 
@@ -216,17 +276,60 @@ def magno_parvo_inputs(
     luminance it stacks is the raw one, captured before any transform is
     written back, not the blurred copy magno receives. Requires
     ``features.build_model(in_channels=(1, 2))``.
+
+    ``chroma_channel="by"`` is the KONIO arm: stream 2 receives the S-(L+M)
+    axis instead of L-M. Nothing else changes -- same luminance stream, same
+    transforms, same architecture, same seed -- so this is a single-factor
+    swap of the chromatic axis, and it is the honest test of whether the null
+    colour result in VO/hV4 is a failure of the colour prediction or a
+    failure of L-M as the model of colour cortex (PAPER_PLAN B3 / §65).
+
+    ``chroma_rescale="match-rg"`` additionally matches that channel's
+    per-image RMS contrast to the rg channel's, which is required for the
+    comparison to be about chromaticity at all -- see
+    ``match_chroma_contrast`` for the measured 2.05x contrast gap it removes.
+
+    Combining ``chroma_channel="by"`` with ``transform_target="parvo"`` puts
+    the developmental transform on the by channel; combining it with
+    ``parvo_highsf`` stacks raw luminance with by. Both are expressible but
+    neither is part of the pre-registered design.
     """
     if transform_target not in ("magno", "parvo"):
         raise ValueError(f"transform_target={transform_target!r}")
+    if chroma_channel not in CHROMA_INDEX:
+        raise ValueError(f"chroma_channel={chroma_channel!r}")
+    if chroma_rescale not in ("none", "match-rg"):
+        raise ValueError(f"chroma_rescale={chroma_rescale!r}")
+    if chroma_rescale == "match-rg" and chroma_channel == "rg":
+        # Matching rg to rg is the identity. Refuse rather than accept a
+        # flag that makes a run LOOK like the contrast-matched control while
+        # being bit-identical to the unmatched one.
+        raise ValueError(
+            "chroma_rescale='match-rg' with chroma_channel='rg' is a no-op"
+        )
     if rgb_mode:
         if parvo_highsf:
             raise ValueError("rgb_mode and parvo_highsf are exclusive")
+        # rgb_mode hands BOTH streams all three channels, so a non-default
+        # chroma_channel would be silently ignored. Refuse rather than
+        # produce a run whose name promises a konio input it never received.
+        if chroma_channel != "rg" or chroma_rescale != "none":
+            raise ValueError(
+                "rgb_mode gives both streams all three DKL channels, so "
+                "chroma_channel/chroma_rescale would have no effect"
+            )
         x = rgb_to_dkl3(rgb_uint8, ch_min, ch_max).to(device)
         return x, x
-    x_lum, x_rg = rgb_to_stream_inputs(rgb_uint8, ch_min, ch_max)
-    x_lum = x_lum.to(device)
-    x_rg = x_rg.to(device)
+    # One DKL conversion, then slice. The conversion is the expensive step,
+    # and the contrast-matching control needs the rg channel as a reference
+    # even when stream 2 receives a different axis, so taking all three
+    # channels once is both cheaper and the only way to define the target.
+    x3 = rgb_to_dkl3(rgb_uint8, ch_min, ch_max)
+    j = CHROMA_INDEX[chroma_channel]
+    x_lum = x3[:, 0:1].to(device)
+    x_rg = x3[:, j:j + 1].to(device)
+    if chroma_rescale == "match-rg":
+        x_rg = match_chroma_contrast(x_rg, x3[:, 1:2].to(device))
     # Captured before the transform is written back below: parvo_highsf feeds
     # stream 2 the UNTRANSFORMED luminance, so taking it afterwards would hand
     # parvo the blurred copy and silently make this the wrong condition.

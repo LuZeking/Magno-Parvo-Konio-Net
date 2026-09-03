@@ -47,6 +47,20 @@ def parse_args():
                         "CS cut on rg instead of lum. Leg (c) had no way to "
                         "express this, so the swap condition existed for legs "
                         "(a) and (b) only.")
+    p.add_argument("--chroma-channel", default="rg", choices=("rg", "by"),
+                   help="which DKL opponent axis stream 2 receives: 'rg' "
+                        "(L-M, parvocellular; the trained default) or 'by' "
+                        "(S-(L+M), koniocellular). The konio arm of "
+                        "PAPER_PLAN B3/§65 -- a single-factor swap of the "
+                        "chromatic axis with the luminance stream, the "
+                        "architecture and the seed all held fixed.")
+    p.add_argument("--chroma-rescale", default="none",
+                   choices=("none", "match-rg"),
+                   help="'match-rg' rescales stream 2's channel to the "
+                        "per-image RMS contrast of rg. REQUIRED for the "
+                        "konio comparison to be about chromaticity: by "
+                        "arrives with 2.05x rg's contrast on NSD stimuli, a "
+                        "confound that points the way that flatters konio.")
     p.add_argument("--parvo-highsf", action="store_true",
                    help="biologically corrected parvo input: stream 2 gets "
                         "untransformed luminance stacked with rg (2 channels), "
@@ -139,6 +153,8 @@ def features_from_rgb(args, rgb_uint8, ch_min, ch_max, model, device: str):
             device=device,
             transform_target=args.transform_target,
             parvo_highsf=args.parvo_highsf,
+            chroma_channel=args.chroma_channel,
+            chroma_rescale=args.chroma_rescale,
         )
         if args.features == "gabor":
             f = input_bands.extract_input_features(
@@ -174,6 +190,8 @@ def cache_provenance(args) -> dict[str, np.ndarray]:
         # contaminated no-diet subject in §22 went unnoticed.
         "prov_transform_target": np.asarray(args.transform_target),
         "prov_parvo_highsf": np.asarray(args.parvo_highsf),
+        "prov_chroma_channel": np.asarray(args.chroma_channel),
+        "prov_chroma_rescale": np.asarray(args.chroma_rescale),
         "prov_checkpoint": np.asarray(args.checkpoint or ""),
         "prov_stream1_weight": np.asarray(args.stream1_weight),
         "prov_seed": np.asarray(args.seed),
@@ -192,6 +210,14 @@ def cache_provenance(args) -> dict[str, np.ndarray]:
 BACKFILL_DEFAULTS = {
     "prov_transform_target": "magno",
     "prov_parvo_highsf": False,
+    # `--chroma-channel` and `--chroma-rescale` did not exist until
+    # 2026-09-03, so every cache written before then necessarily used the rg
+    # axis unrescaled -- it was the only slice the code took. Backfilling
+    # preserves the safety property (asking for `by` against an rg cache
+    # still MISMATCHES and recomputes) without invalidating the 256 caches
+    # already on disk.
+    "prov_chroma_channel": "rg",
+    "prov_chroma_rescale": "none",
 }
 
 

@@ -6352,3 +6352,201 @@ matter" without them. Runtime ~55–85 h per seed on one a5000 (from
 `slurm/train_array.sh`'s measured 130–200 img/s), so a matched single-stream
 series for the other diet placements is a separate decision, not an
 afterthought.
+
+---
+
+## §65 PRE-REGISTERED — the konio arm: is the colour null a failed colour
+prediction, or is L−M the wrong model of colour cortex?
+
+Written and committed **before** the run finishes. `untrained_konio_matched`
+and `untrained_konio_raw`, 8 subjects each, `slurm/encode_konio.sh`; front
+end smoke-tested by `tmp_analysis/smoke_konio.py` before any compute.
+
+### 65.1 The gap this fills
+
+§7.1 attached the Kastner2015 atlas to the existing fits and found the
+paper's colour prediction fails where it was supposed to succeed: **VO
+median(Uₘ−Uₚ) = +0.0044, p = .46** — VO is, if anything, magno-preferring —
+and **hV4 (−0.012, 2/8) is the only parvo-preferring area among 20 ROIs**.
+
+Two readings have been indistinguishable ever since:
+
+1. the model's chromatic stream does not predict colour-biased cortex at all;
+2. **L−M is the wrong chromatic axis**, and S−(L+M) is the right one.
+
+Nothing in §7–§64 can separate them, because every arm run so far has used
+L−M as *the* colour channel. The repository is called
+Magno-Parvo-**Konio**-Net and the third axis has never been run.
+
+### 65.2 Why this is nearly free
+
+The DKL dataset already stores all three opponent axes — `rgb_to_dkl3`
+returns (lum, rg, **by**) and the training h5 quantises all three — so the
+koniocellular S−(L+M) input needs **no new data conversion and no training**.
+An untrained stream is the reference model for this claim anyway: §8 item 4
+records that the surviving cortical results are the untrained ones.
+
+Cost: one 16-task array on `main`, no GPU. The wiring is a channel slice
+(`CHROMA_INDEX`), not a new model.
+
+### 65.3 What changes — and the confound that was measured first
+
+Stream 2 receives `by` instead of `rg`. Everything else is held: same
+untrained network at seed 0 (weights bit-identical across builds, verified),
+same luminance stream (σ=4 blur + CS cut at 48 months — the defaults
+`untrained_seed0` was actually submitted with, recovered via `sacct
+SubmitLine`), same architecture, same CV splits, same `nsdgeneral` mask.
+`tmp_analysis/smoke_konio.py` verified that the magno **feature matrix** is
+bit-identical between the two arms, so a change in unique chromatic variance
+cannot come from the luminance side.
+
+**But the channels are not on equal footing, and the imbalance flatters
+konio.** Each DKL channel is normalised to [0,1] with its *own* global
+min/max (rg spans 1.048 of cone contrast, by spans 8.189), which re-centres
+but does not equalise. Measured on 100 shared-515 NSD images
+(`tmp_analysis/konio_input_stats.py`):
+
+| channel | per-image RMS contrast | ratio to rg | power above 1/8 cyc/px |
+|---|---|---|---|
+| lum (L+M) | 0.2047 ± 0.0662 | 4.45× | 1.29e+07 |
+| rg (L−M) | 0.0460 ± 0.0234 | 1.00× | 8.28e+05 |
+| **by (S−(L+M))** | **0.0941 ± 0.0315** | **2.05×** | **2.91e+06 (3.5×)** |
+
+So an **unmatched konio win would be uninterpretable** — chromatic axis and
+input contrast confounded, in konio's favour. Hence two cells, and the
+asymmetry is the whole design (the same logic as §64.3's capacity argument):
+
+- **cell 0 `untrained_konio_matched`** — by, per-image RMS matched to rg by
+  `match_chroma_contrast`. **The primary arm.** After matching, the only
+  remaining difference from the published parvo fit is which chromatic axis
+  stream 2 carries. Matching is a pure contraction (rg has the lower
+  contrast), so nothing leaves [0,1] and no clipping is applied.
+- **cell 1 `untrained_konio_raw`** — by as the pipeline delivers it. **The
+  sensitivity check.** A *loss* here is decisive (konio fails while holding a
+  2× contrast advantage); a *win* here proves nothing alone and must be read
+  against cell 0.
+
+The reference cell needs no run: `untrained_seed0` is on disk for all 8
+subjects with exactly this front end.
+
+### 65.4 The hard positive control — a gate, not a diagnostic
+
+`r2_magno` comes from a `RidgeCV` fit on the magno band **alone**, and
+`prepare_band` centres/scales each band using only that band's own training
+statistics. With bit-identical magno features and identical splits,
+`r2_magno` must therefore come out **the same in the konio run as in the
+published parvo run**.
+
+**Gate: max|Δr2_magno| < 1e-4 across all voxels, all 8 subjects.** Report the
+measured value. If it exceeds that, something differed that was supposed to
+be held fixed and **nothing else in the arm may be interpreted** — §9.1's
+standing lesson is that this project's worst failure mode is a pipeline
+difference that reads as a result. A value in 1e-6…1e-4 is solver
+nondeterminism and passes; a value above 1e-3 invalidates the arm.
+
+This gate also makes the primary statistic exact: since `r2_magno` cancels,
+
+    Δ  =  r2_joint(konio) − r2_joint(parvo)  =  U_k − U_p
+
+per voxel, with no estimation error from the magno side at all.
+
+### 65.5 What this arm CANNOT do
+
+**No eccentricity residualisation at VO.** §7.1 found `prf-eccrois` labels
+**0% of VO2 voxels** and only 9–23% of VO1, so the residualised VO contrast
+is not computable with this atlas — that is why the hMT+/VO test was reported
+raw. Do **not** pre-register or report an ecc-residualised VO effect here.
+ROI specificity is instead tested by the **20-ROI profile difference** (65.6),
+which is computable, and which is the instrument that correctly killed hMT+
+in §16.1.
+
+### 65.6 The four outcomes, declared in advance
+
+Reference values, fixed now from §7.1 (n=8, NC>0.1, raw median(Uₘ−Uₚ)) so no
+threshold can be chosen after seeing the result:
+
+| quantity | value |
+|---|---|
+| VO pooled | +0.0044 (p = .46) |
+| VO2 / VO1 | +0.011 (7/8) / −0.002 (4/8) |
+| **hV4** | **−0.012 (2/8)** |
+| V1d / V1v | +0.086 / +0.083 (8/8) |
+| leave-one-subject-out profile ρ | +0.79 (range .59–.88) |
+
+Primary statistic: **Δ = median over ROI voxels of (U_k − U_p)**, per subject,
+paired Wilcoxon across n=8 (exact two-sided floor **.0078**; attainable values
+are multiples of 1/128). Both statistics rule (§8) applies: report raw and
+NC-normalised and claim only where they agree.
+
+**Units.** Every threshold below is in **NC-normalised** units — the units of
+§7.1's reference table, so that ±0.005 is commensurable with the −0.012 hV4
+effect it has to explain. The raw version is reported alongside and the signs
+must agree; naming the units matters because `variance_partition` returns both
+(`unique_parvo` and `unique_parvo_raw`) and they differ by a per-voxel factor
+of 1/NC. §50.6's lesson is binding —
+each outcome below is falsifiable and they are mutually exclusive.
+
+**A. KONIO RESCUES THE COLOUR PREDICTION.** Δ > 0 in hV4 **and** in VO with
+≥7/8 subjects and p ≤ .0156, **and** Δ in {hV4, VO1, VO2} exceeds the median
+Δ over the remaining Kastner ROIs (paired across subjects, p ≤ .05; the
+number of ROIs clearing the ≥20-voxel floor is reported, not assumed — §7.1
+got finite values for about 20 of the 25). The colour null was an L−M
+problem, not a
+colour problem: B3's prediction is delivered on the input side and the paper
+gains a genuine third-channel result.
+
+**B. KONIO WINS GLOBALLY, WHICH IS NOT A COLOUR RESULT.** Δ > 0 at A's
+strength but *not* concentrated in colour-biased cortex — the colour-set-minus-
+rest contrast fails at p ≤ .05. This is the general-factor problem that killed
+hMT+ in §16.1
+recurring on a new channel. It licenses "S−(L+M) is a better chromatic
+regressor overall" and **nothing about VO**. It must not be written as a
+colour-cortex result.
+
+**C. NO DIFFERENCE.** |Δ| < 0.005 in both hV4 and VO — less than half the
+−0.012 hV4 effect it would have to explain — with p > .05. Then the colour
+null is not about which chromatic axis, and the honest statement is that both
+opponent axes were tested and neither predicts colour-biased cortex. This
+closes a question the paper currently leaves open, and is worth a paragraph
+rather than a panel.
+
+**D. KONIO IS WORSE.** Δ < 0 in VO and hV4. Decisive against B3 — and *more*
+decisive in cell 1, where konio loses while carrying 2× the contrast. Under D
+the konio channel is retired with the same finality as §49.4, and the paper
+says so rather than omitting the arm.
+
+Outcome B is the most likely a priori, because the by channel's advantage in
+65.3 is global by construction and every ROI-specificity claim this project
+has tested (hMT+, dorsal/ventral, VO) has died the same way.
+
+### 65.7 Disclosure
+
+- **Untrained, and that bounds the claim.** The networks were never trained on
+  a by channel, so there is no konio checkpoint and none is implied. This arm
+  is about the *input* as a model of colour cortex, evaluated through the
+  architecture prior. A trained konio stream is a training run (~55–85 h/seed),
+  not this array.
+- **One seed.** An untrained network still has a seed, so this is one draw
+  from the architecture prior. The reference cell is also one seed, so the
+  comparison is matched — but if the result is positive, a 3-seed untrained
+  replication is **required** before it is claimed, per §60.6's rule against
+  one-sided replication.
+- **No blur on the konio stream, deliberately.** B3 specified "heavy blur"
+  from the K pathway's low spatial acuity. The measured radial spectrum of
+  this pipeline's by channel has nearly the same *shape* as rg's (0.614 vs
+  0.570 of power in the lowest octave band, near-identical above that), so
+  the low-acuity property **is not present in the input**. Blurring would
+  impose an assumption rather than reproduce a data property, and it would
+  break the single-factor swap. A blur-on-K variant tests that assumption and
+  is a separate, later question.
+- **This swaps the chromatic axis; it does not add a third stream.** B3's
+  architecture — a thin ¼-width K stream with dual projection (K→parvo after
+  block 1, late skip→magno; Sincich 2004) — is **not** implemented and not
+  tested here. So this arm does not deliver the repository title in the
+  architectural sense. It delivers the konio *input* as a competing model of
+  colour cortex, which is the part that is answerable without training.
+- **Whole-model total variance is not the target.** Δ is a swap of one band;
+  it says nothing about whether a three-band model would beat a two-band one.
+  That comparison needs 3-way variance partitioning, which `banded_ridge.py`
+  does not implement (it is hardcoded 2-band, and 3-way unique estimates with
+  correlated bands are substantially noisier). Explicitly out of scope.
