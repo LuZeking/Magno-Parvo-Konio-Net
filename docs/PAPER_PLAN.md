@@ -6041,10 +6041,17 @@ statement is that both arms' representations move substantially across
 training, and neither is stable enough for a single checkpoint to characterise
 a level.
 
-This also removes the last support for any set-point reading: within the diet
-arm's *own single run*, the ratio spans **1.603–1.959**, which overlaps the
-range §50 attributed to a different channel (swap, 1.995–4.383 across seeds).
-One run visits levels that were being interpreted as condition differences.
+This weakens, but does not by itself remove, the set-point reading: within the
+diet arm's *own single run* the ratio spans **1.603–1.959**, which reaches to
+within **0.036** of the bottom of the range §50 attributed to a different
+channel (swap, 1.995–4.383 across seeds). One run therefore traverses almost
+the whole distance that was being read as a channel difference.
+
+**Correction to an earlier draft of this subsection**, which said the two
+ranges "overlap": they do not — 1.959 < 1.995, adjacent with a 0.036 gap. The
+weaker statement above is what the numbers support. See §63 for the
+arm-by-arm audit, which finds the swap-vs-`parvo_highsf` ordering intact and
+only the swap-vs-luminance ordering unsupported.
 
 ### 62.4 What is robust, and it is better than the shape story
 
@@ -6115,3 +6122,108 @@ Scope, to travel with this wherever it appears: **one seed per arm**. The
 trajectory shape has no seed replication, and §58 measured a 0.904 seed range
 on the diet arm's endpoint, so the shape may well vary. What is seed-replicated
 is the endpoint separation (§60.6: 27/27 pairings, 8/8 subjects) — not the path.
+
+---
+
+## §63 HOW DEAD IS EACH DEAD CLAIM? — an audit, because two are refuted and
+the third was overstated
+
+`tmp_analysis/deadness_audit.py`. All inputs are the seed
+table from job 26413641 and the epoch table from job 26417753. No new compute.
+Written because §60–§62 retired three level-based claims as a group, and they
+are not equally dead. Grouping them overstates one and understates why the
+other two fail.
+
+### 63.1 §49.4's "converge to within 2%" (the 0.037 gap) — REFUTED
+
+Three independent noise sources each dwarf the effect:
+
+| quantity | value | vs the 0.037 gap |
+|---|---|---|
+| seed range, diet/lum | 0.904 | **24×** |
+| epoch range within diet/lum seed 0 | 0.356 | **10×** |
+| seed range, diet/highsf (the *tightest* arm) | 0.167 | **5×** |
+
+And the sign of the gap is not determined: across the nine seed pairings the
+diet/lum-minus-diet/highsf difference is positive in 7 and negative in 2, with
+per-subject splits of 2/8, 8/8 and 0/8 on the three seed-0-involving pairings.
+
+There is no measurement protocol under which 0.037 is a quantity. This is not
+"unsupported pending more seeds" — more seeds cannot help, because the
+within-arm variation is an order of magnitude larger than the between-arm
+effect on every axis measured. **Refuted. Do not restate in any weakened form.**
+
+### 63.2 §49.2's 22× compression — REFUTED, by arm selection rather than by
+reference choice
+
+| checkpoint set | ref = untrained | ref = gabor |
+|---|---|---|
+| 2 seed-0 arms (as published) | 0.816 → 0.037 = **22.1×** | 0.814 → 0.037 = **22.0×** |
+| 3 arms, seed 0 only | 1.323 → 0.622 = 2.1× | 2.803 → 0.622 = 4.5× |
+| 3 arms, all 9 seeds | 1.323 → 2.886 = **0.46× (expansion)** | 2.803 → 2.886 = **1.0× (no change)** |
+
+To be fair to §49.2: the original figure was **not** reference-fragile — it is
+22× under both references. It fails for a different reason. Its denominator
+*is* the 0.037 of §63.1, i.e. a noise quantity, and a ratio whose denominator
+is noise is not a measurement. Adding the third diet arm drops it to 2.1–4.5×;
+adding the seed axis removes it entirely.
+
+Two things must not be written. Not "training compresses front-end
+heterogeneity" — false over the full checkpoint set. And not "training expands
+it" either: that is 2.2× under one reference and 1.0× under the other, so the
+expansion is not a finding. **The only robust statement is the null: the
+trained spread is not smaller than the front-end spread.**
+
+### 63.3 §50's channel-specific set point — OVERSTATED AS DEAD. It splits.
+
+§60–§62 retired this with the other two. That was wrong; audited arm by arm it
+separates cleanly into one surviving ordering and one unsupported one.
+
+**swap vs `parvo_highsf` — SURVIVES.** Seed ranges are **disjoint**:
+
+| arm | seeds | range |
+|---|---|---|
+| diet/rg (swap) | 1.995, 2.225, 4.383 | — |
+| diet/highsf | 1.497, 1.640, 1.664 | 0.167 |
+
+min(swap) = 1.995 exceeds max(highsf) = 1.664 by **0.331**, which is 2× the
+highsf arm's entire seed range. It holds in **9/9** seed pairings, and it
+survives deleting swap's extreme seed (without 4.383: 1.995/2.225 still
+disjoint from 1.664). This is a real difference between two conditions, not
+seed noise.
+
+**swap vs luminance — NOT SUPPORTED, and for a locatable reason.** Ranges
+overlap (swap 1.995–4.383, lum 1.603–2.507); it holds in 7/9 pairings; and it
+depends **entirely on swap's 4.383 seed**. Delete that one checkpoint and swap
+becomes 1.995/2.225 against a luminance arm reaching 2.507 — the ordering
+breaks. A claim resting on one of three seeds is not established.
+
+So the correct verdict is neither "dead" nor "channel-specific set point": **one
+channel ordering is seed-robust and disjoint, the other is carried by a single
+checkpoint.** §58.3's "not refuted; not established" was right about the
+general claim and too pessimistic about the swap/highsf half.
+
+### 63.4 What this changes about how to write it
+
+The general form — "the diet installs a channel-specific set point" — stays
+retired, because it requires *both* orderings and one of them fails, and
+because §62.3 shows a single run traverses almost the whole distance being
+attributed to a channel difference (1.603–1.959 within one run against swap's
+1.995 floor: a 0.036 margin).
+
+What is reportable, with the arms named rather than generalised: **applying the
+diet to red−green yields a higher magno/parvo ratio than restoring raw
+luminance to stream 2 does, with disjoint seed ranges (9/9 pairings, gap 0.331
+against a 0.167 within-arm range).** That is a two-condition comparison, not a
+set point, and it should be written as one.
+
+### 63.5 Summary table, for whoever revises §49–§50
+
+| claim | status | why |
+|---|---|---|
+| §49.4 "converge to within 2%" | **refuted** | effect is 1/24 of seed noise, 1/10 of epoch noise; sign undetermined |
+| §49.2 "22× compression" | **refuted** | denominator is the above noise; null under the full checkpoint set |
+| §50 swap vs `parvo_highsf` | **survives** | disjoint seed ranges, 9/9, robust to dropping the extreme seed |
+| §50 swap vs luminance | **not established** | overlapping ranges; depends on 1 of 3 seeds |
+| §50 "set point is channel-specific" (general) | **retired** | requires both orderings; one fails |
+| side of parity, diet vs no diet | **survives** | 27/27 seed pairings, 8/8 subjects, 6/6 epochs |
