@@ -5836,6 +5836,14 @@ originals for both arms. So nothing below is a front-end mismatch (§22).
 
 ### 61.2 The result, and it is the opposite of what §60.5 expected
 
+> **OVERSTATED — corrected by §62.3.** The ranges below were measured on
+> epochs 100–150 only. Over the full 25–150 trajectory the diet arm's range is
+> **0.356**, not 0.100, so the dissociation is **1.6×, not 5.6×**. "The arm
+> with unstable accuracy has a stable representation" is too strong and should
+> be struck: both arms' representations move substantially, and neither is
+> stable enough for one checkpoint to characterise a level. The direction of
+> the effect stands; the magnitude below does not.
+
 | epoch | `dkl_bcs_seed0` (diet, NOT converged) | `dkl_base_seed0` (no diet, converged) |
 |---|---|---|
 | 100 | 1.6204 ± 0.0415 | 1.5046 ± 0.0562 |
@@ -5929,6 +5937,15 @@ claim, and the claim should not be stated as if drift were absent.
 
 ### 61.6 A replacement mechanism for the set point, and the run that tests it
 
+> **SUPERSEDED by §62.6 — job 26417753 has landed.** Both falsifiers cleared,
+> but the no-diet trajectory is **non-monotone** (it drops, climbs back to
+> within 0.12 of its front end by ep75, then falls twice), so the "training
+> **erodes** the dominance" wording below describes a smooth process that did
+> not occur and must not be used. The reworded claim — that the diet flips the
+> **sign** of training's effect on stream asymmetry, with the arms separated
+> 8/8 at every epoch 25–150 and moving in opposite directions from their own
+> front ends — is in §62.6.
+
 §58 killed the set-point account and §60.4 showed the compression figure
 inverts, leaving the paper without a mechanism for what the diet does to stream
 specialisation. These trajectories suggest one, and it fits the surviving
@@ -5957,3 +5974,144 @@ Scope disclosure that travels with any result: **one seed per arm**. §58 showed
 the trained level varies across seeds on the diet arm by 0.904, so the
 trajectory *shape* may vary too. Seed generality of the shape is untested and
 must not be claimed.
+
+---
+
+## §62 THE FULL EPOCH TRAJECTORIES — the falsifiers clear, the *shape* story
+does not, and §61.2's dissociation was measured on the wrong third of training
+
+`tmp_analysis/pr_epoch_trajectory.py`, job 26417753 (48 cache-only tasks, all
+COMPLETED). Six epochs per arm plus each arm's own untrained front end, n=8
+subjects, one seed per arm.
+
+### 62.1 The trajectories
+
+| arm | untrained | ep25 | ep50 | ep75 | ep100 | ep125 | ep150 |
+|---|---|---|---|---|---|---|---|
+| diet (`dkl_bcs_seed0`) | 1.402 | 1.752 | **1.959** | 1.733 | 1.620 | 1.703 | 1.603 |
+| no diet (`dkl_base_seed0`) | **1.634** | 1.156 | 1.237 | 1.513 | 1.505 | 1.019 | **0.947** |
+
+Subjects above parity, no-diet arm: 8/8 at epochs 25–100, **6/8** at 125,
+**1/8** at 150.
+
+### 62.2 Both pre-registered falsifiers clear — and the hypothesis still needs
+rewording
+
+F1 (no-diet flat to ep100, dropping only after) **not triggered**: the arm
+moves −0.478 to ep25 then +0.357 to ep100, so the change is not confined to
+late training. F2 (diet arm not flat over 25–75) **not triggered**: its range
+there is 0.226, under the 0.3 threshold.
+
+But the falsifiers were the wrong instrument for the claim, and §61.6's wording
+does not survive contact with the curve. **The no-diet trajectory is
+non-monotone**: 1.634 → 1.156 → 1.237 → 1.513 → 1.505 → 1.019 → 0.947. It
+drops sharply, climbs *back* to within 0.12 of its front end by epoch 75, sits
+flat to 100 (p=0.84), then falls twice. 71% of the net decline happens in the
+single ep100→125 step.
+
+So "**training erodes the dominance**" — §61.6's phrasing — describes a smooth
+process that did not occur. **That wording must not be used.** The net movement
+is downward and highly reliable, but the path is not a progressive erosion.
+
+Also recorded as a design error: 62's own "share of total decline before epoch
+100" metric returned **−167%**, which is meaningless. A share-of-total is
+undefined when the series is non-monotone and the early change has the opposite
+sign to the net. The falsifier was coded for a monotone curve and silently
+produced a nonsense number rather than failing; the threshold test around it
+happened to be robust to this, but the metric should not be reused.
+
+### 62.3 CORRECTION — §61.2's dissociation is 1.6×, not 5.6×
+
+§61.2 reported that the diet arm is epoch-stable (range 0.100) while the
+no-diet arm is not (0.558), calling the two "inverted". That was measured on
+epochs 100–150 only, i.e. the last third of training. Over the full 25–150
+range:
+
+| arm | range, ep100–150 (§61.2) | range, ep25–150 (here) |
+|---|---|---|
+| diet | 0.100 | **0.356** |
+| no diet | 0.558 | **0.566** |
+| ratio | 5.6× | **1.6×** |
+
+The no-diet figure barely changes; the **diet** figure more than triples. The
+diet arm is not epoch-stable — it is *less* epoch-unstable, by a factor of 1.6
+rather than 5.6. §61.2's "the arm with unstable accuracy has a stable
+representation" is therefore too strong and should be struck; the accurate
+statement is that both arms' representations move substantially across
+training, and neither is stable enough for a single checkpoint to characterise
+a level.
+
+This also removes the last support for any set-point reading: within the diet
+arm's *own single run*, the ratio spans **1.603–1.959**, which overlaps the
+range §50 attributed to a different channel (swap, 1.995–4.383 across seeds).
+One run visits levels that were being interpreted as condition differences.
+
+### 62.4 What is robust, and it is better than the shape story
+
+Two statements need no trajectory shape and no seed generality.
+
+**(i) The arms are separated at every epoch measured**, 8/8 subjects,
+p=.0078 throughout:
+
+| epoch | diet | no diet | diff | d_z |
+|---|---|---|---|---|
+| 25 | 1.752 | 1.156 | +0.596 | +11.30 |
+| 50 | 1.959 | 1.237 | +0.722 | +13.78 |
+| 75 | 1.733 | 1.513 | +0.220 | +4.12 |
+| 100 | 1.620 | 1.505 | +0.116 | +2.41 |
+| 125 | 1.703 | 1.019 | +0.685 | +20.01 |
+| 150 | 1.603 | 0.947 | +0.656 | +28.20 |
+
+The separation is present from epoch 25, never reverses, and narrows to
+d_z +2.41 at its weakest (epoch 100) — still 8/8. This is a duration-robust
+claim, unlike anything about levels.
+
+**(ii) The two arms move in opposite directions from their own front ends**,
+each against its provenance-matched untrained reference:
+
+| arm | untrained → ep150 | change | p | subjects down |
+|---|---|---|---|---|
+| diet | 1.402 → 1.603 | **+0.201** | .0078 | **0/8** |
+| no diet | 1.634 → 0.947 | **−0.687** | .0078 | **8/8** |
+
+Note the crossover: the no-diet arm **starts higher** (1.634 vs 1.402) and
+**ends lower** (0.947 vs 1.603). The diet does not begin with a magno-dominance
+advantage — it begins with less of one — so the epoch-150 separation cannot be
+attributed to the front end. That is the strongest form of the leg-(a) argument
+available in this project, and it does not depend on trajectory shape, on a set
+point, or on the level being reproducible.
+
+### 62.5 A fragility this exposes in the surviving side-of-parity claim
+
+§58/§60 left the side-of-parity result as the paper's load-bearing claim. These
+curves qualify it. The no-diet arm is above parity in **8/8 subjects at epochs
+25 through 100** and crosses only between 125 (6/8) and 150 (1/8). Its
+epoch-150 value of 0.947 is **not an equilibrium** — it is a point on a curve
+still descending at −0.072 per 25 epochs, 8/8 subjects.
+
+So "no diet collapses to parity" is true at 150 and is not a property of the
+condition; it is where the descent happened to be when training stopped. The
+honest form: **the diet arm ends above parity and the no-diet arm ends at or
+below it, at a matched 150 epochs**, with the residual drift carrying the
+no-diet arm further away from the diet arm — so the direction of the remaining
+uncertainty favours the claim. Do not write "converges to parity" or imply an
+asymptote. And any reviewer asking "what happens at 300 epochs?" has a fair
+question we cannot currently answer.
+
+### 62.6 The mechanism claim, reworded to what the data supports
+
+Replacing §61.6:
+
+> Both arms start from magno-dominant front ends — the no-diet arm *more*
+> magno-dominant (1.634) than the diet arm (1.402). Training then moves them in
+> **opposite directions**: the diet arm upward (+0.201, 0/8 subjects down), the
+> no-diet arm downward (−0.687, 8/8 down), crossing over. The two are
+> separated in 8/8 subjects at every epoch from 25 to 150. What the diet
+> changes is the **sign of training's effect on stream asymmetry**, not a
+> target level — no level is reproducible across seeds (§58) or even stable
+> within one run (62.3).
+
+Scope, to travel with this wherever it appears: **one seed per arm**. The
+trajectory shape has no seed replication, and §58 measured a 0.904 seed range
+on the diet arm's endpoint, so the shape may well vary. What is seed-replicated
+is the endpoint separation (§60.6: 27/27 pairings, 8/8 subjects) — not the path.
