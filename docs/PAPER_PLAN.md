@@ -6704,3 +6704,88 @@ The konio verdict CANNOT be read until the refit lands and the gate passes on
 all 8 subjects. `tmp_analysis/konio_verdict.py` already refuses to interpret
 anything when the gate fails, so the protocol holds without amendment — but it
 means item #5's answer is gated on 26423414, not on 26422215 alone.
+
+---
+
+## §67 PRE-REGISTRATION — the accuracy-matched control, and a checkpoint-selection
+error found while designing it
+
+Prompted by an NMI reviewer simulation whose major comment M1 was: the diet arm
+reaches 0.439 clean accuracy against 0.695, no per-condition hyperparameter
+search was run, and therefore the dissociations of §2.4/§2.5/§2.6 may follow
+from an accuracy gap rather than from the diet. Written before any measurement.
+
+### §67.1 The error found first — `checkpoint_last.pt` is not the right checkpoint
+
+`history.json` logs `val_top1` for all 150 epochs of all 12 runs. Reading it:
+
+| arm | best epoch | seed range at best | final | seed range at final |
+|---|---|---|---|---|
+| diet (`dkl_bcs`) | **0.592** | **0.008** | 0.445 | **0.180** |
+| no diet (`dkl_base`) | 0.709 | 0.003 | 0.701 | 0.007 |
+
+Per-seed drop from own peak — diet: −0.060 (ep121), **−0.246** (ep60), −0.136
+(ep142). No diet: −0.008, −0.013, −0.003.
+
+Three consequences, all of which the paper currently states incorrectly:
+
+1. **"Markedly higher seed variance" (Limitation 1, §2.5) is an artefact.** At
+   best epoch the diet seeds agree to 0.008, against 0.003 for no diet. The
+   0.180 spread is entirely produced by taking the last checkpoint.
+2. **The accuracy cost is overstated.** 0.592 vs 0.709 is **16.5%** relative,
+   not the 37% now reported.
+3. **Every result in the paper was computed on `checkpoint_last.pt`** — behaviour,
+   probe, PR, encoding, OOD, error consistency — including `dkl_bcs_seed1`, a
+   model 0.246 below its own peak. The training script (§4.2) has no
+   validation-based model selection; it saves last and final. That is defensible
+   when training is stable and it is not stable for the diet arm.
+
+The late-training degradation may itself be a finding about the diet. It must
+not be reported as, or conflated with, the diet's accuracy cost.
+
+### §67.2 What is being run
+
+**Test A — best-epoch re-measurement (cheap, decides the artefact question).**
+Re-run the cue-conflict behaviour and the shape/texture probe on each diet
+seed's best *saved* checkpoint (ep125 = 0.564, ep75 = 0.553, ep50 = 0.552;
+mean 0.556, range 0.012) and on the matched no-diet checkpoints.
+
+**Test B — accuracy-matched no-diet control (the actual M1 control).** No saved
+no-diet checkpoint is as low as 0.556 — the earliest saved, ep25, is already
+0.658. A matched control therefore requires retraining `dkl_base` with dense
+early checkpointing and selecting the epoch whose `val_top1` is nearest 0.556.
+
+**Test C — within-arm accuracy correlation (free).** Across the three diet
+seeds, final accuracy spans 0.347–0.527. If shape bias, PR ratio, OOD AUC and
+error-consistency kappa do not track accuracy across that range, accuracy is not
+the driver.
+
+### §67.3 Predictions, fixed now
+
+- **P1.** The 2×2 conjunction (§2.1) survives at best epoch: the diet magno
+  probe bias stays above 0, and above all three other cells. *If it does not,
+  §2.1 was a property of degraded checkpoints and the paper's lead result falls.*
+- **P2.** The diet arm's best-epoch seed range on behaviour is smaller than its
+  last-checkpoint range, mirroring accuracy.
+- **P3 (the M1 test).** An accuracy-matched no-diet model does **not** acquire
+  the diet's shape bias. If a no-diet model at 0.556 shows a shape-biased magno
+  stream, then §2.1 is an accuracy effect and the paper's central claim is wrong.
+- **P4.** Within the diet arm, shape bias does not correlate with accuracy
+  across seeds.
+
+### §67.4 The outcome that would be fatal, named in advance
+
+If P3 fails — if matching accuracy is sufficient to produce the shape bias
+without the diet — the conjunction result is confounded and the paper does not
+have its central claim. There is no reframing that survives that; it would have
+to be reported as a negative result about the whole approach.
+
+If P1 fails, the lead result is a checkpoint artefact and every headline needs
+recomputing on selected checkpoints before anything is claimed.
+
+### §67.5 Disclosure regardless of outcome
+
+The checkpoint-selection error of §67.1 is reported in the paper whatever Tests
+A–C return, because three currently-stated numbers (seed variance, 37% cost, and
+the implicit claim that reported values characterise the trained condition) are
+wrong as they stand.
