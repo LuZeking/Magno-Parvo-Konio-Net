@@ -65,6 +65,16 @@ CONDITIONS = {
     # Track B: corrected parvo input (high-SF luminance + L-M)
     "dkl_bcs_parvo_highsf": dict(input_mode="dkl", blur=True, cs=True,
                                  parvo_highsf=True),
+    # What does splitting the input across two streams buy? One stream fed
+    # BOTH DKL channels, diet on luminance as usual: identical input
+    # information and an identical diet, without the architectural split.
+    # `rgb_tsn` answers "two streams, no split" but confounds the colour
+    # space; nothing answers "one stream at all". Uses the TwoStreamNetwork
+    # baseline=True path, so the classifier and every hyperparameter are
+    # unchanged. Capacity is HALVED (one ResNet18 trunk, not two) -- see the
+    # §64 write-up: that confound only bites if this arm LOSES.
+    "dkl_bcs_single": dict(input_mode="dkl", blur=True, cs=True,
+                           single_stream=True),
 }
 
 
@@ -163,6 +173,7 @@ class StreamInputBuilder:
         self.blur, self.cs = cfg["blur"], cfg["cs"]
         self.target = cfg.get("transform_target", "magno")
         self.parvo_highsf = cfg.get("parvo_highsf", False)
+        self.single_stream = cfg.get("single_stream", False)
 
     def __call__(self, x: torch.Tensor):
         from src.analysis.encoding.dkl_frontend import (
@@ -188,6 +199,10 @@ class StreamInputBuilder:
             lum = tgt
         else:
             rg = tgt
+        if self.single_stream:
+            # One stream, both channels stacked. x_2=None selects the
+            # TwoStreamNetwork baseline forward path.
+            return torch.cat([lum, rg], dim=1), None
         if self.parvo_highsf:
             # parvo = high-acuity luminance + red-green (untransformed lum)
             return lum, torch.cat([x[:, 0:1], x[:, 1:2]], dim=1)
@@ -195,6 +210,10 @@ class StreamInputBuilder:
 
 
 def in_channels_for(cfg: dict) -> tuple[int, int]:
+    if cfg.get("single_stream"):
+        # Stream 2 does not exist; 0 records that in config.json rather than
+        # leaving a misleading 1 for a stream that was never built.
+        return 2, 0
     if cfg["input_mode"] == "rgb":
         return 3, 3
     return 1, (2 if cfg.get("parvo_highsf") else 1)
@@ -225,7 +244,8 @@ def evaluate(model, builder, loader, device, max_batches=None, amp=False):
         x1, x2 = builder(x)
         if amp:
             x1 = x1.contiguous(memory_format=torch.channels_last)
-            x2 = x2.contiguous(memory_format=torch.channels_last)
+            if x2 is not None:
+                x2 = x2.contiguous(memory_format=torch.channels_last)
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
             logits = model(x1, x2)
         correct += (logits.argmax(1) == y).sum().item()
@@ -295,11 +315,16 @@ def main():
                             shuffle=False, **common)
 
     c1, c2 = in_channels_for(cfg)
+    single = cfg.get("single_stream", False)
     model = TwoStreamNetwork(
         num_classes=args.num_classes,
         like_resnet=args.like_resnet,
         seperate_from_layer=0,
-        baseline=False,
+        # baseline=True builds ONE trunk (stream2_block1 = None) and takes the
+        # x_2=None forward path; combined_color makes its stem 2-channel so the
+        # single stream can receive both DKL channels.
+        baseline=single,
+        combined_color=single,
         dvd_strategy="dkl" if cfg["input_mode"] == "dkl" else "dvd",
         stream_concat=cfg.get("stream_concat", False),
         stream1_weight=cfg.get("stream1_weight", 0.5),
@@ -352,7 +377,8 @@ def main():
             x1, x2 = builder(x)
             if amp:
                 x1 = x1.contiguous(memory_format=torch.channels_last)
-                x2 = x2.contiguous(memory_format=torch.channels_last)
+                if x2 is not None:
+                    x2 = x2.contiguous(memory_format=torch.channels_last)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
                 loss = criterion(model(x1, x2), y)
             optimizer.zero_grad(set_to_none=True)

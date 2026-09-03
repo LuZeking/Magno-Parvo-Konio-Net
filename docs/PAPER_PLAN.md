@@ -6227,3 +6227,128 @@ set point, and it should be written as one.
 | §50 swap vs luminance | **not established** | overlapping ranges; depends on 1 of 3 seeds |
 | §50 "set point is channel-specific" (general) | **retired** | requires both orderings; one fails |
 | side of parity, diet vs no diet | **survives** | 27/27 seed pairings, 8/8 subjects, 6/6 epochs |
+
+---
+
+## §64 PRE-REGISTERED — what does splitting the input across two streams buy?
+The single-stream control (job 26421237)
+
+Written and committed **before** the run finishes. `dkl_bcs_single`, 3 seeds,
+`slurm/train_single_stream.sh`; wiring smoke-tested by
+`tmp_analysis/smoke_single_stream.py` before any GPU time was spent.
+
+### 64.1 The gap this fills
+
+Leg (a) claims that biologically constrained magno/parvo input channels induce
+specialised streams. Every existing control varies the **input** (`dkl_base`:
+no diet; `dkl_bcs_swap`: diet on the other channel; `dkl_bcs_parvo_highsf`:
+corrected parvo) or the **colour space** (`rgb_tsn`: two streams, no M/P
+split). None asks whether the two-stream architecture is needed at all.
+
+`dkl_bcs_single` feeds **one** trunk both DKL channels stacked, diet on
+luminance exactly as in `dkl_bcs`. Identical input information, identical diet,
+identical classifier, identical hyperparameters, same 150 epochs, same
+`--ckpt-every 25` grid. Only the architectural split differs. It uses the
+`baseline=True` path that already existed in `src/models/pytorch_models.py`;
+this commit only wires it to the trainer.
+
+### 64.2 What this arm cannot do
+
+It has no streams. **The magno/parvo PR instrument and stream-wise variance
+partitioning are unavailable** — every headline number in §47–§63 is
+stream-relative and none of them can be computed here. Do not attempt it, and
+do not report this arm in any table whose rows are stream statistics. It is
+measurable on: top-1 accuracy, whole-model Geirhos cue-conflict shape bias
+through the classifier, and whole-model cortical encoding without partitioning.
+
+### 64.3 The capacity confound, and why one arm first
+
+Measured, not estimated: `dkl_bcs` **22,397,936** trainable parameters,
+`dkl_bcs_single` **11,230,832** — exactly **0.501×** (one ResNet18 trunk of
+11,170,240 against two, plus the shared 57,456-parameter classifier).
+
+The confound is **asymmetric**, which is the whole reason to run one arm before
+any width-matched variant:
+
+- If the single stream **wins or ties**, it does so with half the capacity.
+  The confound strengthens the conclusion and is irrelevant.
+- If it **loses**, nothing follows until a parameter-matched control is run
+  (a `resnet34` trunk, ~21.3M against ~22.4M for two `resnet18` trunks). That
+  run should be submitted **then**, not now.
+
+### 64.4 The reference values, fixed now
+
+From §54 (human data) and §60.3 (accuracy), so no number here can be chosen
+after seeing the result:
+
+| quantity | value |
+|---|---|
+| human shape bias | 0.9576 ± 0.0191, 95% CI [0.9439, 0.9713] |
+| `dkl_bcs` magno stream alone | 0.8778 ± 0.0122 (3 seeds) |
+| `dkl_bcs` **integrated** readout | **0.6749** |
+| `dkl_bcs` top-1, last epoch | 0.4446 ± 0.0911 |
+| `dkl_bcs` top-1, best epoch | 0.5921 ± 0.0041 |
+| `dkl_base` top-1, best epoch | 0.7089 |
+
+The behavioural comparison that matters is against **0.6749**, the integrated
+two-stream readout, because that is the quantity the single-stream classifier
+replaces. The comparison against 0.8778 is a *different* question — whether one
+stream can reach what the two-stream model's best single stream reaches.
+
+### 64.5 The four outcomes, declared in advance
+
+Thresholds are stated numerically. §50.6's lesson is binding: a
+pre-registered rule that cannot fail launders a refutation as a confirmation,
+so each of these is falsifiable and they are mutually exclusive.
+
+**A. THE SPLIT BUYS NOTHING.** Single-stream shape bias ≥ 0.6749 **and** best-
+epoch top-1 within 0.02 of 0.5921. With half the capacity, this says the
+two-stream architecture is decorative on both instruments the paper reports
+behaviourally. Leg (a)'s architectural claim would have to be restated as a
+claim about the *input transformation* alone — which the diet-vs-no-diet
+result (§60.6, 27/27) already supports without any reference to streams.
+
+**B. THE SPLIT HELPS BEHAVIOUR.** Single-stream shape bias < 0.6749 by more
+than the between-seed sd, with accuracy within 0.02. The split buys shape bias
+specifically. Capacity confound applies — a `resnet34` arm is then required.
+
+**C. THE SPLIT IS A CAPACITY STORY.** Single-stream loses on **accuracy** by
+more than 0.02 as well. Then the arm is uninterpretable as run and the
+parameter-matched control is mandatory before any statement is made.
+
+**D. THE SPLIT ACTIVELY HURTS LEG (b).** Single-stream shape bias ≥ 0.85, i.e.
+approaching the 0.8778 that `dkl_bcs`'s magno stream reaches alone. This is the
+live possibility flagged in §54: the two-stream **integration step** drops the
+shape bias from 0.878 to 0.675, and if one stream carrying both channels
+retains ~0.87, then summing the streams is what destroys the behavioural
+result, not the split per se. Under D the paper's leg (b) needs rewriting a
+second time and the architecture becomes a liability rather than a mechanism.
+
+Outcome D is the one that costs the paper most, and §54 already showed
+integration moves the network *away* from humans in 3/3 seeds, so it is not a
+remote possibility.
+
+### 64.6 Analysis protocol, fixed now
+
+1. **Convergence first.** §60.1/§61.4 are binding: assert 150 epochs, report
+   sd(val_top1) over the last 20 epochs, and report best-epoch as well as
+   last-epoch accuracy. `dkl_bcs` is the one arm that never converged; if this
+   arm is also unstable, every comparison uses best-epoch values and says so.
+2. **Three seeds both sides.** No single-seed comparison (§60.6).
+3. **3v3 seed-level tests floor at p=0.10**, so report complete separation and
+   the raw difference with its range, not a p-value ranking (§55, §60.6).
+4. **Decision rate.** §54 found our models decide in-pair on only 24–53% of
+   cue-conflict trials against humans' 80%. Report it for this arm too; a
+   shape bias computed over a small decided subset is not comparable to one
+   computed over a large subset.
+5. **No stream statistics** (64.2).
+
+### 64.7 Disclosure
+
+One condition, one diet placement (luminance). This tests whether the split
+matters *for the diet-on-luminance arm*; it says nothing about the swap or
+`parvo_highsf` arms, and must not be generalised to "the split does/does not
+matter" without them. Runtime ~55–85 h per seed on one a5000 (from
+`slurm/train_array.sh`'s measured 130–200 img/s), so a matched single-stream
+series for the other diet placements is a separate decision, not an
+afterthought.
