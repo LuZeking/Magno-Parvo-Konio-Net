@@ -6550,3 +6550,65 @@ has tested (hMT+, dorsal/ventral, VO) has died the same way.
   That comparison needs 3-way variance partitioning, which `banded_ridge.py`
   does not implement (it is hardcoded 2-band, and 3-way unique estimates with
   correlated bands are substantially noisier). Explicitly out of scope.
+
+---
+
+## §66 THE CORTICAL CLAIM IS SEED-REPLICATED — and it is the most reproducible
+result in the paper
+
+Array **26416428**, 32/32 COMPLETED (`slurm/encode_cc_seeds.sh`): seeds 1–2 of
+`dkl_bcs` and `dkl_base` on `results/encoding_cc`, 8 subjects each, scored with
+the unmodified `tmp_analysis/cc_contrast.py`. §2.3 was the last n=1 claim in the
+paper and the only human-brain evidence; §58 had just shown that
+single-checkpoint *levels* on the PR instrument do not survive a seed change, so
+this was the outstanding risk to the whole NHB case.
+
+### §66.1 Stream dissociation (magno − parvo VSB), diet vs no diet
+
+| seed | diet | no diet | difference | p | subjects |
+|---|---|---|---|---|---|
+| 0 | +1.534 | +0.110 | **+1.424** | .0078 | 8/8 |
+| 1 | +1.566 | +0.098 | **+1.468** | .0078 | 8/8 |
+| 2 | +1.558 | +0.083 | **+1.474** | .0078 | 8/8 |
+
+**Diet seed range 0.032; no-diet seed range 0.027.** The raw statistic agrees on
+every seed (diet 0.616/0.658/0.632 against no-diet −0.033/−0.039/−0.053, p=.0078,
+8/8 throughout), so the §8 two-statistics rule is satisfied three times over.
+
+### §66.2 The contrast with the PR instrument is the point
+
+| instrument | diet-arm seed range |
+|---|---|
+| magno/parvo PR ratio (§58) | **0.904** |
+| cortical stream dissociation (here) | **0.032** |
+
+Same three checkpoints. A 28× difference in seed stability. The instability that
+retired §49.4 and §49.2 is a property of the participation-ratio measure, not of
+these models and not of this project's instruments in general. §2.1's probe
+(0.014) and the cortical dissociation (0.032) are both an order of magnitude
+tighter. This should be stated explicitly, because a reader who meets §2.2's
+2.39 seed range first will otherwise carry that skepticism into §2.3, where it
+is not warranted.
+
+### §66.3 The ventral gradient — replicates, with one honest qualification
+
+hV4−V1v stream-bias gradient, normalised statistic: diet −0.447/−0.424/−0.501
+against no-diet −0.202/−0.166/−0.160, p=.0078 and 0/8 in all three seeds.
+
+The raw statistic agrees in direction and sign in all three seeds but reaches the
+exact floor only in seed 2 (p = .0234, .0156, .0078; subject splits 1/8, 1/8,
+0/8). Disclose this: the gradient is a weaker instrument than the stream
+dissociation, and the two must not be quoted with equal confidence.
+
+### §66.4 The cost replicates too
+
+Median r²/NC: diet 0.405/0.382/0.399 against no-diet 0.464/0.464/0.457 —
+p=.0078, 0/8 (diet lower) in every seed. The ~13% predictivity cost is not a
+one-checkpoint artefact either. Panel (d) of Figure 1 stands.
+
+### §66.5 Consequence
+
+§2.3 loses its SEED STATUS flag. The paper now has **no n=1 claim in its main
+results.** Every headline — the 2×2 (§2.1), the side of parity (§2.2), the
+cortical dissociation (§2.3), the robustness null (§2.5), the error-consistency
+null (§2.6) and the cost (§2.7) — rests on three training seeds.

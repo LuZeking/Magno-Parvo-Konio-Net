@@ -308,12 +308,23 @@ pairings rather than approximate ones (§49.2, §50.1).
 
 ### 2.3 The divergence is measurable through human visual cortex
 
-> **SEED STATUS.** The cortical numbers below are one checkpoint per arm.
-> §2.2 has just shown that single-checkpoint *levels* on this project's
-> instruments are not reproducible across training seeds, so this contrast is
-> being replicated (array 26416428: seeds 1–2 of the diet and no-diet arms,
-> 32 tasks, running). Until it returns, §2.3 is the paper's least-replicated
-> claim and is flagged as such rather than quoted as settled.
+**Seed replication (n=8 subjects × 3 seeds).** Because §2.2 showed that
+single-checkpoint levels are not always reproducible on this project's
+instruments, the cortical contrast was re-run for seeds 1–2 of both arms:
+
+| seed | diet | no diet | difference | p | subjects |
+|---|---|---|---|---|---|
+| 0 | +1.534 | +0.110 | +1.424 | .0078 | 8/8 |
+| 1 | +1.566 | +0.098 | +1.468 | .0078 | 8/8 |
+| 2 | +1.558 | +0.083 | +1.474 | .0078 | 8/8 |
+
+The diet arm's seed range here is **0.032**, against **0.904** for the same three
+checkpoints on the dimensionality ratio of §2.2 — a 28-fold difference in seed
+stability on the same models. The instability documented in §2.2 belongs to the
+participation-ratio measure, not to the models or to this paper's instruments
+generally: §2.1's probe (0.014) and this dissociation (0.032) are both an order
+of magnitude tighter. The raw statistic agrees on every seed, so the
+two-statistics rule is satisfied three times over.
 
 
 *Source: PAPER_PLAN §43.1, §17, §48, §29.*
@@ -346,6 +357,13 @@ Three points make this more than a single fitted number:
 - **It survives its front-end controls.** Against `swap` (−0.027) and
   `parvo_highsf` (−0.119) as well as no-diet (−0.101), the diet arm separates at
   p=.0078 on all three (§48.1). See §2.7 for what those controls cost.
+
+*The gradient is the weaker of this section's two instruments and is not quoted
+with equal confidence.* Across the three seeds it replicates in direction and in
+both statistics (normalised: −0.447 / −0.424 / −0.501 for the diet against
+−0.202 / −0.166 / −0.160 for no diet, p=.0078 and 0/8 throughout), but the raw
+statistic reaches the exact floor only in seed 2 (p = .0234, .0156, .0078). The
+stream dissociation above is the claim; the gradient is corroboration.
 - **It is not explained by a global stream preference.** The diet-trained and
   no-diet models sit on *opposite* sides of the global stream-bias axis (−0.454
   vs +0.727), yet the strong regional gradient is in the model whose global bias
@@ -877,8 +895,7 @@ Recorded so the omissions are visible rather than silent.
       stated, and the subject vs seed inferential axes separated in §4.7.
 - [ ] Supplementary: the VSB cortical profile with its negatives intact; the
       capacity ladder (PLAN §42) with its non-monotonicity caveat.
-- [ ] **Cortical seed replication in flight** — array 26416428, 32 tasks
-      (`dkl_bcs_seed{1,2}` and `dkl_base_seed{1,2}` × 8 subjects) on
-      `results/encoding_cc`. ~3 h per task at a %6 throttle, so ~16 h total.
-      §2.3 stays flagged as the least-replicated claim until this returns; it is
-      the last n=1 result in the paper.
+- [x] **Cortical seed replication complete** (2026-09-04) — array 26416428,
+      32/32 COMPLETED. §2.3 replicates across three seeds with both statistics
+      agreeing (diet seed range 0.032). **The paper now has no n=1 claim in its
+      main results** (PLAN §66).
