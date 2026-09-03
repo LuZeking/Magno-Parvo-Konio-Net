@@ -6612,3 +6612,95 @@ one-checkpoint artefact either. Panel (d) of Figure 1 stands.
 results.** Every headline — the 2×2 (§2.1), the side of parity (§2.2), the
 cortical dissociation (§2.3), the robustness null (§2.5), the error-consistency
 null (§2.6) and the cost (§2.7) — rests on three training seeds.
+
+## §67 THE §65.4 GATE FIRED — and it caught a stale reference, not a bad arm
+
+§65.4 pre-registered a hard gate: `r2_magno` is a `RidgeCV` fit on the magno
+band alone, `prepare_band` uses only that band's own statistics, and
+`smoke_konio.py` proved the magno feature matrix is bit-identical across the
+konio and parvo arms. So `r2_magno` MUST come out identical. Gate:
+max|Δr2_magno| < 1e-4; above 1e-3 the arm is invalid and nothing else may be
+interpreted.
+
+Run on the first 7 konio-matched subjects as they landed, against
+`untrained_seed0`:
+
+| subj | max\|Δr2_magno\| | mean\|Δ\| | gate |
+|---|---|---|---|
+| 1 | 0.000e+00 | 0.000e+00 | PASS |
+| 2 | 0.000e+00 | 0.000e+00 | PASS |
+| 3 | 0.000e+00 | 0.000e+00 | PASS |
+| 4 | **2.818e-02** | 9.728e-04 | **INVALID** |
+| 5 | 0.000e+00 | 0.000e+00 | PASS |
+| 6 | 0.000e+00 | 0.000e+00 | PASS |
+| 8 | **2.786e-02** | 9.687e-04 | **INVALID** |
+
+Five subjects are bit-exact, which is the strongest possible confirmation that
+the front-end patch left the rg path untouched end to end — through the cache,
+the PCA and the fit, not merely in the transform that `smoke_konio.py` tested.
+Two subjects are not.
+
+### §67.1 The cause: the reference is stale, the arm is fine
+
+Noise ceiling, ROI labels and voxel count are IDENTICAL between the konio and
+reference files for subj04 and subj08, so the betas, trials and mask are the
+same data. The difference is on the fit side.
+
+`untrained_seed0_subj04.npz` (Aug 27 02:26) and `untrained_seed0_subj08.npz`
+(Aug 27 12:40) are the only two result files in `results/encoding` — 2 of 86 —
+that predate commit **e3b8667** (Aug 27 15:04, "Cut encoding runtime ~30x").
+That commit changed the banded-ridge hyperparameter search: `n_iter` 100 → 20
+and CV folds 5 → 3. Different search, different selected (alpha, gamma) per
+voxel, different r². The two failing subjects are exactly the two fitted before
+it; every other result file, including all six passing konio fits, is after it.
+
+So this is not a konio defect. It is a §22-class staleness that has been
+sitting in the REFERENCE condition since August, and the konio gate is what
+exposed it — which is the argument for pre-registering a gate that can only
+fail for one reason.
+
+### §67.2 Scope of the contamination
+
+e3b8667 changed the ridge SEARCH only, so the contamination reaches exactly
+those quantities derived from the fit, and no further. Checked, not assumed:
+
+AFFECTED — everything downstream of `r2_joint`/`r2_magno`/`r2_parvo`.
+`variance_partition` (`banded_ridge.py:221-223`) builds `unique_magno`,
+`unique_parvo` and `shared` by differencing those three, and `spi`
+(`banded_ridge.py:241-244`) from the uniques. So §7.1's Kastner variance
+partitioning — the VO median +0.0044 / hV4 −0.012 result — mixed 6 subjects
+fitted one way with 2 fitted another, as does any paired-subject statistic over
+8 subjects that read a `untrained_seed0` fit.
+
+NOT AFFECTED — the participation-ratio and effective-dimension tables in §36,
+§41 and §45, and the front-end reference `thesis_dvd_trans` is normalised
+against (§46). `tmp_analysis/pr_table.py` reads the FEATURE CACHE
+(`/scratch/byrong/VST_data/mpk_feature_cache`, lines 15 and 32), never
+`results/encoding`, and the caches predate e3b8667 on both sides of every
+comparison. The 3.7 / 2.8 / 1.40 ±0.09 figures stand as reported.
+
+The effect size on the affected numbers is small — mean|Δr2_magno| ≈ 1e-3, max
+2.8e-2 — so the qualitative conclusions are unlikely to move. That is a
+prediction, not a finding, and it is not a licence to leave it. Every fit-derived
+number quoted from `untrained_seed0` must be recomputed once the refit lands,
+and any that changes must be corrected in place rather than silently re-quoted.
+
+### §67.3 Fix
+
+Job **26423414**, `sbatch --array=3,7 slurm/encode_subjects.sh untrained_seed0`
+— explicit array indices so the invocation is byte-identical to the original
+submission recorded in §46 (`SUBJECT=$((SLURM_ARRAY_TASK_ID + 1))`, so 3,7 →
+subjects 4, 8). `main`, no GPU. The Aug-26 feature caches are reused unchanged;
+e3b8667 touched the ridge search and the stage logging, not feature extraction,
+and the six bit-exact subjects prove the cache is sound. Fit only.
+
+The pre-e3b8667 files are preserved at
+`/scratch/byrong/mpk/encoding/backup_pre_e3b8667/` so the numbers that were
+reported from them stay auditable.
+
+### §67.4 What this blocks
+
+The konio verdict CANNOT be read until the refit lands and the gate passes on
+all 8 subjects. `tmp_analysis/konio_verdict.py` already refuses to interpret
+anything when the gate fails, so the protocol holds without amendment — but it
+means item #5's answer is gated on 26423414, not on 26422215 alone.
