@@ -5666,6 +5666,15 @@ stated threshold, and record both in any output the probe writes.
 
 ### 60.2 So §58's spread is checkpoint timing, not learned-solution variability
 
+> **REFUTED by §61.3 — do not cite this subsection.** Direct measurement of the
+> epoch axis (job 26416534) shows PR moves only 0.100 across epochs within
+> `dkl_bcs_seed0` while that run's accuracy swings 0.230, so PR does not track
+> accuracy within a run and the Spearman −1.00 below was a three-point
+> coincidence. §58's spread is **genuine seed-to-seed variability**, not
+> checkpoint timing. §58's conclusion is unaffected; the explanation offered
+> here was wrong. Retained for the record and for the accuracy table in 60.3,
+> which stands.
+
 Two facts separate those two readings, and they point the same way.
 
 **(i) What the condition achieves is stable; where the last checkpoint lands is
@@ -5756,6 +5765,12 @@ measurable from these checkpoints at all.
 
 ### 60.5 The exposure this creates for leg (c), and the control now running
 
+> **ANSWERED by §61 — job 26416534 has landed.** Outcome: the diet arm is
+> epoch-stable (range 0.100) and the *control* arm is not (0.558), inverting
+> the expectation set out below. Leg (c)'s exposure is on the no-diet baseline,
+> not on `dkl_bcs_seed0`. The pre-registration is retained unedited so the
+> prediction can be read against the result.
+
 Every cortical number in §48 and every variance-partitioning result in legs (a)
 and (c) is computed from **`dkl_bcs_seed0_trained` — one draw from the one
 oscillating run**. §58 did not reach this because it measured PR only.
@@ -5797,3 +5812,148 @@ independent subject-level tests. Prefer it to the 3v3 p=0.100. Conversely,
 `diet/rg` vs `diet/lum` — §50's channel-specific claim — holds in only **6/9**
 pairings and reverses in 3, which is the same conclusion §58.3 reached by
 inspecting overlapping ranges, now with a test attached.
+
+---
+
+## §61 THE EPOCH-JITTER CONTROL — §60.2's diagnosis is REFUTED, and the
+control arm turns out to be the unstable one
+
+`tmp_analysis/pr_epoch_jitter.py`, job 26416534 (40 cache-only tasks, all
+COMPLETED). Read against the criteria pre-registered in §60.5 before the caches
+existed.
+
+### 61.1 Reproduction check: PASS, exactly
+
+`dkl_bcs_seed0` @ `checkpoint_150.pt` returns **1.6030 ± 0.0318**; the value
+already cached from `checkpoint_last.pt` is **1.6030 ± 0.0318**. Maximum
+per-subject difference **0.000000**. The two files are the same weights, the
+new extraction path reproduces the old one bit-for-bit, and §49.2's published
+1.603 is confirmed a third time.
+
+Front ends were separately verified from the `prov_*` keys: the epoch caches
+carry `lum_blur/lum_cs/transform_target/parvo_highsf` identical to the
+originals for both arms. So nothing below is a front-end mismatch (§22).
+
+### 61.2 The result, and it is the opposite of what §60.5 expected
+
+| epoch | `dkl_bcs_seed0` (diet, NOT converged) | `dkl_base_seed0` (no diet, converged) |
+|---|---|---|
+| 100 | 1.6204 ± 0.0415 | 1.5046 ± 0.0562 |
+| 125 | 1.7033 ± 0.0551 | 1.0185 ± 0.0430 |
+| 150 | 1.6030 ± 0.0318 | 0.9466 ± 0.0352 |
+| **epoch range** | **0.1003** | **0.5580** |
+
+Set against each arm's accuracy over the same epochs:
+
+| arm | val_top1 spread, ep100–149 | PR spread, ep100–150 |
+|---|---|---|
+| `dkl_bcs` (diet) | **0.2302** | 0.1003 |
+| `dkl_base` (no diet) | 0.0441 | **0.5580** |
+
+**The two are inverted.** The arm with unstable accuracy has a stable
+representation; the arm with converged accuracy has a representation still
+migrating.
+
+### 61.3 CORRECTION — §60.2's checkpoint-timing diagnosis is refuted
+
+§60.2 argued that §58's seed spread was checkpoint timing rather than genuine
+seed variability, on two grounds: `dkl_bcs`'s accuracy oscillates, and its PR
+ratio ranked inversely with final accuracy across three seeds (Spearman −1.00).
+Direct measurement refutes this.
+
+Within `dkl_bcs_seed0`, accuracy swings **0.2302** across epochs 100–149 while
+PR moves only **0.1003**. PR is therefore *not* tracking accuracy within a run,
+and the cross-seed Spearman −1.00 was a coincidence of three points — which
+§60.2 hedged as "suggestive, not established", but the hedge is not enough: the
+claim is now actively refuted and should be struck, not softened.
+
+**The corrected reading.** Epoch jitter within one seed is **0.100 = 11%** of
+the 0.904 seed spread. So §58's spread is **genuine seed-to-seed variability in
+the learned solution**, not an artefact of which epoch the checkpoint caught.
+§58's own conclusion stands unchanged and is now positively supported rather
+than merely asserted; it was §60.2's proposed *explanation* that was wrong.
+
+`dkl_bcs`'s trained level is a real property of each training run that varies
+between runs. That is worse for §49.2 than §60.2 suggested, not better: a
+checkpoint artefact could have been fixed by checkpoint selection, whereas
+genuine run-to-run variability cannot be fixed at all. §49.2/§49.4 stay
+withdrawn.
+
+### 61.4 The control "failed", and the failure is the finding
+
+§60.5 pre-registered `dkl_base_seed0` as the control on the grounds that it is
+converged, so its PR must be flat; if not, "the instrument is epoch-sensitive
+and none of this is about the diet". Its PR is not flat — range 0.5580 — so by
+the letter of the rule the control failed.
+
+The rule was wrong, and it is worth recording why, because the mistake is
+reusable. It equated *accuracy* convergence with *representational*
+convergence. `dkl_base` has flat accuracy (sd 0.0052–0.0098 over trailing
+10-epoch windows) and a representation moving from clearly magno-dominant to
+parity over the same epochs. **Accuracy convergence does not imply
+representational convergence**, and in this project the two are anti-correlated
+across conditions.
+
+This does not mean the instrument is broken: the PR measure reproduces to
+0.000000 on identical weights (61.1) and is stable across epochs on the diet
+arm. It means the *quantity being measured is still changing* in the no-diet
+network at the point we measure it.
+
+Consequence for §60.1, which proposed strengthening §10.1's guard to "full
+epoch count **and** sd(val_top1) over the last 20 epochs below a threshold":
+that is still necessary but still not sufficient. `dkl_base` passes both and is
+representationally unconverged. **The guard must be on the reported measure
+itself** — extract at two or more epochs and report the movement — because no
+accuracy-based criterion detects this.
+
+### 61.5 Leg (c)'s exposure is on the BASELINE, not the diet arm
+
+§60.5 flagged leg (c) as exposed because every §48 cortical number comes from
+`dkl_bcs_seed0`. That specific worry is now answered: the diet arm is
+epoch-stable (0.100), so its features are epoch-safe to within ~6% of level.
+
+The exposure is on `dkl_base_seed0`, the matched no-diet control, which appears
+in every leg-(a) and leg-(c) contrast as the comparison condition. At epoch 100
+its ratio is **1.5046 — above parity, and within 0.12 of the diet arm's
+1.6204**. Had the baseline been extracted 50 epochs earlier, the headline
+diet-vs-no-diet separation would have been near zero.
+
+Both arms are in fact extracted at epoch 150, so the published contrast is
+matched and fair. But it must be disclosed as **a statement about networks
+compared at a fixed training duration, not an asymptotic property**. The
+no-diet arm is still descending at 150, though sharply decelerating (−0.486
+from ep100→125, −0.072 from ep125→150), so it is close to an asymptote near
+~0.93–0.95 and longer training would if anything widen the contrast. That is
+the honest form of the caveat: the direction of the residual drift favours the
+claim, and the claim should not be stated as if drift were absent.
+
+### 61.6 A replacement mechanism for the set point, and the run that tests it
+
+§58 killed the set-point account and §60.4 showed the compression figure
+inverts, leaving the paper without a mechanism for what the diet does to stream
+specialisation. These trajectories suggest one, and it fits the surviving
+side-of-parity result rather than competing with it:
+
+> **Both arms begin magno-dominant. Training erodes that dominance in the
+> no-diet network; the diet prevents the erosion.**
+
+Front ends (§58.1): no diet **1.634** untrained, diet **1.402**. The no-diet
+arm then runs 1.634 → 1.505 (ep100) → 1.019 (ep125) → 0.947 (ep150), while the
+diet arm holds 1.40 → 1.62 → 1.70 → 1.60. On this account the diet is not
+installing a level — which is why no set point was ever found — it is
+protecting an initial asymmetry from being trained away.
+
+**This is a hypothesis on three points from one seed per arm, and must not be
+written up as a result yet.** Job 26417753 (`slurm/cache_epoch_trajectory.sh`,
+48 elements, cache-only) extracts epochs 25/50/75 for both arms, giving 6-point
+curves. Falsifiers stated in the submit script before it ran: if `dkl_base` is
+flat from 25 to 100 and only drops afterwards, the "erosion during training"
+reading is wrong and the drop belongs to late training (LR schedule) rather
+than to the diet contrast; if `dkl_bcs` is not flat over 25–75, its
+epoch-stability at 100–150 is a late-training coincidence and the dissociation
+in 61.2 is not real.
+
+Scope disclosure that travels with any result: **one seed per arm**. §58 showed
+the trained level varies across seeds on the diet arm by 0.904, so the
+trajectory *shape* may vary too. Seed generality of the shape is untested and
+must not be claimed.
