@@ -6789,3 +6789,72 @@ The checkpoint-selection error of §67.1 is reported in the paper whatever Tests
 A–C return, because three currently-stated numbers (seed variance, 37% cost, and
 the implicit claim that reported values characterise the trained condition) are
 wrong as they stand.
+
+---
+
+## §68 §67 TESTS A AND C — the lead result is not an accuracy artefact; §2.2's
+instrument is exposed
+
+Test B (the matched control, array 26423530) is still queued. A and C are done.
+
+### §68.1 Test C — which measures track accuracy inside the diet arm
+
+The diet arm's three seeds span 0.347–0.527 final accuracy at identical
+architecture, data, schedule and front end — the widest within-condition
+accuracy range available. `tmp_analysis/accuracy_confound.py`:
+
+| measure | range over that 0.18 accuracy span | r with accuracy | verdict |
+|---|---|---|---|
+| probe bias (magno) | 0.014 | −0.79 | flat |
+| behaviour shape bias | 0.022 | −0.89 | flat |
+| **PR ratio (magno/parvo)** | **0.904** | **−0.99** | **EXPOSED** |
+
+n=3, so r is descriptive. But the *ranges* are the argument: accuracy moves 0.180
+and the probe moves 0.014, while the PR ratio moves 0.904 in near-perfect
+inverse order with accuracy — the collapsed seed has the highest ratio.
+
+**This reinterprets §58.** What was recorded there as seed noise on the PR
+instrument is at least partly checkpoint degradation. It does not by itself
+refute the side-of-parity claim — the no-diet arm sits at parity with *higher*
+accuracy, the opposite of what a pure accuracy account predicts — but §2.2
+cannot be cleared without Test B.
+
+### §68.2 Test A — the 2×2 at best epoch. P1 CONFIRMED.
+
+Cue-conflict re-run on each diet seed's best saved checkpoint (ep125 = 0.564,
+ep75 = 0.553, ep50 = 0.552):
+
+| | best epoch | final (published) |
+|---|---|---|
+| magno-stream shape bias | **0.903** (range 0.028) | 0.878 (range 0.022) |
+| minimum across seeds | 0.888 | 0.870 |
+
+The conjunction cell stays far above the 0.5 flip on every non-degraded
+checkpoint, and the shape bias is **higher** there than on the published models.
+Degradation does not manufacture the §2.1 effect; it slightly dilutes it. The
+lead result is not an accuracy artefact.
+
+### §68.3 P2 REFUTED — and it was my prediction
+
+§67.3 predicted the best-epoch seed range on behaviour would be smaller than the
+last-checkpoint range, mirroring accuracy. It is not: 0.028 against 0.022. The
+behavioural measure was already seed-tight at the final checkpoint; only accuracy
+and the PR ratio were not. Recorded as a failed prediction, and it sharpens the
+picture — checkpoint degradation moves accuracy and the PR ratio, and leaves the
+shape-bias measures alone.
+
+### §68.4 Draft corrections made now, per §67.5
+
+Applied to `PAPER_DRAFT.md` regardless of Test B:
+- The 37% accuracy cost → **16.5%** (0.592 vs 0.709 at best epoch).
+- "Markedly higher seed variance" → **withdrawn as an artefact** (0.008 vs 0.003
+  at best epoch), replaced by the real and separate finding that the diet
+  destabilises *late training*.
+- Limitation 1 now names the superseded numbers explicitly rather than silently
+  replacing them.
+
+### §68.5 What Test B still has to decide
+
+Whether a no-diet model **held at the diet's accuracy** stays at parity on the PR
+ratio and stays texture-biased. P3 remains the fatal test: if it acquires the
+shape bias, §2.1 is confounded despite §68.2.

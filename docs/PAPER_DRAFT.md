@@ -467,10 +467,26 @@ experiment finds robustness exactly where robustness was trained in and nowhere
 else, which is the strongest available evidence that the other five nulls are
 real rather than a broken measurement.
 
-The diet also costs more than previously measured: 112-way accuracy **0.439
-±0.091 against 0.695 ±0.006**, a 37% relative cost, and the diet arm spans
-0.336–0.503 across seeds while every other condition spans under 0.02. It
-destabilises training as well as lowering it.
+**A correction to how these models were selected.** Every result in this paper
+was computed on the final training checkpoint. The per-epoch validation logs
+show that is the wrong checkpoint for the diet arm, and only for the diet arm:
+the diet models peak at **0.592** (seed range 0.008) and end at **0.445** (seed
+range 0.180), losing −0.060, −0.246 and −0.136 from their own maxima, while the
+no-diet models lose −0.008, −0.013 and −0.003. The training procedure (§4.2) has
+no validation-based model selection.
+
+Two consequences. The accuracy cost is **16.5%** relative (0.592 vs 0.709), not
+the 37% a final-checkpoint comparison suggests. And the diet arm is **not**
+markedly less stable across seeds — at best epoch it agrees to 0.008 against the
+control's 0.003; the apparent instability is an artefact of taking the last
+checkpoint. What is real, and is a separate finding, is that **the diet
+destabilises late training**: the diet arm degrades after its peak, the control
+does not.
+
+Re-running cue-conflict on each diet seed's best saved checkpoint gives a shape
+bias of **0.903** (range 0.028) against 0.878 at the final checkpoint — slightly
+*higher* on the non-degraded models. Degradation does not produce the effect
+reported in §2.1; if anything it dilutes it (PLAN §67, §68).
 
 > **The claim.** Shape bias and OOD robustness are not intrinsically coupled.
 > This does not contradict Geirhos et al., who showed that *Stylized-ImageNet
@@ -658,9 +674,9 @@ next tests, and a schedule-trained checkpoint from an independent codebase
 already lands on the predicted side (§2.2).
 
 What does not generalise is any recommendation to use a developmental diet as a
-training method. It makes models less accurate (0.439 vs 0.695 in 112-way
-classification), markedly less stable across seeds, and less robust on every
-corruption it was not trained on. Nothing here is an argument that this is a
+training method. It makes models less accurate (0.592 vs 0.709 at best epoch),
+less stable late in training, and less robust on every corruption it was not
+trained on. Nothing here is an argument that this is a
 better way to train a network. Its interest is as a model of development.
 
 ### Limits
@@ -804,9 +820,12 @@ predictions failed and are reported as failures in the sections above.
 ## Limitations
 
 1. **The diet costs, on every engineering axis we measured.** ~13% of explained
-   BOLD variance (§2.7); 37% relative classification accuracy and markedly
-   higher seed variance (§2.5); and robustness on every corruption it was not
-   trained on (§2.5). The paper makes no claim that the diet improves a model.
+   BOLD variance (§2.7); 16.5% relative classification accuracy at best epoch
+   (§2.5); late-training stability (§2.5); and robustness on every corruption it
+   was not trained on (§2.5). The paper makes no claim that the diet improves a
+   model. **An earlier version of this manuscript reported a 37% accuracy cost
+   and markedly higher seed variance; both were artefacts of using the final
+   rather than the best checkpoint, and are corrected here (PLAN §67.1).**
 2. **Two front-end controls are degenerate on the cortical instrument** (§2.7),
    which narrows the control claim.
 3. **`parvo_highsf` varies architecture alongside the front end** — its second
