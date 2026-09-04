@@ -263,6 +263,29 @@ this section claims. *(This retires two earlier readings of our own data — a
 gap is ~24x smaller than the seed noise on that same arm, and a channel-specific
 set point, which n=3 seeds cannot separate: PLAN §58.3.)*
 
+**When during training the dissociation appears.** One seed per arm has a
+cached checkpoint trajectory, which lets us ask when the two arms separate. The
+diet arm is above parity in 8/8 subjects at *every* checkpoint from epoch 25
+onward (ratios 1.60–1.96). The no-diet arm is not: it sits **above** parity
+through epoch 100 (1.16, 1.24, 1.51, 1.51) and crosses below only in the final
+quarter of training (1.02 at epoch 125, 0.947 at epoch 150), while its accuracy
+stays flat at 0.658–0.699 throughout. At epochs 75–100 the two arms are on the
+same side of parity and there is no dissociation.
+
+We report this rather than let it be discovered. It does not affect the claim as
+stated — the section asks which side training *ends* on, and the ordering at the
+end of training is what every table here reports — but it means the effect is
+carried by a late change in the control arm that is not driven by accuracy, and
+the honest form of the result is that **the diet stabilises which side of parity
+a network sits on, while no-diet training drifts and ends below.** With one
+trajectory per arm we do not promote that to a claim (PLAN §71.9).
+
+Checkpoint choice does not drive any of this. Varying the checkpoint *within* a
+seed across a wider accuracy span than separates the seeds leaves the ratio
+essentially unmoved (r = −0.17, p = 0.75 for the diet arm; r = −0.18, p = 0.77
+for no-diet), so the seed spread above is seed-to-seed variation rather than
+checkpoint degradation.
+
 *Does anything develop?* Our diet is a **static** front end matched to 48-month
 acuity, not a trajectory — a deliberate choice that isolates the mechanism from
 the schedule. `thesis_dvd_trans`, trained on an actual progressive age transition
