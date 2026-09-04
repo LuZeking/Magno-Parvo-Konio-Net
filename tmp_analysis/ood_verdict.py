@@ -18,14 +18,19 @@ Per family the summary statistic is the area under the degradation curve
     absolute = accuracy
     relative = accuracy / accuracy(clean)
 
-Usage: PYTHONPATH=. python tmp_analysis/ood_verdict.py
+Usage: PYTHONPATH=. python tmp_analysis/ood_verdict.py [results-dir]
+
+The optional argument selects the checkpoint policy: `results/ood` (the
+published final-checkpoint run) or `results/ood_bestep` (best saved checkpoint
+per seed, PLAN §71.6). Identical scoring code either way, so the two are
+directly comparable.
 """
 from __future__ import annotations
-import glob, json, os
+import glob, json, os, sys
 import numpy as np
 from scipy import stats as sps
 
-D = "results/ood"
+D = sys.argv[1] if len(sys.argv) > 1 else "results/ood"
 CONDS = [("diet",         "dkl_bcs_seed",              True),
          ("no diet",      "dkl_base_seed",             False),
          ("swap",         "dkl_bcs_swap_seed",         False),

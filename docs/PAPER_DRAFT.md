@@ -447,25 +447,45 @@ own 112-way label space, **3 seeds per condition** on all four cells of §2.1's
 Relative accuracy (accuracy under corruption ÷ clean accuracy), area under the
 degradation curve:
 
-| corruption | diet | no diet | swap | `parvo_highsf` |
-|---|---|---|---|---|
-| uniform noise | 0.687 | 0.729 | 0.745 | 0.767 |
-| high-pass | **0.619** | 0.827 | 0.821 | 0.783 |
-| phase-scrambling | 0.351 | 0.373 | 0.368 | 0.382 |
-| rotation | 0.552 | 0.615 | 0.602 | 0.611 |
-| false colour | 0.842 | 0.938 | 0.969 | 0.874 |
-| *low-pass (trained-in)* | *0.441* | *0.356* | *0.349* | *0.386* |
+Scored on each seed's **best saved checkpoint** (PLAN §71.6), so the diet arm is
+not handicapped by the late-training degradation described below:
 
-**The diet-trained model is less robust on every corruption it was not trained
-on**, in both statistics, with complete seed separation on four of five. The two
-conditions without a shape bias (`swap`, `parvo_highsf`) pattern with the
-no-diet model throughout, so this is not a quirk of one arm.
+| corruption | diet | no diet | swap | `parvo_highsf` | diet vs no-diet |
+|---|---|---|---|---|---|
+| uniform noise | 0.634 | 0.729 | 0.750 | 0.767 | −0.095, complete sep. |
+| high-pass | **0.678** | 0.827 | 0.831 | 0.783 | −0.149, complete sep. |
+| rotation | 0.574 | 0.615 | 0.605 | 0.611 | −0.041, complete sep. |
+| false colour | 0.854 | 0.938 | 0.966 | 0.874 | −0.084, complete sep. |
+| phase-scrambling | 0.383 | 0.373 | 0.371 | 0.382 | +0.009, **overlap** |
+| *low-pass (trained-in)* | *0.444* | *0.356* | *0.359* | *0.386* | *+0.089* |
+| *contrast (trained-in)* | *0.481* | *0.549* | *0.544* | *0.511* | *−0.068* |
+
+**The diet-trained model is less robust on four of the five corruptions it was
+not trained on**, with complete seed separation on all four and the same
+ordering in both statistics (§8). On phase-scrambling the two arms are
+indistinguishable (relative overlaps at the 3v3 floor, p = 0.70), so we claim
+nothing there. The two conditions without a shape bias (`swap`,
+`parvo_highsf`) pattern with the no-diet model on 8 of 10 comparisons.
 
 The **only** corruption on which the diet is more robust is low-pass — which we
 declared trained-in before running, because the diet *is* a low-pass blur. The
 experiment finds robustness exactly where robustness was trained in and nowhere
-else, which is the strongest available evidence that the other five nulls are
-real rather than a broken measurement.
+else, which is the strongest available evidence that the four nulls are real
+rather than a broken measurement. Note that the diet is *not* more robust to
+contrast reduction even though its front end includes a contrast-sensitivity
+cut, so "trained-in" does not automatically confer robustness either.
+
+*Checkpoint policy.* An earlier version scored this table on final checkpoints.
+Moving to best saved checkpoints **strengthens** the dissociation on the three
+pre-registered H1 corruptions — uniform noise goes from overlapping to
+completely separated — while phase-scrambling moves the other way, from
+separated to overlapping. The count of separated corruptions is four of five
+under both policies; only which one is excluded changes. The pre-registered
+crossover prediction (H2, that the diet should degrade *more* under
+phase-scrambling) was supported only on the degraded weights; PLAN §54.2 had
+already refused to report it as supported on the grounds that its apparent
+support was vacuous, and that refusal is now vindicated for a second,
+independent reason.
 
 **A correction to how these models were selected.** Every result in this paper
 was computed on the final training checkpoint. The per-epoch validation logs
@@ -688,8 +708,8 @@ already lands on the predicted side (§2.2).
 What does not generalise is any recommendation to use a developmental diet as a
 training method. It makes models less accurate (0.556 vs 0.701 at the best
 saved checkpoint),
-less stable late in training, and less robust on every corruption it was not
-trained on. Nothing here is an argument that this is a
+less stable late in training, and less robust on four of the five corruptions
+it was not trained on. Nothing here is an argument that this is a
 better way to train a network. Its interest is as a model of development.
 
 ### Limits
@@ -835,7 +855,8 @@ predictions failed and are reported as failures in the sections above.
 1. **The diet costs, on every engineering axis we measured.** ~13% of explained
    BOLD variance (§2.7); 20.7% relative classification accuracy at the best
    saved checkpoint (§2.5); late-training stability (§2.5); and robustness on
-   every corruption it was not trained on (§2.5). The paper makes no claim that
+   four of the five corruptions it was not trained on (§2.5). The paper makes no
+   claim that
    the diet improves a model. **An earlier version of this manuscript reported a
    37% accuracy cost and markedly higher seed variance; both were artefacts of
    using the final rather than the best checkpoint, and are corrected here

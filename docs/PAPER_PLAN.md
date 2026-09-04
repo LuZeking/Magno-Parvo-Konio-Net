@@ -6906,21 +6906,49 @@ correctly killed hMT+ in §16.1 here returns a positive verdict on specificity,
 which is the strongest available evidence that this is a colour result and not
 a general-factor artefact.
 
-### §70.3 The raw cell makes it decisive, on the evidence so far
+### §70.3 The raw cell, COMPLETE at n=8 — and the deficit is contrast-invariant
 
-§65.3 built the asymmetry deliberately: in the raw cell konio carries **2.05×
-rg's per-image RMS contrast**, so a loss there is decisive while a win proves
-nothing. On the 5 of 8 subjects that have landed (gate bit-exact on all five),
-konio *does* lose in colour cortex — hV4 −0.0030 (0/5), VO −0.0083 (1/5),
-colour set − rest −0.0159 (0/5, d_z = −3.15) — while simultaneously winning
-enormously in early visual cortex (V1d +0.090). Konio fails in colour cortex
-**while holding a 2× contrast advantage**, and the failure is specific.
+Job 26422215 finished all 16 tasks COMPLETED 0:0. The raw cell gates bit-exact
+on all 8 subjects (max|Δr2_magno| = 0.000e+00), so both cells are now valid at
+full n. §65.3 built the asymmetry deliberately: in the raw cell konio carries
+**2.05× rg's per-image RMS contrast**, so a loss there is decisive while a win
+proves nothing.
 
-Stated honestly: n=5 cannot reach p < .05 — the exact two-sided floor for n=5
-is .0625, which is what every raw-cell contrast returns. The raw cell is
-directionally decisive and statistically incomplete. Tasks 12–14 (subjects
-5, 6, 7) are still running; **re-run `konio_verdict.py` when they land** before
-quoting any raw-cell p-value.
+| contrast | matched Δ (NC) | raw Δ (NC) | raw subj | raw p | raw d_z |
+|---|---|---|---|---|---|
+| hV4 | −0.0293 | **−0.0059** | **0/8** | **.0078** | −1.08 |
+| VO (VO1,VO2) | −0.0238 | −0.0061 | 2/8 | .1094 | −0.74 |
+| colour set | −0.0256 | −0.0060 | 2/8 | .0391 | −1.01 |
+| colour set − other 17 | −0.0140 | **−0.0139** | **0/8** | **.0078** | −2.80 |
+
+Konio loses in colour cortex while holding a 2× contrast advantage, and NC and
+raw units agree in sign on all four contrasts. Outcome D is returned
+independently by both cells at full n.
+
+**The load-bearing number is the last row.** The contrast manipulation moves
+konio's global level enormously — mean Δ over the other 17 ROIs goes from
+**−0.0116** (matched) to **+0.0079** (raw), and in the raw cell konio wins
+early visual cortex outright (V1d +0.077, 8/8). Yet the colour-set-minus-rest
+deficit is **−0.0140 matched against −0.0139 raw**: essentially unchanged. The
+colour-specific deficit is therefore **invariant to a 2× input-contrast
+manipulation that swamps the global effect**. That is much stronger than a
+simple loss: it shows the deficit does not live on the contrast/SNR axis at
+all, which is the axis a sceptic would reach for first.
+
+**Stated honestly, three limitations of the raw cell.** (1) **VO pooled does
+not reach significance even at n=8** — p = .1094, 2/8, d_z = −0.74. Only hV4
+and the specificity contrast hit the .0078 floor; the pooled-VO claim rests on
+the matched cell alone. (2) The absolute deficits are ~4–5× smaller than in the
+matched cell, which is expected — the contrast advantage partly offsets them —
+but it means the raw cell corroborates direction and specificity, not effect
+size. (3) The n=5 interim read reported here previously was misleading in
+places (it gave VO 1/5 and d_z = −3.15 on specificity); at n=5 the exact
+two-sided floor is .0625, so nothing there could have been significant. Those
+interim numbers are superseded by the table above and should not be quoted.
+
+*(Numbering note: a concurrent session's §68 contains subsections mislabelled
+"§70.3" and "§70.4"; the §70.3 meant here is this one. Left untouched rather
+than edited across sessions — see §70.7.)*
 
 ### §70.4 What this closes, and what it does not
 
@@ -7092,3 +7120,70 @@ relative-accuracy AUC rises materially at its best checkpoint, the dissociation
 weakens and §2.5 must be restated in whatever terms survive; the section is not
 load-bearing for §2.1 either way. If it does not rise, the published
 dissociation stands on undegraded weights and the limitation is retired.
+
+### 71.7 OOD on best saved checkpoints — the §71.6 pre-commitment resolves
+
+Array 26424303, 12/12 COMPLETED, `results/ood_bestep/`. `ood_verdict.py` now
+takes the results directory as an argument, so both policies are scored by
+identical code.
+
+Relative-accuracy AUC, diet arm, final → best saved:
+
+| corruption | final | best saved | Δ | separation (relative) |
+|---|---|---|---|---|
+| uniform-noise | 0.6869 | 0.6341 | **−0.053** | overlap → **complete sep.** |
+| high-pass | 0.6188 | 0.6781 | +0.059 | sep. → sep. |
+| phase-scrambling | 0.3507 | 0.3825 | +0.032 | **sep. → overlap** |
+| rotation | 0.5524 | 0.5738 | +0.021 | sep. → sep. |
+| false-colour | 0.8419 | 0.8536 | +0.012 | sep. → sep. |
+| *low-pass (trained-in)* | *0.4407* | *0.4444* | *+0.004* | sep. → sep. |
+| *contrast (trained-in)* | *0.3269* | *0.4813* | *+0.154* | sep. → sep. |
+
+**The pre-commitment asked whether the diet arm's relative AUC rises materially.
+On the corruptions that count, it does not.** Four of five move by ≤0.059 and
+one moves *down*. The diet arm stays below no-diet on every one of the five, and
+`OUTCOME C` is returned under both policies. §2.5's claim survives on undegraded
+weights, which is the outcome that was not guaranteed.
+
+The one large move is **contrast, +0.154** — a trained-in family that counts
+toward nothing. That is the §68 Test C pattern again: late-training degradation
+selectively destroys the diet's robustness to the very manipulation its front
+end applies, which is a coherent story about degradation and not about shape
+bias.
+
+### 71.7.1 What changed, and what it costs
+
+1. **H1 strengthens.** All three pre-registered H1 corruptions (uniform noise,
+   high-pass, false colour) now show complete seed separation in the predicted-
+   against direction; at final checkpoint uniform noise merely overlapped. H1
+   remains *refuted* — the diet is less robust, not more — and it is refuted
+   more cleanly.
+2. **H2 dies.** Phase-scrambling flips from "diet worse, complete separation"
+   to "indistinguishable, p = 0.70". H2 was the only pre-registered hypothesis
+   the mechanical scorer ever marked supported. **This costs the paper nothing,
+   because §54.2 already ruled that H2 must not be reported as supported** —
+   its "support" was a main effect masquerading as the predicted crossover. The
+   draft never claimed it. A refusal taken on conceptual grounds in §54.2 is now
+   independently confirmed by a checkpoint control, which is the strongest form
+   of evidence that the refusal was right.
+3. **H3 weakens slightly**, 90% → 80% of control comparisons patterning with
+   no-diet. The new defector is `parvo_highsf` on phase-scrambling, where the
+   diet/no-diet gap is 0.009 — "closer to diet" is not meaningful across a gap
+   that small, and the scorer's binary nearest-neighbour rule overstates it.
+   §2.5 now reports 8 of 10 rather than "throughout".
+4. **A new observation worth one sentence:** the diet is *not* more robust to
+   contrast reduction (0.481 vs 0.549) despite its front end containing a
+   contrast-sensitivity cut. Trained-in does not automatically mean robust, and
+   that makes the low-pass positive control more informative rather than less.
+
+Draft updated: §2.5's table, its headline sentence ("every corruption" → "four
+of the five"), the Discussion, and Limitation 1.
+
+### 71.7.2 Checkpoint policy is now split across the paper
+
+§2.1 (both instruments) and §2.5 are scored on best saved checkpoints. §2.4
+(PR), §2.6 (error consistency) and §2.7 (cortex) are still on final
+checkpoints. §68 Test C showed the PR instrument tracks checkpoint degradation
+at r = −0.99, so **§2.4 is the section most likely to move** and is the next
+re-run to schedule. This split must be stated in Methods before submission; it
+is currently only in the PLAN.
