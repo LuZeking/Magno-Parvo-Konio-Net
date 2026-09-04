@@ -7350,3 +7350,86 @@ which have no checkpoints, so §2.4 is structurally immune. The trained PR
 statistic lives in **§2.2**. Array 26427718 is still the right job — it supplies
 seeds 1 and 2 at their best saved checkpoints for §2.2's replication table — but
 it is no longer the load-bearing evidence, which is §71.9.2.
+
+---
+
+## §71.10 THE §71.8 PRE-REGISTRATION RESOLVES: P1 HELD, P3 NOT TRIGGERED — and
+## most of §2.2's "seed irreproducibility" was late-training degradation
+
+Array 26427718, 32/32 COMPLETED. `tmp_analysis/pr_bestep_score.py` scores the
+§2.2 participation-ratio statistic at each seed's **best saved checkpoint**, with
+an in-script verifier that re-derives that checkpoint from `history.json` and
+aborts on a mismatch (the §71.1 off-by-one cannot return).
+
+### 71.10.1 The pipeline validates itself before it is read
+
+Six of the twelve seeds have their best saved checkpoint at epoch 150, which is
+the same weight file as `checkpoint_last` and therefore the *published* number.
+Those six must reproduce §2.2's table exactly, and they do:
+
+| arm | published | recomputed | match |
+|---|---|---|---|
+| no diet, seeds 0/1/2 | 0.947 / 0.988 / 0.914 | 0.9466 / 0.9885 / 0.9143 | ✅ |
+| `parvo_highsf`, seeds 0/1/2 | 1.640 / 1.497 / 1.664 | 1.6399 / 1.4974 / 1.6638 | ✅ |
+
+So any movement below is a real checkpoint effect, not a re-extraction artefact.
+
+### 71.10.2 P1 — HELD, with complete separation
+
+| arm | best-saved seeds | mean | seed range | side |
+|---|---|---|---|---|
+| diet / luminance | 1.703, 1.722, 1.602 | 1.676 | **0.120** | 3/3 > 1, 8/8 subjects |
+| diet / `parvo_highsf` | 1.640, 1.497, 1.664 | 1.600 | 0.166 | 3/3 > 1, 8/8 subjects |
+| diet / red−green (`swap`) | 2.327, 1.541, 1.995 | 1.954 | **0.787** | 3/3 > 1, 8/8 subjects |
+| no diet | 0.947, 0.988, 0.914 | 0.950 | 0.074 | 0/3 > 1 |
+
+All nine diet seeds above parity, all three no-diet seeds below, **complete
+seed-level separation** (diet minimum 1.602 vs no-diet maximum 0.988, gap
+**+0.614**). P3 — the fatal branch, "the diet arm falls to or below parity on
+undegraded weights" — is **not triggered**. §2.2 stands, and Figure 1(c) does
+not need rebuilding.
+
+### 71.10.3 P2 — the level moved, and it moved the *opposite* way from the guess
+
+§71.8.2 predicted the level would "probably move downward, since Test C found the
+most-degraded seed carried the highest ratio". Test C was withdrawn in §71.9.1,
+and its prediction fails too: the diet/luminance mean is essentially unchanged
+(1.978 published → 1.676) but the **seed range collapses from 0.904 to 0.120, a
+7.6× tightening**; `swap` collapses from 2.388 to 0.787, a 3.0× tightening. The
+two arms whose best checkpoint is not 150 are exactly the two that moved.
+
+This is the *same pattern* §71 found on accuracy — the diet arm's seed range
+there went 0.180 → 0.012 when scored on weights that exist. Two independent
+instruments now agree: **the diet arm is not markedly less reproducible than the
+control; it looked that way because it was being scored at a degraded final
+checkpoint.** That is a property of the training schedule, not of the diet.
+
+### 71.10.4 What this does NOT license
+
+The tightening must not be spent on a level claim. Three checks, all of which
+must pass before "converges to X" could be written, and one fails:
+
+- §58.3 retired a "convergence to within 2%" reading because the 0.037 gap
+  between the two diet-on-luminance arms was ~24× smaller than that arm's seed
+  noise. At best saved checkpoints the gap between arm means is 0.075 and the
+  seed noise is 0.120 — still **larger than the gap**. The retraction stands.
+- The largest within-arm seed range is still 0.787 (`swap`), an 80% swing.
+- n=3 per arm cannot separate a level from a seed draw regardless.
+
+So §2.2 continues to claim the side and no level. What changes is the *reason
+given*: the honest statement is no longer "the within-arm seed range reaches
+2.39", which was a final-checkpoint artefact, but "the within-arm seed range
+reaches 0.79 and exceeds the between-arm gap".
+
+### 71.10.5 Consequential edits
+
+1. §2.2's seed-replication table → best-saved values, with the checkpoint stated.
+2. §2.2's "seed range reaches 2.39" → 0.79, and the §58.3 retraction re-derived
+   on the new noise estimate.
+3. §2.3's "0.904 ... a 28-fold difference in seed stability" → 0.120, **3.7-fold**.
+   The cortical instrument is still the tighter one, but not by the margin
+   claimed, and the sentence asserting §2.2's instability "belongs to the
+   participation-ratio measure" is now wrong and must go — the instability
+   belonged to the checkpoint.
+4. Methods: state the split checkpoint policy (§2.1, §2.2, §2.5 on best saved;
+   §2.6, §2.7 on final) — still outstanding.

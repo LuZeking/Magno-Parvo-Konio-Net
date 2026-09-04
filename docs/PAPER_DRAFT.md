@@ -46,7 +46,7 @@ front end whose stream asymmetry is *inverted* (0.586, parvo-dominant in 8/8
 subjects) trains to **magno-dominant**, overtaking a network handed 1.402. The
 diet does not preserve the asymmetry it is handed, nor drive training to any
 particular value — across three training seeds the trained level ranges over
-2.39 in a single condition. What replicates is **which side of parity** training
+0.79 in a single condition. What replicates is **which side of parity** training
 ends on: all nine diet seeds end magno-dominant in 8/8 subjects, across a 3.26×
 spread in what they were handed, while all three no-diet seeds collapse to
 parity from the *most* magno-dominant front end in the set (1.634). Seed-level
@@ -185,10 +185,12 @@ only 165 of 1,200 images and returns something near a coin flip by construction.
 
 *A note on which instruments are seed-stable.* The conjunction cell's probe bias
 varies by **0.014** across seeds — the tightest number in this paper. The same
-three checkpoints vary by **0.904** on the magno/parvo dimensionality ratio of
-§2.2. Seed instability is a property of the dimensionality measure, not of these
-models, which is why §2.2 claims a side rather than a level while §2.1 can quote
-values.
+three checkpoints vary by **0.120** on the magno/parvo dimensionality ratio of
+§2.2 when both are scored at the best saved checkpoint. §2.2 still claims a side
+rather than a level, but because its within-arm spread exceeds its between-arm
+gap (§2.2), not because its instrument is unstable — an earlier version of this
+note gave that spread as 0.904 and drew the wrong conclusion from it
+(PLAN §71.10).
 
 **Both single factors move a stream substantially toward neutral and neither
 crosses zero. Only the conjunction crosses, and it goes all the way.** This is an
@@ -234,34 +236,49 @@ front end would stay inverted. **It does not.**
 
 | arm | diet applied to | model | front end | after training |
 |---|---|---|---|---|
-| diet | luminance | `dkl_bcs_seed0` | 1.402 ±0.089 | **1.603** ±0.032 |
+| diet | luminance | `dkl_bcs_seed0` | 1.402 ±0.089 | **1.703** ±0.059 |
 | diet | luminance | `dkl_bcs_parvo_highsf_seed0` | **0.586** ±0.013 | **1.640** ±0.030 |
-| diet | **red−green** | `dkl_bcs_swap_seed0` | **1.909** ±0.125 | **2.225** ±0.079 |
+| diet | **red−green** | `dkl_bcs_swap_seed0` | **1.909** ±0.125 | **2.327** ±0.085 |
 | no diet | — | `dkl_base_seed0` | 1.634 ±0.118 | 0.947 ±0.035 |
 | no diet | — | `dkl_base_seed1` | 1.634 ±0.118 | 0.988 ±0.040 |
 
-**Seed replication (n=8 subjects x 3 seeds x 4 conditions).** Every level above
-is one checkpoint. Array 26413641 extracted seeds 1-2 for all four conditions;
-the levels turn out not to be reproducible, and the side does:
+**Seed replication (n=8 subjects x 3 seeds x 4 conditions).** Array 26413641
+extracted seeds 1-2 for all four conditions. Every seed is scored at its **best
+saved checkpoint** (PLAN §71.8, §71.10), so no arm is handicapped by the
+late-training degradation of §2.5; for the six seeds whose best checkpoint is the
+final one this is the same weight file, and those six reproduce to four decimals:
 
 | arm | front end | seed 0 | seed 1 | seed 2 | seed range |
 |---|---|---|---|---|---|
-| diet / luminance | 1.402 | 1.603 | 2.507 | 1.823 | 0.904 |
+| diet / luminance | 1.402 | 1.703 | 1.722 | 1.602 | 0.120 |
 | diet / parvo_highsf | **0.586** | 1.640 | 1.497 | 1.664 | 0.166 |
-| diet / red−green | 1.909 | 2.225 | 4.383 | 1.995 | 2.388 |
+| diet / red−green | 1.909 | 2.327 | 1.541 | 1.995 | 0.787 |
 | no diet | 1.634 | 0.947 | 0.988 | 0.914 | 0.074 |
 
 All nine diet seeds are above parity in **8/8 subjects**. All three no-diet seeds
 sit at or below it. Seed-level separation between the diet arms and no-diet is
-**complete** for all three arms (p=0.100, the exact two-sided 3x3 floor).
+**complete** for all three arms (p=0.100, the exact two-sided 3x3 floor); the
+narrowest gap, diet/luminance against no diet, is **+0.614**.
 
-We therefore report no level, no set point, and no compression factor anywhere:
-the within-arm seed range reaches 2.39, so any statement of the form "training
-converges to X" is unsupported. What replicates is the side, and that is what
-this section claims. *(This retires two earlier readings of our own data — a
-"convergence to within 2%" between the two diet-on-luminance arms, whose 0.037
-gap is ~24x smaller than the seed noise on that same arm, and a channel-specific
-set point, which n=3 seeds cannot separate: PLAN §58.3.)*
+We nonetheless report no level, no set point, and no compression factor: the
+within-arm seed range reaches 0.79, which exceeds the 0.075 gap between the two
+diet-on-luminance arm means, so any statement of the form "training converges to
+X" remains unsupported at n=3. What replicates is the side. *(This retires two
+earlier readings of our own data — a "convergence to within 2%" between the two
+diet-on-luminance arms, whose 0.037 gap is still smaller than that arm's 0.120
+seed noise, and a channel-specific set point, which n=3 seeds cannot separate:
+PLAN §58.3.)*
+
+**A correction to the seed spread we previously reported.** An earlier version of
+this table scored every seed at its final checkpoint and gave the diet/luminance
+seed range as 0.904 and the `swap` range as 2.388. Both were inflated by the
+late-training degradation documented in §2.5: on weights selected by validation
+accuracy the two ranges fall to **0.120 and 0.787**, a 7.6× and 3.0× tightening,
+while the two arms whose best checkpoint *is* the final one do not move at all.
+The same correction appeared independently on accuracy (§2.5, seed range
+0.180 → 0.012). The diet arm is therefore **not** markedly less reproducible than
+the control on either instrument; it was being scored on degraded weights
+(PLAN §71.10).
 
 **When during training the dissociation appears.** One seed per arm has a
 cached checkpoint trajectory, which lets us ask when the two arms separate. The
@@ -299,7 +316,7 @@ The inverted case flips completely: 8/8 subjects below parity before training,
 asymmetry is not what training carries forward.
 
 But the diet does not drive training to a single value either. Moving the
-identical transform onto the chromatic channel (`swap`) lands at **2.225**,
+identical transform onto the chromatic channel (`swap`) lands at **2.327**,
 differing from both diet-on-luminance arms at p=.0078, 8/8 (per-subject
 2.09–2.38). That arm is the best-controlled of the four — provenance-exact
 reference, and unlike `parvo_highsf` it is architecture-matched — so it cannot
@@ -341,13 +358,18 @@ instruments, the cortical contrast was re-run for seeds 1–2 of both arms:
 | 1 | +1.566 | +0.098 | +1.468 | .0078 | 8/8 |
 | 2 | +1.558 | +0.083 | +1.474 | .0078 | 8/8 |
 
-The diet arm's seed range here is **0.032**, against **0.904** for the same three
-checkpoints on the dimensionality ratio of §2.2 — a 28-fold difference in seed
-stability on the same models. The instability documented in §2.2 belongs to the
-participation-ratio measure, not to the models or to this paper's instruments
-generally: §2.1's probe (0.014) and this dissociation (0.032) are both an order
-of magnitude tighter. The raw statistic agrees on every seed, so the
-two-statistics rule is satisfied three times over.
+The diet arm's seed range here is **0.032**, against **0.120** on the
+dimensionality ratio of §2.2 — a 3.7-fold difference in seed stability across the
+same three training runs. The two are not the same weight files: this section is
+scored at the final checkpoint and §2.2 at the best saved one (see Methods), so
+the comparison is between instruments applied to the same runs, not to the same
+checkpoints. (An earlier version of this sentence gave 28-fold, against a §2.2
+seed range of 0.904 that was itself a final-checkpoint artefact; see §2.2 and
+PLAN §71.10. The cortical instrument is still the tighter of the two, but not by
+the margin previously claimed, and we no longer attribute §2.2's spread to the
+participation-ratio measure — it belonged to the checkpoint.) The
+raw statistic agrees on every seed, so the two-statistics rule is satisfied three
+times over.
 
 
 *Source: PAPER_PLAN §43.1, §17, §48, §29.*
@@ -672,7 +694,8 @@ information the early input carries, but which solutions it makes reachable.
 
 We are careful about how far this generalises. What replicates across seeds is
 the *side* of parity, not a level. Across three seeds a single condition's
-trained ratio ranges over 2.39, and two readings we ourselves previously
+trained ratio ranges over 0.79 — wider than the gap between conditions — and two
+readings we ourselves previously
 advanced — a convergence "to within 2%", and a channel-specific set point — do
 not survive that spread. A reader should take from §2.2 that the diet decides a
 direction, and nothing about a destination.
@@ -898,15 +921,15 @@ predictions failed and are reported as failures in the sections above.
 4. **There is no set point, and the trained level is not reproducible across
    seeds.** Earlier drafts of this work reported the two diet-on-luminance arms
    as converging to within 2% (a gap of 0.037), and then that the level was
-   channel-specific (red−green at 2.225 against luminance at 1.603). The seed
+   channel-specific (red−green at 2.327 against luminance at 1.703). The seed
    replication retires both: the within-arm seed range on the luminance arm is
-   **0.904**, ~24× that gap, and the red−green and luminance ranges overlap
-   (1.995–4.383 vs 1.603–2.507), so n=3 seeds cannot establish
+   **0.120**, still larger than that 0.037 gap, and the red−green and luminance
+   ranges overlap (1.541–2.327 vs 1.602–1.722), so n=3 seeds cannot establish
    channel-specificity either. The paper therefore reports **no level, no set
    point and no compression factor anywhere** — only the side of parity, which
    replicates 12/12 seeds with complete separation (§2.2, PLAN §58.3).
 5. **The independent thesis checkpoint lands at 1.158** — below every one of our
-   diet seeds (1.497–4.383) but on the same side of parity, in 8/8 subjects. It
+   diet seeds (1.497–2.327) but on the same side of parity, in 8/8 subjects. It
    is a different codebase and a real age schedule rather than our fixed age 48,
    feature-extracted through a schedule that is not its own, so it is the least
    comparable arm. It is reported as a convergent check on the *side* claim, and
