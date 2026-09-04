@@ -6978,3 +6978,63 @@ LO2's subject count (1/8 → 2/8) and third-decimal rounding on four early-visua
 ROIs; the §7.1 table has been corrected in place. The eccentricity-residualised
 rows still return "n=0 / n=3 too few subjects", independently confirming §65.5's
 decision not to pre-register a test the atlas cannot support.
+
+---
+
+## §71 A SECOND CHECKPOINT ERROR, IN MY OWN CORRECTION — "best epoch" named an
+## epoch whose weights do not exist
+
+§67.1 caught that every published result used `checkpoint_last.pt`, and §68
+re-ran cue-conflict on "the best epoch". Re-reading the artefacts before
+reporting status, the two halves of that correction do not refer to the same
+thing.
+
+### 71.1 What the numbers actually are
+
+`standalone_trainer.py:414` writes `checkpoint_{epoch+1:03d}.pt` every 25
+epochs. `history.json` is 0-indexed, 150 entries. So `checkpoint_125.pt` is
+`history[124]`, and only six weight files exist per run. The per-epoch
+validation maximum almost never lands on one of them.
+
+| definition | diet mean | range | no-diet mean | range | rel. gap |
+|---|---|---|---|---|---|
+| per-epoch max (log only, **no weights**) | 0.5921 | 0.0080 | 0.7089 | 0.0029 | 16.5% |
+| **best saved checkpoint** | **0.5562** | 0.0123 | **0.7012** | 0.0073 | **20.7%** |
+| final checkpoint (published) | 0.4446 | 0.1804 | 0.7012 | 0.0073 | 36.6% |
+
+Best saved checkpoints: diet epochs 125 / 75 / 50, no-diet 150 / 150 / 150.
+The no-diet arm's best saved checkpoint *is* its final one, which is why only
+the diet arm was ever affected.
+
+### 71.2 The error
+
+§68 quoted **16.5%** — row 1 — as the corrected accuracy cost, while the
+shape-bias re-run (0.903) was computed on row 2's checkpoints, which sit 0.036
+lower. The manuscript therefore paired an accuracy figure from weights that do
+not exist with a behavioural figure from weights that do. Row 1 characterises
+the training schedule; it is not the cost of any model that can be evaluated.
+
+Corrected in `PAPER_DRAFT.md` §2.5 and Limitations 1: the cost is **20.7%**
+(0.556 vs 0.701), with row 1 retained explicitly labelled as a schedule
+property. Limitation 1 now names both superseded figures (37%, then 16.5%)
+rather than silently replacing the second.
+
+### 71.3 What does not change
+
+- **§68's Test A conclusion stands, and strengthens.** The 0.903 shape bias was
+  always measured on the best *saved* checkpoints. Those models are 0.111 more
+  accurate than the final ones and *more* shape-biased, not less. Degradation
+  dilutes the §2.1 effect; it does not manufacture it.
+- **The seed-variance withdrawal stands.** 0.012 vs 0.180 is still an order of
+  magnitude, so "the diet arm is markedly less stable" remains an artefact of
+  last-checkpoint selection, and "the diet destabilises late training" remains
+  the real, separate finding.
+- **§67's Test B is unaffected** — it trains fresh models to a target accuracy
+  and never referenced these checkpoints. Its target band should bracket
+  **0.556**, the diet arm's best evaluable accuracy, not 0.592.
+
+### 71.4 Standing rule
+
+Any accuracy quoted beside a behavioural, cortical, or representational number
+must come from the same weight file that produced it. A validation-log maximum
+is a property of the schedule and may only be reported as such.
