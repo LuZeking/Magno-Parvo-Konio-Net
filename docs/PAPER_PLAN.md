@@ -7060,3 +7060,35 @@ what a shared accuracy driver would produce.
 Together with §68's Test A and Test C this closes the checkpoint question for
 §2.1 in both instruments. §2.2 (PR ratio) remains exposed at r = −0.99 and is
 not cleared by this; only Test B can settle it.
+
+### 71.6 §2.5 OOD re-launched on best saved checkpoints (array 26424303)
+
+`slurm/ood_robustness_bestep.sh`, 12 elements, `--partition=main`, no `--gres`
+(resnet18 inference; the project Slurm rules send non-CUDA work to `main`).
+Writes to `results/ood_bestep/`, leaving the published `results/ood/` intact so
+the two policies can be compared rather than one silently overwriting the other.
+
+The job resolves the checkpoint itself from `history.json` and fails loudly if
+the file or the resolved `.pt` is missing, so the §71.1 off-by-one cannot be
+reintroduced by hand. Resolved epochs, confirmed in the logs against an
+independent offline computation:
+
+| cell | seed 0 | seed 1 | seed 2 |
+|---|---|---|---|
+| `dkl_bcs` (diet) | 125 (0.564) | 75 (0.553) | 50 (0.552) |
+| `dkl_base` | 150 (0.700) | 150 (0.698) | 150 (0.706) |
+| `dkl_bcs_swap` | 100 (0.701) | 100 (0.697) | 150 (0.700) |
+| `dkl_bcs_parvo_highsf` | 150 (0.705) | 150 (0.699) | 150 (0.695) |
+
+The policy is applied to **all four cells**, not only the diet arm, so the
+comparison stays checkpoint-policy-consistent. Only the diet arm moves much;
+`swap` shifts by ≤0.009 and the other two not at all.
+
+**Pre-commitment.** §2.5's claim is that shape bias and OOD robustness are not
+intrinsically coupled — the diet arm delivers none of the robustness Geirhos
+et al. obtained via Stylized-ImageNet. The published numbers used degraded diet
+weights, which is the reading most favourable to that claim. If the diet arm's
+relative-accuracy AUC rises materially at its best checkpoint, the dissociation
+weakens and §2.5 must be restated in whatever terms survive; the section is not
+load-bearing for §2.1 either way. If it does not rise, the published
+dissociation stands on undegraded weights and the limitation is retired.
