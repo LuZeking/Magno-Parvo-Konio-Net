@@ -8,7 +8,7 @@ something that was supposed to be held fixed was not, and per §65.4 NOTHING
 else in the arm may be interpreted until it is explained.
 
 This is what caught the stale pre-e3b8667 reference fits for subjects 4 and 8
-(§67). Run it after every konio cell lands, not once at the end.
+(§69). Run it after every konio cell lands, not once at the end.
 
     python -m tmp_analysis.konio_gate [konio_model_name]
 """
@@ -50,7 +50,7 @@ def main(model: str = "untrained_konio_matched") -> int:
         print(f"INCOMPLETE: subjects {missing} not yet on disk.")
     if bad:
         print(f"GATE FAILED for subjects {bad} (worst {worst:.3e}).")
-        print("Per §65.4 nothing else in the arm may be interpreted. See §67.")
+        print("Per §65.4 nothing else in the arm may be interpreted. See §69.")
         return 1
     if missing:
         return 2

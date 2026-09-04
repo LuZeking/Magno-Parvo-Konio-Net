@@ -548,25 +548,29 @@ IPS0–5. `tmp_analysis/kastner_rois.py`, n=8, NC>0.1:
 
 | ROI | median(Uₘ−Uₚ) | subjects |
 |---|---|---|
-| V1d / V1v | +0.086 / +0.083 | 8/8 |
-| V2v / V2d | +0.077 / +0.058 | 8/8 |
-| PHC2 | +0.054 | 8/8 |
-| V3d / V3A / PHC1 / V3v | +0.041 / +0.041 / +0.038 / +0.036 | 8/8 |
-| **TO2 / TO1 (hMT+)** | +0.021 / +0.018 | 6/8, 7/8 |
-| VO2 / VO1 | +0.011 / −0.002 | 7/8, 4/8 |
-| LO2 | −0.010 | 1/8 |
-| **hV4** | **−0.012** | 2/8 |
+| V1d / V1v | +0.0853 / +0.0831 | 8/8 |
+| V2v / V2d | +0.0764 / +0.0573 | 8/8 |
+| PHC2 | +0.0546 | 8/8 |
+| V3d / V3A / PHC1 / V3v | +0.0404 / +0.0397 / +0.0377 / +0.0355 | 8/8 |
+| **TO2 / TO1 (hMT+)** | +0.0209 / +0.0181 | 6/8, 7/8 |
+| VO2 / VO1 | +0.0105 / −0.0016 | 7/8, 4/8 |
+| LO2 | −0.0100 | 2/8 |
+| **hV4** | **−0.0123** | 2/8 |
 
-- **hMT+ is magno-preferring: +0.0197, p = .023, 7/8 subjects, dz = 1.29.**
+Values recomputed after §69's reference refit; see §70.6. Every entry is
+unchanged to the precision originally reported except LO2's subject count
+(1/8 → 2/8) and third-decimal rounding on the four largest early-visual ROIs.
+
+- **hMT+ is magno-preferring: +0.0195, p = .0234, 7/8 subjects, dz = +1.30.**
   §A3.5 wrote the dorsal/MT test off as a limitation of static stimuli. It is
   testable and it comes out in the predicted direction. It should be promoted
   from "limitation" to a reported (secondary) result.
-- **The colour prediction fails at VO: +0.0044, p = .46.** hV4 remains the
+- **The colour prediction fails at VO: +0.0045, p = .4609.** hV4 remains the
   only parvo-preferring area. The hMT+ − VO interaction is **not**
-  significant (+0.0153, p = .109), so this is *not* a second double
+  significant (+0.0150, p = .1094), so this is *not* a second double
   dissociation. Report the null.
 - **The 20-ROI profile is highly reproducible**: leave-one-subject-out
-  Spearman **ρ = +0.79** (range .59–.88). Useful reviewer-proofing: the map
+  Spearman **ρ = +0.794** (range .589–.896). Useful reviewer-proofing: the map
   is not carried by one or two subjects.
 - The profile ranks roughly by hierarchical level *and* eccentricity
   (V1 > V2 > V3 > rest; peripheral-biased PHC/V3A high; foveal hV4/LO2 low),
@@ -6613,7 +6617,7 @@ results.** Every headline — the 2×2 (§2.1), the side of parity (§2.2), the
 cortical dissociation (§2.3), the robustness null (§2.5), the error-consistency
 null (§2.6) and the cost (§2.7) — rests on three training seeds.
 
-## §67 THE §65.4 GATE FIRED — and it caught a stale reference, not a bad arm
+## §69 THE §65.4 GATE FIRED — and it caught a stale reference, not a bad arm
 
 §65.4 pre-registered a hard gate: `r2_magno` is a `RidgeCV` fit on the magno
 band alone, `prepare_band` uses only that band's own statistics, and
@@ -6640,7 +6644,7 @@ the front-end patch left the rg path untouched end to end — through the cache,
 the PCA and the fit, not merely in the transform that `smoke_konio.py` tested.
 Two subjects are not.
 
-### §67.1 The cause: the reference is stale, the arm is fine
+### §69.1 The cause: the reference is stale, the arm is fine
 
 Noise ceiling, ROI labels and voxel count are IDENTICAL between the konio and
 reference files for subj04 and subj08, so the betas, trials and mask are the
@@ -6659,7 +6663,7 @@ sitting in the REFERENCE condition since August, and the konio gate is what
 exposed it — which is the argument for pre-registering a gate that can only
 fail for one reason.
 
-### §67.2 Scope of the contamination
+### §69.2 Scope of the contamination
 
 e3b8667 changed the ridge SEARCH only, so the contamination reaches exactly
 those quantities derived from the fit, and no further. Checked, not assumed:
@@ -6685,7 +6689,7 @@ prediction, not a finding, and it is not a licence to leave it. Every fit-derive
 number quoted from `untrained_seed0` must be recomputed once the refit lands,
 and any that changes must be corrected in place rather than silently re-quoted.
 
-### §67.3 Fix
+### §69.3 Fix
 
 Job **26423414**, `sbatch --array=3,7 slurm/encode_subjects.sh untrained_seed0`
 — explicit array indices so the invocation is byte-identical to the original
@@ -6698,7 +6702,7 @@ The pre-e3b8667 files are preserved at
 `/scratch/byrong/mpk/encoding/backup_pre_e3b8667/` so the numbers that were
 reported from them stay auditable.
 
-### §67.4 What this blocks
+### §69.4 What this blocks
 
 The konio verdict CANNOT be read until the refit lands and the gate passes on
 all 8 subjects. `tmp_analysis/konio_verdict.py` already refuses to interpret
@@ -6715,7 +6719,7 @@ reaches 0.439 clean accuracy against 0.695, no per-condition hyperparameter
 search was run, and therefore the dissociations of §2.4/§2.5/§2.6 may follow
 from an accuracy gap rather than from the diet. Written before any measurement.
 
-### §67.1 The error found first — `checkpoint_last.pt` is not the right checkpoint
+### §69.1 The error found first — `checkpoint_last.pt` is not the right checkpoint
 
 `history.json` logs `val_top1` for all 150 epochs of all 12 runs. Reading it:
 
@@ -6743,7 +6747,7 @@ Three consequences, all of which the paper currently states incorrectly:
 The late-training degradation may itself be a finding about the diet. It must
 not be reported as, or conflated with, the diet's accuracy cost.
 
-### §67.2 What is being run
+### §69.2 What is being run
 
 **Test A — best-epoch re-measurement (cheap, decides the artefact question).**
 Re-run the cue-conflict behaviour and the shape/texture probe on each diet
@@ -6760,7 +6764,7 @@ seeds, final accuracy spans 0.347–0.527. If shape bias, PR ratio, OOD AUC and
 error-consistency kappa do not track accuracy across that range, accuracy is not
 the driver.
 
-### §67.3 Predictions, fixed now
+### §69.3 Predictions, fixed now
 
 - **P1.** The 2×2 conjunction (§2.1) survives at best epoch: the diet magno
   probe bias stays above 0, and above all three other cells. *If it does not,
@@ -6773,7 +6777,7 @@ the driver.
 - **P4.** Within the diet arm, shape bias does not correlate with accuracy
   across seeds.
 
-### §67.4 The outcome that would be fatal, named in advance
+### §69.4 The outcome that would be fatal, named in advance
 
 If P3 fails — if matching accuracy is sufficient to produce the shape bias
 without the diet — the conjunction result is confounded and the paper does not
@@ -6797,7 +6801,7 @@ instrument is exposed
 
 Test B (the matched control, array 26423530) is still queued. A and C are done.
 
-### §68.1 Test C — which measures track accuracy inside the diet arm
+### §70.1 Test C — which measures track accuracy inside the diet arm
 
 The diet arm's three seeds span 0.347–0.527 final accuracy at identical
 architecture, data, schedule and front end — the widest within-condition
@@ -6819,7 +6823,7 @@ refute the side-of-parity claim — the no-diet arm sits at parity with *higher*
 accuracy, the opposite of what a pure accuracy account predicts — but §2.2
 cannot be cleared without Test B.
 
-### §68.2 Test A — the 2×2 at best epoch. P1 CONFIRMED.
+### §70.2 Test A — the 2×2 at best epoch. P1 CONFIRMED.
 
 Cue-conflict re-run on each diet seed's best saved checkpoint (ep125 = 0.564,
 ep75 = 0.553, ep50 = 0.552):
@@ -6834,7 +6838,7 @@ checkpoint, and the shape bias is **higher** there than on the published models.
 Degradation does not manufacture the §2.1 effect; it slightly dilutes it. The
 lead result is not an accuracy artefact.
 
-### §68.3 P2 REFUTED — and it was my prediction
+### §70.3 P2 REFUTED — and it was my prediction
 
 §67.3 predicted the best-epoch seed range on behaviour would be smaller than the
 last-checkpoint range, mirroring accuracy. It is not: 0.028 against 0.022. The
@@ -6843,7 +6847,7 @@ and the PR ratio were not. Recorded as a failed prediction, and it sharpens the
 picture — checkpoint degradation moves accuracy and the PR ratio, and leaves the
 shape-bias measures alone.
 
-### §68.4 Draft corrections made now, per §67.5
+### §70.4 Draft corrections made now, per §67.5
 
 Applied to `PAPER_DRAFT.md` regardless of Test B:
 - The 37% accuracy cost → **16.5%** (0.592 vs 0.709 at best epoch).
@@ -6853,8 +6857,124 @@ Applied to `PAPER_DRAFT.md` regardless of Test B:
 - Limitation 1 now names the superseded numbers explicitly rather than silently
   replacing them.
 
-### §68.5 What Test B still has to decide
+### §70.5 What Test B still has to decide
 
 Whether a no-diet model **held at the diet's accuracy** stays at parity on the PR
 ratio and stays texture-biased. P3 remains the fatal test: if it acquires the
 shape bias, §2.1 is confounded despite §68.2.
+
+## §70 THE KONIO ARM ANSWERS: OUTCOME D — the third channel is worse, and
+## worse specifically where colour lives
+
+Item #5 is decided. Job 26422215 cell 0 (`untrained_konio_matched`) is complete
+for all 8 subjects, and after §69's reference refit the §65.4 gate passes
+**bit-exact on every subject** (max|Δr2_magno| = 0.000e+00, worst across
+subjects 0.000e+00). So Δ = U_konio − U_parvo is exactly
+r2_joint(konio) − r2_joint(parvo), with zero magno-side estimation error, as
+§65.4 predicted it would be.
+
+### §70.1 The pre-declared contrasts, all four at the exact floor
+
+Primary arm, contrast-matched, n=8, NC-normalised (raw units in parentheses;
+§65.6 required sign agreement before any claim, and all four agree):
+
+| pre-declared contrast | Δ (NC) | Δ (raw) | subjects | p | d_z |
+|---|---|---|---|---|---|
+| hV4 | **−0.0293** | −0.0099 | **0/8** | **.0078** | −2.09 |
+| VO (VO1,VO2) | **−0.0238** | −0.0075 | **0/8** | **.0078** | −1.95 |
+| colour set (hV4,VO1,VO2) | **−0.0256** | −0.0083 | **0/8** | **.0078** | −2.06 |
+| colour set − other 17 ROIs | **−0.0140** | −0.0049 | **0/8** | **.0078** | −1.51 |
+
+.0078 is the exact two-sided Wilcoxon floor for n=8 (§55), and 0/8 is complete
+separation. This is **outcome D** of §65.6: konio is worse. Every arm of the
+pre-registration points the same way, and the coded verdict in
+`konio_verdict.py` returns D without touching the UNCLASSIFIED branch.
+
+### §70.2 The specificity contrast is the load-bearing one
+
+Outcome B — "konio wins globally, which is not a colour result" — was the
+outcome §65.6 called most likely a priori, because the contrast advantage is
+global by construction and because every ROI-specificity claim this project has
+tested (hMT+, dorsal/ventral, VO) has died that way. **That expectation was
+wrong, and in the informative direction.** Konio does not lose uniformly: in the
+matched arm it *wins* in V1d/V1v/V2d (+0.025/+0.014/+0.011) and loses
+everywhere else, with its three worst ROIs of twenty being **hV4 (−0.029), VO1
+(−0.027) and VO2 (−0.020)** — precisely the colour set. The colour-set-minus-
+rest contrast is itself at 0/8 and p = .0078, so the deficit is not a global
+shift; it is concentrated in colour-biased cortex. The same instrument that
+correctly killed hMT+ in §16.1 here returns a positive verdict on specificity,
+which is the strongest available evidence that this is a colour result and not
+a general-factor artefact.
+
+### §70.3 The raw cell makes it decisive, on the evidence so far
+
+§65.3 built the asymmetry deliberately: in the raw cell konio carries **2.05×
+rg's per-image RMS contrast**, so a loss there is decisive while a win proves
+nothing. On the 5 of 8 subjects that have landed (gate bit-exact on all five),
+konio *does* lose in colour cortex — hV4 −0.0030 (0/5), VO −0.0083 (1/5),
+colour set − rest −0.0159 (0/5, d_z = −3.15) — while simultaneously winning
+enormously in early visual cortex (V1d +0.090). Konio fails in colour cortex
+**while holding a 2× contrast advantage**, and the failure is specific.
+
+Stated honestly: n=5 cannot reach p < .05 — the exact two-sided floor for n=5
+is .0625, which is what every raw-cell contrast returns. The raw cell is
+directionally decisive and statistically incomplete. Tasks 12–14 (subjects
+5, 6, 7) are still running; **re-run `konio_verdict.py` when they land** before
+quoting any raw-cell p-value.
+
+### §70.4 What this closes, and what it does not
+
+CLOSES: the two-reading ambiguity §65 was built to resolve. Since §7.1, two
+readings of the failed colour prediction have been indistinguishable — the
+chromatic stream does not predict colour cortex at all, or L−M is the wrong
+chromatic axis. It is now the **first**: S−(L+M) is not merely no better, it is
+reliably and specifically worse in exactly the ROIs where the colour prediction
+was supposed to succeed. Both chromatic axes have been tested against colour
+cortex and neither predicts it. Per §65.6 outcome D the question closes, and B3
+loses its motivation: there is no evidence here for adding a koniocellular
+channel.
+
+DOES NOT CLOSE, and must be disclosed rather than glossed (§65.7):
+- **Untrained, one seed.** Nothing follows about a *trained* konio stream. §60.6
+  requires 3-seed untrained replication for a positive result; this is a
+  negative one for konio, so the requirement does not bind, but the arm remains
+  a single random initialisation and should be described as such.
+- **This is an axis SWAP, not a third stream.** B3 proposed dual chromatic
+  projections; the architecture that would deliver the repository's title is
+  untested. What is refuted is the premise that motivated it, not the
+  architecture itself. 3-way variance partitioning stays out of scope —
+  `banded_ridge.py` is hardcoded 2-band.
+- **No blur on K**, deliberately (§65.7): the measured radial spectrum of this
+  pipeline's `by` channel has nearly rg's shape (0.614 vs 0.570 of power in the
+  lowest octave), so blurring would impose an assumption rather than reproduce
+  a property.
+
+### §70.5 Where it goes in the paper
+
+Not a section. Konio is a **negative control that strengthens leg (c)** and it
+belongs in one paragraph plus a supplementary panel. The positive claim it
+supports is that the parvo stream's unique variance is not a generic
+"chromatic-channel" effect that any opponent axis would produce: swap L−M for
+S−(L+M), hold the luminance stream bit-identical, and the ventral prediction
+gets *worse*, specifically in colour cortex. Per the project's positioning rule,
+lead with that surviving positive claim — the specificity of L−M — and report
+the konio failure as its control, not as a finding in its own right.
+
+### §70.6 §7.1 revalidated on the corrected reference
+
+With §69's refit in place, `kastner_rois.py` was re-run on 8 consistently
+fitted subjects. The predicted-negligible effect is confirmed:
+
+| statistic | as reported | recomputed |
+|---|---|---|
+| hMT+ (TO1,TO2) | +0.0197, p=.023, 7/8, dz=1.29 | **+0.0195, p=.0234, 7/8, dz=+1.30** |
+| VO (VO1,VO2) | +0.0044, p=.46 | **+0.0045, p=.4609** |
+| hMT+ − VO interaction | +0.0153, p=.109 | **+0.0150, p=.1094** |
+| hV4 | −0.012, 2/8 | **−0.0123, 2/8** |
+| LOSO profile ρ | +0.79 (.59–.88) | **+0.794 (.589–.896)** |
+
+Every conclusion in §7.1 stands. The only changes at reported precision are
+LO2's subject count (1/8 → 2/8) and third-decimal rounding on four early-visual
+ROIs; the §7.1 table has been corrected in place. The eccentricity-residualised
+rows still return "n=0 / n=3 too few subjects", independently confirming §65.5's
+decision not to pre-register a test the atlas cannot support.
