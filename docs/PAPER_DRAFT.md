@@ -963,6 +963,43 @@ Recorded so the omissions are visible rather than silent.
   diet-specific and survives its controls.
 - **That integration produces human-like shape bias** (§2.7).
 - **That the diet improves neural predictivity** — it does not (§2.7).
+- **Any dorsal/ventral stream mapping.** The BA framing was
+  "magno→dorsal, parvo→ventral". We tested it rather than dropping it on
+  argument. The pre-declared dorsal−ventral interaction on the `streams` atlas
+  is +0.0245 (p_perm = .0079, 8/8 subjects) on the diet model — and
+  **+0.0122, p = .195 without the low-pass front end**, so it does not survive
+  its own control and is withdrawn (PLAN §8.2, §8.3).
+- **hMT+ specificity.** Kastner2015 supplies TO1/TO2 (hMT+), so the dorsal test
+  is possible on static images after all. At n=7 hMT+−VO looked real (p = .047);
+  **at n=8 the two statistics disagree (p = .195 normalised, p = .039 raw)**, so
+  the §8 two-statistics rule refuses it, and it is already dead in the blur
+  control. An earlier draft of our own analysis promoted hMT+ from "limitation"
+  to "result"; that promotion was a false positive from an incomplete subject
+  set and is retracted (PLAN §16.1).
+- **The eccentricity headline.** "Parvo dominates the fovea, magno the
+  periphery" was a candidate headline. The foveal band's sign **flips** when the
+  blur is removed (−0.057, 0/8 → +0.051, 7/8), so it is an artefact of the front
+  end, not a biological result (PLAN §8.3). What survives is only that magno's
+  *absolute* unique-variance advantage grows with eccentricity in both models
+  (raw slope +0.047 vs +0.041, 8/8 both, difference n.s.).
+
+  **Why these three failed together, and what it implies for the survivor.**
+  Without the low-pass front end essentially *every* ROI is magno-preferring.
+  The blur manufactures apparent regional specificity by handicapping the magno
+  stream until the parvo stream can win somewhere — the same general-factor
+  pathology that defeated the thesis's RSA, reappearing in encoding form. Any
+  regional claim on these models must therefore be shown to survive removal of
+  the blur. §2.3(b)'s ventral gradient is reported *because* it does: it gets
+  **larger** without the blur on the raw statistic (−0.118 → −0.208) and is
+  unchanged on the normalised one (−0.469 → −0.488, difference p = .383), and it
+  is not eccentricity — the eccentricity-matched contrast is −0.736 (p = .008,
+  0/8, dz −5.72).
+- **A clean dorsal/ventral organisation of the 20-ROI profile.** The profile
+  across Kastner2015's 20 ROIs is highly reproducible (leave-one-subject-out
+  Spearman ρ = +0.794, range .589–.896) and strongly graded — V1 > V2 > V3 >
+  rest, with **hV4 the only parvo-preferring area** — but it ranks by
+  hierarchical level and eccentricity, *not* by a dorsal/ventral split. We
+  report the gradient (§2.3b) and make no anatomical-stream claim.
 
 ---
 
