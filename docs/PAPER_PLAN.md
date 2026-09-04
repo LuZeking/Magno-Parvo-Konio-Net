@@ -7187,3 +7187,28 @@ checkpoints. §68 Test C showed the PR instrument tracks checkpoint degradation
 at r = −0.99, so **§2.4 is the section most likely to move** and is the next
 re-run to schedule. This split must be stated in Methods before submission; it
 is currently only in the PLAN.
+
+### §70.7 Numbering collisions on the shared `mpk-dev` branch
+
+Recorded because it is now recurring, and because it makes cross-references in
+this file unreliable rather than merely untidy.
+
+Two sessions are committing to `mpk-dev` and appending to this file
+concurrently. Since `c9f688a` the collisions are:
+
+- §67 claimed twice — by `c432dfd` (the gate / stale reference) and by
+  `333b697` (the accuracy-matched control). Resolved by renumbering **mine** to
+  §69, since `333b697` and `c34fd51` cross-reference each other and were the
+  larger change to unpick.
+- §68 claimed twice — by my konio verdict and by `c34fd51`. Mine became §70.
+- **"§70.3" and "§70.4" are still ambiguous.** `c34fd51`'s §68 section contains
+  subsections labelled `### §70.3` and `### §70.4` (apparently intended as
+  §68.3/§68.4), which collide with §70.3 and §70.4 of this section. Left
+  untouched: editing another session's committed prose while it is still
+  working in the same file is what produced the earlier duplication incidents.
+
+Consequence for anyone reading: a bare "§70.3" in this document resolves to two
+different places. One owner should reconcile the numbering in a single pass —
+that is a documentation fix, not a result, and it should not be done piecemeal
+by whichever session notices it. This joins the older §21/§25/§23/§24/§29
+disorder already recorded in §26.1.
