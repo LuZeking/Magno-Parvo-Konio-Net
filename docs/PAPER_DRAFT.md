@@ -452,13 +452,13 @@ not handicapped by the late-training degradation described below:
 
 | corruption | diet | no diet | swap | `parvo_highsf` | diet vs no-diet |
 |---|---|---|---|---|---|
-| uniform noise | 0.634 | 0.729 | 0.750 | 0.767 | −0.095, complete sep. |
+| uniform noise | 0.634 | 0.729 | 0.749 | 0.767 | −0.095, complete sep. |
 | high-pass | **0.678** | 0.827 | 0.831 | 0.783 | −0.149, complete sep. |
 | rotation | 0.574 | 0.615 | 0.605 | 0.611 | −0.041, complete sep. |
 | false colour | 0.854 | 0.938 | 0.966 | 0.874 | −0.084, complete sep. |
 | phase-scrambling | 0.383 | 0.373 | 0.371 | 0.382 | +0.009, **overlap** |
-| *low-pass (trained-in)* | *0.444* | *0.356* | *0.359* | *0.386* | *+0.089* |
-| *contrast (trained-in)* | *0.481* | *0.549* | *0.544* | *0.511* | *−0.068* |
+| *low-pass (trained-in)* | *0.444* | *0.356* | *0.359* | *0.385* | *+0.089* |
+| *contrast (trained-in)* | *0.481* | *0.549* | *0.543* | *0.511* | *−0.068* |
 
 **The diet-trained model is less robust on four of the five corruptions it was
 not trained on**, with complete seed separation on all four and the same
