@@ -7274,3 +7274,79 @@ which refuted my own hypothesis and were honoured.
 can be plotted against that seed's own validation accuracy across six
 checkpoints before the array finishes. That is a within-seed version of Test C
 on the actual §2.4 statistic, and it costs nothing.
+
+## §71.9 THE WITHIN-SEED TRAJECTORY — §68 Test C was over-read, and §2.2 has a
+## real vulnerability that best-vs-last would never have found
+
+`tmp_analysis/pr_epoch_within_seed.py`. The cached epoch trajectories (ep025–150,
+8 subjects each) allow accuracy to be varied **within** a seed, which is the test
+§68 Test C should have run.
+
+### 71.9.1 Correcting §68 Test C
+
+Test C correlated the magno/parvo PR ratio against `val_top1` across the three
+diet seeds at their final checkpoints — n=3, perfectly monotone, r = −0.99 — and
+I read that as the PR instrument tracking checkpoint degradation. **That was an
+over-read.** Three points in which seed identity and accuracy co-vary cannot
+separate the two, and with n=3 a monotone triple gives |r| ≈ 1 almost by
+construction.
+
+Holding the seed fixed and varying the checkpoint instead:
+
+| run | accuracy span | PR-ratio range | within-seed r | p |
+|---|---|---|---|---|
+| `dkl_bcs_seed0` | 0.340–0.564 | 0.356 | **−0.169** | 0.75 |
+| `dkl_base_seed0` | 0.658–0.699 | 0.494 | **−0.184** | 0.77 |
+
+The diet arm's accuracy span here (0.224) is **wider** than the cross-seed span
+that produced the −0.99, and the correlation collapses to nothing. The 0.904
+cross-seed range in §2.2's replication table is seed-to-seed variation, not
+checkpoint degradation. §68's "§2.2's instrument is EXPOSED" verdict is
+withdrawn and replaced by this.
+
+### 71.9.2 But the trajectory found something worse, in the control arm
+
+| ckpt | diet `dkl_bcs_seed0` | | no-diet `dkl_base_seed0` | |
+|---|---|---|---|---|
+| | ratio | side | ratio | side |
+| front end (untrained) | 1.402 | — | 1.634 | — |
+| 25 | 1.752 | 8/8 > 1 | 1.156 | 8/8 > 1 |
+| 50 | 1.959 | 8/8 > 1 | 1.237 | 8/8 > 1 |
+| 75 | 1.733 | 8/8 > 1 | 1.513 | 8/8 > 1 |
+| 100 | 1.620 | 8/8 > 1 | 1.505 | 8/8 > 1 |
+| 125 | 1.703 | 8/8 > 1 | 1.019 | 6/8 > 1 |
+| 150 / last | 1.603 | 8/8 > 1 | **0.947** | **1/8 > 1** |
+
+**The no-diet arm is above parity for the first two-thirds of training and
+crosses below only in the final quarter** — at essentially constant accuracy
+(0.658 → 0.699 across the whole span). The published sub-parity value is a
+late-training endpoint, not a stable property of no-diet training.
+
+The diet arm, by contrast, is above parity at **every** checkpoint from 25
+onward, 8/8 subjects each time.
+
+### 71.9.3 What this does and does not cost
+
+- **It does not refute §2.2.** The section is titled "The diet fixes which side
+  of parity training *ends* on", and the claim is evaluated at the end of
+  training. Under both checkpoint policies — final, and best-saved (§71.1, where
+  no-diet's best *is* its final) — the dissociation holds.
+- **It does cost the paper an unstated assumption.** At epochs 75–100 both arms
+  sit above parity (1.62–1.73 vs 1.50–1.51) and there is no dissociation at all.
+  A reviewer who asked "when does this appear?" would find that, and finding it
+  unprompted is much worse than us reporting it.
+- **It sharpens the asymmetry into a better claim.** The diet's side is stable
+  across training; the control's is not. "The diet *stabilises* which side of
+  parity the network sits on, while no-diet training drifts and ends below" is
+  both more accurate and more interesting than the current wording.
+- **n=1 seed per arm.** Only seed 0 has a cached trajectory. This is a
+  disclosure, not a headline, until more seeds have one. Do not promote it.
+
+### 71.9.4 Correction to §71.7.2
+
+§71.7.2 named §2.4 as the section most exposed by the checkpoint issue. Wrong
+section: §2.4's table is computed on the **Gabor bank and untrained networks**,
+which have no checkpoints, so §2.4 is structurally immune. The trained PR
+statistic lives in **§2.2**. Array 26427718 is still the right job — it supplies
+seeds 1 and 2 at their best saved checkpoints for §2.2's replication table — but
+it is no longer the load-bearing evidence, which is §71.9.2.
