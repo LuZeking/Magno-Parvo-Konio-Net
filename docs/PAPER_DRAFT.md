@@ -31,7 +31,7 @@ Dataset.
 **The shape bias is an interaction, not a channel property.** Crossing which
 carrier a stream receives (achromatic luminance vs chromatic L−M) with whether
 the transform is applied to it gives four front ends. Neither factor alone moves
-a stream across the shape/texture boundary (linear-probe bias −0.266 and −0.145);
+a stream across the shape/texture boundary (linear-probe bias −0.271 and −0.145);
 only the conjunction crosses, and it crosses decisively (**+0.819**).
 Cue-conflict behaviour on the same four cells replicates this independently
 (0.364 / 0.495 / 0.396 / **0.878**, mean of 3 seeds; human observers on these
