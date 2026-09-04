@@ -7212,3 +7212,65 @@ different places. One owner should reconcile the numbering in a single pass —
 that is a documentation fix, not a result, and it should not be done piecemeal
 by whichever session notices it. This joins the older §21/§25/§23/§24/§29
 disorder already recorded in §26.1.
+
+## §71.8 PRE-REGISTERED — §2.4's PR dissociation at the best saved checkpoint
+
+§68 Test C is the reason this has to be run: across the diet arm's own 0.18
+accuracy span the magno/parvo PR ratio moved 0.904 at r = −0.99, with the
+collapsed seed highest. Every PR number in §2.4 came from caches extracted at
+`checkpoint_last.pt`. §2.4 is the last load-bearing section still scored on
+weights §71 showed to be the wrong ones, and it is the section most likely to
+move.
+
+### 71.8.1 What is being run
+
+`slurm/cache_bestep.sh`, array **26427718**, 32 elements, `main`, no `--gres`,
+cache-only. Only four model×epoch combinations were missing:
+
+| run | best saved ckpt | cache status |
+|---|---|---|
+| `dkl_bcs_seed0` | ep125 (0.564) | **already cached** (epoch trajectory) |
+| `dkl_bcs_seed1` | ep075 (0.553) | extracting |
+| `dkl_bcs_seed2` | ep050 (0.552) | extracting |
+| `dkl_bcs_swap_seed0` | ep100 (0.701) | extracting |
+| `dkl_bcs_swap_seed1` | ep100 (0.697) | extracting |
+| `dkl_bcs_swap_seed2` | ep150 | == `checkpoint_last`, cached |
+| `dkl_base_seed{0,1,2}` | ep150 | == `checkpoint_last`, cached |
+| `dkl_bcs_parvo_highsf_seed{0,1,2}` | ep150 | == `checkpoint_last`, cached |
+
+`checkpoint_last.pt` is rewritten every epoch, so after a full 150-epoch run it
+holds the same weights as `checkpoint_150.pt`; the three arms whose best saved
+checkpoint is 150 therefore need no re-extraction. Each task re-derives the best
+checkpoint from `history.json` and aborts if the path it was handed is not that
+file, so the §71.1 off-by-one cannot return through a hand-edited array.
+
+### 71.8.2 The prediction, written before the caches exist
+
+§2.4's claim is a **side-of-parity** claim, not a level claim — §50 already
+killed the "universal set point" reading, and Figure 1(c) carries the footnote
+"no level is claimed". The claim is: diet-on-luminance arms sit above parity
+(magno-dominant), no-diet arms below.
+
+- **P1.** The side of parity survives: diet arms > 1, no-diet arms < 1, in all
+  three seeds. This is what §2.4 actually asserts.
+- **P2.** The *level* moves, and probably downward, since Test C found the
+  most-degraded seed carried the highest ratio. A level shift refutes nothing,
+  because no level is claimed — but it must be reported, and the §2.4 numbers
+  replaced rather than kept alongside.
+- **P3 (fatal).** If the side of parity does **not** survive — if the diet arm
+  falls to or below parity on undegraded weights — then §2.4's dissociation was
+  an artefact of late-training collapse and the section is dead. §2.1 does not
+  depend on it (§71.5 closed both of §2.1's instruments independently), so the
+  paper survives; but §2.4 would have to be withdrawn, not reframed, and
+  Figure 1(c) rebuilt.
+
+Recorded now, before any best-epoch PR number has been computed, so P3 cannot
+be quietly softened after the fact. Same discipline as §57.5 and §67.4, both of
+which refuted my own hypothesis and were honoured.
+
+### 71.8.3 Free preview available immediately
+
+`dkl_bcs_seed0` has a full cached epoch trajectory (ep025–150), so the PR ratio
+can be plotted against that seed's own validation accuracy across six
+checkpoints before the array finishes. That is a within-seed version of Test C
+on the actual §2.4 statistic, and it costs nothing.
