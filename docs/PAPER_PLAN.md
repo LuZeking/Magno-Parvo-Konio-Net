@@ -7038,3 +7038,25 @@ rather than silently replacing the second.
 Any accuracy quoted beside a behavioural, cortical, or representational number
 must come from the same weight file that produced it. A validation-log maximum
 is a property of the schedule and may only be reported as such.
+
+### 71.5 The §2.1 probe at n=3 on best saved checkpoints
+
+The third diet seed's probe finished after §71 was written. All three:
+
+| | magno | parvo | magno − parvo |
+|---|---|---|---|
+| final ckpt (published) | +0.8194 [0.0142] | −0.5183 [0.0667] | +1.3378 [0.0808] |
+| best saved ckpt | +0.8061 [0.0125] | −0.4733 [0.0250] | +1.2794 [0.0342] |
+
+Per-seed magno at best checkpoint: 0.8008, 0.8042, 0.8133 — 3/3 positive.
+
+The headline cell moves **−0.013**, an order of magnitude below the effect it
+supports, and the seed range on the difference more than halves. Note the two
+measures move in opposite directions under the checkpoint switch — behaviour up
+(0.878 → 0.903), probe down (0.819 → 0.806) — which is what independent
+measurements of a checkpoint-insensitive quantity should look like, and is not
+what a shared accuracy driver would produce.
+
+Together with §68's Test A and Test C this closes the checkpoint question for
+§2.1 in both instruments. §2.2 (PR ratio) remains exposed at r = −0.99 and is
+not cleared by this; only Test B can settle it.

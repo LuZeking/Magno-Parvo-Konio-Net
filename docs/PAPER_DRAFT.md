@@ -494,8 +494,11 @@ diet arm degrades after its peak, the control does not.
 Re-running cue-conflict on each diet seed's best saved checkpoint gives a shape
 bias of **0.903** (range 0.028) against 0.878 at the final checkpoint — slightly
 *higher* on the non-degraded models, even though those models are 0.111 more
-accurate. Degradation does not produce the effect reported in §2.1; if anything
-it dilutes it (PLAN §67, §68).
+accurate. The §2.1 probe cell is likewise insensitive to the choice: magno
++0.806 (range 0.013) against the published +0.819 (range 0.014), with all three
+seeds on the predicted side and the magno−parvo seed range *tightening* from
+0.081 to 0.034. Degradation does not produce the effect reported in §2.1; if
+anything it dilutes it (PLAN §67, §68, §71).
 
 > **The claim.** Shape bias and OOD robustness are not intrinsically coupled.
 > This does not contradict Geirhos et al., who showed that *Stylized-ImageNet
