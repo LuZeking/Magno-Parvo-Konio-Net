@@ -1,0 +1,19 @@
+{
+  "model_name": "dkl_bcs_single_seed1_final",
+  "checkpoint": "/scratch/byrong/VST_data/mpk_runs/dkl_bcs_single_seed1/checkpoint_final.pt",
+  "conditions": {
+    "full": {
+      "n_images": 1200,
+      "n_shape": 312,
+      "n_texture": 220,
+      "n_other": 668,
+      "shape_bias": 0.5864661654135338,
+      "shape_accuracy": 0.26,
+      "texture_accuracy": 0.18333333333333332,
+      "shape_bias_ci95": [
+        0.5422794117647058,
+        0.6276391554702495
+      ]
+    }
+  }
+}

@@ -7433,3 +7433,135 @@ reaches 0.79 and exceeds the between-arm gap".
    belonged to the checkpoint.
 4. Methods: state the split checkpoint policy (§2.1, §2.2, §2.5 on best saved;
    §2.6, §2.7 on final) — still outstanding.
+
+---
+
+## §72 THE §64 PRE-REGISTRATION RESOLVES: the split buys shape bias and costs
+## accuracy — and §64.5's outcome set could not name it
+
+Job 26421237, 3/3 seeds COMPLETED, 150 epochs each (~26 h/seed). Cue-conflict
+run as array 26428876, 6/6 COMPLETED, `main`, no `--gres`.
+
+### 72.1 The answer, before the bookkeeping
+
+| | single stream | two-stream `dkl_bcs` | Δ |
+|---|---|---|---|
+| shape bias, best saved ckpt | **0.5672** | 0.6547 | **−0.0875** |
+| shape bias, final ckpt | **0.5571** | 0.6749 | **−0.1178** |
+| top-1, best saved ckpt | **0.5990** | 0.5562 | **+0.0428** |
+| top-1, final ckpt | **0.5505** | 0.4446 | **+0.1059** |
+| trainable parameters | 11,230,832 | 22,397,936 | **0.501×** |
+
+**The two-stream split buys shape bias and pays for it in accuracy.** One trunk
+carrying both DKL channels, with the identical diet, is *less* shape-biased and
+*more* accurate than two trunks — at half the parameters, under both checkpoint
+policies.
+
+Per-seed, with complete separation (§64.6 item 3; 3v3 floors at p=0.10 so
+separation is the reportable statistic, not a p-value):
+
+| policy | single stream | two-stream | separation |
+|---|---|---|---|
+| best saved | 0.5414 / 0.5899 / 0.5703 | 0.5942 / 0.7177 / 0.6522 | max single 0.5899 < min two 0.5942 — **complete** |
+| final | 0.5146 / 0.5865 / 0.5703 | 0.6922 / 0.6861 / 0.6464 | **complete** |
+
+### 72.2 This is the outcome that most helps leg (a), and it was not the
+### expected one
+
+§64.5 flagged **D** as "the one that costs the paper most" and "not a remote
+possibility": if one stream carrying both channels retained ~0.87, then
+*integration* — not the split — would be what destroys the behavioural result,
+and the architecture would be a liability.
+
+**D is refuted, and not narrowly.** 0.5672 against a 0.85 threshold. A single
+stream carrying both channels does not retain the magno stream's 0.903; it does
+not even retain the *integrated* two-stream 0.6547. So summing the streams is
+not what destroys the shape bias — the ordering is
+
+    magno alone 0.903  >  two-stream integrated 0.655  >  single stream 0.567
+
+Integration costs 0.248 relative to the best stream, but the split still buys
+0.088 over having no split at all. The architecture is doing work rather than
+merely surviving. §54's worry that integration moves the network away from
+humans stands as a description of the 0.903 → 0.655 step, but the remedy is not
+"drop the split" — dropping it makes the behaviour worse.
+
+**A is refuted too**: the split is not decorative on either instrument.
+
+### 72.3 §64.5 could not name this result, and the defect is in the band
+
+The grader returns **UNCLASSIFIED under both policies**, for the same reason
+each time. B's substantive clause — shape bias below the reference by more than
+the between-seed sd — **is met, with room**: 0.0875 against sd 0.0244
+(best saved), 0.1178 against sd 0.0377 (final). B fails only on its accuracy
+clause, which §64.5 wrote as a two-sided band ("with accuracy within 0.02"),
+and the arm is **+0.0428 outside it in the winning direction**.
+
+So the pre-registration refuses to fire because the model was *too accurate*.
+That is a defect in the rule, not in the arm, and §64.3 had already anticipated
+the asymmetry it failed to encode: "If the single stream wins or ties, it does
+so with half the capacity. The confound strengthens the conclusion and is
+irrelevant." §64.5's B should have carried a one-sided accuracy floor
+(≥ reference − 0.02), not a band.
+
+Recorded as UNCLASSIFIED rather than quietly read as B. §50.6 is binding: a
+pre-registered rule that cannot fail launders a refutation as a confirmation,
+and a rule silently widened after the fact does the same thing. The substantive
+reading — the split buys shape bias, costs accuracy — is stated as the
+interpretation it is, on complete separation under both policies, not as a
+threshold that fired.
+
+**C is refuted under the corrected reference.** The single stream does not lose
+on accuracy; it wins by 0.043 (best saved) and 0.106 (final). No
+parameter-matched `resnet34` control is triggered by C.
+
+### 72.4 Two errors caught in this section's own instruments
+
+1. **`cue_conflict.py --baseline` would have produced a fabricated number.**
+   It builds a *torchvision* ResNet on raw 3-channel RGB with no DKL conversion
+   and no diet — the thesis's RGB-baseline anchor. `dkl_bcs_single` is a
+   `TwoStreamNetwork(baseline=True, combined_color=True)` taking two DKL
+   channels. Because `load_state_dict(strict=False)` tolerates missing keys, it
+   would have scored a **randomly initialised network** and printed a shape bias
+   without erroring. `tmp_analysis/cue_conflict_single.py` mirrors
+   `StreamInputBuilder` exactly and **hard-fails** on any missing or unexpected
+   key; all six tasks logged `122 tensors, 0 missing, 0 unexpected`. Verified in
+   the other direction too: pointed at a two-stream checkpoint it exits 1.
+2. **A §71.4 violation inside the §71-aware grader.** The final-checkpoint cell
+   initially compared single-stream accuracy against `dkl_bcs`'s **0.5921** —
+   the per-epoch maximum naming weights that do not exist — instead of its
+   final-checkpoint **0.4446**. That mispairing alone returned a spurious
+   `OUTCOME C`. Corrected; `ACC_BCS_PEREPOCH` is retained in the source
+   explicitly labelled a schedule property, per §71.4.
+
+### 72.5 Controls that make the comparison readable
+
+- **Decision rate** (§64.6 item 4): single 0.417 vs two-stream 0.418 (best
+  saved), 0.399 vs 0.396 (final), all over the same 1200 scored images. The
+  shape biases are computed over comparably sized decided subsets, so the
+  comparison is not the §54 artefact.
+- **Pipeline validation**: seed 2's best saved checkpoint *is* its final one, so
+  `ep150` and `final` are the same weights. They return bit-identical 0.570265.
+- **Convergence** (§64.6 item 1): this arm did **not** converge either.
+  sd(val_top1) over the last 20 epochs = 0.0653 / 0.0286 / 0.0275, and seed 0
+  falls 0.589 → 0.454 between epochs 148 and 149. Best-saved is therefore the
+  primary policy, with final reported alongside; both give the same answer.
+
+### 72.6 Disclosure
+
+- **One diet placement.** §64.7 stands: this tests the split *for the
+  diet-on-luminance arm* and must not be generalised to the swap or
+  `parvo_highsf` arms.
+- **The capacity confound is not fully retired.** It is irrelevant for the
+  accuracy comparison (the smaller model wins). It is **not** disposed of for
+  the shape-bias comparison: a parameter-matched single stream (`resnet34`,
+  ~21.3M) might close the 0.0875 gap. §64.5's B text pre-registered that arm as
+  required, and the substantive outcome is B, so **the `resnet34` control is
+  triggered by the letter of the pre-registration** even though C — the branch
+  §64.3 tied it to — is refuted. It is 3 seeds × ~26 h and has not been
+  submitted; that is a decision, not an oversight.
+- **Untrained-side comparisons are unaffected**; this arm is trained-only and
+  carries no stream statistics (§64.2), so nothing in §47–§63 moves.
+- The single-stream numbers are **3 seeds**, and the 0.5414–0.5899 spread is
+  wide relative to the 0.0875 effect. Complete separation, not a p-value, is
+  what is claimed.
