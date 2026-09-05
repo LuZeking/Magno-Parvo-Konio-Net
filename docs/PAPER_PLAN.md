@@ -7706,3 +7706,77 @@ level, no set point, and no channel ordering.
 This is the fourth claim retired by the checkpoint correction (§49.4, §49.2,
 §50's luminance half, and now §50's channel half) and the second time a result
 that looked seed-robust turned out to rest on late-training degradation.
+
+---
+
+## §75 THE FATAL TEST PASSES — P3 HOLDS. The conjunction is not an accuracy
+## artefact (seed 0; seeds 1–2 still queued)
+
+Test B (§67/§69.2), the accuracy-matched no-diet control, is the last fatal test
+in this project. It exists because the NMI reviewer simulation's major comment M1
+was that the diet arm's dissociations might follow from its accuracy gap rather
+than from the diet. §69.3 P3 and §69.4 named the fatal outcome in advance:
+
+> **P3.** An accuracy-matched no-diet model does **not** acquire the diet's shape
+> bias. If a no-diet model at 0.556 shows a shape-biased magno stream, then §2.1
+> is an accuracy effect and the paper's central claim is wrong. … There is no
+> reframing that survives that.
+
+### 75.1 The checkpoint, chosen by rule
+
+Array 26423530 task 0 COMPLETED (13 h 22 m), 12 epochs at `--ckpt-every 1` into
+`/scratch/byrong/VST_data/mpk_runs_matched/dkl_base_seed0`. Target 0.556, the
+diet arm's best-saved mean (§71.3). Selected in-script by minimising
+|val_top1 − 0.556| over the checkpoints that exist, with an assertion:
+
+| ckpt | val_top1 | \|diff\| |
+|---|---|---|
+| 009 | 0.5416 | 0.0144 |
+| **010** | **0.5480** | **0.0080** |
+| 011 | 0.5893 | 0.0333 |
+| 012 (unsaved) | 0.5680 | 0.0120 |
+
+`checkpoint_010.pt`, val_top1 **0.5480** against the diet's 0.556 — matched to
+0.008, tighter than the diet arm's own 0.012 seed range.
+
+### 75.2 The result, on both instruments
+
+| instrument | diet (best saved, 0.556) | no diet (final, 0.70) | **matched (0.548)** |
+|---|---|---|---|
+| probe, magno bias | **+0.806** | −0.226 | **−0.148** |
+| cue-conflict, magno-only | **0.903** | 0.421 | **0.455** |
+
+**Matching accuracy closes 7.6% of the probe gap and 7.0% of the behavioural
+gap.** Two independent instruments, built on different machinery, agree to
+within 0.6 percentage points on how little of the effect accuracy explains.
+
+The matched model stays inside the no-diet regime on both. Its probe bias is
+still **negative** — texture-biased, on the same side of the sign flip as every
+no-diet seed — and its cue-conflict magno bias sits 0.021 above the no-diet seed
+maximum, a shift smaller than that arm's own seed range would need to be
+surprising (width 0.036).
+
+**P3 HOLDS. The fatal branch of §69.4 is not taken.** Accuracy is not what
+produces the conjunction effect of §2.1, and M1 is answered with the control it
+asked for rather than with an argument.
+
+### 75.3 Its strength, stated honestly
+
+- **n = 1 seed.** Tasks 1–2 of 26423530 are still PENDING on `agcichy`. The
+  claim above rests on one matched training run. Report it as such until they land.
+- The matched run reached 12 of its 20 epochs; that is *why* it can be matched
+  at all (no saved 150-epoch no-diet checkpoint is below 0.658), and the
+  selection rule only ever needed a checkpoint bracketing 0.556, which epochs
+  9–11 supply.
+- The direction of the residual shift is *toward* shape (+0.079 probe, +0.034
+  behaviour). That is worth reporting rather than hiding: lowering a no-diet
+  model's accuracy does move it slightly toward the diet, just nowhere near far
+  enough, and the honest number is 7%, not 0%.
+
+### 75.4 What is now closed
+
+With P3 held, every fatal pre-registration in this project has resolved in the
+paper's favour or been survived: §57.5 (error consistency — refuted my own
+hypothesis, honoured), §67.4/§69.4 (accuracy confound — held), §71.6 (OOD at
+best checkpoints — held), §71.8 P3 (PR side of parity — held), §64/§72 (the
+split — refuted outcome D). **No fatal test remains outstanding.**
