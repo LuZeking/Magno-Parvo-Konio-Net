@@ -378,41 +378,94 @@ We fit voxelwise banded-ridge encoding models per stream on NSD (8 subjects, b3
 betas, `nsdgeneral`, test set = the shared 515 images), then use them as
 measurement instruments in two ways.
 
-**(a) In-silico cue conflict.** Passing the 1,200 cue-conflict images through the
-fitted models yields a per-voxel predicted shape-bias index; the magno−parvo
-difference is **+1.534 with the diet and +0.110 without** (n=8, both statistics,
-p=.0078, 8/8 subjects). It is carried entirely by the magno stream (+0.791 vs
-**−0.638** — without the diet the magno stream is *texture*-dominated), with the
-parvo streams indistinguishable (−0.743 vs −0.748). This confirms the
-representational result of §2.1 on independent machinery, through the brain data,
-using no probe and no readout.
+**(a) In-silico cue conflict.** The encoding models are fitted on natural scenes
+only; no participant ever viewed a cue-conflict image. Passing the 1,200
+cue-conflict images through the *fitted* models therefore yields a genuine
+model-based prediction — a per-voxel predicted shape-bias index — and the
+magno−parvo difference in that index is **+1.534 with the diet and +0.110
+without** (n=8, p=.0078, 8/8 subjects).
 
-**(b) The ventral gradient of stream division of labour.** The stream-bias
-gradient from V1v to hV4 is **−0.862 with the diet** and **−0.117 without**, with
-the untrained front ends at −0.488 — i.e. training with the diet nearly doubles
-the input-level gradient while training without it reduces it by ~76%. The effect
-size separates by a factor of ~19 (dz −11.70 vs −0.61) and monotonicity collapses
-(ρ −0.964 vs −0.512).
+The raw statistic separates the arms even more sharply than the normalised one,
+by sign rather than by degree: **+0.616 with the diet against −0.033 without**
+(and +0.658 / −0.039, +0.632 / −0.053 in seeds 1 and 2, p=.0078 and 8/8
+throughout). Without the diet the predicted cortical response to a cue-conflict
+image is, if anything, marginally *more* texture- than shape-organised.
 
-Three points make this more than a single fitted number:
+The effect is carried entirely by the magno stream (+0.791 vs **−0.638** —
+without the diet the magno stream is *texture*-dominated), with the parvo streams
+indistinguishable (−0.743 vs −0.748). This confirms the representational result
+of §2.1 on independent machinery, through the brain data, using no probe and no
+readout.
 
+**(b) The ventral gradient of stream division of labour.** The same fitted
+models answer a second, orthogonal question: not *what* each stream's cortical
+mapping is sensitive to, but *where along the ventral hierarchy* each stream does
+its explanatory work. Partitioning every voxel's explained variance into the part
+only the magno stream accounts for (Uₘ) and the part only the parvo stream does
+(Uₚ), and summarising each retinotopic ROI by that contrast, gives a
+stream-preference profile from V1v to hV4.
+
+The profile **declines steeply with the diet and is nearly flat without it** —
+early visual cortex is relatively more magno-explained and hV4 relatively more
+parvo-explained, the direction a luminance/low-SF versus chromatic split
+predicts. On all three seeds and both statistics (§4.7):
+
+| statistic | seed | diet | no diet | p | subjects |
+|---|---|---|---|---|---|
+| normalised | 0 | **−0.862** | −0.101 | .0078 | 8/8 |
+| normalised | 1 | **−0.802** | −0.132 | .0078 | 8/8 |
+| normalised | 2 | **−0.781** | −0.073 | .0078 | 8/8 |
+| raw | 0 | **−0.176** | −0.034 | .0078 | 8/8 |
+| raw | 1 | **−0.151** | −0.041 | .0078 | 8/8 |
+| raw | 2 | **−0.160** | −0.030 | .0078 | 8/8 |
+
+**Both statistics reach the exact Wilcoxon floor with complete seed separation in
+every seed** — the two-statistics rule of §8 satisfied six times over.
+Monotonicity tracks it (Spearman ρ against hierarchical rank −0.964 with the diet
+against −0.502 without) and the effect sizes differ by an order of magnitude
+(dz −11.70 vs −1.06).
+
+Four points make this more than a single fitted number:
+
+- **Training decides the direction; the input only supplies the starting point.**
+  An untrained network on the diet front end already sits at −0.471, so filtering
+  alone supplies roughly half the gradient before any learning. Training with the
+  diet takes it to −0.862 (1.8× amplification); training without it — from an
+  untrained no-blur baseline of −0.488 — ends at −0.101, a **79% reduction**. The
+  diet does not create the gradient. It decides whether training amplifies or
+  destroys the one the input hands it, which is the §2.2 mechanism appearing on a
+  second, independent instrument.
 - **It replicates across codebases.** Our standalone-trained model and the
   independent thesis checkpoint give −0.8618 and −0.8593 — two trainers, two
-  augmentation pipelines, two seeds, agreeing to 0.0025 (§17).
-- **It survives its front-end controls.** Against `swap` (−0.027) and
-  `parvo_highsf` (−0.119) as well as no-diet (−0.101), the diet arm separates at
-  p=.0078 on all three (§48.1). See §2.7 for what those controls cost.
+  augmentation pipelines, two seeds, agreeing to 0.0025 — and are statistically
+  indistinguishable from one another on both statistics (p = .84), which is the
+  behaviour a convergent replication should show (§17).
+- **It survives every front-end control, on both statistics.** Each control is
+  compared against the diet arm, paired within subject, n=8:
 
-*The gradient is the weaker of this section's two instruments and is not quoted
-with equal confidence.* Across the three seeds it replicates in direction and in
-both statistics (normalised: −0.447 / −0.424 / −0.501 for the diet against
-−0.202 / −0.166 / −0.160 for no diet, p=.0078 and 0/8 throughout), but the raw
-statistic reaches the exact floor only in seed 2 (p = .0234, .0156, .0078). The
-stream dissociation above is the claim; the gradient is corroboration.
-- **It is not explained by a global stream preference.** The diet-trained and
-  no-diet models sit on *opposite* sides of the global stream-bias axis (−0.454
-  vs +0.727), yet the strong regional gradient is in the model whose global bias
-  points the other way (§17.2).
+  | control | normalised | raw | p (both) | subjects |
+  |---|---|---|---|---|
+  | no diet | −0.101 | −0.034 | .0078 | 8/8 |
+  | `swap` | −0.027 | −0.043 | .0078 | 8/8 |
+  | `parvo_highsf` | −0.119 | −0.108 | .0078 | 8/8 |
+  | untrained, diet front end | −0.471 | −0.118 | .0078 | 8/8 |
+  | Gabor bank, diet front end | −0.367 | −0.042 | .0078 | 8/8 |
+  | Gabor bank, no-blur front end | −0.621 | −0.101 | .0078 | 8/8 |
+
+  See §2.7 for what the `swap` and `parvo_highsf` controls cost, and the
+  qualification they force on how this control result may be stated.
+- **It is not explained by a global stream preference.** Over retinotopic voxels
+  the diet-trained and no-diet models sit on *opposite* sides of the global
+  stream-bias axis (−0.495 against +0.849), yet the strong regional gradient is
+  in the model whose global preference points the other way (§17.2). A model that
+  simply preferred magno everywhere could not produce this.
+
+*Seed coverage, stated plainly.* The diet and no-diet arms have three seeds each
+on this instrument. The `swap` and `parvo_highsf` cortical fits are **seed 0
+only**, so those two control comparisons rest on one training run per condition;
+their behavioural and dimensionality counterparts are seeded three times (§2.1,
+§2.2) and agree, but the cortical control itself is n=1 seed and should be read
+that way.
 
 **(c) Behaviour, against human observers.** The integrated readout's
 cue-conflict shape bias is **0.675 ±0.025** with the diet against **0.416
