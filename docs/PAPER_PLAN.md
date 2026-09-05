@@ -7565,3 +7565,110 @@ parameter-matched `resnet34` control is triggered by C.
 - The single-stream numbers are **3 seeds**, and the 0.5414–0.5899 spread is
   wide relative to the 0.0875 effect. Complete separation, not a p-value, is
   what is claimed.
+
+---
+
+## §73 ALIGNMENT AUDIT — §2.3(b) was quoting the wrong measure, and was
+## undersold by roughly an order of magnitude as a result
+
+Full recomputation of §2.3 from the stored per-voxel arrays
+(`$CLAUDE_JOB_DIR/tmp/audit23b.py`, `confirm_mislabel.py`), independent of every
+previous script. Two directories hold encoding output — `results/encoding` and
+`results/encoding_cc` — and the first check was that they agree: on the five
+models present in both they are **bit-identical** on the gradient. `encoding_cc`
+is a strict superset (it adds the `cc_*` VSB fields), so it is the one to use.
+
+### 73.1 The error
+
+§66.3, and §2.3(b) after it, reported:
+
+> hV4−V1v stream-bias gradient, normalised: diet −0.447/−0.424/−0.501 against
+> no-diet −0.202/−0.166/−0.160 … the raw statistic reaches the exact floor only
+> in seed 2 (p = .0234, .0156, .0078).
+
+Those numbers are **not the stream-bias gradient**. They are the **joint-VSB
+profile step, hV4 − V1(pooled)** — the ROI profile of the *predicted shape-bias
+index*, not of the stream-preference index. Recomputing that measure returns
+−0.4465/−0.4242/−0.5007 against −0.2017/−0.1664/−0.1601 and raw p = .0234/.0156/
+.0078, matching the quoted figures on every digit. The identification is certain.
+
+This matters twice over. First, the VSB profile is a **different quantity** from
+the SPI gradient — one is about what the streams represent, the other about where
+they explain variance. Second, the VSB profile step is the measure this paper
+**explicitly disclaims**: under the full control set it is not diet-specific
+(−0.095 vs −0.060, p = .1484/.9453; §43.2). §2.3(b) was therefore supporting a
+live claim with numbers from a retired one.
+
+### 73.2 The actual gradient is much stronger
+
+| statistic | seed | diet | no diet | p | subjects |
+|---|---|---|---|---|---|
+| norm | 0 | −0.8618 | −0.1013 | .0078 | 8/8 |
+| norm | 1 | −0.8018 | −0.1318 | .0078 | 8/8 |
+| norm | 2 | −0.7813 | −0.0732 | .0078 | 8/8 |
+| raw | 0 | −0.1759 | −0.0342 | .0078 | 8/8 |
+| raw | 1 | −0.1507 | −0.0406 | .0078 | 8/8 |
+| raw | 2 | −0.1595 | −0.0303 | .0078 | 8/8 |
+
+**Six of six cells at the exact floor with complete separation.** The
+"weaker instrument … the gradient is corroboration" framing was an artefact of
+the mislabel and is withdrawn; §2.3(b) is a claim, not corroboration.
+
+*A definitional trap that nearly produced a second error.* This project uses
+`raw`/`norm` to mean *with and without the median(Uₘ+Uₚ) denominator*, both
+computed on the **noise-ceiling-normalised** `unique_magno`/`unique_parvo`
+(`blur_verdict.py`, `stats.py`, `effect_sizes.py`). The stored
+`unique_magno_raw`/`unique_parvo_raw` fields are a *different* thing (un-normalised
+by NC) and are used only by `banded_ridge.py` and `group_check.py`. Substituting
+them makes the raw between-arm contrast collapse to p = .109/.195/.055 and would
+have "killed" §2.3(b). Any future analysis must use the `blur_verdict.py`
+convention. **Standing rule: `raw` means no denominator, never the `_raw` fields.**
+
+### 73.3 The controls are stronger too
+
+All on both statistics, paired, n=8, seed 0:
+
+| control | norm | raw | p (both) | subjects |
+|---|---|---|---|---|
+| no diet | −0.101 | −0.034 | .0078 | 8/8 |
+| `swap` | −0.027 | −0.043 | .0078 | 8/8 |
+| `parvo_highsf` | −0.119 | −0.108 | .0078 | 8/8 |
+| untrained, diet front end | −0.471 | −0.118 | .0078 | 8/8 |
+| Gabor bank, diet front end | −0.367 | −0.042 | .0078 | 8/8 |
+| Gabor bank, no-blur | −0.621 | −0.101 | .0078 | 8/8 |
+| `thesis_dvd_trans` | −0.859 | −0.175 | **.8438** | 5/8, 4/8 |
+
+§48.1 claimed three controls on the normalised statistic only. It is six controls
+on both. And `thesis_dvd_trans` **fails to separate** — the correct behaviour for
+a cross-codebase convergent replication, now demonstrated rather than asserted.
+
+### 73.4 Supporting numbers corrected
+
+| quantity | was | is | why |
+|---|---|---|---|
+| no-diet gradient | −0.117 | **−0.101** | −0.117 is the mean of seeds 0–1, paired against a seed-0 diet number |
+| ρ, no diet | −0.512 | **−0.502** | §48.1 already said −0.502 |
+| dz, no diet | −0.61 | **−1.06** | recomputed |
+| "untrained front ends" | −0.488 | **−0.471 / −0.488** | two different baselines were conflated: diet front end vs no-blur front end |
+| global stream bias | −0.454 / +0.727 | **−0.495 / +0.849** | retinotopic voxels, the §48.1 definition |
+| no-diet reduction | ~76% | **79%** | follows from −0.101 / −0.488 |
+
+### 73.5 What verified clean
+
+§2.3(a) reproduces to four decimals on every number: +1.5340/+1.5659/+1.5576
+against +0.1104/+0.0980/+0.0832; per-stream +0.7910 / −0.6376 and −0.7430 /
+−0.7479; seed range 0.0319. It also **gains** its raw statistic, which separates
+the arms by *sign* (+0.616/+0.658/+0.632 against −0.033/−0.039/−0.053) — a
+stronger statement than the normalised one and previously unreported.
+
+§2.7's cost reproduces: 0.4046/0.3817/0.3992 against 0.4637/0.4639/0.4565,
+p=.0078 and 8/8 in all three seeds.
+
+### 73.6 Gaps found
+
+1. **`swap` and `parvo_highsf` have cortical fits for seed 0 only.** Two of
+   §2.3(b)'s controls are n=1 seed. Now disclosed in §2.3(b); the "no n=1 claim
+   in the main results" statement of §66.5 was too strong as written.
+2. **The konio result (§70) appears nowhere in the draft** — zero occurrences.
+   A complete four-contrast pre-registered result at the exact floor, including
+   its specificity contrast, is currently invisible to a reader.

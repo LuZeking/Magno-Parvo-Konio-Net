@@ -56,7 +56,7 @@ on the same side. The divergence is measurable through human visual cortex:
 per-stream voxelwise encoding models yield a stream dissociation of **+1.534**
 with the diet and **+0.110** without (p=.0078, 8/8), and the diet-trained
 network's division of labour tracks the human ventral hierarchy (hV4−V1v −0.862)
-where the no-diet network's does not (−0.117).
+where the no-diet network's does not (−0.101).
 
 **Three properties the field treats as coupled to shape bias do not follow from
 it.** Effective dimensionality over these same front ends is explained entirely
@@ -1042,11 +1042,15 @@ Recorded so the omissions are visible rather than silent.
   stream until the parvo stream can win somewhere — the same general-factor
   pathology that defeated the thesis's RSA, reappearing in encoding form. Any
   regional claim on these models must therefore be shown to survive removal of
-  the blur. §2.3(b)'s ventral gradient is reported *because* it does: it gets
-  **larger** without the blur on the raw statistic (−0.118 → −0.208) and is
-  unchanged on the normalised one (−0.469 → −0.488, difference p = .383), and it
-  is not eccentricity — the eccentricity-matched contrast is −0.736 (p = .008,
-  0/8, dz −5.72).
+  the blur. §2.3(b)'s ventral gradient is reported *because* it does. Run at the
+  input level, where the blur can actually be removed — the untrained network on
+  the diet front end against the same network on the no-blur front end — the
+  gradient gets **larger** without the blur on the raw statistic (−0.118 →
+  −0.208) and is unchanged on the normalised one (−0.471 → −0.488, difference
+  p = .383). It is also not eccentricity: the eccentricity-matched contrast is
+  −0.736 (p = .008, 0/8, dz −5.72). The blur is thus not what manufactures this
+  particular gradient, which is exactly what could not be said of the three
+  results above.
 - **A clean dorsal/ventral organisation of the 20-ROI profile.** The profile
   across Kastner2015's 20 ROIs is highly reproducible (leave-one-subject-out
   Spearman ρ = +0.794, range .589–.896) and strongly graded — V1 > V2 > V3 >
