@@ -7672,3 +7672,37 @@ p=.0078 and 8/8 in all three seeds.
 2. **The konio result (§70) appears nowhere in the draft** — zero occurrences.
    A complete four-contrast pre-registered result at the exact floor, including
    its specificity contrast, is currently invisible to a reader.
+
+---
+
+## §74 §63.3's SURVIVING HALF DOES NOT SURVIVE §71.10 — cancel the pending
+## instruction to fold it into §2.2
+
+§63.3 audited §50's "channel-specific set point" and concluded it splits: the
+**swap vs `parvo_highsf`** ordering survives (disjoint seed ranges, gap 0.331,
+9/9 pairings) while swap vs luminance does not (overlapping, 7/9, carried by one
+checkpoint). An open instruction has stood since then to fold the surviving half
+into §2.2.
+
+**Do not.** §63.3 was computed on final checkpoints. Under the best-saved policy
+that §71.10 established for §2.2, `swap`'s seeds move (ep100, ep100, ep150) while
+`parvo_highsf`'s do not (all three are already ep150):
+
+| policy | swap | `parvo_highsf` | verdict |
+|---|---|---|---|
+| final (used by §63.3) | 1.995 / 2.225 / 4.383 | 1.497 / 1.640 / 1.664 | disjoint, gap **+0.331**, **9/9** |
+| **best saved (§71.10)** | **1.541** / 1.995 / 2.327 | 1.497 / 1.640 / 1.664 | **overlap 0.123**, **7/9** |
+
+7/9 with overlapping ranges is *precisely* the pattern §63.3 used to reject the
+swap-vs-luminance half — same pairing count, same overlap structure. Applying
+§63.3's own criterion to its own surviving half retires it.
+
+**So §50 is now dead in both halves**, and the reason is the same one that
+inflated §2.2's seed range (§71.10): the ordering was carried by `swap` seed 1's
+final checkpoint (4.383), a weight file 0.786 above where that seed's own best
+saved checkpoint sits (1.541). §2.2 continues to claim the side of parity and no
+level, no set point, and no channel ordering.
+
+This is the fourth claim retired by the checkpoint correction (§49.4, §49.2,
+§50's luminance half, and now §50's channel half) and the second time a result
+that looked seed-robust turned out to rest on late-training degradation.
