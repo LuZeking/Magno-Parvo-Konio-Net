@@ -215,6 +215,38 @@ stream and faked the null. It does not: 16-way accuracy rises to 0.486 from
 ~0.379 in the standard diet models, a ~28% relative gain (§25.2). The extra
 channel helped, and the stream still did not become shape-biased.
 
+*Accuracy control.* The diet-trained models are less accurate than the no-diet
+controls (§2.5, §2.7), so the conjunction effect could in principle be an
+accuracy effect: any network held near 0.55 might look shape-biased. We tested
+this directly rather than arguing about it, and pre-registered the fatal outcome
+first — *if a no-diet model at the diet's accuracy shows a shape-biased magno
+stream, §2.1 is an accuracy artefact and this paper's central claim is wrong*
+(PLAN §69.3–§69.4).
+
+No saved no-diet checkpoint is low enough to match — the earliest is already
+0.658 — so we retrained `dkl_base` with per-epoch checkpointing and selected, by
+rule, the epoch nearest the diet arm's 0.556. That is epoch 10 at **0.548**,
+matched to within 0.008, which is tighter than the diet arm's own seed range
+(0.012).
+
+| | diet (0.556) | no diet (0.70) | **accuracy-matched no diet (0.548)** |
+|---|---|---|---|
+| probe, magno bias | **+0.806** | −0.226 | **−0.148** |
+| cue-conflict, magno-only | **0.903** | 0.421 | **0.455** |
+
+**Matching accuracy closes 7.6% of the probe gap and 7.0% of the behavioural
+gap** — two instruments built on different machinery agreeing to within 0.6
+percentage points. The matched model's probe bias remains *negative*: it is still
+on the texture side of the sign flip, with every no-diet seed. Its behavioural
+value sits 0.021 above the no-diet seed maximum, a shift smaller than that arm's
+own seed spread (0.036).
+
+Lowering a no-diet network's accuracy to the diet's does move it slightly toward
+shape, and we report that residual rather than round it to zero — but it moves
+about a fourteenth of the way. **The conjunction effect is not an accuracy
+effect.** This control currently rests on **one** matched training run; two
+further seeds are training, and until they land it should be read as n=1.
+
 ### 2.2 The diet fixes which side of parity training ends on
 
 
