@@ -8589,3 +8589,85 @@ Recorded because the pattern matters more than the result:
 The general rule, which §79/§80/§81 all instantiate too: **an assertion that a
 quantity is *near* an expected value can pass for the wrong reason; an assertion
 that it *equals* a separately-derived value cannot.** Prefer the latter.
+
+---
+
+## §83 THE §82.4 BIAS DOES NOT REACH VSB — and a §2.2(a) number I cannot
+## reproduce from the stored results
+
+### §83.1 The question
+
+§82.4 found that `variance_partition` is biased toward magno by ~+0.012 where
+the true stream difference is near zero. §2.2(a) reads a sign off a near-zero
+value — "−0.033 ... if anything, marginally *more* texture- than
+shape-organised" — and §4.5 describes the VSB index as coming from stream-wise
+variance partitioning. So: does the bias propagate?
+
+### §83.2 No, and the reason is structural
+
+**VSB never touches `variance_partition`.** `run_encoding.py:409-414` computes
+it per band, from that band's own fitted estimator's predictions:
+
+    VSB = (eta2_shape - eta2_texture) / (eta2_shape + eta2_texture)
+
+over `pred_extra_{magno,parvo,joint}`. `variance_partition` is called
+separately at line 419. The two share the fitted models but no arithmetic.
+
+The §82.4 bias arises specifically from the **nested** subtraction
+`r2_joint - r2_parvo`: ridge fitting noise puts the joint model's test R²
+systematically above a nested band's, so the difference has a positive floor at
+a true zero. An η² contrast on a *single* model's predictions contains no
+nested subtraction and cannot inherit it.
+
+This also disposes of the sign-convention question rather than answering it:
+which way the bias would push VSB does not arise, because it does not reach VSB.
+
+### §83.3 VSB's own near-zero pathology — checked, not biting
+
+VSB is a ratio and its docstring flags it as "unstable where the denominator is
+small" (§21.4). That is a *different* mechanism and it would genuinely threaten
+a −0.033 sign read. Measured over NC>0.1 voxels, 8 subjects:
+
+| band | arm | median denominator | min |
+|---|---|---|---|
+| joint | diet | 0.421 | 0.406 |
+| joint | no diet | 0.478 | 0.443 |
+| magno | diet | 0.406 | 0.393 |
+| magno | no diet | 0.476 | 0.446 |
+| parvo | diet | 0.405 | 0.380 |
+| parvo | no diet | 0.364 | 0.344 |
+
+Healthy everywhere. Near-zero VSB in this dataset is not a small-denominator
+artefact.
+
+### §83.4 OPEN — the −0.033 cell does not reproduce for me
+
+Attempting to check the cell itself, median VSB over NC>0.1 voxels, seed 0,
+n=8 subjects:
+
+| band | diet | no diet |
+|---|---|---|
+| joint | −0.400 | −0.672 |
+| magno | **+0.791** | −0.644 |
+| parvo | −0.739 | −0.748 |
+
+§2.2(a)'s quantity is the stream dissociation VSB_magno − VSB_parvo (§2934,
+§3049, §6579). From the medians above that is **+1.53** for diet and **+0.104**
+for no diet, against the draft's **+0.616** and **−0.033**.
+
+The diet value +1.53 does match the **+1.534** printed in the other column of
+the §2934 table, which suggests those two columns are different statistics and
+that I have reproduced one of them — not the one §2.2(a) quotes.
+
+**This is not a claim that the draft is wrong.** The likeliest explanation is
+that I used the wrong mask, or the wrong member of the raw/normalised pair. But
+it is flagged rather than dropped for one reason: **§73 is on record as having
+found "the mislabel, the raw/_raw trap" in precisely this measure.** A number
+that will not reproduce from the stored results, in a measure with a documented
+mislabelling history, is worth pinning down. Resolving it needs the exact mask
+and variant §2.2(a) quotes, which belongs to the draft owner.
+
+Note the sign question is unaffected either way: on my numbers the no-diet
+dissociation is **+0.104**, positive, where the draft reads −0.033 as negative.
+If my aggregation were the right one the clause would be wrong in sign, not
+merely fragile — which is the reason not to leave this unresolved.
