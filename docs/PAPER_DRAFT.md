@@ -457,7 +457,7 @@ Monotonicity tracks it (Spearman ρ against hierarchical rank −0.964 with the 
 against −0.502 without) and the effect sizes differ by an order of magnitude
 (dz −11.70 vs −1.06).
 
-Four points make this more than a single fitted number:
+Five points make this more than a single fitted number:
 
 - **Training decides the direction; the input only supplies the starting point.**
   An untrained network on the diet front end already sits at −0.471, so filtering
@@ -491,6 +491,33 @@ Four points make this more than a single fitted number:
   stream-bias axis (−0.495 against +0.849), yet the strong regional gradient is
   in the model whose global preference points the other way (§17.2). A model that
   simply preferred magno everywhere could not produce this.
+- **The chromatic side is specific to L−M, not to chromaticity as such.** The
+  ventral end of this gradient rests on the parvo stream's unique variance at
+  hV4, so we asked whether *any* cone-opponent axis would deliver it.
+  Substituting the koniocellular axis S−(L+M) for L−M in stream 2, holding the
+  luminance stream bit-identical — the magno-only fit is unchanged to
+  0.000e+00 on every voxel of every subject, so the contrast is exactly
+  R²_joint(konio) − R²_joint(parvo) with no magno-side estimation error — makes
+  the ventral prediction **worse**, and worse where colour lives: hV4
+  **−0.029**, VO **−0.024**, the pre-declared colour set **−0.026**, each at
+  p=.0078 with **0/8** subjects positive and both statistics agreeing in sign.
+  The deficit is concentrated rather than global — colour set minus the other 17
+  ROIs is **−0.014** (p=.0078, 0/8) — and that specificity contrast is
+  **unchanged at −0.014 when the konio channel instead keeps its native 2.05×
+  contrast advantage**, a manipulation that lifts konio's mean over those other
+  ROIs from −0.012 to +0.008 and lets it win early visual cortex outright (V1d
+  +0.077, 8/8). The colour-specific deficit therefore does not lie on the
+  contrast axis, which is the first axis a sceptic would reach for. Both
+  cone-opponent axes have now been tested against colour-biased cortex and
+  neither predicts it — L−M's own failure there is reported under *Claims
+  deliberately not made* — so what the parvo stream contributes at the ventral
+  end of this gradient is specific to L−M without being a claim about colour
+  selectivity.
+  *Two limits.* Pooled VO reaches the floor in the contrast-matched cell only
+  (p=.11 unmatched, where hV4 and the specificity contrast still hold at .0078),
+  and these fits are **untrained and single-seed** (Methods): they test the
+  *input* as a model of colour cortex through the architecture prior — not a
+  trained koniocellular stream, and no third stream was added.
 
 *Seed coverage, stated plainly.* The diet and no-diet arms have three seeds each
 on this instrument. The `swap` and `parvo_highsf` cortical fits are **seed 0
@@ -951,6 +978,23 @@ Stream-wise variance partitioning gives the per-voxel shape-bias index (VSB) use
 in §2.3, computed by pushing the cue-conflict set through each fitted encoding
 model.
 
+*Koniocellular control (§2.3b).* The DKL front end already computes all three
+opponent axes, so the konio arm is a channel slice, not a new model: stream 2
+receives S−(L+M) instead of L−M, with the same untrained network at seed 0, the
+same luminance stream, the same architecture, splits and mask. Two cells were
+pre-registered. In the **contrast-matched** cell S−(L+M) is scaled to L−M's
+per-image RMS contrast, so the only remaining difference is which chromatic axis
+stream 2 carries; this is the primary arm. In the **unmatched** cell the channel
+keeps its native contrast, which is 2.05× L−M's, so a loss there is decisive
+while a win alone would prove nothing. Because the magno feature matrix is
+bit-identical across arms and the magno band is fitted alone, `r2_magno` must
+cancel; we pre-registered this as a gate at max|Δr2_magno| < 1e-4 and it passed
+bit-exact (0.000e+00) on every voxel of all 8 subjects in both cells. ROI
+statistics use the Kastner2015 atlas, with the colour set (hV4, VO1, VO2) and
+the specificity contrast against the remaining ROIs declared before the run.
+No eccentricity-residualised VO test is reported: `prf-eccrois` labels 0% of VO2
+and 9–23% of VO1 voxels, so it is not computable on this atlas.
+
 ### 4.6 Out-of-distribution robustness
 
 Corruptions are applied to RGB **before** the front end, so each model sees the
@@ -1046,6 +1090,20 @@ Recorded so the omissions are visible rather than silent.
   analysis is reported in supplementary material rather than the main text. Note
   this is a *different* measure from §2.3(b)'s stream-bias gradient, which is
   diet-specific and survives its controls.
+- **That a koniocellular stream is or is not worth building.** The konio control
+  of §2.3(b) swaps which chromatic axis stream 2 carries; it does not add a third
+  stream. The architecture that would justify this network's name — a thin
+  quarter-width K stream with dual projection (K→parvo after block 1, late skip
+  to magno; Sincich 2004) — is not implemented and not tested. What the
+  result refutes is the premise that motivated it, namely that S−(L+M) is the
+  chromatic axis the failed colour prediction was missing. It is also an
+  *untrained*, single-seed comparison, so nothing follows about a trained konio
+  stream, and no blur was applied to the K channel: the measured radial spectrum
+  of this pipeline's S−(L+M) is nearly L−M's in shape (0.614 vs 0.570 of power in
+  the lowest octave), so blurring would impose the low-acuity assumption rather
+  than reproduce it. Whether a three-band model beats a two-band one is a
+  separate question needing 3-way variance partitioning, which our banded ridge
+  does not implement.
 - **That integration produces human-like shape bias** (§2.7).
 - **That the diet improves neural predictivity** — it does not (§2.7).
 - **Any dorsal/ventral stream mapping.** The BA framing was
@@ -1089,6 +1147,19 @@ Recorded so the omissions are visible rather than silent.
   rest, with **hV4 the only parvo-preferring area** — but it ranks by
   hierarchical level and eccentricity, *not* by a dorsal/ventral split. We
   report the gradient (§2.3b) and make no anatomical-stream claim.
+- **That the chromatic stream predicts colour-biased cortex.** The natural
+  prediction from a parvo/chromatic stream is that it should win in VO. It does
+  not: pooled VO is **+0.0045 (p = .46)** — if anything magno-preferring — on the
+  same 20-ROI profile, and hV4's parvo preference (−0.012, 2/8) is weak. This is
+  a failed prediction and we report it as one. It is also what makes the konio
+  control of §2.3(b) interpretable: because L−M already fails at VO, the two
+  live readings were "the chromatic stream does not predict colour cortex" and
+  "L−M is the wrong chromatic axis". Swapping in S−(L+M) settles it as the
+  first — the substitute is *reliably and specifically worse* in exactly those
+  ROIs — so both opponent axes have now been tested against colour-biased cortex
+  and neither predicts it. What §2.3(b) claims is a hierarchical gradient in
+  which stream does the explanatory work, not that either stream maps onto a
+  colour-selective region (PLAN §7.1, §70.4).
 
 ---
 

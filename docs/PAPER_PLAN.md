@@ -6898,10 +6898,20 @@ global by construction and because every ROI-specificity claim this project has
 tested (hMT+, dorsal/ventral, VO) has died that way. **That expectation was
 wrong, and in the informative direction.** Konio does not lose uniformly: in the
 matched arm it *wins* in V1d/V1v/V2d (+0.025/+0.014/+0.011) and loses
-everywhere else, with its three worst ROIs of twenty being **hV4 (−0.029), VO1
-(−0.027) and VO2 (−0.020)** — precisely the colour set. The colour-set-minus-
-rest contrast is itself at 0/8 and p = .0078, so the deficit is not a global
-shift; it is concentrated in colour-biased cortex. The same instrument that
+everywhere else. Its worst ROIs of twenty are **hV4 (−0.0293), VO1 (−0.0274),
+V3v (−0.0209) and VO2 (−0.0202)** — so the pre-declared colour set occupies
+ranks **1, 2 and 4**, with ventral V3 interleaved between VO1 and VO2. The
+colour-set-minus-rest contrast is itself at 0/8 and p = .0078, so the deficit is
+not a global shift; it is concentrated in colour-biased cortex.
+
+*(Correction, §76.1: this paragraph previously read "its three worst ROIs of
+twenty being hV4, VO1 and VO2 — precisely the colour set". That is false: V3v
+at −0.0209 sits between VO1 and VO2, in the matched arm under both statistics
+(raw: hV4 −0.00991, VO1 −0.00880, V3v −0.00675, VO2 −0.00615), so the
+interleaving is not a units artefact. The colour set is three of the worst
+**four**, not the worst three. Nothing else in §70 depends on the ranking — the
+load-bearing test is the colour-set-minus-rest contrast, which is a paired
+Wilcoxon and does not use ranks at all.)* The same instrument that
 correctly killed hMT+ in §16.1 here returns a positive verdict on specificity,
 which is the strongest available evidence that this is a colour result and not
 a general-factor artefact.
@@ -7780,3 +7790,81 @@ paper's favour or been survived: §57.5 (error consistency — refuted my own
 hypothesis, honoured), §67.4/§69.4 (accuracy confound — held), §71.6 (OOD at
 best checkpoints — held), §71.8 P3 (PR side of parity — held), §64/§72 (the
 split — refuted outcome D). **No fatal test remains outstanding.**
+
+---
+
+## §76 THE KONIO ARM IS WRITTEN INTO THE DRAFT — verified by re-run, with one
+## ranking claim in §70.2 corrected
+
+The user asked for the konio arm to be added to the paper. Before writing it in,
+`tmp_analysis/konio_verdict.py` was re-run end to end against the on-disk fits
+rather than transcribing §70's tables.
+
+### 76.1 Everything reproduces, except one sentence
+
+**Reproduced exactly**, matched cell (primary), n=8, NC-normalised, with the raw
+statistic in parentheses:
+
+| contrast | Δ | subjects | p | d_z |
+|---|---|---|---|---|
+| hV4 | −0.02930 (−0.00991) | 0/8 | .0078 | −2.09 |
+| VO (VO1,VO2) | −0.02381 (−0.00748) | 0/8 | .0078 | −1.95 |
+| colour set | −0.02564 (−0.00829) | 0/8 | .0078 | −2.06 |
+| colour set − other 17 | −0.01402 (−0.00493) | 0/8 | .0078 | −1.51 |
+
+The §65.4 gate passes **bit-exact, 0.000e+00, every voxel of all 8 subjects in
+both cells** — so Δ really is R²_joint(konio) − R²_joint(parvo) with zero
+magno-side estimation error, as pre-registered. The unmatched cell reproduces
+too (hV4 −0.00586 0/8 .0078; VO −0.00609 2/8 .1094; colour set −0.00601 2/8
+.0391; specificity −0.01388 0/8 .0078), including the load-bearing invariance:
+specificity −0.0140 matched against −0.0139 unmatched, while the mean over the
+other 17 ROIs moves from −0.0116 to +0.0079 and konio wins V1d outright
+(+0.077, 8/8). `konio_verdict.py` returns **OUTCOME D** from both cells.
+
+**Corrected.** §70.2 claimed konio's "three worst ROIs of twenty" were hV4, VO1
+and VO2, "precisely the colour set". They are not. Sorted worst-first in the
+matched cell: hV4 −0.02930, VO1 −0.02744, **V3v −0.02087**, VO2 −0.02019. The
+colour set is ranks 1, 2 and **4**; ventral V3 interleaves. The same
+interleaving holds under the raw statistic (hV4 −0.00991, VO1 −0.00880, V3v
+−0.00675, VO2 −0.00615), so it is not a units artefact. §70.2 is corrected in
+place.
+
+Nothing else in §70 moves, because the ranking was never load-bearing: the
+specificity test is a paired Wilcoxon on colour-set-minus-rest and does not use
+ranks. The draft states the corrected version and does not repeat the ranking
+claim at all.
+
+### 76.2 A terminology collision, resolved in the draft
+
+"Raw" now means three different things across this project, which is how §73.2's
+near-miss happened:
+
+1. **§2.3(b) / `blur_verdict.py`** — the SPI *without its (Uₘ+Uₚ) denominator*.
+   Both raw and norm take NC-normalised `unique_magno`/`unique_parvo` as inputs.
+2. **§70 / `konio_verdict.py`** — the `unique_*_raw` fields, i.e. *without the
+   noise-ceiling denominator*. Verified against `banded_ridge.py:226-234`, where
+   `unique_magno_raw = unique_m` and `unique_magno = unique_m / nc`.
+3. **§65.3** — the `untrained_konio_raw` **cell**, i.e. the *unmatched input
+   contrast* arm of the design.
+
+All three are internally correct; the word is not. The draft therefore calls the
+cells **contrast-matched** and **unmatched**, never "raw", so that "raw" in the
+paper only ever means a statistic. This does not change any number.
+
+### 76.3 Where it landed
+
+Per §70.5 ("not a section; one paragraph plus a supplementary panel, strengthening
+leg (c)"), and since leg (c) is the cortical hV4−V1v gradient (§9's three legs),
+the arm went into **§2.3(b) as a fifth bullet** — the point being that the
+gradient's ventral end is specific to L−M and not to chromaticity as such, which
+is a control on the gradient's *interpretation*, not a finding of its own. The
+positioning rule is honoured: the surviving positive claim leads, the konio
+failure is its control.
+
+Also added: a Methods paragraph (§4.5) covering the two cells, the gate and the
+atlas, and a **Claims deliberately not made** entry recording the three things
+§70.4 says the arm does *not* close — it is an axis swap and not a third stream,
+it is untrained and single-seed, and no blur was applied to K.
+
+Still true and still disclosed in the draft: pooled VO reaches the floor in the
+matched cell only.
