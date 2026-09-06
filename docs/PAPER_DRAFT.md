@@ -1831,9 +1831,13 @@ Recorded so the omissions are visible rather than silent.
   prediction from a parvo/chromatic stream is that it should win in VO. It does
   not: pooled VO is **+0.0045 (p = .46)**, bounded by equivalence to **within
   ±0.017** (90% CI [−0.0082, +0.0171], TOST p = .0297; percentile bootstrap
-  [−0.0065, +0.0142], 20k resamples) — if anything magno-preferring — on the
+  [−0.0065, +0.0142], 20k resamples) on the
   same 20-ROI profile, and hV4's parvo preference (−0.012, 2/8) is weak. This is
-  a failed prediction and we report it as one. *The equivalence result should not
+  a failed prediction and we report it as one. **We draw no inference from the
+  sign of that +0.0045.** An earlier version of this entry read it as "if
+  anything magno-preferring"; at p = .46 that was an interpretation a null does
+  not support, and it is withdrawn. The quantity is bounded near zero and that
+  is all we claim for it. *The equivalence result should not
   be over-read:* at n = 8 the effect detectable at 80% power is 0.0220, slightly
   **above** the ±0.0195 interval declared for this test, so equivalence is
   achieved because the point estimate sits near zero rather than because the
@@ -2126,6 +2130,34 @@ Methods in §4.5.
       figure). Converting §2.1, §2.3, §2.6.2 and §2.6.3 from tables to panels
       addresses the word count and the display-item cap together, and is the
       referee simulation's ranked suggestion 7.
+- [ ] **Recovery analysis: pilot in, production pending — DO NOT paste pilot
+      numbers into the text.** The parallel session's pilot (PLAN §82, commit
+      db09b1e; production array 26439650 queued, 8 subjects, `main`, no GPU)
+      returns what §2.2 needs: condition A recovers the true ordering exactly
+      (ρ = +1.000 against a true +1.000, errors ≤0.025), and condition B — every
+      ROI given an identical generative process, differing only in noise ceiling
+      — produces **no** gradient (ρ = −0.321, ns, wrong sign). The pipeline does
+      not manufacture a gradient from correlated bands plus varying SNR. Place
+      this in §2.2 or §4.5 **only on the production numbers** (1000 components,
+      200 voxels, 8 subjects vs the pilot's 60/20/1).
+      *Three things to carry when it lands.* (i) **A null bias toward magno**
+      where the true difference is near zero — direction trusted, magnitude not
+      until production. It does not touch the gradient (a large effect in the
+      accurate regime, with B ruling out the SNR mechanism directly) but it does
+      bear on the VO null, whose sign claim has already been withdrawn above on
+      independent grounds. A magno-directed bias makes a null *more*
+      conservative, so nothing about the VO null as a null is at risk; what it
+      forbids is reading its small positive value as real, which the draft no
+      longer does. (ii) A possible **discretisation artefact** — null estimates
+      clustering near two values rather than scattering — which if it survives
+      at production settings means neighbouring ROIs can differ by ~0.02 for
+      purely numerical reasons and needs a sentence. (iii) The **identifiability
+      sentence for §4.5**: smallest canonical correlation ≈0 and largest ≈0.81 at
+      pilot scale, i.e. unique variance *is* identifiable in these feature
+      spaces. Phrasing agreed: identifiable-in-these-spaces is what the spectrum
+      supports; recovered-correctly is what the recovery analysis supports — two
+      sentences, two claims, different evidence, the first placed before the
+      gradient.
 - [ ] **Two cortical-instrument analyses claimed by a parallel session**
       (2026-09-06, from the NN referee sim). Do not duplicate; apply their
       output when it lands. (a) **Uₘ/Uₚ recovery analysis** — simulate voxels
