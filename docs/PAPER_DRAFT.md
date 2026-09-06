@@ -33,7 +33,9 @@ bias is supplied by its input statistics, while the chromatic stream's texture
 bias is built by learning. Fitted to eight subjects of the Natural Scenes
 Dataset, it is the *texture-biased* stream whose unique variance carries the
 ventral end of the hierarchy. Behaviour reads out from both, and the mixture is
-shape-biased — below the shape-biased stream alone, above the texture-biased one.
+shape-biased. Reweighting that readout over frozen representations moves shape
+bias from 0.40 to 0.90, spanning the range the field's models occupy without
+either component changing.
 
 Shape-biased behaviour therefore need not imply shape-biased representations: a
 behavioural rate is a property of a readout over components, not a report of any
@@ -317,33 +319,19 @@ Five points make this more than a single fitted number:
   stream-bias axis (−0.495 against +0.849), yet the strong regional gradient is
   in the model whose global preference points the other way (§17.2). A model that
   simply preferred magno everywhere could not produce this.
-- **The chromatic side is specific to L−M, not to chromaticity as such.** The
-  ventral end of this gradient rests on the parvo stream's unique variance at
-  hV4, so we asked whether *any* cone-opponent axis would deliver it.
+- **The chromatic side is specific to L−M, not to chromaticity as such.**
   Substituting the koniocellular axis S−(L+M) for L−M in stream 2, holding the
-  luminance stream bit-identical — the magno-only fit is unchanged to
-  0.000e+00 on every voxel of every subject, so the contrast is exactly
-  R²_joint(konio) − R²_joint(parvo) with no magno-side estimation error — makes
-  the ventral prediction **worse**, and worse where colour lives: hV4
-  **−0.029**, VO **−0.024**, the pre-declared colour set **−0.026**, each at
-  p=.0078 with **0/8** subjects positive and both statistics agreeing in sign.
-  The deficit is concentrated rather than global — colour set minus the other 17
-  ROIs is **−0.014** (p=.0078, 0/8) — and that specificity contrast is
-  **unchanged at −0.014 when the konio channel instead keeps its native 2.05×
-  contrast advantage**, a manipulation that lifts konio's mean over those other
-  ROIs from −0.012 to +0.008 and lets it win early visual cortex outright (V1d
-  +0.077, 8/8). The colour-specific deficit therefore does not lie on the
-  contrast axis, which is the first axis a sceptic would reach for. Both
-  cone-opponent axes have now been tested against colour-biased cortex and
-  neither predicts it — L−M's own failure there is reported under *Claims
-  deliberately not made* — so what the parvo stream contributes at the ventral
-  end of this gradient is specific to L−M without being a claim about colour
-  selectivity.
-  *Two limits.* Pooled VO reaches the floor in the contrast-matched cell only
-  (p=.11 unmatched, where hV4 and the specificity contrast still hold at .0078),
-  and these fits are **untrained and single-seed** (Methods): they test the
-  *input* as a model of colour cortex through the architecture prior — not a
-  trained koniocellular stream, and no third stream was added.
+  luminance stream bit-identical, makes the ventral prediction **worse, and
+  worse where colour lives** — hV4 −0.029, VO −0.024, the pre-declared colour
+  set −0.026, each at p=.0078 with 0/8 subjects positive on both statistics —
+  and the deficit is concentrated rather than global (colour set minus the other
+  17 ROIs, −0.014, p=.0078, 0/8), unchanged when the konio channel keeps its
+  native 2.05× contrast advantage. Both cone-opponent axes have now been tested
+  against colour-biased cortex and neither predicts it, so what the parvo stream
+  contributes at the ventral end is specific to L−M without being a claim about
+  colour selectivity. These fits are **untrained and single-seed**, and no third
+  stream was added. Full result, pre-registration and limits: Supplementary
+  Note S2.
 
 *Seed coverage, stated plainly.* The diet and no-diet arms have three seeds each
 on this instrument. The `swap` and `parvo_highsf` cortical fits are **seed 0
@@ -393,14 +381,60 @@ integration costs 0.203 of shape bias (0.878 → 0.675), which is 72% of the
 remaining gap. See §2.7 and §52.3.
 
 
-**Integration mixes; it does not inherit.** The integrated readout's
+**Integration mixes rather than inherits.** The integrated readout's
 cue-conflict bias is **0.675**, against **0.878** for the magno stream alone and
 **0.418** for the parvo stream alone. Integration therefore *costs* 0.203 of
-shape bias -- 72% of the remaining distance to the human mean -- and that cost
-is the evidence. A readout that simply inherited from the shape-biased stream
-would sit at 0.878; one reading out the texture-biased stream would sit below
-parity, near 0.418. It does neither. The readout combines two components with
-opposite biases and lands shape-biased.
+shape bias — 72% of the remaining distance to the human mean.
+
+*We are careful about what that single number can show.* The readout is a fixed
+linear sum of the two streams' features at w = 0.5, and w is a hyperparameter,
+not a learned quantity (§4.3). Given two oppositely biased components, an
+intermediate result is close to arithmetically forced, so **the intermediate
+value is not by itself a prediction that could have failed** and we do not
+present it as one.
+
+**The readout weight is the control variable, and it moves behaviour across the
+entire range.** What is *not* forced is the shape of the dependence, and that is
+measurable, because `y₁` and `y₂` do not depend on `w`: sweeping `w` moves the
+readout while holding both components **exactly** fixed. This is the manipulation
+the readout account calls for. Cue-conflict shape bias at 21 values of `w`,
+3 seeds, both checkpoint policies:
+
+| `w` (weight on the magno stream) | 0.00 | 0.25 | 0.50 | 0.75 | 1.00 |
+|---|---|---|---|---|---|
+| final checkpoints | 0.419 | 0.508 | **0.675** | 0.827 | 0.879 |
+| best saved checkpoints | 0.399 | 0.508 | **0.655** | 0.807 | 0.904 |
+
+**Shape bias runs from below parity to 0.90 as the readout is reweighted over
+components that never change.** The curve is monotone non-decreasing across all
+21 values in 3/3 seeds at the best saved checkpoint (2/3 at the final
+checkpoint, where one seed has a single local inversion), and the total span is
+**+0.46 to +0.52** of shape bias per seed. The same network, the same two
+representations, anywhere from texture-biased to more shape-biased than any
+model in §2.6.3's table — set only by how the readout weights them.
+
+That is the paper's claim made as a measurement rather than an argument. A
+behavioural shape-bias rate is a property of a readout over components; move the
+readout and the rate moves, with the representations held fixed.
+
+*Validation and two caveats.* At w = 0.5 the sweep reproduces the published
+per-seed values **exactly** (0.6922 / 0.6861 / 0.6464 at the final checkpoint;
+0.5942 / 0.7177 / 0.6522 at the best saved), which is the anchor that shows the
+sweep and the main pipeline are the same computation. The endpoints are *not*
+formally identical to the `magno_only` / `parvo_only` ablations, which hold
+w = 0.5 and zero one term: the classifier is affine, so rescaling features moves
+the argmax through the bias term. Empirically the difference is negligible —
+w = 1.00 gives 0.879 against the ablation's 0.878, and w = 0.00 gives 0.419
+against 0.418 — but they are different quantities and we do not equate them.
+Second, the decided-image count varies across `w` (0.24–0.45 of the 1,200), so
+the extreme-`w` cells carry the denominator caveat of §2.4; the monotone trend
+holds across the well-decided middle of the range regardless.
+
+**Nothing here fits `w` to humans.** No value of the weighting was estimated
+from human data, and the sweep does not identify which mixture a human readout
+uses — only that a mixing readout over these components spans the entire
+behavioural range, and that the system's shape bias is therefore a fact about
+the readout rather than about either representation.
 
 **The split is doing the work: without it the behaviour is worse.** The
 immediate objection to a two-component account is that the components may be
@@ -918,7 +952,7 @@ rests on stream differentiation and on the ventral gradient, **not** on
 prediction accuracy, and we do not argue otherwise.
 
 **Two of the four front-end controls are degenerate on the cortical instrument.**
-In `swap` the parvo stream contributes unique variance Up = 0.006; in
+In `swap` the parvo stream contributes unique variance Uₚ = 0.006; in
 `parvo_highsf` the magno stream contributes Um = 0.007. Each leaves one stream
 contributing essentially nothing unique. Because the gradient statistic is a
 ratio, a condition with one stream at ~0 has little dynamic range in which a
@@ -1045,9 +1079,12 @@ comes apart most cleanly of all.
 The readout account makes a testable prediction beyond this architecture: in any
 system whose behaviour is measured by a cue-conflict rate, that rate should be
 recoverable from a weighted combination of component biases, and manipulating
-the weighting should move the rate without moving any component. Our
-stream-selective readouts are the crude version of that manipulation; a
-learnable or graded weighting is the natural next test.
+the weighting should move the rate without moving any component. We test that
+directly in §2.3 — reweighting the readout over frozen components moves shape
+bias from 0.40 to 0.90, monotonically, spanning the entire range the field's
+models occupy. What remains open is the *learned* version: a weighting fitted to
+data rather than swept, and whether any principled objective selects the human
+operating point. Nothing here selects it.
 
 What does not generalise is any recommendation to use a developmental diet as a
 training method. It makes models less accurate (0.556 vs 0.701 at the best saved
@@ -1106,9 +1143,10 @@ MiniEcoset at 256 px, 112 classes, pre-converted to DKL (`uint8`, with per-chann
 min/max stored so that NSD stimuli are normalised identically at analysis time).
 
 150 epochs, batch 256, Adam (lr 1×10⁻⁴, β₁ = 0.9), cross-entropy. Augmentation is
-the thesis DVD-B set applied on GPU via kornia: horizontal flip (p = 0.25),
-rotation ±15° (p = 0.25), colour jitter (brightness 0.4, p = 0.5), random
-equalise (p = 0.5), perspective 0.3 (p = 0.5), sharpness 0.5 (p = 0.5). Random
+the thesis DVD-B set applied on GPU via kornia, each with its application
+probability *p*_aug: horizontal flip (*p*_aug 0.25), rotation ±15° (*p*_aug
+0.25), colour jitter (brightness 0.4, *p*_aug 0.5), random equalise (*p*_aug
+0.5), perspective 0.3 (*p*_aug 0.5), sharpness 0.5 (*p*_aug 0.5). Random
 grayscale is applied for RGB inputs only and is skipped for DKL. **Three seeds
 per condition** (0, 1, 2); all twelve checkpoints are used in the seed analyses
 of §2.4 and §2.5.
@@ -1235,35 +1273,58 @@ there is no OSF or AsPredicted entry, no third party held the plan, and nothing
 prevented the plan itself from being revised. We use the term in that restricted
 sense throughout and claim nothing stronger.
 
-**Uncertainty notation.** Throughout, `±` denotes the **range across the three
-training seeds** (max − min), not a standard deviation, standard error or
-confidence interval, and it is reported over seeds because seeds are the unit
-the corresponding claim generalises over. Two exceptions are labelled where they
-occur: cue-conflict values carry a **bootstrap 95% CI over cue-conflict images**
-(§4.3), and the human observer figure 0.958 ±0.019 is the **range across the ten
-observers**. Where a within-subject quantity is summarised across the eight NSD
-subjects, the subject-level spread is reported as an explicit range or as dz,
-never as `±`.
+**Uncertainty notation.** Throughout, `±` denotes a **standard deviation**, over
+the unit named in each case: across the three training seeds for behavioural and
+probe quantities, across the ten observers for the human figure (0.958 ±0.019),
+and across the eight NSD subjects for the participation-ratio and
+stream-preference tables. Ranges, where given, are stated as explicit intervals
+("range 0.919–0.987", "seed range 0.120") and are never written as `±`.
+Cue-conflict values additionally carry a **bootstrap 95% CI over cue-conflict
+images** (§4.3), which is labelled as a CI wherever it appears.
 
-**Multiplicity.** This paper reports 36 p-values. They fall into three families,
-and we state the correction for each rather than applying one blanket rule.
-(i) The **pre-specified confirmatory family** — the front-end 2×2 (§2.4), the
-inverted-front-end prediction (§2.5), the five untrained-on OOD corruptions
-(§2.6.2) and the error-consistency hypothesis (§2.6.3) — comprises 18 tests
-declared before the corresponding analyses; Holm–Bonferroni across these leaves
-every claim we make significant, because each rests on the exact Wilcoxon floor
-p=.0078 at n=8 and 18 × .0078 = .140 is the largest adjusted value only for the
-single least extreme test, which we do not claim. (ii) The **ROI screen** behind
-§2.2(b) and the retired regional claims covers 20 Kastner2015 ROIs; it is
-exploratory, the surviving claim is the *gradient* rather than any single ROI,
-and the four analyses that did not survive their controls are reported as
-failures under *Claims deliberately not made* rather than corrected into
-significance. (iii) **Equivalence tests** (§77–§78) are one-sided by
-construction with bounds fixed in advance and are not corrected, since each
-bounds a separate pre-declared null. The general caution stands: with n=8 the
-exact test has a floor of .0078 and cannot distinguish among strong effects, so
-we report complete subject separation (8/8) alongside every p-value and treat
-that, not the p-value, as the evidence.
+*One inconsistency, disclosed rather than smoothed over.* The behavioural and
+probe tables compute the sample standard deviation (ddof = 1); the
+participation-ratio and stream-preference tables inherit NumPy's default
+population standard deviation (ddof = 0). The two differ by √(8/7) ≈ 7% at n=8.
+No claim in this paper turns on the difference — every one rests on complete
+subject or seed separation rather than on an interval — but the tables will be
+recomputed at ddof = 1 before submission so that a single estimator carries the
+symbol.
+
+**Multiplicity, and why no correction can license this design.** This paper
+reports 28 p-values (an earlier count of 36 wrongly included seven kornia
+augmentation probabilities and one unique-variance value; those are now written
+*p*_aug and Uₚ).
+
+The honest statement about multiplicity here is a negative one. Nearly every
+inferential claim rests on the paired exact Wilcoxon signed-rank test at n = 8,
+whose **exact two-sided floor is p = 2/2⁸ = .0078125** — the value returned by a
+*perfect* 8/8 split, and unimprovable no matter how large the effect (our
+largest, dz = −11.70, returns exactly the same .0078125 as a marginal 8/8).
+Holm–Bonferroni over a family of *m* tests requires the smallest p to clear
+.05/*m*. Since .0078125 > .05/*m* for every *m* > 6, **no family larger than six
+tests can have a single rejection at α = .05**, and for our 18-test
+pre-specified confirmatory family Holm rejects nothing at all: every adjusted
+value is min(1, 18 × .0078125) = **.141**. Benjamini–Hochberg returns .141 too.
+This is a resolution limit of an exact test at n = 8, not a choice-of-procedure
+problem, and it cannot be escaped by selecting a smaller family after seeing
+which claims need to survive.
+
+We therefore do not claim multiplicity-corrected significance anywhere, and no
+claim in this paper should be read as carrying it. What the claims rest on
+instead is stated with each of them and is not a p-value: **complete separation
+across all eight subjects (8/8 or 0/8), agreement of the raw and
+noise-ceiling-normalised statistics (§8), independent replication across three
+seeds, and effect size.** The p-values are reported because they are
+conventional and because their floor is informative about the design, not
+because they discriminate among our results — at n = 8 they cannot.
+
+The exploratory ROI screen behind §2.2(b) is treated the same way and is the
+reason four regional analyses appear under *Claims deliberately not made* as
+failures rather than as corrected significances. Equivalence tests (§78) are
+one-sided with bounds fixed in advance and each bounds a separate pre-declared
+null; they are reported with their achieved bounds and their power caveats
+rather than corrected.
 
 ---
 
@@ -1624,14 +1685,17 @@ https://doi.org/10.1038/nn.4244
    needs symmetry broken at initialisation -- a per-stream seed -- which is a
    new set of training runs (3 seeds x ~2 days GPU) and is not reported.
 13. **`rgb_tsn`'s channels are DKL lum/rg/by, not R/G/B**, and this condition
-   alone was trained with `RandomGrayscale(p=0.5)`.
-14. **The readout weight is fixed, not learned and not fitted to humans.** The
-   integration in §2.3 is a linear sum of the two streams' features at a fixed
-   w = 0.5 (§4.3). We report shape bias across the full range of w to show the
-   readout account's central dependence, but no value of w was fitted to human
-   data, and nothing here estimates what weighting a human readout would use.
-   The claim is that *a* mixing readout over oppositely biased components yields
-   shape-biased behaviour, not that this is the human mixture.
+   alone was trained with `RandomGrayscale(p_aug=0.5)`.
+14. **The readout weight is a hyperparameter, and nothing selects its value.**
+   The integration in §2.3 is a linear sum of the two streams' features at a
+   fixed w = 0.5 (§4.3). §2.3 sweeps w and shows shape bias spans 0.40–0.90 over
+   frozen components, which is the readout account's central dependence measured
+   rather than argued — but it cuts both ways: **the model's headline 0.675 is a
+   consequence of an arbitrary hyperparameter**, not a property the system
+   arrived at. No w was fitted to human data and nothing here estimates the
+   weighting a human readout would use. The claim is that *a* mixing readout over
+   oppositely biased components yields shape-biased behaviour, not that this is
+   the human mixture.
 15. **The species scope of the motivating premise is mixed.** One human study
    (Jagadeesh & Gardner, 2022) and a macaque literature (Okazawa et al., 2015;
    Jagadeesh & Livingstone, 2024; Komatsu & Goda, 2018) motivate the paradox.
@@ -1845,6 +1909,45 @@ seeds on the predicted side and the magno−parvo seed range *tightening* from
 anything it dilutes it (PLAN §67, §68, §71).
 
 
+---
+
+## Supplementary Note S2 — the koniocellular control
+
+Reported here rather than in §2.2 because it is a control on a control: it tests
+whether the *chromatic axis* carried by stream 2 is what delivers the ventral end
+of the gradient, and it constrains a claim the paper does not make (see *Claims
+deliberately not made*: that the chromatic stream predicts colour-biased cortex).
+Methods in §4.5.
+
+- **The chromatic side is specific to L−M, not to chromaticity as such.** The
+  ventral end of this gradient rests on the parvo stream's unique variance at
+  hV4, so we asked whether *any* cone-opponent axis would deliver it.
+  Substituting the koniocellular axis S−(L+M) for L−M in stream 2, holding the
+  luminance stream bit-identical — the magno-only fit is unchanged to
+  0.000e+00 on every voxel of every subject, so the contrast is exactly
+  R²_joint(konio) − R²_joint(parvo) with no magno-side estimation error — makes
+  the ventral prediction **worse**, and worse where colour lives: hV4
+  **−0.029**, VO **−0.024**, the pre-declared colour set **−0.026**, each at
+  p=.0078 with **0/8** subjects positive and both statistics agreeing in sign.
+  The deficit is concentrated rather than global — colour set minus the other 17
+  ROIs is **−0.014** (p=.0078, 0/8) — and that specificity contrast is
+  **unchanged at −0.014 when the konio channel instead keeps its native 2.05×
+  contrast advantage**, a manipulation that lifts konio's mean over those other
+  ROIs from −0.012 to +0.008 and lets it win early visual cortex outright (V1d
+  +0.077, 8/8). The colour-specific deficit therefore does not lie on the
+  contrast axis, which is the first axis a sceptic would reach for. Both
+  cone-opponent axes have now been tested against colour-biased cortex and
+  neither predicts it — L−M's own failure there is reported under *Claims
+  deliberately not made* — so what the parvo stream contributes at the ventral
+  end of this gradient is specific to L−M without being a claim about colour
+  selectivity.
+  *Two limits.* Pooled VO reaches the floor in the contrast-matched cell only
+  (p=.11 unmatched, where hV4 and the specificity contrast still hold at .0078),
+  and these fits are **untrained and single-seed** (Methods): they test the
+  *input* as a model of colour cortex through the architecture prior — not a
+  trained koniocellular stream, and no third stream was added.
+
+
 ## Open items before submission
 
 - [x] **Geirhos human observer data obtained** (2026-09-02) —
@@ -1922,7 +2025,13 @@ anything it dilutes it (PLAN §67, §68, §71).
       actually support — the paradox survives being narrowed, not being
       unsourced. Jagadeesh & Livingstone is cited by the BA as 2024 and its
       year/venue is still unverified (v2 referee sim, M1).
-- [ ] **Sweep the fusion weight — highest value-per-hour item in the paper.**
+- [x] **Fusion-weight sweep DONE 2026-09-06** (array 26439369, 6/6, `main`, no
+      GPU; `tmp_analysis/fusion_sweep.py`, `results/fusion_sweep/`). 21 values of
+      w × 3 seeds × 2 checkpoint policies. Shape bias runs **0.419 → 0.879**
+      (final) and **0.399 → 0.904** (best saved) with both components frozen,
+      monotone in 3/3 seeds at the best checkpoint. w = 0.5 reproduces the
+      published per-seed values exactly, which is the anchor. §2.3 rewritten
+      around it and its overclaim removed. *Superseded description:*
       §2.3 is now the keystone, and `full` is a **fixed 50/50 logit-level sum**:
       `stream1_weight = 0.5`, a hyperparameter that is never learned
       (`src/models/pytorch_models.py:32,46`;
