@@ -770,23 +770,23 @@ subject, n=8) gives a monotone ordering:
 
 | front end | stream 2 receives | Gabor bank | untrained net |
 |---|---|---|---|
-| `parvo_highsf` | **lum+rg**, no transform | **0.56** ±0.02 | **0.59** ±0.01 |
-| `blur_cs` (diet) | rg, no transform | 1.38 ±0.09 | 1.40 ±0.09 |
-| `noblur` (no diet) | rg, no transform | 2.23 ±0.14 | 1.63 ±0.13 |
-| `swap` | rg + **transform** | **3.37** ±0.17 | **1.91** ±0.13 |
+| `parvo_highsf` | **lum+rg**, no transform | **0.56** ±0.020 | **0.59** ±0.014 |
+| `blur_cs` (diet) | rg, no transform | 1.38 ±0.091 | 1.40 ±0.095 |
+| `noblur` (no diet) | rg, no transform | 2.23 ±0.143 | 1.63 ±0.126 |
+| `swap` | rg + **transform** | **3.37** ±0.174 | **1.91** ±0.133 |
 
-*The `±` column here is printed at two decimals and that is too coarse in two
-places; it will be reprinted at three before submission.* The diet/untrained-net
-cell's dispersion is **0.0949**, which clears the 0.095 rounding boundary by
-about one ten-thousandth, so its printed **0.09** is correct today but would flip
-to 0.10 under any fourth-decimal perturbation — a different component count, a
-dropped subject, a change in the eigen path. We flag it rather than let the
-manuscript rest on that margin silently. Two decimals also destroy the
-information in the `parvo_highsf` row, whose two cells are **0.0203** and
-**0.0137** — a 48% difference displayed as one hundredth apart. Exact ddof=1
-values for this row and the next: 0.020, 0.014, 0.091, 0.095. Nothing in the
-claim depends on any of this: the ordering is carried by the means, which are
-separated by factors of 2–6 and agree on both references at p=.0078.
+*The `±` column is printed at three decimals while the means stay at two, and
+the mismatch is deliberate.* Three decimals are necessary because two flatten the
+`parvo_highsf` row, whose dispersions are 0.0203 and 0.0137 — a 48% difference
+that displays as 0.02 against 0.01. The means are deliberately **not** raised:
+the `swap`/Gabor mean is 3.3665, exactly on the three-decimal boundary, and would
+render 3.366 or 3.367 depending on the rounding convention, so the extra digit
+would encode a choice rather than a measurement. A reader comparing against an
+earlier version will see this column gain a digit and the two `blur_cs` cells
+resolve from 0.09 into 0.091 and 0.095; that is added precision, not a revised
+result. Nothing in the claim depends on the dispersions: the ordering is carried
+by the means, separated by factors of 2–6 and agreeing on both references at
+p=.0078.
 
 (magno/parvo ratio; ordering pre-registered before measurement, confirmed on both
 references, 8/8 subjects, every adjacent pair p=.0078.)
@@ -2156,16 +2156,15 @@ Methods in §4.5.
       3 dp, regenerate from that module rather than hand-editing** — they are
       unchanged only because they round the same, not because their underlying
       value held.
-- [ ] **Reprint §2.6.1's `±` column at 3 dp.** Two decimals is too coarse there.
-      (i) The diet/untrained-net cell is **0.094891** against a 0.095 flip point
-      — correct but not robust to a fourth-decimal change. (ii) The
-      `parvo_highsf` cells, 0.020289 and 0.013741, are a 48% difference shown as
-      0.02 vs 0.01. Exact ddof=1 digits are in hand for four of the eight cells
-      (0.020, 0.014, 0.091, 0.095); the `noblur` and `swap` rows still need
-      theirs from the parallel session's module — **do not back them out of the
-      rounded 2-dp values**, which is precisely the hand-editing that warning
-      prohibits. Footnoted in the text meanwhile so the knife edge is not
-      silent (PLAN §81).
+- [x] **§2.6.1's `±` column reprinted at 3 dp** (2026-09-06), all eight cells,
+      from the parallel session's module at 6 decimals. This **resolves** the
+      knife edge rather than disclosing it: 0.094891 now prints 0.095
+      unambiguously. Each of the four newly supplied values reproduces its
+      previously committed 2-dp form (0.14/0.13/0.17/0.13), so nothing already
+      pasted was wrong — this only adds precision. **Means deliberately left at
+      2 dp**: `swap`/Gabor is 3.3665, exactly on the 3-dp boundary, rendering
+      3.366 under round-half-even and 3.367 under round-half-up, so raising it
+      would encode a rounding convention rather than a measurement (PLAN §81).
 
 - [ ] **Figures.** Only 2 exist (`fig1_convergence`, `fig2_ventral_gradient`)
       and the text has 2 figure callouts across seven result sections. Needed:
