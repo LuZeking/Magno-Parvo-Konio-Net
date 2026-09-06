@@ -208,17 +208,41 @@ def main() -> int:
     # same signal; build the bases on the stacked design.
     Zm_all = np.vstack([Zm_tr, Zm_te])
     Zp_all = np.vstack([Zp_tr, Zp_te])
+    # Centre the stacked designs before forming the bases. PCA centres on the
+    # TRAIN mean, so the stacked train+test matrix carries a small residual
+    # offset; without removing it the singular values of Qm^T Qp are uncentred
+    # inner products while np.corrcoef is a centred correlation, and the two
+    # disagree in the fourth decimal. Centring makes every basis column
+    # mean-zero -- the all-ones vector is orthogonal to a mean-zero column
+    # space -- so sigma IS the correlation, exactly. It also matches the ridge
+    # path, which fits centred.
+    Zm_all = Zm_all - Zm_all.mean(0, keepdims=True)
+    Zp_all = Zp_all - Zp_all.mean(0, keepdims=True)
+
     print("orthonormal bases + canonical correlations ...", flush=True)
     Qm, Qp = orth_basis(Zm_all), orth_basis(Zp_all)
     src, cca = build_sources(Qm, Qp)
 
-    # assert the construction rather than trusting the algebra
-    max_corr = 0.0
-    for x, y in (("m", "p"), ("m", "s"), ("p", "s")):
+    # Assert the construction rather than trusting the algebra -- but assert
+    # what it actually predicts, not a round tolerance.
+    #
+    # S_m and S_p are the MATCHED last canonical pair, so their correlation is
+    # sigma_min by definition, not zero. Checking it equals sigma_min is a
+    # far stronger test than "< 1e-3": it confirms the SVD, the basis
+    # construction and the truth formula agree with each other.
+    c_mp = abs(float(np.corrcoef(src["m"], src["p"])[0, 1]))
+    print(f"  corr(S_m, S_p) = {c_mp:.3e}  (expected sigma_min = "
+          f"{cca['sigma_unique_m']:.3e})")
+    assert abs(c_mp - cca["sigma_unique_m"]) < 1e-6, (
+        f"matched pair correlation {c_mp} != sigma_min "
+        f"{cca['sigma_unique_m']}")
+
+    # The other two pairs use DIFFERENT canonical indices, so they are
+    # orthogonal outright and only floating-point error should remain.
+    for x, y in (("m", "s"), ("p", "s")):
         c = abs(float(np.corrcoef(src[x], src[y])[0, 1]))
-        max_corr = max(max_corr, c)
         print(f"  corr(S_{x}, S_{y}) = {c:.2e}")
-    assert max_corr < 1e-3, f"sources not near-orthogonal: max r={max_corr}"
+        assert c < 1e-3, f"unmatched pair {x},{y} not orthogonal: r={c}"
 
     print(f"  canonical correlations: shared sigma={cca['sigma_shared']:.4f}, "
           f"unique sigma={cca['sigma_unique_m']:.4f}, "
@@ -237,17 +261,42 @@ def main() -> int:
     for cond in ("A_recovery", "B_manufacture"):
         rows = []
         for i, ceil in enumerate(roi_nc):
+            c_sh = 1.0
             if cond == "A_recovery":
                 # true split varies monotonically across ROIs
                 a = 0.30 + 0.10 * i
                 b = 0.90 - 0.10 * i
             else:
-                # IDENTICAL truth everywhere; only the noise ceiling varies
-                a, b = 0.60, 0.60
-            c_sh = 1.0
+                # IDENTICAL truth everywhere, and identical to ZERO.
+                #
+                # Setting a = b does NOT give a zero true difference. The
+                # shared source is a magno canonical variate, which parvo
+                # predicts only at sigma_s^2, so a fraction (1 - sigma_s^2) of
+                # it is genuinely magno-unique and the truth sits at +0.197.
+                # That still tests "does a constant stay constant", but the
+                # stronger null is zero, so solve for b:
+                #
+                #   unique_m - unique_p
+                #     = [a^2(1-sig_m^2) - b^2(1-sig_p^2) + c^2(1-sig_s^2)] / v
+                #
+                # set to 0  ->  b^2 = [a^2(1-sig_m^2) + c^2(1-sig_s^2)]
+                #                     / (1-sig_p^2)
+                a = 0.60
+                sm, sp, ss = (cca["sigma_unique_m"], cca["sigma_unique_p"],
+                              cca["sigma_shared"])
+                b = float(np.sqrt(
+                    (a**2 * (1 - sm**2) + c_sh**2 * (1 - ss**2))
+                    / (1 - sp**2)
+                ))
 
             nc = np.full(args.n_vox, ceil)
             Ytr, truth = make_voxels(src, cca, a, b, c_sh, nc, rng)
+            if cond == "B_manufacture":
+                # The null must actually BE the null. Verify the solved b
+                # gives a true difference of zero rather than assuming the
+                # algebra above is right.
+                d0 = truth["unique_m"] - truth["unique_p"]
+                assert abs(d0) < 1e-9, f"B truth is not zero: {d0:+.3e}"
             # reuse the same signal for the test rows
             Y_all = Ytr
             Y_train, Y_test = Y_all[:len(tr)], Y_all[len(tr):]

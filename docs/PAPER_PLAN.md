@@ -8400,3 +8400,192 @@ No mean moves. Every dispersion that moves moves up by the same √(8/7) = 1.069
 so no ordering, no separation and no claim in either table is affected; this is
 a notation unification and nothing else. Sent to the draft owner, who holds
 `PAPER_DRAFT.md`; this session did not edit it.
+
+---
+
+## §82 THE Uₘ/Uₚ PARTITIONING IS VALIDATED — it recovers a known split and does
+## not manufacture a gradient
+
+### §82.1 Why this was owed
+
+§2.2's entire claim runs through `variance_partition`
+(`banded_ridge.py:208-223`), which is pure subtraction:
+
+    unique_m = r2_joint - r2_parvo
+    unique_p = r2_joint - r2_magno
+
+Its own docstring warns that "with correlated bands, unique components
+understate a band's total contribution". Our two bands are strongly correlated —
+same images, same architecture, adjacent front ends — so the instrument is used
+exactly in the regime its author flagged, and it had never been validated. The
+NN referee simulation ranked this first, correctly: if the pipeline can produce a
+V1v→hV4 gradient out of correlated bands and ROI-varying SNR alone, §2.2 is an
+artefact and no amount of confound control rescues it.
+
+### §82.2 Design
+
+`tmp_analysis/vp_recovery.py`. Real cached magno/parvo features, so the
+inter-band correlation is the true one; only the voxel responses are synthetic.
+Everything runs through the production `fit_banded` + `variance_partition`, not
+a reimplementation.
+
+Ground truth comes from **canonical correlations**. For orthonormal bases the
+singular values of Qmᵀ Qp *are* the canonical correlations, so a source built
+from the σ≈0 direction is genuinely unpredictable from the other band and one
+built from the σ≈1 direction is shared. A canonical direction with correlation σ
+has population R² = σ² from the other band, which makes the split exact:
+
+    R2_magno = [a²  + b²σ_p² + c²      ] / v
+    R2_parvo = [a²σ_m² + b²  + c²σ_s²  ] / v
+    R2_joint = 1
+    unique_m = 1 - R2_parvo,   unique_p = 1 - R2_magno
+
+**Condition A (recovery)** — the true split varies monotonically across seven
+simulated ROIs. Does the estimate track it?
+
+**Condition B (manufacture)** — every ROI gets an *identical* true split, and
+ROIs differ only in noise ceiling. Any gradient here is manufactured. B is the
+decisive one, and it is robust to residual uncertainty in the true magnitudes:
+it needs the truth to be *the same* across ROIs, not exactly known.
+
+### §82.3 Result (pilot, 60 components, subject 1)
+
+| ROI | nc | A: true Uₘ−Uₚ | A: est | error |
+|---|---|---|---|---|
+| 0 | 0.15 | −0.2001 | −0.1927 | +0.0074 |
+| 1 | 0.20 | −0.0780 | −0.0535 | +0.0245 |
+| 2 | 0.25 | +0.0571 | +0.0805 | +0.0234 |
+| 3 | 0.30 | +0.1971 | +0.2106 | +0.0135 |
+| 4 | 0.35 | +0.3326 | +0.3388 | +0.0062 |
+| 5 | 0.40 | +0.4548 | +0.4545 | −0.0003 |
+| 6 | 0.45 | +0.5572 | +0.5505 | −0.0067 |
+
+**A: ρ(est, rank) = +1.000**, matching ρ(true, rank) = +1.000. The ordering is
+recovered exactly.
+
+**B: ρ(est, rank) = −0.321** (n=7, p≈.48, and *negative*) with the truth
+constant. **No gradient is manufactured.**
+
+B was then re-run with the truth set to exactly zero (§82.5). Same verdict on
+the gradient, and a second finding it had been hiding:
+
+| ROI | nc | true Uₘ−Uₚ | est |
+|---|---|---|---|
+| 0 | 0.15 | 0.0000 | **+0.0319** |
+| 1 | 0.20 | 0.0000 | +0.0198 |
+| 2 | 0.25 | 0.0000 | −0.0003 |
+| 3 | 0.30 | 0.0000 | −0.0012 |
+| 4 | 0.35 | 0.0000 | +0.0201 |
+| 5 | 0.40 | 0.0000 | −0.0032 |
+| 6 | 0.45 | 0.0000 | +0.0198 |
+
+ρ(est, rank) = −0.321 again — no gradient — but the estimates are **not centred
+on zero**: mean **+0.0124**, six of seven at or above zero.
+
+### §82.4 The bias that is real, and must be reported
+
+Both conditions show the same thing, and it is the most consequential result
+here.
+
+Condition A: the bias is **largest (≈ +0.024) when the true difference is near
+zero** and shrinks to ≈0 as the true difference grows. Condition B at a true
+zero: mean estimate **+0.0124**, six of seven ROIs at or above zero.
+
+So the estimator is **biased toward magno, by roughly +0.012 to +0.024, exactly
+where the true stream difference is near zero**. Where the true difference is
+large the estimate is essentially unbiased (roi5-6 in A: −0.0003, −0.0067).
+
+This does **not** threaten the gradient. B shows the bias does not vary with
+noise ceiling in a way that produces one, and A recovers the ordering exactly.
+The gradient is a *large* effect and lives in the regime where the estimator is
+accurate.
+
+It does threaten the near-zero claims, and that has to be said plainly:
+
+* **§2.3's VO null is the exposed one.** It reports Uₘ−Uₚ = **+0.0045** and
+  bounds it by equivalence to **±0.0195**. A null-condition bias of **+0.0124**
+  toward magno is larger than the effect itself and covers most of the bound.
+  The honest reading is that VO's small positive value is **consistent with
+  being wholly an artefact of the estimator's null bias**, and the equivalence
+  statement should be read as bounding the *observed* quantity rather than a
+  bias-free one.
+* The same caution applies to any other cell whose Uₘ−Uₚ is within ~0.02 of
+  zero.
+
+This is a limitation to disclose in §2.3 and §4.5, not a reason to withdraw
+anything: the VO null was already reported as a null, and a bias toward magno
+makes a *null* result more conservative, not less. What it forbids is reading
+VO's +0.0045 as a small real magno preference.
+
+**Caveat on the magnitude.** These are pilot numbers: 60 components, 20 voxels
+per ROI, one subject. The bias magnitude may change at the production 1000
+components. It must be re-measured there before any of the above is written
+into the draft, and the direction matters more than the exact size until then.
+
+A second oddity to check at production scale: the null estimates cluster near
+two values (≈ +0.020 and ≈ 0.000) rather than scattering continuously, which
+suggests the alpha grid or the random gamma search is discretising the result.
+If that persists it is worth reporting, since it means neighbouring ROIs can
+differ by 0.02 for purely numerical reasons.
+
+### §82.5 A design flaw the pilot exposed, and the fix
+
+The pilot's condition B had a true difference of **+0.197, not 0**. Setting
+a = b does not give a symmetric truth, because the shared source is a *magno*
+canonical variate that parvo predicts only at σ_s² = 0.66; the remaining
+(1 − σ_s²) of it is genuinely magno-unique. So B tested "does a constant stay
+constant" rather than the stronger "does zero stay zero".
+
+Confirmed by deriving the offset by hand from the σ formula: predicted +0.1974
+against the code's +0.1971. That agreement is itself the check that the truth
+formula is correct.
+
+The production run solves for b so the true difference is exactly zero,
+
+    b² = [a²(1 − σ_m²) + c²(1 − σ_s²)] / (1 − σ_p²)
+
+and asserts |true difference| < 1e-9 before fitting — the null must actually be
+the null.
+
+### §82.6 Identifiability, which is a separate result
+
+The canonical spectrum is itself a measured property worth reporting: at 60
+components the smallest canonical correlation is **0.0029** and the largest
+**0.813**.
+
+The smallest being ≈0 means **unique variance is identifiable in these feature
+spaces** — there really exist directions one band predicts and the other cannot.
+Nobody had checked this, and it is a precondition for the whole of §2.2 rather
+than a detail: had σ_min been near 1, the decomposition would have been ill-posed
+before any noise entered. The largest being 0.813 rather than ~1 is the other
+half — even the most shared direction is only R² = 0.66 predictable across bands.
+
+These are two different claims on two different evidence bases, and §4.5 should
+keep them apart: *unique variance is identifiable in these feature spaces* is
+what the spectrum supports; *the partitioning recovers it correctly* is what
+§82.3 supports.
+
+### §82.7 Three design errors, all caught before execution
+
+Recorded because the pattern matters more than the result:
+
+1. **Vacuous ground truth.** The first construction defined magno-unique as
+   span(Zm) ∩ span(Zp)^⊥. For two generic 1000-dim subspaces of a 10,000-dim
+   space that intersection is {0}. Had it run it would have produced a confident
+   vacuous pass — zero true unique variance everywhere, with the estimator
+   looking perfect or catastrophic depending on sign convention and no way to
+   tell which from the output.
+2. **A tolerance that could not fail.** The orthogonality assertion used
+   `< 1e-3`. But S_m and S_p are the *matched* last canonical pair, so their
+   correlation is σ_min by construction, not zero. Replaced with
+   `|corr − σ_min| < 1e-6`.
+3. **σ was not the correlation.** σ from the SVD is an *uncentred* inner
+   product while `np.corrcoef` centres, and PCA centres on the train mean, so
+   the stacked design carried a residual offset. They disagreed in the fourth
+   decimal — small enough to pass any "is it small" check, and large enough to
+   bias every truth value the formula produces while the analysis still looked
+   like it worked. Fixed by centring before the QR.
+
+The general rule, which §79/§80/§81 all instantiate too: **an assertion that a
+quantity is *near* an expected value can pass for the wrong reason; an assertion
+that it *equals* a separately-derived value cannot.** Prefer the latter.
