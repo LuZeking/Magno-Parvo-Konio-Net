@@ -7868,3 +7868,79 @@ it is untrained and single-seed, and no blur was applied to K.
 
 Still true and still disclosed in the draft: pooled VO reaches the floor in the
 matched cell only.
+
+---
+
+## §77 PRE-REGISTERED — equivalence bounds for the three dissociations
+
+Written and committed **before** any interval is computed. Prompted by the NHB
+referee simulation (`docs/NHB_REVIEW_2026-09-06.md`, major comment 4): the
+paper's three most-promoted contributions each rest on failing to reject, and
+NHB's reporting policy forbids stating a null as "no effect" without an
+equivalence bound or Bayes factor. The referee's exact ask is the deliverable:
+*"state, for each, what difference the design could have detected and what
+interval the data exclude."*
+
+### 77.1 What is and is not blind here
+
+The **bounds** below are blind: none is chosen from the variance or the interval
+of the comparison it is applied to. Each is anchored to a *different*, already-
+published quantity, fixed by claims the paper has been making for weeks.
+
+The **point estimates are not blind** — §2.5's phase-scrambling Δ = +0.009 and
+§2.3's VO median = +0.0044 are already in the draft, and I have read them.
+Disclosed rather than concealed, because an equivalence bound chosen after
+seeing a point estimate is worthless and the reader must be able to check that
+these were not. What protects this pre-registration is that the SESOIs are
+functions of *other* results, so knowing the point estimate cannot move them.
+
+### 77.2 The principle for every bound
+
+**SESOI = the smallest effect the paper already reports as real, in the same
+measure and the same design.** The argument is symmetric and hard to game: if a
+difference here were as large as the smallest difference we do claim elsewhere,
+we would be obliged to claim it here too. So excluding that magnitude is exactly
+the statement "this null is not hiding an effect we would have called real."
+
+### 77.3 The four tests, with bounds fixed now
+
+| # | null | design | SESOI | anchored to |
+|---|---|---|---|---|
+| 1 | §2.5 phase-scrambling, diet vs no-diet relative AUC | 3 v 3 seeds, independent | **±0.041** | rotation (−0.041), the smallest OOD effect the paper claims |
+| 2 | §2.6 diet vs no-diet error consistency κ, whole model | 3 v 3 seeds, independent | **±0.0234** | 10% of the human–human ceiling (0.234), the width that moves a model across the observed 7–18% band |
+| 3 | §2.6 slope of κ on shape bias across 6 models | n = 6 models | **±0.1625 κ per unit shape bias** | a slope carrying κ by half the ceiling (0.117) over the observed 0.720 shape-bias span |
+| 4 | §2.3 VO median(Uₘ − Uₚ) | n = 8 subjects, paired | **±0.0195** | hMT+ (+0.0195, p = .0234, 7/8), the smallest ROI effect this measure reports as real |
+
+### 77.4 Procedure, fixed now
+
+- **TOST** at α = .05, reporting the **90% CI** on the difference (the interval
+  whose containment within ±SESOI is equivalent to both one-sided tests
+  rejecting). Tests 1–2: Welch. Test 4: paired. Test 3: OLS slope CI.
+- **Sensitivity** reported alongside: the effect detectable at 80% power given
+  the observed sd and n. This is the half of the referee's question that TOST
+  alone does not answer.
+- **Nonparametric floor, stated up front.** At 3 v 3 the exact rank-sum p floors
+  at 0.10, so tests 1–2 *cannot* return a nonparametric equivalence result at
+  any bound. The parametric interval is reported with that limitation named, not
+  as though the choice of test were free.
+
+### 77.5 The outcome that would hurt
+
+If a 90% CI is **wider** than its ±SESOI, the honest report is *"the design
+cannot exclude an effect as large as the smallest one we claim,"* which weakens
+the corresponding dissociation. §2.5 (3 v 3) is the most exposed. That outcome
+will be reported as a limitation of the claim, not buried in a supplement and
+not re-tested at a wider bound: **the bounds in §77.3 are final.** §50.6 is
+binding — a bound widened after seeing the interval launders a failure.
+
+### 77.6 §2.4 is deliberately excluded, and why
+
+The referee grouped §2.4 with the nulls. It does not belong there. §2.4's claim
+("dimensionality is not a proxy for shape bias") rests on a **sign reversal in a
+decisive case** — `parvo_highsf`'s second stream is the *more* dimensional one
+(0.56) while remaining texture-biased (probe −0.266) — not on a failure to
+reject. An equivalence test on a correlation across n = 4 front ends would be
+uninformative at any bound, and computing one would dress a qualitative
+dissociation in inferential clothing it does not need. The correlation and its
+interval will be reported with "n = 4, uninformative" stated explicitly, and the
+claim will continue to rest on the decisive case.
