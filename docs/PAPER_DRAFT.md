@@ -775,6 +775,19 @@ subject, n=8) gives a monotone ordering:
 | `noblur` (no diet) | rg, no transform | 2.23 ±0.14 | 1.63 ±0.13 |
 | `swap` | rg + **transform** | **3.37** ±0.17 | **1.91** ±0.13 |
 
+*The `±` column here is printed at two decimals and that is too coarse in two
+places; it will be reprinted at three before submission.* The diet/untrained-net
+cell's dispersion is **0.0949**, which clears the 0.095 rounding boundary by
+about one ten-thousandth, so its printed **0.09** is correct today but would flip
+to 0.10 under any fourth-decimal perturbation — a different component count, a
+dropped subject, a change in the eigen path. We flag it rather than let the
+manuscript rest on that margin silently. Two decimals also destroy the
+information in the `parvo_highsf` row, whose two cells are **0.0203** and
+**0.0137** — a 48% difference displayed as one hundredth apart. Exact ddof=1
+values for this row and the next: 0.020, 0.014, 0.091, 0.095. Nothing in the
+claim depends on any of this: the ordering is carried by the means, which are
+separated by factors of 2–6 and agree on both references at p=.0078.
+
 (magno/parvo ratio; ordering pre-registered before measurement, confirmed on both
 references, 8/8 subjects, every adjacent pair p=.0078.)
 
@@ -2143,6 +2156,17 @@ Methods in §4.5.
       3 dp, regenerate from that module rather than hand-editing** — they are
       unchanged only because they round the same, not because their underlying
       value held.
+- [ ] **Reprint §2.6.1's `±` column at 3 dp.** Two decimals is too coarse there.
+      (i) The diet/untrained-net cell is **0.094891** against a 0.095 flip point
+      — correct but not robust to a fourth-decimal change. (ii) The
+      `parvo_highsf` cells, 0.020289 and 0.013741, are a 48% difference shown as
+      0.02 vs 0.01. Exact ddof=1 digits are in hand for four of the eight cells
+      (0.020, 0.014, 0.091, 0.095); the `noblur` and `swap` rows still need
+      theirs from the parallel session's module — **do not back them out of the
+      rounded 2-dp values**, which is precisely the hand-editing that warning
+      prohibits. Footnoted in the text meanwhile so the knife edge is not
+      silent (PLAN §81).
+
 - [ ] **Figures.** Only 2 exist (`fig1_convergence`, `fig2_ventral_gradient`)
       and the text has 2 figure callouts across seven result sections. Needed:
       §2.1's two routes, §2.3's **w-sweep curve** (the data are in
