@@ -1282,14 +1282,22 @@ stream-preference tables. Ranges, where given, are stated as explicit intervals
 Cue-conflict values additionally carry a **bootstrap 95% CI over cue-conflict
 images** (§4.3), which is labelled as a CI wherever it appears.
 
-*One inconsistency, disclosed rather than smoothed over.* The behavioural and
-probe tables compute the sample standard deviation (ddof = 1); the
-participation-ratio and stream-preference tables inherit NumPy's default
-population standard deviation (ddof = 0). The two differ by √(8/7) ≈ 7% at n=8.
-No claim in this paper turns on the difference — every one rests on complete
-subject or seed separation rather than on an interval — but the tables will be
-recomputed at ddof = 1 before submission so that a single estimator carries the
-symbol.
+*One inconsistency, disclosed rather than smoothed over.* The manuscript
+currently carries **three** groups of cells, not one. The behavioural and probe
+tables use the sample standard deviation (ddof = 1). Most participation-ratio and
+stream-preference cells inherit NumPy's default population standard deviation
+(ddof = 0). And two cells of §2.5's "after training" column — `dkl_bcs_seed0`
+(±0.059) and `dkl_bcs_swap_seed0` (±0.085) — are **already** ddof = 1, because
+they were re-scored at their best saved checkpoints through a different script
+than the one that produced the rest of the column. The two estimators differ by
+√(8/7) ≈ 6.9% at n = 8.
+
+No claim in this paper turns on the difference: every one rests on complete
+subject or seed separation, and rescaling changes no mean and no ordering. The
+remaining ddof = 0 cells will be recomputed at ddof = 1 before submission so that
+a single estimator carries the symbol — **cell by cell, not by a blanket factor**,
+since applying the factor to the two cells that are already correct would inflate
+them to 0.063 and 0.091.
 
 **Multiplicity, and why no correction can license this design.** This paper
 reports 28 p-values (an earlier count of 36 wrongly included seven kornia
@@ -2076,12 +2084,18 @@ Methods in §4.5.
       figure). Converting §2.1, §2.3, §2.6.2 and §2.6.3 from tables to panels
       addresses the word count and the display-item cap together, and is the
       referee simulation's ranked suggestion 7.
-- [ ] **Unify the `±` estimator.** The behavioural and probe tables use the
-      sample SD (ddof=1); the participation-ratio and stream-preference tables
-      inherit NumPy's default population SD (ddof=0), a √(8/7) ≈ 7% difference.
-      Disclosed in §4.7 rather than hidden. Recompute the PR/SPI tables at
-      ddof=1 so one estimator carries the symbol (found by a parallel session,
-      PLAN §79; those tables are that session's instruments).
+- [ ] **Unify the `±` estimator — cell by cell, NOT by a blanket factor.**
+      Three groups exist, not two: behavioural/probe tables at ddof=1; most
+      PR/SPI cells at ddof=0; and **two cells of §2.5's "after training" column
+      already at ddof=1** (`dkl_bcs_seed0` ±0.059, `dkl_bcs_swap_seed0` ±0.085),
+      because they were re-scored at best-saved checkpoints through
+      `pr_seeds.py:118` (ddof=1) rather than `pr_table.py:41` (numpy default).
+      Rescaling those two would print 0.063 and 0.091, both wrong. The other 15
+      cells reproduce their printed ddof=0 values exactly and are the ones that
+      move, each by √(8/7) = 1.0690. No mean, ordering, separation or claim
+      changes — it is purely notational. A parallel session is producing the
+      ready-to-paste table (PLAN §79); those instruments are theirs, so the
+      numbers come from them and this draft applies them.
 - [ ] **Figures.** Only 2 exist (`fig1_convergence`, `fig2_ventral_gradient`)
       and the text has 2 figure callouts across seven result sections. Needed:
       §2.1's two routes, §2.3's **w-sweep curve** (the data are in
