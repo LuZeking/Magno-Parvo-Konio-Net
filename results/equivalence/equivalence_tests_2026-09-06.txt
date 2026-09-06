@@ -1,0 +1,79 @@
+==============================================================================
+§77 EQUIVALENCE TESTS -- bounds fixed in 03ca8fc before computing
+==============================================================================
+
+------------------------------------------------------------------------------
+TEST 1  §2.5 phase-scrambling: diet vs no diet, relative AUC
+------------------------------------------------------------------------------
+  diet    [0.3655, 0.3907, 0.3913]  mean 0.3825
+  no diet [0.3769, 0.3695, 0.3733]  mean 0.3732
+
+  phase-scrambling, diet - no diet
+    difference      +0.0092
+    90% CI          [-0.0145, +0.0330]  (half-width 0.0238, df=2.3)
+    SESOI           +-0.0410   (§77.3, fixed in 03ca8fc)
+    TOST p          0.0287
+    detectable@80%  0.0331  (the effect this design could find)
+    -> EQUIVALENT
+
+    NOTE (§77.4): at 3v3 the exact rank-sum floors at p=0.10, so no
+    NONPARAMETRIC equivalence result is possible at any bound. The
+    interval above is t-based on 3 seeds per arm and is fragile.
+
+------------------------------------------------------------------------------
+TEST 2  §2.6 error consistency: diet vs no diet, whole model
+------------------------------------------------------------------------------
+  human-human ceiling kappa = 0.234 (45 pairs)   [draft says 0.234]
+  diet    kappa [0.0234, 0.0319, 0.028]  mean 0.0278  (11.9% of ceiling)
+  no diet kappa [0.0309, 0.0333, 0.0372]  mean 0.0338  (14.5% of ceiling)
+
+  kappa, diet - no diet (whole model)
+    difference      -0.0060
+    90% CI          [-0.0127, +0.0006]  (half-width 0.0067, df=3.7)
+    SESOI           +-0.0234   (§77.3, fixed in 03ca8fc)
+    TOST p          0.0030
+    detectable@80%  0.0116  (the effect this design could find)
+    -> EQUIVALENT
+
+------------------------------------------------------------------------------
+TEST 3  §2.6 does shape bias track kappa? slope across models
+------------------------------------------------------------------------------
+  model           shape bias    kappa   % ceil
+  diet/full            0.675   0.0278    11.9%
+  nodiet/full          0.416   0.0338    14.5%
+  diet/magno           0.878   0.0089     3.8%
+  nodiet/magno         0.421   0.0386    16.5%
+  AlexNet              0.429   0.0320    13.7%
+  GoogLeNet            0.312   0.0250    10.7%
+  VGG                  0.172   0.0170     7.3%
+
+  n=7 models, shape-bias span 0.172-0.878 (0.706)
+  OLS slope       -0.0154 kappa per unit shape bias (r=-0.350, p=0.441)
+  90% CI          [-0.0524, +0.0217]
+  SESOI           +-0.1625  (§77.3)
+  -> EQUIVALENT: slope bounded inside the SESOI
+
+  Translated to the referee's question: across the observed 0.706 shape-bias
+  span the data exclude a kappa change larger than +0.0370,
+  i.e. 15.8% of the human-human ceiling.
+
+------------------------------------------------------------------------------
+TEST 4  §2.3 VO median(U_m - U_p), n=8 subjects
+------------------------------------------------------------------------------
+  per-subject [-0.0299, 0.0059, 0.0181, 0.0091, 0.0022, 0.0213, 0.0249, -0.016]
+  mean +0.0045   6/8 positive
+  Wilcoxon p=0.4609   [draft reports p=.46]
+
+  VO median(U_m - U_p) vs 0
+    difference      +0.0045
+    90% CI          [-0.0082, +0.0171]  (half-width 0.0127, df=7.0)
+    SESOI           +-0.0195   (§77.3, fixed in 03ca8fc)
+    TOST p          0.0297
+    detectable@80%  0.0220  (the effect this design could find)
+    -> EQUIVALENT
+
+    bootstrap 90% CI [-0.0065, +0.0142] (20k resamples) -> inside the bound
+
+==============================================================================
+
+[exited with code 0]

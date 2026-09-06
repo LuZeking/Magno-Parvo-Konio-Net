@@ -7944,3 +7944,98 @@ uninformative at any bound, and computing one would dress a qualitative
 dissociation in inferential clothing it does not need. The correlation and its
 interval will be reported with "n = 4, uninformative" stated explicitly, and the
 claim will continue to rest on the decisive case.
+
+---
+
+## §78 THE §77 EQUIVALENCE TESTS RESOLVE — all four nulls are bounded, and two
+## draft claims do not survive the arithmetic
+
+`tmp_analysis/equivalence_tests.py`, output in
+`results/equivalence/equivalence_tests_2026-09-06.txt`. Bounds fixed in 03ca8fc
+before any interval was computed; none was changed afterwards (§77.5).
+
+### 78.1 The pipeline reproduces the published numbers first
+
+Nothing below was read until these matched:
+
+- human–human ceiling **κ = 0.234** over 45 pairs — asserted in code, not eyeballed;
+- VO Wilcoxon **p = 0.4609** against the draft's p = .46;
+- every κ and shape-bias value inside the draft's published per-condition ranges
+  (diet κ .0234/.0319/.0280 vs the table's .023–.032; no-diet .0309/.0333/.0372
+  vs .031–.037).
+
+### 78.2 All four nulls clear their declared bound
+
+| # | null | Δ | 90% CI | SESOI | TOST p | verdict |
+|---|---|---|---|---|---|---|
+| 1 | phase-scrambling, diet − no diet | +0.0092 | [−0.0145, +0.0330] | ±0.041 | .0287 | **equivalent** |
+| 2 | κ, diet − no diet (whole model) | −0.0060 | [−0.0127, +0.0006] | ±0.0234 | .0030 | **equivalent** |
+| 3 | slope of κ on shape bias | −0.0154 | [−0.0524, +0.0217] | ±0.1625 | — | **equivalent** |
+| 4 | VO median(Uₘ − Uₚ) | +0.0045 | [−0.0082, +0.0171] | ±0.0195 | .0297 | **equivalent** |
+
+**Report the achieved bound, not the declared one.** The declared SESOIs were
+deliberately generous (§77.2 anchors them to the smallest effect the paper
+claims). The data support tighter statements, and those are what the manuscript
+should quote:
+
+- phase-scrambling: the difference is **within ±0.033**, below the smallest OOD
+  effect the paper claims (rotation, 0.041);
+- κ diet vs no-diet: **within ±0.013**, i.e. ±5.4% of the ceiling — the declared
+  ±0.0234 was nearly the whole between-model κ spread and is the weaker claim;
+- VO: **within ±0.017**, below hMT+'s +0.0195;
+- slope: across the observed 0.706 shape-bias span the data exclude a κ change
+  larger than **0.037, i.e. 15.8% of the human–human ceiling**.
+
+That last line is the one to put in the manuscript. It converts "shape bias does
+not track human decision structure" from a failure to reject into: *spanning 5×
+in shape bias moves trial-level human agreement by at most 16% of the
+human–human ceiling.*
+
+### 78.3 Two caveats that must travel with these numbers
+
+1. **Test 1 rests on a Welch df of 2.3.** Three seeds per arm. The CI half-width
+   (0.0238) sits at 58% of the bound, so it clears — but on a t interval with
+   ~2 df, and §77.4 declared in advance that at 3v3 no *nonparametric*
+   equivalence result is obtainable at any bound. This is the weakest of the
+   four and must be labelled as such, not listed as a peer of tests 2–4.
+2. **Test 4's design is marginally underpowered relative to its own bound.** The
+   effect detectable at 80% power is **0.0220**, slightly *above* the ±0.0195
+   SESOI. Equivalence is achieved because the point estimate sits near zero
+   (+0.0045), not because n = 8 is highly sensitive. Both facts belong in the
+   text; quoting the TOST pass alone would overstate the design. The percentile
+   bootstrap agrees independently ([−0.0065, +0.0142], 20k resamples).
+
+### 78.4 Two claims in `PAPER_DRAFT.md` §2.6 that the arithmetic contradicts
+
+Found while assembling the slope, not sought. **Not edited — `PAPER_DRAFT.md` is
+another session's file** (seventh cross-session collision avoided); flagged here
+for its owner.
+
+1. **"no model of ours exceeds AlexNet" is false, by the draft's own table.**
+   AlexNet κ = 0.032. The table's own "no diet, magno stream" row is
+   **0.036–0.041** (computed mean 0.0386), and "no diet, whole model" is
+   0.031–0.037 (0.0338). Both exceed AlexNet. The sentence contradicts the table
+   three lines above it.
+2. **"six models" is a miscount**, appearing 4× including the abstract (lines 69,
+   136, 727, 841). The §2.6 table has **seven** rows: four of ours (diet and
+   no-diet × full and magno readouts) plus AlexNet, GoogLeNet, VGG. The slope in
+   §78.2 uses all seven and says so. If "six" was meant to count distinct trained
+   networks it should be five (diet, no-diet, and the three published), so
+   neither reading gives six.
+
+**A stronger, true replacement is available for claim 1.** The rhetorical point
+survives in sharper form: our **most** shape-biased model has the **lowest**
+error consistency of all seven. `diet/magno` carries shape bias 0.878 — 5× VGG's
+0.172 — and returns κ = 0.0089 (3.8% of ceiling) against VGG's 0.0170 (7.3%).
+Not "no more agreement than AlexNet" but *less agreement than the least
+shape-biased model in the comparison*, which is the dissociation stated at its
+strongest and is what the table actually shows.
+
+### 78.5 What this does and does not buy
+
+Answers NHB major comment 4 for §2.5, §2.6 and the VO null, and converts the
+Open Science audit row "Null results reported with equivalence/BF — **Fail**" to
+a pass for these four. It does **not** address §2.4, excluded with reasons in
+§77.6 — that claim rests on a sign reversal, not on a failure to reject, and no
+equivalence test is owed there. It also does not touch the referee's items 1
+(References), 5 (multiplicity) or 6 (ethics block).
