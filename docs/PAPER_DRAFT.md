@@ -307,7 +307,7 @@ cue-conflict shape bias is **0.675 ±0.025** with the diet against **0.416
 ±0.020** without, across three seeds each. The thesis checkpoint reproduces at
 0.697 against its reported 0.677, inside our bootstrap CI (§18.2).
 
-§2.6.3 qualifies everything in this section: the agreement below is one of
+§2.6.2 qualifies everything in this section: the agreement below is one of
 aggregate *rates*, and does not survive at the trial level.
 
 On the identical measure and stimuli, Geirhos et al.'s ten human observers give
@@ -345,7 +345,7 @@ components that never change.** The curve is monotone non-decreasing across all
 checkpoint, where one seed has a single local inversion), and the total span is
 **+0.46 to +0.52** of shape bias per seed. The same network, the same two
 representations, anywhere from texture-biased to more shape-biased than any
-model in the seven-model comparison of §2.6.3 — set only by how the readout
+model in the seven-model comparison of §2.6.2 — set only by how the readout
 weights them.
 
 That is the paper's claim made as a measurement rather than an argument. A
@@ -391,7 +391,7 @@ representations**, because a behavioural rate is a property of a readout over
 components, not a report of any one of them. It is an existence proof with a
 cortically grounded demonstration -- in this model, the component that dominates
 the ventral end is the texture-biased one, and behaviour is nonetheless
-shape-biased. It is not a measurement of human cortex, and §2.6.3 bounds how far
+shape-biased. It is not a measurement of human cortex, and §2.6.2 bounds how far
 the behavioural correspondence extends.
 
 
@@ -444,7 +444,7 @@ the developmental low-pass transform applied specifically to an achromatic
 channel.
 
 *Accuracy control.* The diet-trained models are less accurate than the no-diet
-controls (§2.6.2, §2.7), so the conjunction effect could in principle be an
+controls (§2.6.1, §2.7), so the conjunction effect could in principle be an
 accuracy effect. We tested this directly and pre-registered the fatal outcome
 first — *if a no-diet model at the diet's accuracy shows a shape-biased magno
 stream, §2.4 is an accuracy artefact and this paper's central claim is wrong*
@@ -480,7 +480,7 @@ front end built to point the wrong way can falsify it.
 
 The four front ends of §2.4 hand a network very different stream asymmetries
 before any learning -- the untrained magno/parvo dimensionality ratio spans 0.59
-to 1.91 across them (quantified in §2.6.1). What does training do with them?
+to 1.91 across them (quantified in Extended Data §E6.1). What does training do with them?
 
 The first-order answer, from the two conditions available previously, was that
 the diet makes training *keep* the asymmetry the input supplies while no-diet
@@ -543,42 +543,22 @@ at parity (0.947, 0.988) from the most magno-dominant front end in the set. All
 
 This is what rules out the filtering account. The diet is not supplying a better
 input representation: the transform *removes* bandwidth rather than adding it
-(§2.6.1), and the no-diet front end hands over more asymmetry, not less. It is a
+(Extended Data §E6.1), and the no-diet front end hands over more asymmetry, not less. It is a
 constraint on the solution learning converges to.
 
-### 2.6 Three properties that do not follow from shape bias
+### 2.6 Properties that do not follow from shape bias
 
 If shape bias is a property of a readout over components rather than of a
 representation, then quantities the field treats as travelling with it need not.
-Over identical inputs, three do not.
+Over identical inputs, three do not. Two are shown here; the third — **effective
+dimensionality** — comes apart in the direction opposite to intuition, and is
+reported in full in Extended Data §E6.1. It tracks the bandwidth of the carrier
+a stream is handed, reproduces with no network at all, and reverses when the
+carrier moves: `parvo_highsf`'s second stream becomes the *more* dimensional one
+(0.56) while remaining texture-biased (probe −0.266), so high effective
+dimensionality does not confer shape bias.
 
-#### 2.6.1 Effective dimensionality is set by carrier bandwidth
-
-
-*Source: PAPER_PLAN §47.*
-
-Running the same four front ends through a participation-ratio analysis
-(effective dimensionality of each stream's features on 1,000 NSD images per
-subject, n=8) gives a **monotone ordering**, pre-registered before measurement
-and confirmed on both references — a learning-free Gabor bank and an untrained
-network — in 8/8 subjects, every adjacent pair at p=.0078 (table: Extended Data
-§E6.1).
-
-**The asymmetry is generic and reversible.** It reproduces with **no network at
-all** — the Gabor column is a learning-free oriented-energy bank — so it is not a
-property of the architecture. And `parvo_highsf` falls *below 1.0* in 8/8
-subjects: give the second stream the luminance carrier and **it becomes the more
-dimensional stream**. There is nothing privileged about "magno"; dimensionality
-tracks the bandwidth of the carrier a stream is handed.
-
-**Dimensionality is not a proxy for shape bias.** §2.4's probe factorises as an
-interaction; this measure factorises additively, over *identical* inputs. The
-decisive case is `parvo_highsf`, where the second stream becomes the **more
-dimensional** one (0.56) while remaining **texture-biased** (probe −0.266). High
-effective dimensionality does not confer shape bias, and we do not present these
-as two views of one construct.
-
-#### 2.6.2 Shape bias does not confer out-of-distribution robustness
+#### 2.6.1 Shape bias does not confer out-of-distribution robustness
 
 
 *Source: PAPER_PLAN §53 (pre-registered), §56. Reported in the main text, not
@@ -619,12 +599,12 @@ cut, so "trained-in" does not automatically confer robustness either.
 > training* produces models that are both shape-biased and robust. It shows the
 > coupling is a property of that route, not of shape bias: a developmental route
 > to comparable shape bias *in rate* (probe +0.819, behaviour 0.878 against a
-> human 0.958 — though §2.6.3 shows the rate match does not extend to trial-level
+> human 0.958 — though §2.6.2 shows the rate match does not extend to trial-level
 > agreement)
 > delivers **none** of the robustness. "Increase shape bias to get robustness"
 > does not generalise across the manipulations that produce it.
 
-#### 2.6.3 Matching the human shape-bias rate is not matching human decisions
+#### 2.6.2 Matching the human shape-bias rate is not matching human decisions
 
 
 *Source: PAPER_PLAN §57 (pre-registered), §59. Reported in the main text, not
@@ -734,7 +714,7 @@ The field's standard instrument is a behavioural rate on cue-conflict images,
 and a model matching the human rate is routinely described as having human-like
 representations. Our system shows that inference is invalid twice over. The same
 network contains components at +0.819 and -0.518 and behaves at 0.675, so the
-rate does not identify a representation. And §2.6.3 shows the rate does not
+rate does not identify a representation. And §2.6.2 shows the rate does not
 identify a *decision process* either: across seven models spanning a 5x range of
 shape bias, trial-by-trial agreement with ten human observers stays flat at
 7-18% of the human-human ceiling, with our shape-biased stream no better than
@@ -746,7 +726,7 @@ data exist, and a shape-bias rate should not be used on its own to license a
 claim about a model's representations.
 
 The two-condition literature invites the reading that the magnocellular channel
-*is* the shape pathway. §2.4 and §2.6.1 jointly rule that out. Shape bias
+*is* the shape pathway. §2.4 and Extended Data §E6.1 jointly rule that out. Shape bias
 requires a carrier x transform conjunction: an achromatic carrier alone does not
 produce it, the transform alone does not produce it, and only their combination
 crosses the boundary -- by +0.936 with no seed overlap. Effective dimensionality,
@@ -787,8 +767,9 @@ human-likeness are routinely discussed as a package. Over identical inputs, this
 paper separates them three times, and a readout account says why they should
 separate: none of the three is a property of a readout.
 
-Dimensionality comes apart in the direction opposite to intuition -- §2.6.1's
-`parvo_highsf` cell is more dimensional *and* more texture-biased. Robustness
+Dimensionality comes apart in the direction opposite to intuition — the
+`parvo_highsf` cell is more dimensional *and* more texture-biased (Extended
+Data §E6.1). Robustness
 comes apart in a way sharpened by its own control: the diet-trained network is
 less robust than every comparison on four of the five corruption families it was
 not trained on, and more robust on exactly the one family the diet installs.
@@ -903,7 +884,7 @@ while holding both components exactly fixed.
 scored by the identical rule. Our recomputation reproduces the published shape
 bias (0.958) and the published AlexNet/GoogLeNet/VGG values.
 
-**Error consistency** (§2.6.3). Cohen's kappa on the binary shape/texture choice
+**Error consistency** (§2.6.2). Cohen's kappa on the binary shape/texture choice
 over images both parties decided: κ = (c_obs − c_exp)/(1 − c_exp) with
 c_exp = p_m·p_h + (1−p_m)(1−p_h). The reference is the human–human κ over all 45
 observer pairs, and every model is additionally reported as a percentage of it.
@@ -981,7 +962,7 @@ statistics agree; disagreements are reported as unresolved rather than resolved
 in the favourable direction.
 
 **Pre-registration.** The front-end 2×2 (§2.4), the inverted-front-end prediction
-(§2.5), the OOD families (§2.6.2) and the error-consistency hypothesis (§2.6.3) were
+(§2.5), the OOD families (§2.6.1) and the error-consistency hypothesis (§2.6.2) were
 each written down before the corresponding analysis was run. Two of the four
 predictions failed and are reported as failures in the sections above.
 
@@ -1351,8 +1332,8 @@ https://doi.org/10.1038/nn.4244
 
 1. **The diet costs, on every engineering axis we measured.** ~13% of explained
    BOLD variance (§2.7); 20.7% relative classification accuracy at the best
-   saved checkpoint (§2.6.2); late-training stability (§2.6.2); and robustness on
-   four of the five corruptions it was not trained on (§2.6.2). The paper makes no
+   saved checkpoint (§2.6.1); late-training stability (§2.6.1); and robustness on
+   four of the five corruptions it was not trained on (§2.6.1). The paper makes no
    claim that
    the diet improves a model. **An earlier version of this manuscript reported a
    37% accuracy cost and markedly higher seed variance; both were artefacts of
@@ -1594,15 +1575,15 @@ note gave that spread as 0.904 and drew the wrong conclusion from it
 **A correction to the seed spread we previously reported.** An earlier version of
 this table scored every seed at its final checkpoint and gave the diet/luminance
 seed range as 0.904 and the `swap` range as 2.388. Both were inflated by the
-late-training degradation documented in §2.6.2: on weights selected by validation
+late-training degradation documented in §2.6.1: on weights selected by validation
 accuracy the two ranges fall to **0.120 and 0.787**, a 7.6× and 3.0× tightening,
 while the two arms whose best checkpoint *is* the final one do not move at all.
-The same correction appeared independently on accuracy (§2.6.2, seed range
+The same correction appeared independently on accuracy (§2.6.1, seed range
 0.180 → 0.012). The diet arm is therefore **not** markedly less reproducible than
 the control on either instrument; it was being scored on degraded weights
 (PLAN §71.10).
 
-### S1.4 — checkpoint policy on the OOD table (§2.6.2)
+### S1.4 — checkpoint policy on the OOD table (§2.6.1)
 
 *Checkpoint policy.* An earlier version scored this table on final checkpoints.
 Moving to best saved checkpoints **strengthens** the dissociation on the three
@@ -1616,7 +1597,7 @@ already refused to report it as supported on the grounds that its apparent
 support was vacuous, and that refusal is now vindicated for a second,
 independent reason.
 
-### S1.5 — how the models were selected, and the 37% / 16.5% / 20.7% history (§2.6.2)
+### S1.5 — how the models were selected, and the 37% / 16.5% / 20.7% history (§2.6.1)
 
 **A correction to how these models were selected.** Every result in this paper
 was computed on the final training checkpoint. The per-epoch validation logs
@@ -1706,7 +1687,7 @@ Methods in §4.5.
 - [x] **Human benchmark is in the abstract** (2026-09-02), but as a *rate*
       comparison carrying its own qualification — the whole-model figure (0.692)
       is given alongside the stream figure (0.878), and the error-consistency
-      null (§2.6.3) is stated in the same paragraph.
+      null (§2.6.2) is stated in the same paragraph.
 - [x] **Figure 1 built** — `results/figures/fig1_convergence.{png,pdf}`, caption
       in `fig1_convergence_caption.md`, built by `tmp_analysis/fig1{,_data}.py`
       (PLAN §51). Panel (c) is the set point as a front-end→trained slopegraph,
@@ -1743,8 +1724,8 @@ Methods in §4.5.
       *Reporting and availability* section. The Geirhos licence remains the one
       open sub-item and is flagged in the materials statement itself. **The equivalence gap is closed** — a parallel session ran the
       TOST intervals (PLAN §77–§78, `results/equivalence/`) and all four nulls
-      clear a pre-fixed bound; the achieved bounds are now quoted in §2.6.2,
-      §2.6.3 and the VO entry, with the two caveats §78.3 requires. See `docs/NHB_REVIEW_2026-09-06.md` §"Specific
+      clear a pre-fixed bound; the achieved bounds are now quoted in §2.6.1,
+      §2.6.2 and the VO entry, with the two caveats §78.3 requires. See `docs/NHB_REVIEW_2026-09-06.md` §"Specific
       Improvement Suggestions" for the ranked list.
 - [x] **Cite the paradox's second horn — DONE 2026-09-06, and the check paid
       off.** The BA cited three sources for the texture-like premise
@@ -1787,7 +1768,7 @@ Methods in §4.5.
       w=1 and w=0, which this architecture cannot produce — with w fixed at 0.5
       an intermediate value is close to arithmetically forced, and 0.675 is a
       deterministic function of the two streams' logits. **This is the same
-      defect class as §2.6.1's ×1.00 identity cells, which the reframe just
+      defect class as Extended Data §E6.1's ×1.00 identity cells, which the reframe just
       repaired.** The fix is cheap: `w` is a scalar in the forward pass and
       `cue_conflict.py` already reads it, so evaluating cue-conflict shape bias
       at w ∈ {0, 0.1, …, 1.0} on existing checkpoints is CPU-only minutes on
@@ -1804,30 +1785,40 @@ Methods in §4.5.
       ventral texture finding is not about chromaticity. The concession exists
       only in Limitations while the title and abstract present the resolution
       without it (v2 referee sim, M2).
-- [~] **Length — the editorial pass is done; the remainder is a judgement
-      call.** Main text is now **~6,750 words** against NHB's ≈4,000–6,000 and
-      NN's ≈3,000–5,000, down from **10,002** — a 33% cut — and **6 tables**
-      against 13. The cut was executed as a *move*, not a delete: every
-      qualification, control table, seed-coverage note and caveat now sits in
-      `docs/PAPER_EXTENDED_DATA.md` (§E1–§E6), verbatim, cited from the point in
-      Results where it applies. Nothing was dropped for being inconvenient, and
-      the family-size disclosure (§2.2) and §2.7 stayed in the main text by
-      choice. What moved: §2.2's six-control table, konio substitution and seed
-      coverage; §2.3's sweep table (now Figure 3), endpoint caveats and
-      single-stream table; §2.4's denominator, capacity and accuracy-matched
-      apparatus; §2.5's two ratio tables, checkpoint analyses and trajectory;
-      all three of §2.6's tables. The Introduction's NeurIPS-style
-      "Contributions" list became prose. The Discussion's seven sub-headings
-      became four.
+- [~] **Length — editorial pass done; ~6,830 words.** Main text is **~6,830
+      words** against NHB's ≈4,000–6,000 and NN's ≈3,000–5,000, down from
+      **10,002** — a 32% cut — with **8 display items** (5 tables + 3 figures)
+      against a cap of 8, down from 15. The cut was executed as a *move*, not a
+      delete: every qualification, control table, seed-coverage note and caveat
+      sits in `docs/PAPER_EXTENDED_DATA.md` (§E1–§E6.3), verbatim, cited from
+      the point in Results where it applies. Nothing was dropped for being
+      inconvenient; the family-size disclosure (§2.2) and §2.7's cost
+      accounting stayed in the main text by choice.
 
-      **The remaining ~750 words are not fat.** Getting under 6,000 now means
-      deciding which *result* leaves the main text, and the honest candidates
-      are: §2.6.1 (203 w — the weakest of the three dissociations, but the paper
-      says "three" throughout, so demoting it is a claim change); §2.7 (316 w —
-      the cost accounting, which reviewers reward and which I would not cut);
-      or §2.5's trajectory result. That is an editorial decision about the
-      paper's substance and is deliberately left open rather than taken
-      unilaterally.
+      **§2.6.1 (effective dimensionality) was cut to Extended Data on
+      2026-09-07** on the user's instruction — the one editorial call this pass
+      deliberately left open. It is a claim change as well as a move, and it was
+      handled as one: the result still counts as one of the paper's three
+      dissociations, §2.6 now states it in a single paragraph carrying the
+      decisive cell (`parvo_highsf` more dimensional at 0.56 while texture-biased
+      at probe −0.266) and cites **Extended Data §E6.1**, where the full result,
+      its table and its identity checks now live. The abstract, Introduction,
+      §2.6.2 and the Discussion still say *three*, and all four now resolve to a
+      section the reader can reach. The two surviving subsections were renumbered
+      §2.6.2→§2.6.1 and §2.6.3→§2.6.2 so §2.6 has no gap; 23 cross-references in
+      the draft and 7 in Extended Data were updated with them.
+
+      **The §2.6.1 cut netted ~110 words, not the 203 estimated**, because the
+      claim had to stay stated somewhere: the abstract, Introduction, §2.6.2 and
+      the Discussion all assert *three* dissociations, so §2.6 retains a 79-word
+      paragraph carrying the decisive cell and pointing to Extended Data §E6.1.
+      The structural gain — one fewer subsection, §2.6 down from three parts to
+      two — is the larger effect.
+
+      **What is left is not fat.** Reaching 6,000 would now mean demoting §2.7
+      (316 w, the cost accounting — reviewers reward it and I would argue against
+      cutting it) or §2.5's trajectory result. Both are substance calls, left
+      open.
 
 - [x] **§2.2(a)'s raw statistic certified 2026-09-06 — no error.** A parallel
       session could not reproduce the no-diet −0.033 and raised a possible
@@ -1907,11 +1898,11 @@ Methods in §4.5.
       the cache mapping is confirmed for every one. 15 restated, 2 left. No mean,
       ordering, separation or claim moved. Computed by a parallel session
       (PLAN §81, `results/pr_ddof1/pr_spi_ddof1_2026-09-06.txt`) and applied
-      here verbatim. **If any of the four 2-dp cells in §2.6.1 is ever raised to
+      here verbatim. **If any of the four 2-dp cells in Extended Data §E6.1 is ever raised to
       3 dp, regenerate from that module rather than hand-editing** — they are
       unchanged only because they round the same, not because their underlying
       value held.
-- [x] **§2.6.1's `±` column reprinted at 3 dp** (2026-09-06), all eight cells,
+- [x] **Extended Data §E6.1's `±` column reprinted at 3 dp** (2026-09-06), all eight cells,
       from the parallel session's module at 6 decimals. This **resolves** the
       knife edge rather than disclosing it: 0.094891 now prints 0.095
       unambiguously. Each of the four newly supplied values reproduces its
@@ -1938,8 +1929,8 @@ Methods in §4.5.
       `fig3_readout_sweep`)
       and the text has 2 figure callouts across seven result sections. Needed:
       §2.1's two routes, §2.3's **w-sweep curve** (the data are in
-      `results/fusion_sweep/`, ready to plot), §2.4's 2×2, §2.6.2's degradation
-      curves, §2.6.3's shape-bias-against-κ scatter.
+      `results/fusion_sweep/`, ready to plot), §2.4's 2×2, §2.6.1's degradation
+      curves, §2.6.2's shape-bias-against-κ scatter.
 - [x] **Methods expanded** (2026-09-03) — §4.1–4.7, every parameter read from
       the code and run scripts rather than from memory; 3 seeds per condition
       stated, and the subject vs seed inferential axes separated in §4.7.

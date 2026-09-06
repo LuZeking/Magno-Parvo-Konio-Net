@@ -212,7 +212,7 @@ stream and faked the null. It does not: 16-way accuracy rises to 0.486 from
 channel helped, and the stream still did not become shape-biased.
 
 *Accuracy control.* The diet-trained models are less accurate than the no-diet
-controls (§2.6.2, §2.7), so the conjunction effect could in principle be an
+controls (§2.6.1, §2.7), so the conjunction effect could in principle be an
 accuracy effect: any network held near 0.55 might look shape-biased. We tested
 this directly rather than arguing about it, and pre-registered the fatal outcome
 first — *if a no-diet model at the diet's accuracy shows a shape-biased magno
@@ -250,7 +250,7 @@ Moved from §2.5: the front-end/trained ratio table and its estimator note, the 
 | no diet | — | `dkl_base_seed0` | 1.634 ±0.126 | 0.947 ±0.038 |
 | no diet | — | `dkl_base_seed1` | 1.634 ±0.126 | 0.988 ±0.043 |
 
-*`±` here and in §2.6.1 is the sample standard deviation across the eight
+*`±` here and in Extended Data §E6.1 is the sample standard deviation across the eight
 subjects (ddof = 1), unified 2026-09-06. Seventeen cells across the two tables
 previously mixed two estimators; fifteen have been restated and two were already
 ddof = 1. **No mean, ordering, separation or claim changes** — every dispersion
@@ -260,7 +260,7 @@ earlier version will see seventeen numbers change and no result change.*
 **Seed replication (n=8 subjects x 3 seeds x 4 conditions).** Array 26413641
 extracted seeds 1-2 for all four conditions. Every seed is scored at its **best
 saved checkpoint** (PLAN §71.8, §71.10), so no arm is handicapped by the
-late-training degradation of §2.6.2; for the six seeds whose best checkpoint is the
+late-training degradation of §2.6.1; for the six seeds whose best checkpoint is the
 final one this is the same weight file, and those six reproduce to four decimals:
 
 | arm | front end | seed 0 | seed 1 | seed 2 | seed range |
@@ -281,7 +281,7 @@ PLAN §58.3.)*
 
 **The seed ranges above are best-checkpoint values.** Scored at final
 checkpoints they would read 0.904 and 2.388, both inflated by the late-training
-degradation of §2.6.2; on validation-selected weights they fall to 0.120 and
+degradation of §2.6.1; on validation-selected weights they fall to 0.120 and
 0.787. The diet arm is therefore **not** markedly less reproducible than the
 control on either instrument (Supplementary Note S1).
 
@@ -321,9 +321,20 @@ and `untrained_swap` each carry provenance identical to their trained model on
 every recorded key except the checkpoint, so those are matched front-end
 pairings rather than approximate ones (§49.2, §50.1).
 
-## E6.1 — §2.6.1, effective dimensionality
+## E6.1 — the third dissociation: effective dimensionality is set by carrier bandwidth
 
-Moved from §2.6.1: the four-front-end dimensionality table, the note on its printed precision, and the identity checks showing that only the stream whose input changed moves.
+**Moved out of the main text in full on 2026-09-07**, where it was §2.6.1. The
+result is unchanged and still counts as one of the paper's three dissociations;
+§2.6 now states it in a single paragraph and cites this section for the
+evidence. Everything below is the original text.
+
+*Source: PAPER_PLAN §47.*
+
+Running the same four front ends through a participation-ratio analysis
+(effective dimensionality of each stream's features on 1,000 NSD images per
+subject, n=8) gives a **monotone ordering**, pre-registered before measurement
+and confirmed on both references — a learning-free Gabor bank and an untrained
+network — in 8/8 subjects, every adjacent pair at p=.0078.
 
 | front end | stream 2 receives | Gabor bank | untrained net |
 |---|---|---|---|
@@ -348,7 +359,14 @@ p=.0078.
 (magno/parvo ratio; ordering pre-registered before measurement, confirmed on both
 references, 8/8 subjects, every adjacent pair p=.0078.)
 
-Two things follow.
+Three things follow.
+
+**The asymmetry is generic and reversible.** It reproduces with **no network at
+all** — the Gabor column is a learning-free oriented-energy bank — so it is not a
+property of the architecture. And `parvo_highsf` falls *below 1.0* in 8/8
+subjects: give the second stream the luminance carrier and **it becomes the more
+dimensional stream**. There is nothing privileged about "magno"; dimensionality
+tracks the bandwidth of the carrier a stream is handed.
 
 **Only the stream whose input changed moves.** Relative to the diet baseline,
 `parvo_highsf` doubles parvo while leaving magno at **×1.00**, and `noblur`
@@ -360,9 +378,16 @@ move, not predictions that could have failed. The carrier account's two real
 predictions are which stream moves and in which direction, and it gets both
 right.
 
-## E6.2 — §2.6.2, out-of-distribution robustness
+**Dimensionality is not a proxy for shape bias.** §2.4's probe factorises as an
+interaction; this measure factorises additively, over *identical* inputs. The
+decisive case is `parvo_highsf`, where the second stream becomes the **more
+dimensional** one (0.56) while remaining **texture-biased** (probe −0.266). High
+effective dimensionality does not confer shape bias, and we do not present these
+as two views of one construct.
 
-Moved from §2.6.2: the seven-corruption table, the checkpoint-policy analysis, the model-selection and accuracy-cost accounting including the superseded 37% and 16.5% figures, and the full statement of the phase-scrambling equivalence result.
+## E6.2 — §2.6.1, out-of-distribution robustness
+
+Moved from §2.6.1: the seven-corruption table, the checkpoint-policy analysis, the model-selection and accuracy-cost accounting including the superseded 37% and 16.5% figures, and the full statement of the phase-scrambling equivalence result.
 
 Relative accuracy (accuracy under corruption ÷ clean accuracy), area under the
 degradation curve:
@@ -420,12 +445,12 @@ gave the accuracy cost as 37% and then 16.5%; both are superseded and the
 arithmetic of each is in Supplementary Note S1.
 
 This is the paper's second dissociation of properties the field treats as
-coupled: §2.6.1 separates shape bias from representational dimensionality over
+coupled: §E6.1 separates shape bias from representational dimensionality over
 identical inputs, and the present section separates it from robustness.
 
-## E6.3 — §2.6.3, error consistency
+## E6.3 — §2.6.2, error consistency
 
-Moved from §2.6.3: the seven-model kappa table, the full pre-registration result with its self-correction, the equivalence bound in full, the pipeline validation run before the result was read, the marginal-compression caveat, and the consequences drawn for this paper's own wording.
+Moved from §2.6.2: the seven-model kappa table, the full pre-registration result with its self-correction, the equivalence bound in full, the pipeline validation run before the result was read, the marginal-compression caveat, and the consequences drawn for this paper's own wording.
 
 | | shape bias | kappa vs human | % of ceiling |
 |---|---|---|---|
