@@ -227,10 +227,12 @@ The raw statistic agrees: **+0.616 with the diet against −0.033 without** (and
 **We draw no inference from the sign of the no-diet values.** An earlier version
 described the raw statistic as separating the arms "by sign rather than by
 degree" and read the no-diet arm as marginally texture-organised; both are
-withdrawn. Those values sit near zero, the quantity's behaviour near zero has not
-been characterised, and the claim this section makes — that the arms separate,
-at the exact Wilcoxon floor in 8/8 subjects on both statistics — does not need
-them to fall on any particular side of it.
+withdrawn. The values themselves are sound — the cell has been
+re-derived independently from the stored per-band η² fields, and all three
+no-diet seeds are negative on the raw statistic — but they sit near zero, no test
+addresses which side of zero they fall on, and the claim this section makes (that
+the arms separate, at the exact Wilcoxon floor in 8/8 subjects on both
+statistics) does not need them to fall on any particular side.
 
 The effect is carried entirely by the magno stream (+0.791 vs **−0.638** —
 without the diet the magno stream is *texture*-dominated), with the parvo streams
@@ -2134,30 +2136,30 @@ Methods in §4.5.
       figure). Converting §2.1, §2.3, §2.6.2 and §2.6.3 from tables to panels
       addresses the word count and the display-item cap together, and is the
       referee simulation's ranked suggestion 7.
-- [ ] **Resolve the provenance of §2.2(a)'s raw statistic before submission.**
-      A parallel session cannot reproduce the no-diet raw value (−0.033): their
-      aggregation, median VSB over NC>0.1 voxels, returns **+0.104** for that
-      cell while reproducing the *normalised* +1.534 as +1.53. The two candidate
-      readings **disagree in sign**, and PLAN §73 already found "the mislabel,
-      the raw/_raw trap" in this exact measure, so this is not a case where
-      "probably the wrong mask" is good enough. The interpretive clause that
-      depended on the sign has been cut above, so nothing in the manuscript now
-      rests on it — but the cell itself still needs certifying.
-      *Two concrete leads, from the code.* (i) **The likely definition:** `norm`
-      is `vsb = (η²_shape − η²_texture)/(η²_shape + η²_texture)`
-      (`voxel_shape_bias.py:69`) and `raw` is almost certainly the
-      **un-normalised numerator** η²_shape − η²_texture. The arithmetic fits:
-      1.534 × a typical denominator of 0.40 = 0.614 against a printed 0.616. A
-      norm-positive/raw-negative sign flip is then possible whenever the magno
-      band carries the larger denominator, which per-band normalisation permits.
-      Both η² fields are stored per band, so this is directly checkable. (ii)
-      **A live mislabel hazard:** in `tmp_analysis/cc_ladder.py` the key literally
-      named `"raw"` is **not** the raw stream dissociation — it is
-      `step(cc_joint_vsb)`, the hV4−V1 profile step on the *joint* band
-      (lines 52–66), while the dissociation is the separate key `"mp"`. Anyone
-      reading `"raw"` from that script and pairing it with `"mp"` pairs two
-      different quantities. That is exactly the §73 trap and it is still in the
-      tree.
+- [x] **§2.2(a)'s raw statistic certified 2026-09-06 — no error.** A parallel
+      session could not reproduce the no-diet −0.033 and raised a possible
+      **sign** error; on investigation the draft number was right and their
+      comparison statistic was wrong. `norm` is
+      `vsb = (η²_shape − η²_texture)/(η²_shape + η²_texture)`
+      (`voxel_shape_bias.py:69`); **`raw` is the un-normalised numerator**
+      η²_shape − η²_texture. Re-derived directly from the stored per-band η²
+      fields, n=8, NC>0.1: diet **+0.6062 / +0.6475 / +0.6180** against the
+      draft's 0.616 / 0.658 / 0.632, and no-diet **−0.0283 / −0.0478 / −0.0505**
+      against −0.033 / −0.039 / −0.053 — all three no-diet seeds negative,
+      matching the draft's sign, with the ~0.01 residual explained by their not
+      applying the <20-voxel ROI-cell drop. The sign readings were cut anyway,
+      on the independent ground that a near-zero sign the separation does not
+      need is weak whether or not the number is right (PLAN §83.5, §83.6).
+- [x] **The §73 `"raw"` trap removed from the tree 2026-09-06.** The project
+      carried three quantities across two uses of the word: §2.2(a)'s
+      un-normalised dissociation numerator (+0.616); `cc_ladder.py`'s key named
+      `"raw"`, which was the unresidualised hV4−V1 step on the **joint** band —
+      differing on two axes at once, so a mix-up yields a categorically
+      different number rather than a plausibly wrong one; and that script's
+      `"mp"`, the normalised dissociation (+1.535). `cc_ladder.py`'s key is
+      renamed **`step_unresid`** with a comment recording why. Verified no
+      consumer outside that file; its printed label ("hV4-V1 uncorrected") was
+      already correct, so only the key was misleading.
 - [ ] **Recovery analysis: pilot in, production pending — DO NOT paste pilot
       numbers into the text.** The parallel session's pilot (PLAN §82, commit
       db09b1e; production array 26439650 queued, 8 subjects, `main`, no GPU)

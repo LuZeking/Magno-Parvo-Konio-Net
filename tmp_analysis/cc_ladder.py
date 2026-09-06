@@ -48,6 +48,12 @@ def resid(z, keys, nb):
     return out, np.isfinite(out) & m
 
 
+# NB: `step_unresid` was named "raw" until 2026-09-06. That was the §73 trap:
+# §2.2(a) uses "raw" for the UN-NORMALISED dissociation numerator
+# (eta2_shape - eta2_texture, magno minus parvo), whereas this key is the
+# unresidualised hV4-V1 *step* on the *joint* band -- different on two axes at
+# once (joint vs per-band, step vs dissociation). The normalised dissociation
+# is the separate key `mp`. Renamed so the two senses cannot be paired.
 def step(vals, ok, vroi):
     return (med(vals, ok & (vroi == 7))
             - np.nanmean([med(vals, ok & (vroi == 1)), med(vals, ok & (vroi == 2))]))
@@ -63,7 +69,7 @@ def measures(path):
     return {
         "fit": float(np.nanmedian(z["r2_joint_nc"][rel])),
         "mp": med(z["cc_magno_vsb"], rel) - med(z["cc_parvo_vsb"], rel),
-        "raw": step(v, rel & np.isfinite(v), vroi),
+        "step_unresid": step(v, rel & np.isfinite(v), vroi),
         "res": step(r1, ok1, vroi),
         "res_ecc": step(r2, ok2, vroi),
     }
@@ -82,9 +88,9 @@ print(f"{'model':26s} {'n':>3s} {'fit':>7s} {'M-P':>8s} {'hV4-V1':>8s} "
 for m, per in rows.items():
     n = len(per)
     agg = {k: np.array([per[s][k] for s in sorted(per)]) for k in
-           ("fit", "mp", "raw", "res", "res_ecc")}
+           ("fit", "mp", "step_unresid", "res", "res_ecc")}
     print(f"{m:26s} {n:3d} " + " ".join(
-        f"{np.nanmean(agg[k]):8.4f}" for k in ("fit", "mp", "raw", "res", "res_ecc")))
+        f"{np.nanmean(agg[k]):8.4f}" for k in ("fit", "mp", "step_unresid", "res", "res_ecc")))
 
 # paired: each rung against the full-dimensional reference, same subjects
 print(f"\npaired vs {REF} (same subjects only)")
@@ -95,7 +101,7 @@ for m in RUNGS:
     if not shared:
         continue
     print(f"\n  {m}  (n={len(shared)}, subjects {shared})")
-    for k, label in (("raw", "hV4-V1 uncorrected"),
+    for k, label in (("step_unresid", "hV4-V1 uncorrected"),
                      ("res", "hV4-V1 - SPIxpred"),
                      ("res_ecc", "hV4-V1 - SPIxpredxecc")):
         a = np.array([rows[m][s][k] for s in shared])
