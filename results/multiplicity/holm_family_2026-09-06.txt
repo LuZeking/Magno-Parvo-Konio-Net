@@ -1,0 +1,52 @@
+==============================================================================
+MULTIPLICITY: can the confirmatory family survive Holm-Bonferroni?
+==============================================================================
+
+  exact two-sided signed-rank floor at n=8
+    enumerated over 2^8 sign flips : 0.0078125
+    scipy, all-same-sign vector          : 0.0078125
+    2/2^8                              : 0.0078125
+
+  Holm's threshold for the SMALLEST p in a family of m:
+    alpha/m = 0.05/18 = 0.0027778
+    floor   = 0.0078125
+    BELOW the floor -> nothing can be rejected
+
+  Family as the draft describes it: 18 tests, each at the floor
+    Holm-adjusted p (all tied)  : 0.1406
+    rejected at alpha=0.05       : 0 of 18
+    Bonferroni 18 x 0.007812   : 0.1406
+
+  Largest family in which an n=8 exact test can survive:
+    m <= alpha/floor = 0.05/0.0078125 = 6.40  ->  m_max = 6
+    m= 6: alpha/m = 0.00833  survives
+    m= 7: alpha/m = 0.00714  CANNOT survive
+    m=18: alpha/m = 0.00278  CANNOT survive
+
+==============================================================================
+CONCLUSION
+==============================================================================
+
+  The draft's claim -- that Holm leaves every claim significant and that
+  .140 applies "only for the single least extreme test" -- is wrong twice.
+
+  1. With all 18 tests tied at the floor, Holm assigns EVERY one an
+     adjusted p of 0.141, not just the least extreme. Ties propagate
+     through the step-down; the largest multiplier attaches to the SMALLEST
+     p-value, which is the opposite of what the sentence says.
+
+  2. Holm therefore rejects 0 of 18. The family does not survive.
+
+  This is structural, not a defect of these data: an n=8 exact test cannot
+  produce a p below 0.00781, so any family larger than m=6 is
+  unreachable at alpha=0.05 no matter how large the effect. Even a perfect
+  8/8 separation with a huge effect size returns exactly 0.00781.
+
+  The remedy is NOT to correct the claims into significance, and not to shrink
+  the family post hoc to make it fit. It is to say plainly what the paper
+  already half-says at the end of that same paragraph: at n=8 the exact test
+  is resolution-limited, so the evidence is complete subject separation (8/8)
+  and the effect size, reported alongside every p-value -- and a corrected
+  p-value is not informative in this regime. That is honest and defensible;
+  the current sentence is checkable and false.
+

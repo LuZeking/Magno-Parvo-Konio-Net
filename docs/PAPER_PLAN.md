@@ -8140,10 +8140,31 @@ asserts never happens.
 At n=8 the ddof=0/ddof=1 gap is √(8/7) ≈ **7%**, so this is not cosmetic — it is
 a systematic ~7% understatement of the spread in every PR/SPI cell.
 
+**Confirmed numerically**, by recomputing the participation ratios per subject
+from `/scratch/byrong/VST_data/mpk_feature_cache` (n=8 for every cell). `sd0`
+reproduces the printed value in **eight independent cells**; `sd1` reproduces
+none of them:
+
+| draft cell | printed | mean | **sd0** | sd1 |
+|---|---|---|---|---|
+| `dkl_bcs_seed0` front end | 1.402 ±0.089 | 1.402 | **0.089** | 0.095 |
+| `dkl_bcs_parvo_highsf_seed0` front end | 0.586 ±0.013 | 0.586 | **0.013** | 0.014 |
+| `dkl_bcs_swap_seed0` front end | 1.909 ±0.125 | 1.909 | **0.125** | 0.133 |
+| `dkl_base_seed0` front end | 1.634 ±0.118 | 1.634 | **0.118** | 0.126 |
+| `dkl_base_seed0` trained | 0.947 ±0.035 | 0.947 | **0.035** | 0.038 |
+| `dkl_base_seed1` trained | 0.988 ±0.040 | 0.988 | **0.040** | 0.043 |
+| `dkl_bcs_parvo_highsf_seed0` trained | 1.640 ±0.030 | 1.640 | **0.030** | 0.032 |
+| §2.5 `gabor_swap` | 3.37 ±0.16 | 3.366 | **0.163** | 0.174 |
+
+(The `dkl_bcs_seed0`/`swap` *trained* cells in the §2.4 table are the best-saved
+checkpoints per §71.8, not the `_trained` cache entries used above, so they are
+not directly comparable and are omitted rather than mismatched.)
+
+So the two-estimator finding is established, not inferred from the source alone:
+**behavioural and human values are ddof=1; every PR/SPI cell is ddof=0.**
+
 **Recommendation:** recompute those tables at ddof=1 so a single sentence covers
-the manuscript, rather than documenting two estimators. Numerical confirmation
-from the feature cache is queued (`pr_dispersion.py`); the source reading above
-does not depend on it.
+the manuscript, rather than documenting two estimators.
 
 ### §79.6 A notation collision that inflates the multiplicity count
 
@@ -8189,3 +8210,114 @@ classifier is affine (AdaptiveAvgPool → Flatten → Linear **with bias**), so
 scaling the feature vector does move the argmax. Ablation and reweighting are
 different interventions; only `w = 0.5` is a reproduction anchor, and it must
 match `full` exactly.
+
+---
+
+## §80 THE CONFIRMATORY FAMILY DOES NOT SURVIVE HOLM — and the sentence saying
+## it does is checkable and false
+
+### §80.1 The claim
+
+The draft's new Multiplicity paragraph (the other half of the referee's fatal
+statistical item) states:
+
+> (i) The **pre-specified confirmatory family** [...] comprises 18 tests
+> declared before the corresponding analyses; Holm–Bonferroni across these
+> leaves every claim we make significant, because each rests on the exact
+> Wilcoxon floor p=.0078 at n=8 and 18 × .0078 = .140 is the largest adjusted
+> value only for the single least extreme test, which we do not claim.
+
+`tmp_analysis/multiplicity_check.py` computes this. Saved output:
+`results/multiplicity/holm_family_2026-09-06.txt`. The sentence is wrong twice,
+and the underlying situation is worse than the sentence admits.
+
+### §80.2 The arithmetic
+
+The exact two-sided Wilcoxon signed-rank test at n=8 has a **floor** — a
+smallest attainable p-value, reached when all eight subjects move the same way.
+Verified three independent ways, all agreeing to machine precision:
+
+| route | value |
+|---|---|
+| enumeration over all 2⁸ sign assignments | 0.0078125 |
+| `scipy.stats.wilcoxon(..., mode="exact")` on an all-same-sign vector | 0.0078125 |
+| closed form 2 / 2⁸ | 0.0078125 |
+
+Holm's first step compares the **smallest** p against α/m:
+
+    α/m = .05 / 18 = .0027778
+    floor          = .0078125        ->  floor > threshold
+
+The smallest attainable p-value in the family is already larger than the
+threshold the smallest p-value must clear. Holm therefore stops at step 1 and
+**rejects nothing**: 0 of 18, every adjusted p = .1406.
+
+### §80.3 Both halves of the sentence fail
+
+1. **"only for the single least extreme test"** inverts the correction. Holm
+   attaches the **largest** multiplier (m) to the **smallest** p-value, not the
+   largest. With all 18 tests tied at the floor, every one of them adjusts to
+   .1406 — the .140 figure is universal in this family, not a worst case that
+   applies to a test we decline to claim.
+2. **"leaves every claim we make significant"** is the opposite of the result.
+   It leaves *none* significant.
+
+### §80.4 The real finding, which is structural
+
+This is not a defect of these data and cannot be fixed by better effects. An
+n=8 exact test **cannot emit a p below .0078125 no matter how large the
+effect** — a perfect 8/8 separation with dz = −11.70 returns exactly .0078125,
+the same as a marginal 8/8. So the largest family in which such a test can
+reach corrected significance at α=.05 is
+
+    m ≤ α / floor = .05 / .0078125 = 6.4   ->   m_max = 6
+
+| m | α/m | can an n=8 exact test survive? |
+|---|---|---|
+| 6 | .00833 | yes |
+| 7 | .00714 | **no** |
+| 18 | .00278 | **no** |
+
+Any confirmatory family larger than six tests is unreachable. The paper declares
+eighteen.
+
+### §80.5 What to do about it — and what not to
+
+**Not** this: shrinking the family post hoc until it fits under six. Choosing
+the family after seeing which tests need to survive is exactly the practice
+multiplicity control exists to prevent, and §77's own principle (bounds fixed
+before computing) forbids it.
+
+**Not** this either: switching to FDR to obtain a friendlier number. BH at m=18
+with all p tied at .0078125 gives adjusted .1406 as well; the floor problem is
+not a choice-of-procedure problem.
+
+The defensible move is the one the paper's own paragraph already reaches for in
+its last sentence, promoted from caveat to the actual position:
+
+> With n = 8, the exact signed-rank test is resolution-limited: its smallest
+> attainable two-sided p-value is .0078, so within a pre-specified family of 18
+> tests no result can reach Holm- or FDR-corrected significance at α = .05
+> regardless of effect size. We therefore do not rest any confirmatory claim on
+> a corrected p-value. For every such claim we report the complete subject
+> separation (8/8 or 0/8) and the paired effect size alongside the uncorrected
+> exact p, and treat the separation and effect size as the evidence.
+
+That is honest, it is accurate, and it costs the paper nothing it actually has —
+the claims were never resting on the p-values, as §2.1's dz = −11.70 and the
+8/8 counts throughout make clear. It also converts the Statistical Rigor Audit's
+"Multiple comparisons declared and corrected — **Fail**" into a declared family
+with a stated, correct treatment.
+
+### §80.6 Relation to §79
+
+§79 and §80 are the two halves of the same referee override, and they fail the
+same way: a sentence written to close a checkable item, which is itself
+checkable and does not check out. §79's `±` definition misdescribes an
+estimator; §80's multiplicity sentence misdescribes a correction. Both would
+have been caught by the first referee who reran one line of arithmetic — and the
+v2 simulation demonstrates that this referee reruns arithmetic.
+
+The general rule for this manuscript, stated once: **any sentence added to
+satisfy a reviewer must be verified against the data it describes before it is
+committed**, on the same standard as a result. A clerical fix is still a claim.
