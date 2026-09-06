@@ -8726,3 +8726,104 @@ sense gets two different quantities under one label. This is precisely what §73
 documented and it is still in the tree. **Rename `cc_ladder.py`'s `"raw"` to
 `"step_unresid"`** — it is a tmp_analysis script with no downstream consumer of
 the string, so the rename is cheap and removes the collision at its source.
+
+---
+
+## §84 CONDITION B RAN THE NOISE-CEILING RAMP BACKWARDS — the artefact is a
+## 1/nc normalisation effect, and its sign was therefore inverted
+
+### §84.1 The error, which is mine
+
+`vp_recovery.py` hardcoded
+
+    roi_nc = [0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45]
+
+**ascending** with hierarchical rank, under a comment claiming the values were
+"taken from the real fitted results" and a docstring claiming ROIs "differ only
+in noise ceiling and voxel count, drawn from the real per-ROI values". Both
+statements were false: the values are invented, and they run the wrong way.
+
+Measured from `results/encoding/dkl_bcs_seed0_trained_subj*.npz`, NC>0.1,
+`roi_prf-visualrois`, 8 subjects, median per ROI:
+
+| V1v | V1d | V2v | V2d | V3v | V3d | hV4 |
+|---|---|---|---|---|---|---|
+| 0.421 | 0.429 | 0.390 | 0.343 | 0.350 | 0.314 | 0.313 |
+
+**ρ(NC, hierarchical rank) = −0.929, p = .0025.** The real noise ceiling
+**declines** V1v→hV4. The simulated ramp climbs (ρ = +1.000) and spans a range
+~2.5× too wide (0.15–0.45 against 0.313–0.429).
+
+Caught by the draft owner, who measured the real profile rather than accepting
+the simulation's premise. Independently reproduced here at ρ = −0.929 against
+their −0.893 (mask differences).
+
+### §84.2 The mechanism — it is a normalisation artefact
+
+`variance_partition` divides the unique components by the noise ceiling, and
+`vp_recovery.py` reports the normalised values. From this session's own
+condition-B output, 8 subjects:
+
+| roi | nc | est diff (normalised) | raw = est × nc |
+|---|---|---|---|
+| 0 | 0.15 | 0.0617 | 0.0093 |
+| 1 | 0.20 | 0.0568 | 0.0114 |
+| 2 | 0.25 | 0.0610 | 0.0152 |
+| 3 | 0.30 | 0.0426 | 0.0128 |
+| 4 | 0.35 | 0.0333 | 0.0117 |
+| 5 | 0.40 | 0.0380 | 0.0152 |
+| 6 | 0.45 | 0.0375 | 0.0169 |
+
+* normalised bias: ρ vs rank **−0.857**, spread 0.0284,
+  **corr with 1/nc = +0.854**
+* raw bias: spread only 0.0076, growing mildly with nc (≈ nc^0.5)
+
+So the raw bias is small and slowly increasing, and the **apparent gradient is
+produced by dividing it by an ascending nc**. The artefact's sign is set by the
+direction of the nc ramp, not by anything about the streams.
+
+### §84.3 What follows, quantitatively
+
+Under the **real descending** profile the same mechanism runs the other way.
+With raw ≈ nc^0.5, the normalised bias goes as nc^(−0.5), so it **rises** with
+hierarchical rank — i.e. the artefact would be **positive** where §2.2's
+observed gradient is **negative**. The artefact would *oppose* the observed
+gradient rather than produce it.
+
+Magnitude should also fall sharply. The real nc range is a factor 0.429/0.313 =
+**1.37**, against the simulated 0.45/0.15 = **3.0**. At nc^(−0.5) that is a
+~16% variation in the normalised bias across the real hierarchy, against the
+~65% the backwards ramp produced.
+
+This is a prediction, not a result. The draft owner has submitted array
+26440398 (`vp_recovery_realnc.py`, `--roi-nc` defaulting to the measured
+profile, both diet and no-diet arms, 8 subjects, `main`, no GPU) to test it.
+
+### §84.4 What §2.2 may claim, either way
+
+Independently of the sign, §84.2 establishes that **the instrument has a
+non-zero artefact floor whenever noise ceiling varies across ROIs**, which it
+does. So a statement of the form "the profile declines steeply with the diet and
+is nearly flat without it" is implicitly comparing against **zero**, when the
+correct baseline is whatever condition B yields under the real profile.
+
+That baseline belongs in the paper as a floor the diet arm has to clear. This
+holds whichever way the corrected sign lands, and it is the durable consequence
+of this exercise regardless of the re-run.
+
+### §84.5 Why it was diagnosable at all
+
+The bug is one line in an otherwise correct experiment, and it survived three
+rounds of assertion-checking because every assertion was about the *ground
+truth* — the orthogonality of the sources, σ equalling the measured
+correlation, the solved-to-zero null — and none was about whether the
+*simulated design* matched the real one.
+
+The general lesson, extending §82.7: **verifying that a simulation is internally
+correct is not verifying that it simulates the right thing.** Every parameter
+asserted to come from data should be read from that data in code, not typed in
+as a literal. Had `roi_nc` been loaded from `results/encoding/` — as its own
+comment claimed it was — the error could not have occurred.
+
+Concretely: a literal that a comment describes as "measured" is a defect
+whatever its value.

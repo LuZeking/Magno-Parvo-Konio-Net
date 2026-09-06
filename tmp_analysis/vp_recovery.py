@@ -38,9 +38,15 @@ CONDITION A -- recovery. The true split varies across simulated ROIs in a known
 monotone way. Does the estimate track it, and with what bias?
 
 CONDITION B -- manufacture (the decisive one). Every simulated ROI is given an
-IDENTICAL true split, and ROIs differ only in noise ceiling and voxel count,
-drawn from the real per-ROI values. A gradient here is manufactured, because
-there is none in the truth. This is the condition that can kill §2.2.
+IDENTICAL true split, and ROIs differ only in noise ceiling. A gradient here is
+manufactured, because there is none in the truth.
+
+CORRECTION (§84): the noise ceilings are a HARDCODED ASCENDING RAMP, not drawn
+from the real per-ROI values -- an earlier version of this docstring said
+otherwise and was wrong. The real profile descends (rho = -0.929). Condition B
+as run here still proves that a nc ramp manufactures an apparent gradient, and
+still measures the bias magnitude, but its SIGN cannot be read against §2.2's
+gradient because the ramp runs the wrong way. See tmp_analysis/vp_recovery_realnc.py.
 
     PYTHONPATH=. python tmp_analysis/vp_recovery.py --subject 1
 """
@@ -253,7 +259,21 @@ def main() -> int:
 
     splits = make_grouped_splits(ids[tr], n_splits=3, seed=args.seed)
 
-    # ROI noise ceilings taken from the real fitted results if present
+    # WRONG IN TWO WAYS, kept only so the §84 diagnosis stays reproducible.
+    # This is a hardcoded ramp, NOT drawn from the real per-ROI values as an
+    # earlier comment here claimed, and it ASCENDS with hierarchical rank while
+    # the real profile DESCENDS (V1v 0.421 -> hV4 0.313, rho = -0.929, p=.0025,
+    # measured over 8 subjects from results/encoding/). Its range is also ~2.5x
+    # too wide (0.15-0.45 against a real 0.313-0.429).
+    #
+    # That matters because variance_partition divides by the noise ceiling, so
+    # a near-constant raw bias becomes a normalised bias tracking 1/nc
+    # (measured corr = +0.854, §84.2). The apparent gradient condition B
+    # reports is therefore a normalisation artefact whose SIGN is set by the
+    # ramp direction -- and with the ramp backwards, its sign is backwards too.
+    #
+    # Use tmp_analysis/vp_recovery_realnc.py, which takes --roi-nc and defaults
+    # to the measured profile. Do not read condition B's sign out of THIS file.
     roi_nc = [0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45]
     results = {"model": args.model, "subject": args.subject,
                "band_corr": band_corr, "cca": cca, "conditions": {}}
