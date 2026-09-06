@@ -331,26 +331,37 @@ intermediate result is close to arithmetically forced, so **the intermediate
 value is not by itself a prediction that could have failed** and we do not
 present it as one.
 
-**The readout weight is the control variable, and it moves behaviour across the
-entire range.** What is *not* forced is the shape of the dependence, and that is
-measurable, because `y₁` and `y₂` do not depend on `w`: sweeping `w` moves the
-readout while holding both components **exactly** fixed. This is the
-manipulation the readout account calls for, and **Figure 3a** is the result:
-cue-conflict shape bias at 21 values of `w`, 3 seeds, both checkpoint
-policies.
+**The readout weight moves behaviour across the entire range, and we now state
+exactly how much of that is arithmetic.** Sweeping `w` moves the readout while
+holding `y₁` and `y₂` exactly fixed, and **Figure 3a** shows the result:
+cue-conflict shape bias at 21 values of `w`, 3 seeds, both checkpoint policies,
+running from **0.399 to 0.904** at the best saved checkpoints.
 
-**Shape bias runs from below parity to 0.90 as the readout is reweighted over
-components that never change.** The curve is monotone non-decreasing across all
-21 values in 3/3 seeds at the best saved checkpoint (2/3 at the final
-checkpoint, where one seed has a single local inversion), and the total span is
-**+0.46 to +0.52** of shape bias per seed. The same network, the same two
-representations, anywhere from texture-biased to more shape-biased than any
-model in the seven-model comparison of §2.6.2 — set only by how the readout
-weights them.
+*An earlier version of this section claimed that the shape of that dependence
+was "not forced" and was therefore a measurement. That was wrong, and the
+correction matters enough to make here rather than in a note.* The classifier is
+`AdaptiveAvgPool2d → Flatten → Linear` (§4.3) — affine — and the mixture weights
+sum to one, so
 
-That is the paper's claim made as a measurement rather than an argument. A
-behavioural shape-bias rate is a property of a readout over components; move the
-readout and the rate moves, with the representations held fixed.
+> `clf(w·y₁ + (1−w)·y₂) = w·clf(y₁) + (1−w)·clf(y₂)`
+
+exactly (verified numerically: maximum deviation 1.1 × 10⁻⁶ on a logit scale of
+0.32). The swept logits are therefore the **convex combination of the two
+endpoint logit vectors**, and the sweep contains no information beyond `w` = 0
+and `w` = 1, both of which this section already reports. Per image each class
+logit is linear in `w`, so the decision is the argmax of 16 lines and the
+aggregate rate is close to the empirical distribution of per-image switch
+points. **Monotonicity is very nearly analytic, not a discovered property**, and
+we no longer present it as one.
+
+What survives is the weaker statement the section actually needs, and it is
+enough for the argument: a behavioural shape-bias rate is a property of a
+readout over components, not a report of either component, and here a single
+scalar in the readout carries the system across the entire range the field's
+models occupy while both representations are untouched. What that does **not**
+establish is that any particular mixture is the one a human uses, or that the
+dependence is an empirical law rather than interpolation between two measured
+endpoints.
 
 *Validation.* At w = 0.5 the sweep reproduces the published per-seed values
 **exactly** (0.6922 / 0.6861 / 0.6464 at the final checkpoint), which is the
@@ -631,7 +642,47 @@ Moving a model 5× up the field's most-cited human-alignment metric moved it
 
 Across all seven models the shape-bias rate spans 0.17 to 0.89 — a 5× range —
 while trial-level agreement with humans never exceeds **18%** of the
-human–human ceiling for any of them. **Shape bias, the field's
+human–human ceiling for any of them.
+
+**The same holds across the entire readout family, not just across seven
+models.** The seven-model comparison varies architecture, training data and
+objective all at once, so it cannot say whether some *readout* of these
+components would agree with humans. §2.3's sweep answers that directly, because
+it moves the rate over frozen representations. Recomputing error consistency at
+all 21 values of `w`, for 3 seeds × 2 checkpoint policies of the diet arm and 3
+seeds of the no-diet arm (9 runs, 189 readouts), against the same 10 observers:
+
+| | diet arm | no-diet arm |
+|---|---|---|
+| shape-bias rate spanned | 0.373 – 0.913 | 0.312 – 0.459 |
+| **best kappa over all `w`** | 0.0178 – 0.0483 | 0.0404 – 0.0421 |
+| best kappa, % of ceiling | **7.6 – 20.7%** | **17.3 – 18.0%** |
+| `w` achieving it | 0.35 – 1.00 | 0.35 – 1.00 |
+| kappa at the `w` closest to the human rate, % of ceiling | −6.1 – 15.5% | 10.0 – 17.6% |
+
+Three things follow, and the first is the one that matters. **No readout of
+these components reaches human decision structure**: the best `w` — chosen post
+hoc, per seed, to maximise agreement — never exceeds **20.7%** of the
+human–human ceiling in any of the nine runs. This is the bounded form of the
+null, and it is far stronger than a two-model comparison, because the readout
+weight was given every opportunity to succeed and did not.
+
+Second, **the `w` that maximises agreement is not the `w` that matches the human
+rate, and it is not stable**: it lands at 0.35, 0.45, 0.75, 0.85, 0.90 and 1.00
+across the nine runs, and at the rate-matching `w` agreement is sometimes
+*negative* (−6.1%). Tuning a model until its cue-conflict rate approaches the
+human rate therefore selects an operating point with no claim on human
+trial-level behaviour — demonstrated here within a single frozen network rather
+than inferred across a model zoo.
+
+Third, **the diet buys nothing here even with the readout optimised**: the
+no-diet arm reaches the same ceiling fraction (17.3–18.0%) as the diet arm
+(7.6–20.7%). Whatever the developmental front end does, it does not move this
+system toward human decisions.
+
+Method and per-`w` values: §4.3 and `tmp_analysis/sweep_error_consistency.py`;
+the human loading is validated against the published human shape bias (0.958)
+and the human–human ceiling (0.234) before any model is scored. **Shape bias, the field's
 most-cited human-alignment metric for vision models, does not track human
 decision structure.** That is this paper's third dissociation and the only one
 that concerns human behaviour directly.
