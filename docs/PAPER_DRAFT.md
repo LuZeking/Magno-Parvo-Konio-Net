@@ -640,11 +640,18 @@ front end would stay inverted. **It does not.**
 
 | arm | diet applied to | model | front end | after training |
 |---|---|---|---|---|
-| diet | luminance | `dkl_bcs_seed0` | 1.402 ±0.089 | **1.703** ±0.059 |
-| diet | luminance | `dkl_bcs_parvo_highsf_seed0` | **0.586** ±0.013 | **1.640** ±0.030 |
-| diet | **red−green** | `dkl_bcs_swap_seed0` | **1.909** ±0.125 | **2.327** ±0.085 |
-| no diet | — | `dkl_base_seed0` | 1.634 ±0.118 | 0.947 ±0.035 |
-| no diet | — | `dkl_base_seed1` | 1.634 ±0.118 | 0.988 ±0.040 |
+| diet | luminance | `dkl_bcs_seed0` | 1.402 ±0.095 | **1.703** ±0.059 |
+| diet | luminance | `dkl_bcs_parvo_highsf_seed0` | **0.586** ±0.014 | **1.640** ±0.032 |
+| diet | **red−green** | `dkl_bcs_swap_seed0` | **1.909** ±0.133 | **2.327** ±0.085 |
+| no diet | — | `dkl_base_seed0` | 1.634 ±0.126 | 0.947 ±0.038 |
+| no diet | — | `dkl_base_seed1` | 1.634 ±0.126 | 0.988 ±0.043 |
+
+*`±` here and in §2.6.1 is the sample standard deviation across the eight
+subjects (ddof = 1), unified 2026-09-06. Seventeen cells across the two tables
+previously mixed two estimators; fifteen have been restated and two were already
+ddof = 1. **No mean, ordering, separation or claim changes** — every dispersion
+that moved moved by the same √(8/7) = 1.069 — so a reader comparing against an
+earlier version will see seventeen numbers change and no result change.*
 
 **Seed replication (n=8 subjects x 3 seeds x 4 conditions).** Array 26413641
 extracted seeds 1-2 for all four conditions. Every seed is scored at its **best
@@ -765,8 +772,8 @@ subject, n=8) gives a monotone ordering:
 |---|---|---|---|
 | `parvo_highsf` | **lum+rg**, no transform | **0.56** ±0.02 | **0.59** ±0.01 |
 | `blur_cs` (diet) | rg, no transform | 1.38 ±0.09 | 1.40 ±0.09 |
-| `noblur` (no diet) | rg, no transform | 2.23 ±0.13 | 1.63 ±0.12 |
-| `swap` | rg + **transform** | **3.37** ±0.16 | **1.91** ±0.12 |
+| `noblur` (no diet) | rg, no transform | 2.23 ±0.14 | 1.63 ±0.13 |
+| `swap` | rg + **transform** | **3.37** ±0.17 | **1.91** ±0.13 |
 
 (magno/parvo ratio; ordering pre-registered before measurement, confirmed on both
 references, 8/8 subjects, every adjacent pair p=.0078.)
@@ -1307,22 +1314,19 @@ stream-preference tables. Ranges, where given, are stated as explicit intervals
 Cue-conflict values additionally carry a **bootstrap 95% CI over cue-conflict
 images** (§4.3), which is labelled as a CI wherever it appears.
 
-*One inconsistency, disclosed rather than smoothed over.* The manuscript
-currently carries **three** groups of cells, not one. The behavioural and probe
-tables use the sample standard deviation (ddof = 1). Most participation-ratio and
-stream-preference cells inherit NumPy's default population standard deviation
-(ddof = 0). And two cells of §2.5's "after training" column — `dkl_bcs_seed0`
-(±0.059) and `dkl_bcs_swap_seed0` (±0.085) — are **already** ddof = 1, because
-they were re-scored at their best saved checkpoints through a different script
-than the one that produced the rest of the column. The two estimators differ by
-√(8/7) ≈ 6.9% at n = 8.
-
-No claim in this paper turns on the difference: every one rests on complete
-subject or seed separation, and rescaling changes no mean and no ordering. The
-remaining ddof = 0 cells will be recomputed at ddof = 1 before submission so that
-a single estimator carries the symbol — **cell by cell, not by a blanket factor**,
-since applying the factor to the two cells that are already correct would inflate
-them to 0.063 and 0.091.
+*One inconsistency, found and resolved.* The manuscript previously carried
+**three** groups of cells rather than one: behavioural and probe tables at the
+sample SD (ddof = 1); most participation-ratio and stream-preference cells at
+NumPy's default population SD (ddof = 0); and two cells of §2.5's "after
+training" column — `dkl_bcs_seed0` (±0.059) and `dkl_bcs_swap_seed0` (±0.085) —
+**already** at ddof = 1, because they were re-scored at their best saved
+checkpoints through a different routine than the rest of the column. All
+seventeen cells were re-derived from the feature cache, each checked against its
+currently printed value before any replacement was emitted, and the fifteen
+ddof = 0 cells restated at ddof = 1; the two already-correct cells were left
+alone, since rescaling them would have printed 0.063 and 0.091. A single
+estimator now carries the symbol. No mean, ordering, separation or claim is
+affected.
 
 **Multiplicity, and why no correction can license this design.** This paper
 reports 28 p-values (an earlier count of 36 wrongly included seven kornia
@@ -2125,18 +2129,20 @@ Methods in §4.5.
       null tests whether ρ exceeds random labelling; it cannot undo post-hoc
       selection, so the honest report is "survivor of seven, and here is how far
       it exceeds chance", never the null alone.
-- [ ] **Unify the `±` estimator — cell by cell, NOT by a blanket factor.**
-      Three groups exist, not two: behavioural/probe tables at ddof=1; most
-      PR/SPI cells at ddof=0; and **two cells of §2.5's "after training" column
-      already at ddof=1** (`dkl_bcs_seed0` ±0.059, `dkl_bcs_swap_seed0` ±0.085),
-      because they were re-scored at best-saved checkpoints through
-      `pr_seeds.py:118` (ddof=1) rather than `pr_table.py:41` (numpy default).
-      Rescaling those two would print 0.063 and 0.091, both wrong. The other 15
-      cells reproduce their printed ddof=0 values exactly and are the ones that
-      move, each by √(8/7) = 1.0690. No mean, ordering, separation or claim
-      changes — it is purely notational. A parallel session is producing the
-      ready-to-paste table (PLAN §79); those instruments are theirs, so the
-      numbers come from them and this draft applies them.
+- [x] **`±` estimator unified 2026-09-06** (cell by cell, not by a blanket
+      factor). Three groups existed, not two: two cells of §2.5's "after
+      training" column were already ddof=1 (`dkl_bcs_seed0` ±0.059,
+      `dkl_bcs_swap_seed0` ±0.085) because they were re-scored at best-saved
+      checkpoints through `pr_seeds.py:118` rather than `pr_table.py:41`;
+      rescaling them would have printed 0.063 and 0.091. All 17 cells were
+      re-derived and each reproduced its printed value before replacement, so
+      the cache mapping is confirmed for every one. 15 restated, 2 left. No mean,
+      ordering, separation or claim moved. Computed by a parallel session
+      (PLAN §81, `results/pr_ddof1/pr_spi_ddof1_2026-09-06.txt`) and applied
+      here verbatim. **If any of the four 2-dp cells in §2.6.1 is ever raised to
+      3 dp, regenerate from that module rather than hand-editing** — they are
+      unchanged only because they round the same, not because their underlying
+      value held.
 - [ ] **Figures.** Only 2 exist (`fig1_convergence`, `fig2_ventral_gradient`)
       and the text has 2 figure callouts across seven result sections. Needed:
       §2.1's two routes, §2.3's **w-sweep curve** (the data are in
