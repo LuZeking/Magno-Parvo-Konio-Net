@@ -222,11 +222,15 @@ model-based prediction — a per-voxel predicted shape-bias index — and the
 magno−parvo difference in that index is **+1.534 with the diet and +0.110
 without** (n=8, p=.0078, 8/8 subjects).
 
-The raw statistic separates the arms even more sharply than the normalised one,
-by sign rather than by degree: **+0.616 with the diet against −0.033 without**
-(and +0.658 / −0.039, +0.632 / −0.053 in seeds 1 and 2, p=.0078 and 8/8
-throughout). Without the diet the predicted cortical response to a cue-conflict
-image is, if anything, marginally *more* texture- than shape-organised.
+The raw statistic agrees: **+0.616 with the diet against −0.033 without** (and
++0.658 / −0.039, +0.632 / −0.053 in seeds 1 and 2, p=.0078 and 8/8 throughout).
+**We draw no inference from the sign of the no-diet values.** An earlier version
+described the raw statistic as separating the arms "by sign rather than by
+degree" and read the no-diet arm as marginally texture-organised; both are
+withdrawn. Those values sit near zero, the quantity's behaviour near zero has not
+been characterised, and the claim this section makes — that the arms separate,
+at the exact Wilcoxon floor in 8/8 subjects on both statistics — does not need
+them to fall on any particular side of it.
 
 The effect is carried entirely by the magno stream (+0.791 vs **−0.638** —
 without the diet the magno stream is *texture*-dominated), with the parvo streams
@@ -2130,6 +2134,30 @@ Methods in §4.5.
       figure). Converting §2.1, §2.3, §2.6.2 and §2.6.3 from tables to panels
       addresses the word count and the display-item cap together, and is the
       referee simulation's ranked suggestion 7.
+- [ ] **Resolve the provenance of §2.2(a)'s raw statistic before submission.**
+      A parallel session cannot reproduce the no-diet raw value (−0.033): their
+      aggregation, median VSB over NC>0.1 voxels, returns **+0.104** for that
+      cell while reproducing the *normalised* +1.534 as +1.53. The two candidate
+      readings **disagree in sign**, and PLAN §73 already found "the mislabel,
+      the raw/_raw trap" in this exact measure, so this is not a case where
+      "probably the wrong mask" is good enough. The interpretive clause that
+      depended on the sign has been cut above, so nothing in the manuscript now
+      rests on it — but the cell itself still needs certifying.
+      *Two concrete leads, from the code.* (i) **The likely definition:** `norm`
+      is `vsb = (η²_shape − η²_texture)/(η²_shape + η²_texture)`
+      (`voxel_shape_bias.py:69`) and `raw` is almost certainly the
+      **un-normalised numerator** η²_shape − η²_texture. The arithmetic fits:
+      1.534 × a typical denominator of 0.40 = 0.614 against a printed 0.616. A
+      norm-positive/raw-negative sign flip is then possible whenever the magno
+      band carries the larger denominator, which per-band normalisation permits.
+      Both η² fields are stored per band, so this is directly checkable. (ii)
+      **A live mislabel hazard:** in `tmp_analysis/cc_ladder.py` the key literally
+      named `"raw"` is **not** the raw stream dissociation — it is
+      `step(cc_joint_vsb)`, the hV4−V1 profile step on the *joint* band
+      (lines 52–66), while the dissociation is the separate key `"mp"`. Anyone
+      reading `"raw"` from that script and pairing it with `"mp"` pairs two
+      different quantities. That is exactly the §73 trap and it is still in the
+      tree.
 - [ ] **Recovery analysis: pilot in, production pending — DO NOT paste pilot
       numbers into the text.** The parallel session's pilot (PLAN §82, commit
       db09b1e; production array 26439650 queued, 8 subjects, `main`, no GPU)
