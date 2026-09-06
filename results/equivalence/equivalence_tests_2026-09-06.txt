@@ -75,5 +75,3 @@ TEST 4  §2.3 VO median(U_m - U_p), n=8 subjects
     bootstrap 90% CI [-0.0065, +0.0142] (20k resamples) -> inside the bound
 
 ==============================================================================
-
-[exited with code 0]
