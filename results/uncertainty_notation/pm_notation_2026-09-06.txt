@@ -1,0 +1,61 @@
+==============================================================================
+WHAT `±` DENOTES IN PAPER_DRAFT.md -- resolved by recomputation
+==============================================================================
+
+§2.3  diet, integrated readout: `0.675 ±0.025`
+  n=3 over 3 training seeds; values [0.6922, 0.6861, 0.6464]
+  mean 0.6749   manuscript prints +-0.025 (3 dp)
+    SD (ddof=1)        0.0249  <== consistent
+    SD (ddof=0)        0.0203
+    SEM                0.0144
+    range (max-min)    0.0458
+    half-range         0.0229
+  -> IDENTIFIED: SD (ddof=1)
+
+§2.3  no diet, integrated readout: `0.416 ±0.020`
+  n=3 over 3 training seeds; values [0.4212, 0.4328, 0.3944]
+  mean 0.4162   manuscript prints +-0.02 (2 dp)
+    SD (ddof=1)        0.0197  <== consistent
+    SD (ddof=0)        0.0161  <== consistent
+    SEM                0.0114
+    range (max-min)    0.0384
+    half-range         0.0192  <== consistent
+  -> 3 consistent at this precision; constrains only
+
+[check] re-derived human observers reproduce geirhos_humans.py: mean 0.9576, SD 0.0191, n=10
+
+§2.3  ten human observers: `0.958 ±0.019`
+  n=10 over 10 observers; values [0.9617, 0.9438, 0.9673, 0.9191, 0.964, 0.976, 0.9408, 0.9577, 0.9866, 0.9589]
+  mean 0.9576   manuscript prints +-0.019 (3 dp)
+    SD (ddof=1)        0.0191  <== consistent
+    SD (ddof=0)        0.0181
+    SEM                0.0060
+    range (max-min)    0.0675
+    half-range         0.0338
+  -> IDENTIFIED: SD (ddof=1)
+
+==============================================================================
+VERDICT
+==============================================================================
+  diet integrated shape bias         SD (ddof=1)
+  no-diet integrated shape bias      3 consistent
+  human observers                    SD (ddof=1)
+
+  Consistent with ALL 3 cells simultaneously: ['SD (ddof=1)']
+
+  IDENTIFIED: `±` is the sample SD (ddof=1) about the mean,
+  over the unit named in each case. It is the only estimator
+  consistent with every printed cell.
+
+  `range (max-min)` is EXCLUDED by every cell independently:
+    diet     range 0.0458, half-range 0.0229  vs printed 0.025
+    no diet  range 0.0384, half-range 0.0192  vs printed 0.020
+    humans   range 0.0675, half-range 0.0338  vs printed 0.019
+  The humans cell is decisive on its own: the range is 3.6x
+  the printed value, and the draft prints that range separately
+  in the same sentence as 0.919-0.987.
+
+  NOT covered here: the §2.4/§2.5 PR and SPI tables carry `±`
+  across 8 NSD subjects and come from tmp_analysis/pr_table.py:41,
+  which uses numpy's default `r.std()` -- ddof=0. That is a
+  DIFFERENT estimator from the cells above; see PLAN §79.

@@ -8039,3 +8039,153 @@ a pass for these four. It does **not** address §2.4, excluded with reasons in
 §77.6 — that claim rests on a sign reversal, not on a failure to reject, and no
 equivalence test is owed there. It also does not touch the referee's items 1
 (References), 5 (multiplicity) or 6 (ethics block).
+
+---
+
+## §79 WHAT `±` MEANS — resolved by recomputation, and the manuscript-wide
+## definition that was about to be written wrong
+
+### §79.1 Why this is worth a section
+
+The NHB v2 referee simulation (`docs/NHB_REVIEW_2026-09-06_v2.md`, commit
+`0cb7255`) records **two** hard overrides holding the paper at Major revision,
+and both are clerical rather than empirical:
+
+> **Fatal statistical item → YES.** `±` remains undefined manuscript-wide while
+> carrying the §2.5 headline table and §2.3's `0.675 ±0.025`. **Caps at Major
+> revision.**
+
+The Statistical Rigor Audit scores the same row **Fail (fatal)**. Closing it
+costs one sentence in §4.7. The trap is that the sentence has to be *true*, and
+nobody now remembers which estimator produced each printed value — the numbers
+were emitted by half a dozen scripts over several weeks.
+
+The failure mode this section exists to prevent: a definition written to satisfy
+a referee item, which misdescribes the numbers it defines. That is strictly
+worse than leaving `±` undefined, because it converts a presentational gap into
+a factual error — the §50.6 pattern, where a rule written to close a hole
+launders the hole instead of fixing it. A referee who checks one cell (and this
+one demonstrably checks) then finds not a missing definition but a wrong one.
+
+### §79.2 The definition that was about to ship
+
+A draft of the fix appeared in `PAPER_DRAFT.md` (~line 1297) as:
+
+> **Uncertainty notation.** Throughout, `±` denotes the **range across the three
+> training seeds** (max − min), not a standard deviation, standard error or
+> confidence interval [...] the human observer figure 0.958 ±0.019 is the
+> **range across the ten observers** [...] Where a within-subject quantity is
+> summarised across the eight NSD subjects, the subject-level spread is
+> reported as an explicit range or as dz, **never as `±`**.
+
+All three of those statements are false. They are not close.
+
+### §79.3 The arithmetic
+
+`tmp_analysis/uncertainty_notation.py` recomputes every plausible estimator from
+the source data and matches it against what the manuscript prints, at the
+precision the manuscript prints it. Saved output:
+`results/uncertainty_notation/pm_notation_2026-09-06.txt`.
+
+| cell | unit | printed | SD(ddof=1) | SD(ddof=0) | SEM | range | half-range |
+|---|---|---|---|---|---|---|---|
+| §2.3 diet, integrated | 3 seeds | **±0.025** | **0.0249** | 0.0203 | 0.0144 | 0.0458 | 0.0229 |
+| §2.3 no diet, integrated | 3 seeds | **±0.020** | 0.0197 | 0.0161 | 0.0114 | 0.0384 | 0.0192 |
+| §2.3 human observers | 10 obs | **±0.019** | **0.0191** | 0.0181 | 0.0060 | 0.0675 | 0.0338 |
+
+Per-seed values are 0.6922 / 0.6861 / 0.6464 (diet) and 0.4212 / 0.4328 /
+0.3944 (no diet), from `results/cue_conflict/*.json`.
+
+**The identification is by intersection, not by any single cell.** The no-diet
+cell is printed to two decimals, where SD(ddof=1), SD(ddof=0) and half-range all
+round to 0.020 — it constrains but cannot identify. The other two are printed to
+three decimals and each identifies SD(ddof=1) uniquely. Since the manuscript
+uses one notation, the estimator must satisfy every cell simultaneously, and
+exactly one does:
+
+> **`±` is the sample standard deviation (ddof=1) about the mean, over the unit
+> named in each case.**
+
+`range (max − min)` is excluded by all three cells independently. The human cell
+refutes it on its own: the range is 0.0675, **3.6×** the printed 0.019 — and the
+draft already prints that range in the same sentence, as "range 0.919–0.987".
+The value and its own stated refutation sit nine words apart.
+
+### §79.4 Provenance, independently of the arithmetic
+
+The arithmetic is confirmed by the emitting code, which was found afterwards and
+agrees:
+
+* `tmp_analysis/geirhos_humans.py:61-62` builds the human string as
+  `± {v.std(ddof=1):.4f}` and `, range {v.min():.3f}–{v.max():.3f}` — **two
+  separate fields**. Running it prints, verbatim:
+  `human mean: 0.9576 ± 0.0191 (n=10, range 0.919–0.987)`.
+  So the `±` is the SD and the range is the parenthetical beside it. The draft's
+  claim that the `±` *is* the range mistakes one field for the other.
+* `tmp_analysis/human_shapebias.py:118,120` likewise uses `std(ddof=1)`.
+
+### §79.5 The second estimator — `±` is not one thing
+
+The §2.4/§2.5 PR and SPI tables (draft ~lines 557-561 and 685-688) carry `±`
+across **8 NSD subjects**, e.g. `1.402 ±0.089`. These come from
+`tmp_analysis/pr_table.py:41`, which prints `r.std()` — numpy's **default
+ddof=0**, a population SD. That is a different estimator from §79.3's.
+`tmp_analysis/pr_seeds.py:118` uses `ddof=1` again.
+
+So the manuscript currently uses **at least two** dispersion estimators under
+one unexplained symbol. This also refutes the third clause of §79.2: those
+tables *are* subject-level spread reported as `±`, which the proposed definition
+asserts never happens.
+
+At n=8 the ddof=0/ddof=1 gap is √(8/7) ≈ **7%**, so this is not cosmetic — it is
+a systematic ~7% understatement of the spread in every PR/SPI cell.
+
+**Recommendation:** recompute those tables at ddof=1 so a single sentence covers
+the manuscript, rather than documenting two estimators. Numerical confirmation
+from the feature cache is queued (`pr_dispersion.py`); the source reading above
+does not depend on it.
+
+### §79.6 A notation collision that inflates the multiplicity count
+
+The draft's new Multiplicity paragraph opens "This paper reports 36 p-values."
+That count is not defensible, because ~7 of the matches are not p-values: they
+are kornia augmentation probabilities — "horizontal flip (p = 0.25)", "rotation
+±15° (p = 0.25)", "colour jitter (brightness 0.4, p = 0.5)" (~lines 1132-1134)
+and `RandomGrayscale(p=0.5)` (~line 1650). A referee counting `p =` to check the
+family sizes will hit these, as this audit did.
+
+Rename them `prob.` or `p_aug`. Note the same lines also contain `rotation
+±15°`, where `±` is a stimulus parameter and not a dispersion at all — the
+definition sentence should say it applies to reported measurements.
+
+### §79.7 What to write instead
+
+> **Uncertainty notation.** Unless stated otherwise, `±` denotes one sample
+> standard deviation (ddof = 1) about the mean, computed over the unit named in
+> each case: three training seeds for model behavioural values, ten observers
+> for the human reference, eight subjects for the PR and SPI tables. Ranges,
+> where given, are printed separately and labelled as ranges. Cue-conflict
+> values additionally carry a bootstrap 95% CI over cue-conflict images (§4.3).
+> `±` in a stimulus specification (e.g. rotation ±15°) is a parameter, not a
+> dispersion.
+
+Conditional on §79.5 being actioned; if the PR/SPI tables are left at ddof=0,
+that clause must say so explicitly instead.
+
+### §79.8 Ownership
+
+`PAPER_DRAFT.md` is held by a parallel session, which is actively editing it
+(the Uncertainty-notation and Multiplicity paragraphs and the Reporting block
+all appeared during this audit, and it holds array 26439369, the fusion sweep).
+Per §70.7 this session did **not** edit the draft. The findings above were sent
+to it directly with the arithmetic. This section is the durable record; the fix
+belongs to whoever holds the file.
+
+Also passed to that session: its fusion sweep will **not** reproduce the
+published `magno_only` 0.8877 / `parvo_only` 0.3724 at the sweep endpoints, and
+that is correct rather than a bug. `magno_only` is `classifier(0.5·y1)` — an
+ablation holding w = 0.5 — whereas sweep `w = 1` is `classifier(1.0·y1)`. The
+classifier is affine (AdaptiveAvgPool → Flatten → Linear **with bias**), so
+scaling the feature vector does move the argmax. Ablation and reweighting are
+different interventions; only `w = 0.5` is a reproduction anchor, and it must
+match `full` exactly.
