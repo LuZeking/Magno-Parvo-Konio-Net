@@ -2061,16 +2061,32 @@ Methods in §4.5.
       ventral texture finding is not about chromaticity. The concession exists
       only in Limitations while the title and abstract present the resolution
       without it (v2 referee sim, M2).
-- [ ] **Length.** Main text is ~9,300 words against NHB's ≈4,000–6,000, up from
-      ~7,950 because the reframe adds its own framing before anything was cut.
-      The six self-correction passages in Results are project history rather
-      than results and belong in Supplementary (~1,500–2,000 words).
-- [x] **§72's single-stream control added to §2.3** (2026-09-06). Split buys
-      0.088 shape bias, costs 0.043 accuracy, at half the parameters, complete
-      separation under both checkpoint policies. It also fixes the ordering the
-      section needed: magno alone 0.903 > integrated 0.655 > single 0.567, so
-      integration is not what destroys the shape bias. Both §72.6 limits travel
-      with it (diet-on-luminance only; not parameter-matched).
+- [ ] **Length — still the largest open item, and it got worse before it got
+      better.** Main text is **~9,930 words** against NHB's ≈4,000–6,000, and
+      **13 display items** against ≤8. Two rounds of trimming moved ~800 words
+      out (five self-correction narratives → Supplementary Note S1; the
+      koniocellular control → S2) and the abstract went 636 → 400 → **229**, but
+      the required *additions* outweighed them: the single-stream control, the
+      premise's citations and species-scope paragraph, the corrected §4.7, and
+      §2.3's sweep. Nothing further can be cut without an editorial pass that
+      decides what leaves the main text. The candidates, largest first: §2.2
+      (1,556 → the six front-end controls could go to Extended Data, keeping the
+      gradient table); §2.5 (1,291 → the trajectory, checkpoint-invariance and
+      provenance paragraphs); §2.6.2 (859 → the corruption table could be a
+      figure). Converting §2.1, §2.3, §2.6.2 and §2.6.3 from tables to panels
+      addresses the word count and the display-item cap together, and is the
+      referee simulation's ranked suggestion 7.
+- [ ] **Unify the `±` estimator.** The behavioural and probe tables use the
+      sample SD (ddof=1); the participation-ratio and stream-preference tables
+      inherit NumPy's default population SD (ddof=0), a √(8/7) ≈ 7% difference.
+      Disclosed in §4.7 rather than hidden. Recompute the PR/SPI tables at
+      ddof=1 so one estimator carries the symbol (found by a parallel session,
+      PLAN §79; those tables are that session's instruments).
+- [ ] **Figures.** Only 2 exist (`fig1_convergence`, `fig2_ventral_gradient`)
+      and the text has 2 figure callouts across seven result sections. Needed:
+      §2.1's two routes, §2.3's **w-sweep curve** (the data are in
+      `results/fusion_sweep/`, ready to plot), §2.4's 2×2, §2.6.2's degradation
+      curves, §2.6.3's shape-bias-against-κ scatter.
 - [x] **Methods expanded** (2026-09-03) — §4.1–4.7, every parameter read from
       the code and run scripts rather than from memory; 3 seeds per condition
       stated, and the subject vs seed inferential axes separated in §4.7.
