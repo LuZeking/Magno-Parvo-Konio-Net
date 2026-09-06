@@ -8321,3 +8321,82 @@ v2 simulation demonstrates that this referee reruns arithmetic.
 The general rule for this manuscript, stated once: **any sentence added to
 satisfy a reviewer must be verified against the data it describes before it is
 committed**, on the same standard as a result. A clerical fix is still a claim.
+
+---
+
+## §81 §79.5 REVISED — there are THREE estimators, not two, and one table
+## column is internally mixed
+
+### §81.1 How this was found
+
+§79.5 concluded that the manuscript carries two dispersion estimators: ddof=1
+for the behavioural and human values, ddof=0 for the PR/SPI tables, and
+recommended unifying the latter at ddof=1. The draft owner recorded that as an
+open item (`bf8d90a`) and asked for the replacement numbers.
+
+`tmp_analysis/pr_ddof1_table.py` produces them. It was written so that a cell is
+never "corrected" on the strength of a remembered mapping: each printed cell is
+tied to a feature-cache entry, and **both** its mean and its currently-printed
+dispersion are re-derived and checked at the printed precision before any
+replacement is emitted. A mismatch fails the run.
+
+On the first run it failed, on exactly two of seventeen cells.
+
+### §81.2 What the guard caught
+
+| cell | printed | recomputed mean | recomputed sd0 |
+|---|---|---|---|
+| `dkl_bcs_seed0` / after training | 1.703 ±0.059 | 1.7033 ✓ | 0.0551 ✗ |
+| `dkl_bcs_swap_seed0` / after training | 2.327 ±0.085 | 2.3273 ✓ | 0.0793 ✗ |
+
+The **means reproduce to four significant figures** while the dispersions do
+not. That combination is diagnostic: the cache mapping is right — it is the same
+model on the same subjects — and the disagreement is in the estimator alone.
+
+And the printed values are exactly the ddof=1 ones:
+
+    0.05507 × √(8/7) = 0.0589  ->  printed 0.059
+    0.07933 × √(8/7) = 0.0848  ->  printed 0.085
+
+### §81.3 Why, and what it means
+
+Both are the **best-saved** cells re-scored under §71.8 (ep125 and ep100). That
+re-scoring ran through `pr_seeds.py:118`, which uses `std(ddof=1)`, whereas the
+original table came from `pr_table.py:41` with numpy's default. The estimator
+changed when the checkpoint policy changed, and nobody noticed because the two
+scripts print into the same table.
+
+So:
+
+* the manuscript carries **three** groups, not two — behavioural/human (ddof=1),
+  original PR/SPI cells (ddof=0), and the §71.8 re-scored cells (ddof=1);
+* the §2.4 **"after training" column is internally mixed**: two of its five
+  cells use one estimator and three use the other, in adjacent rows of one
+  table.
+
+### §81.4 The averted error
+
+§79.5's recommendation as written — "recompute those tables at ddof=1" — is
+**too broad, and following it literally would have introduced two new errors**,
+re-scaling already-correct values to 0.063 and 0.091. A blanket correction
+applied to a set that is not uniform corrupts the members that were already
+right.
+
+This is the §79/§80 lesson recurring one level up, and this time it was my own
+recommendation rather than the draft's: a fix written to close an audit finding
+is itself a claim, and needs verifying against the data before it ships. The
+only reason it did not ship is that the module checks each cell instead of
+trusting the class. **A correction pass must verify per item, never per
+category** — the categories are exactly what turned out to be wrong.
+
+### §81.5 Disposition
+
+The remaining 15 cells reproduce their printed ddof=0 values exactly, so their
+mapping is confirmed and they are the ones that change. Replacement values are
+in `results/pr_ddof1/pr_spi_ddof1_2026-09-06.txt`, with the two already-ddof=1
+cells explicitly marked *unchanged*.
+
+No mean moves. Every dispersion that moves moves up by the same √(8/7) = 1.0690,
+so no ordering, no separation and no claim in either table is affected; this is
+a notation unification and nothing else. Sent to the draft owner, who holds
+`PAPER_DRAFT.md`; this session did not edit it.
