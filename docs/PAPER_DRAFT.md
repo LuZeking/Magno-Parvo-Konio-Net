@@ -1427,6 +1427,13 @@ Recorded so the omissions are visible rather than silent.
       which is a question about human vision, and restores the NHB case
       (`docs/FRAME_PROPOSAL_2026-09-06.md`). Fallbacks if scope is still
       judged too narrow: eLife, Nature Communications.
+      **Re-run against the reframed draft** (`docs/NHB_REVIEW_2026-09-06_v2.md`,
+      commit `d38dbdb`) returns **Major revision, 6.4/10**, up from
+      reject-with-transfer at 6.0 — Relevance 1.7 → 2.3, and all three
+      personas now send it out. Decomposed: the reframe contributes +0.24,
+      the §77–§78 equivalence tests +0.18. Two hard overrides cap it at
+      Major revision and **both are clerical** — undefined `±` and the
+      missing ethics statements — so neither needs new data or compute.
 - [ ] **Blockers carried over from the referee simulation**, none needing new
       compute: no References section at all; `±` undefined throughout though it
       carries the §2.5 headline table; ~44 p-values with no multiplicity
@@ -1436,6 +1443,46 @@ Recorded so the omissions are visible rather than silent.
       clear a pre-fixed bound; the achieved bounds are now quoted in §2.6.2,
       §2.6.3 and the VO entry, with the two caveats §78.3 requires. See `docs/NHB_REVIEW_2026-09-06.md` §"Specific
       Improvement Suggestions" for the ranked list.
+- [ ] **Cite the paradox's second horn — the most urgent item in the draft.**
+      The claim that human ventral-stream representations are texture-like
+      appears **eight times** ("have been described as", "well described as")
+      with **no author, no year, no study anywhere in the manuscript**. Under
+      the first framing this was one gap in a reference-free draft; under the
+      reframe it is the load-bearing premise of the title, abstract,
+      introduction and discussion. Name the studies, record region / species /
+      stimulus class for each, and narrow the abstract's phrasing to what they
+      actually support — the paradox survives being narrowed, not being
+      unsourced. Jagadeesh & Livingstone is cited by the BA as 2024 and its
+      year/venue is still unverified (v2 referee sim, M1).
+- [ ] **Sweep the fusion weight — highest value-per-hour item in the paper.**
+      §2.3 is now the keystone, and `full` is a **fixed 50/50 logit-level sum**:
+      `stream1_weight = 0.5`, a hyperparameter that is never learned
+      (`src/models/pytorch_models.py:32,46`;
+      `src/analysis/behavior/cue_conflict.py:126-145`), with
+      `magno_only`/`parvo_only` the same sum with one term zeroed. Two
+      consequences. (a) **Methods §4.3 must state this** — the section is not
+      reproducible as written; it never mentions the fusion weight at all.
+      (b) The prose "a readout that inherited would sit at 0.878; one reading
+      the texture-biased stream would sit near 0.418; it does neither" names
+      w=1 and w=0, which this architecture cannot produce — with w fixed at 0.5
+      an intermediate value is close to arithmetically forced, and 0.675 is a
+      deterministic function of the two streams' logits. **This is the same
+      defect class as §2.6.1's ×1.00 identity cells, which the reframe just
+      repaired.** The fix is cheap: `w` is a scalar in the forward pass and
+      `cue_conflict.py` already reads it, so evaluating cue-conflict shape bias
+      at w ∈ {0, 0.1, …, 1.0} on existing checkpoints is CPU-only minutes on
+      `--partition=main`. That instantiates the Discussion's own stated "natural
+      next test" — *manipulating the weighting should move the rate without
+      moving any component* — as a **dose-response curve**, converting §2.3 from
+      an arithmetic demonstration into a measurement. A `dkl_bcs_mheavy`
+      condition trained at w=0.9 is already registered in
+      `src/training/standalone_trainer.py:58`, giving a second arm where the
+      weighting differs at *training* time (v2 referee sim, M3).
+- [ ] **Carry Limitation 9's role-vs-content caveat into the abstract and §1.**
+      The model's texture-biased component is chromatic (L−M); the human
+      ventral texture finding is not about chromaticity. The concession exists
+      only in Limitations while the title and abstract present the resolution
+      without it (v2 referee sim, M2).
 - [ ] **Length.** Main text is ~9,300 words against NHB's ≈4,000–6,000, up from
       ~7,950 because the reframe adds its own framing before anything was cut.
       The six self-correction passages in Results are project history rather
