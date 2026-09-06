@@ -8671,3 +8671,58 @@ Note the sign question is unaffected either way: on my numbers the no-diet
 dissociation is **+0.104**, positive, where the draft reads −0.033 as negative.
 If my aggregation were the right one the clause would be wrong in sign, not
 merely fragile — which is the reason not to leave this unresolved.
+
+### §83.5 RESOLVED — `raw` is the un-normalised numerator, and the draft was right
+
+The draft owner's hypothesis, tested directly rather than inferred: `norm` is
+the stored ratio and **`raw` is its numerator alone**, η²_shape − η²_texture.
+The stream dissociation is then
+median(η²_s − η²_t | magno) − median(η²_s − η²_t | parvo).
+
+Both η² fields are stored per band, so this is a direct check. Median over
+NC>0.1 voxels, n=8 subjects:
+
+| arm | seed 0 | seed 1 | seed 2 | draft quotes |
+|---|---|---|---|---|
+| diet, RAW | +0.6062 | +0.6475 | +0.6180 | 0.616 / 0.658 / 0.632 |
+| no diet, RAW | **−0.0283** | **−0.0478** | **−0.0505** | −0.033 / −0.039 / −0.053 |
+| diet, NORM | +1.5353 | +1.5724 | +1.5590 | (+1.534 in §2934's other column) |
+| no diet, NORM | +0.1123 | +0.0884 | +0.0799 | — |
+
+**The sign alarm in §83.4 is withdrawn.** All three no-diet seeds are negative
+on the raw statistic, matching the draft. My +0.104 was the *normalised* ratio —
+the wrong statistic for that cell. The draft's −0.033 reproduces in sign and to
+within ~0.01 in magnitude, the residual being a mask detail (the draft drops ROI
+cells under 20 voxels; I did not).
+
+This also confirms the §2934 table's two columns: **+1.534 is `norm` and +0.616
+is `raw`**, exactly as the owner read them.
+
+I raised this as a possible sign error and it was not one. The escalation was
+still correct — a sign discrepancy in a clause whose content is the sign cannot
+be left on "probably my mask" — but the outcome is that the number was right and
+my comparison was wrong, and that is what the record should say.
+
+### §83.6 The §73 trap is LIVE, and there are three senses of `raw`
+
+Confirmed in `tmp_analysis/cc_ladder.py:64`. The key literally named `"raw"` is
+
+    "raw": step(v, ...)   where  v = z["cc_joint_vsb"]
+
+i.e. the **hV4 − V1 profile step on the joint band**, unresidualised. The stream
+dissociation is a *different* key, `"mp"`, and it uses the **normalised**
+`cc_magno_vsb` / `cc_parvo_vsb`.
+
+So the project currently carries three quantities across two uses of the word:
+
+| where | `raw` means | value (diet, seed 0) |
+|---|---|---|
+| §2.2(a) / §2934 | un-normalised dissociation numerator | +0.616 |
+| `cc_ladder.py` `"raw"` | unresidualised hV4−V1 step, joint band | (a step, not a dissociation) |
+| `cc_ladder.py` `"mp"` | normalised dissociation | +1.535 |
+
+Anyone reading `"raw"` out of `cc_ladder.py` and pairing it with the §2.2(a)
+sense gets two different quantities under one label. This is precisely what §73
+documented and it is still in the tree. **Rename `cc_ladder.py`'s `"raw"` to
+`"step_unresid"`** — it is a tmp_analysis script with no downstream consumer of
+the string, so the rename is cheap and removes the collision at its source.
