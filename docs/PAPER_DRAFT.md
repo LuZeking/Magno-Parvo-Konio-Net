@@ -285,6 +285,31 @@ Monotonicity tracks it (Spearman ρ against hierarchical rank −0.964 with the 
 against −0.502 without) and the effect sizes differ by an order of magnitude
 (dz −11.70 vs −1.06).
 
+**This gradient was not pre-specified, and it is the survivor of a family.** We
+state that here rather than leave it to be assembled from the *Claims
+deliberately not made* section. Seven regional hypotheses were examined on these
+same fitted encoding models. **Six failed and are reported as failures:** a
+diet-specific hV4/LO step in the per-voxel predicted shape-bias profile; the
+pre-declared dorsal−ventral interaction on the `streams` atlas (which does not
+survive removal of the low-pass front end, p = .195); hMT+ specificity (the two
+statistics disagree at n=8, so the §8 rule refuses it); the foveal/peripheral
+eccentricity contrast (its sign flips when the blur is removed); a dorsal/ventral
+organisation of the 20-ROI profile (it ranks by hierarchical level and
+eccentricity instead); and a parvo preference in colour-biased cortex (+0.0045,
+p = .46, bounded by equivalence to within ±0.017). The V1v→hV4 gradient is the
+seventh, and the one that survived.
+
+**The controls below address confounding, not selection.** Blur removal,
+monotonicity, the cross-codebase replication and the global-preference contrast
+each rule out a way the gradient could be an artefact; none of them speaks to the
+fact that it was chosen after six siblings failed. Readers should weigh it as
+what it is — one surviving regional result out of seven, with the failures
+visible — and the strongest thing we can say for it is not a p-value but that it
+is the only one of the seven that survives removal of the very front-end
+manipulation that produces the apparent regional structure in the first place
+(see the closing paragraph of *Claims deliberately not made*, where that
+diagnosis is set out for the six).
+
 Five points make this more than a single fitted number:
 
 - **Training decides the direction; the input only supplies the starting point.**
@@ -2084,6 +2109,22 @@ Methods in §4.5.
       figure). Converting §2.1, §2.3, §2.6.2 and §2.6.3 from tables to panels
       addresses the word count and the display-item cap together, and is the
       referee simulation's ranked suggestion 7.
+- [ ] **Two cortical-instrument analyses claimed by a parallel session**
+      (2026-09-06, from the NN referee sim). Do not duplicate; apply their
+      output when it lands. (a) **Uₘ/Uₚ recovery analysis** — simulate voxels
+      with a known unique-variance split at the measured SNR, ROI size and
+      inter-band correlation and show `variance_partition` recovers both the
+      split and the gradient rather than manufacturing one from correlated
+      bands. `banded_ridge.py:208-223` is pure subtraction
+      (`unique_m = r2_joint − r2_parvo`) and its own docstring warns that
+      correlated bands make unique components understate a band's contribution,
+      which is exactly the regime at issue. This is the instrument all of §2.2
+      rests on and it is currently unvalidated. (b) **Permutation null over
+      hierarchical-rank labels** across the 20 Kastner ROIs, to sit *beside* the
+      family-size disclosure now written into §2.2(b) — **not to replace it**. A
+      null tests whether ρ exceeds random labelling; it cannot undo post-hoc
+      selection, so the honest report is "survivor of seven, and here is how far
+      it exceeds chance", never the null alone.
 - [ ] **Unify the `±` estimator — cell by cell, NOT by a blanket factor.**
       Three groups exist, not two: behavioural/probe tables at ddof=1; most
       PR/SPI cells at ddof=0; and **two cells of §2.5's "after training" column
