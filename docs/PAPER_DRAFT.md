@@ -19,50 +19,28 @@ deliberately not made*.
 
 ## Abstract
 
-Humans confronted with an object whose shape and texture disagree name the
-shape; standard convolutional networks name the texture. Set against this is a
-second body of evidence pointing the other way: regions of the human ventral
-stream, the pathway most identified with object recognition, carry
-representations better described as texture-like than shape-like. How a visual
-system can behave shape-biased while its ventral representations look
-texture-biased has remained unresolved.
+Shown an object whose shape and texture disagree, humans name the shape;
+convolutional networks name the texture (Geirhos et al., 2018a). Set against
+this is evidence pointing the other way: representations along the ventral
+stream, the pathway most identified with object recognition, are well described
+by texture statistics (Jagadeesh & Gardner, 2022; Okazawa et al., 2015). We show
+the two facts are compatible, and give a mechanism.
 
-We show the two facts are compatible, and give a mechanism. A two-stream
-network receives approximations of the magnocellular and parvocellular signals
-reaching cortex; we evaluate it behaviourally against published human
-observers and against eight subjects of the Natural Scenes Dataset.
+In a two-stream network receiving approximations of the magnocellular and
+parvocellular signals reaching cortex, the streams end training with opposite
+shape–texture biases, reached by different routes: the luminance stream's shape
+bias is supplied by its input statistics, while the chromatic stream's texture
+bias is built by learning. Fitted to eight subjects of the Natural Scenes
+Dataset, it is the *texture-biased* stream whose unique variance carries the
+ventral end of the hierarchy. Behaviour reads out from both, and the mixture is
+shape-biased — below the shape-biased stream alone, above the texture-biased one.
 
-**The two streams end training with opposite biases** (linear-probe
-shape-texture bias **+0.819** and **-0.518**, 3 seeds), **and they get them by
-different routes**: the luminance stream's shape bias is supplied almost
-entirely by its input statistics -- an untrained network on the same front end
-already reaches **+0.796** of the trained **+0.810** -- while the chromatic
-stream's texture bias is built by learning (**-0.087 -> -0.482**). The two
-trunks are bit-identical at initialisation, so every divergence between them is
-attributable to the difference in their inputs by construction.
-
-**The texture-biased stream is the one that explains the ventral end of the
-hierarchy.** Fitting each stream separately to cortex, the stream-preference
-profile declines from V1v to hV4 by **-0.862** with the developmental front end
-against **-0.101** without (p=.0078, 8/8 subjects, both statistics, three
-seeds), monotonically with hierarchical rank (rho = -0.964), and it is not a
-global stream preference: the two models sit on opposite sides of the global
-stream-bias axis while the gradient belongs to the one pointing the wrong way.
-
-**Behaviour reads out from both, and the mixture is shape-biased.** The
-integrated readout reaches **0.675** while the shape-biased stream alone reaches
-**0.878** -- integration *costs* 0.203. A readout inheriting from the
-shape-biased stream would sit at its value; one reading the texture-biased
-stream would sit below parity. It does neither.
-
-Texture-selective ventral representations are therefore not in conflict with
-shape-biased behaviour. Three properties the field treats as travelling with
-shape bias -- representational dimensionality, out-of-distribution robustness,
-and trial-by-trial agreement with ten human observers -- do not travel with it,
-which is what follows if shape bias is a property of a readout rather than of a
-representation.
-
-> TODO: tighten to ~150 words for submission. Currently ~330, down from 636.
+Shape-biased behaviour therefore need not imply shape-biased representations: a
+behavioural rate is a property of a readout over components, not a report of any
+one of them. Consistent with this, three properties the field treats as
+travelling with shape bias — representational dimensionality, out-of-distribution
+robustness, and trial-by-trial agreement with human observers — do not. The
+correspondence we draw to cortex is one of explanatory role, not of content.
 
 ---
 
@@ -73,13 +51,31 @@ representation.
 Humans presented with an image whose shape and texture point to different
 categories name the shape. Standard convolutional networks name the texture.
 That dissociation, measured on a cue-conflict set that ten human observers also
-viewed, is the most conspicuous behavioural gap between human and machine
-object recognition, and closing it has become a standard target for
-biologically motivated models.
+viewed (Geirhos et al., 2018a), is the most conspicuous behavioural gap between
+human and machine object recognition, and closing it has become a standard
+target for biologically motivated models (Hermann et al., 2020; Jang & Tong,
+2021; Lu et al., 2026).
 
-A second body of evidence points the other way. Regions of the human ventral
-stream -- the pathway most identified with object recognition -- carry
-representations that are well described as texture-like rather than shape-like.
+A second body of evidence points the other way. Along the ventral stream -- the
+pathway most identified with object recognition -- object representations are
+well described by texture statistics. In humans, category-selective cortex fails
+to discriminate natural images from feature-matched scrambles that destroy
+spatial arrangement while preserving texture statistics, yet still discriminates
+between categories (Jagadeesh & Gardner, 2022). In macaque, V4 responses to
+natural textures are predicted by their image statistics (Okazawa et al., 2015),
+and in IT both shape and texture are represented but texture is the more
+accurately decodable of the two (Jagadeesh & Livingstone, 2024); material and
+surface appearance recruit an extended ventral network (Komatsu & Goda, 2018).
+
+*We state the scope of this premise precisely, because the paper rests on it.*
+The human evidence is one study using one image-synthesis manipulation in
+category-selective regions; the remainder is macaque, and "texture-like" in each
+case means that a texture-statistics description suffices for the measured
+responses, not that shape is absent. The tension we address is between that body
+of work and the behavioural result, and our argument needs only that the ventral
+description is *substantially* texture-like -- not that ventral cortex is
+texture and nothing else.
+
 Both findings are robust and they appear to be in tension. If behaviour is
 shape-biased and the ventral stream is texture-biased, then either the
 behavioural and representational measures disagree about what shape bias is, or
@@ -253,12 +249,9 @@ dimensionality ratio of §2.5 — a 3.7-fold difference in seed stability across
 same three training runs. The two are not the same weight files: this section is
 scored at the final checkpoint and §2.5 at the best saved one (see Methods), so
 the comparison is between instruments applied to the same runs, not to the same
-checkpoints. (An earlier version of this sentence gave 28-fold, against a §2.5
-seed range of 0.904 that was itself a final-checkpoint artefact; see §2.5 and
-PLAN §71.10. The cortical instrument is still the tighter of the two, but not by
-the margin previously claimed, and we no longer attribute §2.5's spread to the
-participation-ratio measure — it belonged to the checkpoint.) The
-raw statistic agrees on every seed, so the two-statistics rule is satisfied three
+checkpoints. (An earlier version of this comparison gave 28-fold, using a §2.5
+seed range that was itself a final-checkpoint artefact; Supplementary Note S1.)
+The raw statistic agrees on every seed, so the two-statistics rule is satisfied three
 times over.
 
 
@@ -409,6 +402,42 @@ would sit at 0.878; one reading out the texture-biased stream would sit below
 parity, near 0.418. It does neither. The readout combines two components with
 opposite biases and lands shape-biased.
 
+**The split is doing the work: without it the behaviour is worse.** The
+immediate objection to a two-component account is that the components may be
+decorative -- that one trunk carrying both channels, with the identical diet,
+would behave the same. We trained that control (`dkl_bcs_single`, 3 seeds,
+one ResNet-18 trunk taking both DKL channels stacked, same diet, same schedule):
+
+| | single stream | two-stream `dkl_bcs` | Δ |
+|---|---|---|---|
+| cue-conflict shape bias, best saved ckpt | 0.567 | **0.655** | **−0.088** |
+| cue-conflict shape bias, final ckpt | 0.557 | **0.675** | **−0.118** |
+| top-1 accuracy, best saved ckpt | **0.599** | 0.556 | +0.043 |
+| trainable parameters | 11,230,832 | 22,397,936 | 0.501× |
+
+Seed-level separation is **complete under both checkpoint policies** (single
+0.541/0.590/0.570 against two-stream 0.594/0.718/0.652 at the best saved
+checkpoint), and the decision rates match to within 0.003, so this is not the
+denominator artefact of §2.4. **The split buys shape bias and pays for it in
+accuracy.** The ordering that matters for this section is
+
+> magno stream alone **0.903**  >  two-stream integrated **0.655**  >  single
+> stream **0.567**,
+
+which locates the cost precisely: integration costs 0.248 relative to the best
+single component, but having two components to integrate is still worth 0.088
+over having one. So integration is not what destroys the shape bias — a single
+stream carrying the same information does worse than the integrated pair. The
+remedy for the integration cost is not to drop the split.
+
+*Two limits.* This tests the split for the **diet-on-luminance arm only** and
+must not be generalised to `swap` or `parvo_highsf`. And the capacity confound
+is retired for the accuracy comparison (the smaller model wins) but **not** for
+the shape-bias comparison: a parameter-matched single stream (`resnet34`,
+~21.3M) might close the 0.088 gap. That arm was pre-registered and has not been
+run; it is 3 seeds × ~26 h of GPU and its absence is a decision, not an
+oversight (PLAN §72.6).
+
 This is the mechanism we propose for the paradox, and we state its scope
 exactly: **shape-biased behaviour does not require shape-biased
 representations**, because a behavioural rate is a property of a readout over
@@ -462,13 +491,11 @@ the denominator caveat below rather than a texture preference: that cell decides
 only 165 of 1,200 images and returns something near a coin flip by construction.
 
 *A note on which instruments are seed-stable.* The conjunction cell's probe bias
-varies by **0.014** across seeds — the tightest number in this paper. The same
-three checkpoints vary by **0.120** on the magno/parvo dimensionality ratio of
-§2.5 when both are scored at the best saved checkpoint. §2.5 still claims a side
-rather than a level, but because its within-arm spread exceeds its between-arm
-gap (§2.5), not because its instrument is unstable — an earlier version of this
-note gave that spread as 0.904 and drew the wrong conclusion from it
-(PLAN §71.10).
+varies by **0.014** across seeds — the tightest number in this paper — against
+**0.120** for §2.5's magno/parvo dimensionality ratio on the same three
+checkpoints, both scored at the best saved checkpoint. §2.5 claims a side rather
+than a level because its within-arm spread exceeds its between-arm gap, not
+because its instrument is unstable (Supplementary Note S1).
 
 **Both single factors move a stream substantially toward neutral and neither
 crosses zero. Only the conjunction crosses, and it goes all the way.** This is an
@@ -587,16 +614,11 @@ diet-on-luminance arms, whose 0.037 gap is still smaller than that arm's 0.120
 seed noise, and a channel-specific set point, which n=3 seeds cannot separate:
 PLAN §58.3.)*
 
-**A correction to the seed spread we previously reported.** An earlier version of
-this table scored every seed at its final checkpoint and gave the diet/luminance
-seed range as 0.904 and the `swap` range as 2.388. Both were inflated by the
-late-training degradation documented in §2.6.2: on weights selected by validation
-accuracy the two ranges fall to **0.120 and 0.787**, a 7.6× and 3.0× tightening,
-while the two arms whose best checkpoint *is* the final one do not move at all.
-The same correction appeared independently on accuracy (§2.6.2, seed range
-0.180 → 0.012). The diet arm is therefore **not** markedly less reproducible than
-the control on either instrument; it was being scored on degraded weights
-(PLAN §71.10).
+**The seed ranges above are best-checkpoint values.** Scored at final
+checkpoints they would read 0.904 and 2.388, both inflated by the late-training
+degradation of §2.6.2; on validation-selected weights they fall to 0.120 and
+0.787. The diet arm is therefore **not** markedly less reproducible than the
+control on either instrument (Supplementary Note S1).
 
 **When during training the dissociation appears.** One seed per arm has a
 cached checkpoint trajectory, which lets us ask when the two arms separate. The
@@ -767,50 +789,31 @@ rather than a broken measurement. Note that the diet is *not* more robust to
 contrast reduction even though its front end includes a contrast-sensitivity
 cut, so "trained-in" does not automatically confer robustness either.
 
-*Checkpoint policy.* An earlier version scored this table on final checkpoints.
-Moving to best saved checkpoints **strengthens** the dissociation on the three
-pre-registered H1 corruptions — uniform noise goes from overlapping to
-completely separated — while phase-scrambling moves the other way, from
-separated to overlapping. The count of separated corruptions is four of five
-under both policies; only which one is excluded changes. The pre-registered
-crossover prediction (H2, that the diet should degrade *more* under
-phase-scrambling) was supported only on the degraded weights; PLAN §54.2 had
-already refused to report it as supported on the grounds that its apparent
-support was vacuous, and that refusal is now vindicated for a second,
-independent reason.
+*Checkpoint policy.* Four of five corruptions separate under **both** the final-
+and the best-checkpoint policy; only which one is excluded changes. The
+pre-registered crossover prediction (H2, that the diet should degrade *more*
+under phase-scrambling) was supported only on degraded weights and is not
+reported as supported (PLAN §54.2; Supplementary Note S1).
 
-**A correction to how these models were selected.** Every result in this paper
-was computed on the final training checkpoint. The per-epoch validation logs
-show that is the wrong checkpoint for the diet arm, and only for the diet arm:
-the diet models reach a per-epoch maximum of 0.592 (seed range 0.008) and end at
-**0.445** (seed range 0.180), losing −0.060, −0.246 and −0.136 from their own
-maxima, while the no-diet models lose −0.008, −0.013 and −0.003. The training
-procedure (§4.2) has no validation-based model selection.
+**Model selection, and the accuracy cost.** Training (§4.2) has no
+validation-based model selection, and the diet arm — uniquely — degrades after
+its per-epoch peak, losing −0.060, −0.246 and −0.136 from its own maximum
+against −0.008, −0.013 and −0.003 for the control. Weights were saved every 25
+epochs, so every result here uses the **best saved checkpoint** per seed (diet:
+epochs 125, 75, 50; no-diet: 150). On that basis the diet arm reaches **0.556**
+(range 0.012) against the control's **0.701** (range 0.007) — an accuracy cost
+of **20.7%** relative.
 
-Weights were written every 25 epochs, so those per-epoch maxima are not
-recoverable; the relevant comparison is the **best saved checkpoint** per seed
-(diet: epochs 125, 75, 50; no-diet: epoch 150 for all three). On that basis the
-diet arm reaches **0.556** (range 0.012) against the control's **0.701** (range
-0.007).
-
-Two consequences. The accuracy cost is **20.7%** relative, not the 37% a
-final-checkpoint comparison suggests — and not the 16.5% that the unsaved
-per-epoch maxima would imply, which we report only to characterise the schedule,
-never as the cost of a model anyone could evaluate. And the diet arm is **not**
-markedly less stable across seeds: at its best saved checkpoint it agrees to
-0.012 against the control's 0.007, against 0.180 at the final checkpoint. The
-apparent instability is an artefact of taking the last checkpoint. What is real,
-and is a separate finding, is that **the diet destabilises late training**: the
-diet arm degrades after its peak, the control does not.
-
-Re-running cue-conflict on each diet seed's best saved checkpoint gives a shape
-bias of **0.903** (range 0.028) against 0.878 at the final checkpoint — slightly
-*higher* on the non-degraded models, even though those models are 0.111 more
-accurate. The §2.4 probe cell is likewise insensitive to the choice: magno
-+0.806 (range 0.013) against the published +0.819 (range 0.014), with all three
-seeds on the predicted side and the magno−parvo seed range *tightening* from
-0.081 to 0.034. Degradation does not produce the effect reported in §2.4; if
-anything it dilutes it (PLAN §67, §68, §71).
+Two things follow. The diet is **not** markedly less seed-stable than the
+control (0.012 against 0.007); the apparent instability was an artefact of
+scoring the final checkpoint. And **the diet destabilises late training**, which
+is a separate finding. Crucially the §2.4 effect is *not* produced by
+degradation: re-scored on best checkpoints, cue-conflict shape bias is **0.903**
+(range 0.028) against 0.878, and the probe cell **+0.806** (range 0.013) against
++0.819, with the magno−parvo seed range tightening from 0.081 to 0.034. If
+anything, degradation dilutes the effect. Earlier versions of this manuscript
+gave the accuracy cost as 37% and then 16.5%; both are superseded and the
+arithmetic of each is in Supplementary Note S1.
 
 > **The claim.** Shape bias and OOD robustness are not intrinsically coupled.
 > This does not contradict Geirhos et al., who showed that *Stylized-ImageNet
@@ -1117,8 +1120,25 @@ present in MiniEcoset and to images whose shape and texture categories differ
 (1,200 images). Model logits are restricted to those 16 columns and the argmax is
 scored as a shape or texture response; images decided as neither are excluded
 from the denominator, and that count is reported per cell because it varies ~4×.
-Streams are read out individually (`magno_only`, `parvo_only`) and jointly
-(`full`). Bootstrap 95% CIs over images.
+Bootstrap 95% CIs over images.
+
+**The readout, stated explicitly.** The classifier is linear and is applied to a
+weighted sum of the two streams' penultimate features,
+
+> `full = classifier(w·y₁ + (1−w)·y₂)`,  `magno_only = classifier(w·y₁)`,
+> `parvo_only = classifier((1−w)·y₂)`,
+
+with `y₁`, `y₂` the two trunks' outputs. **The fusion weight `w` is a
+hyperparameter, not a learned parameter: it is fixed at 0.5 for every model
+reported here** (`TwoStreamNetwork.stream1_weight`; a separate `mheavy`
+condition at w = 0.9 exists and is not used in this paper). The two
+stream-restricted readouts are therefore the same expression with one term
+zeroed, and they pass through the same classifier and the same bias term as
+`full`, which is why they are directly comparable to it. Cross-stream mixing
+(`stream_concat`) is **off** in every condition reported here, so `y₁` and `y₂`
+carry no information from each other. §2.3 reports shape bias as a function of
+`w`; because `y₁` and `y₂` do not depend on `w`, that sweep moves the readout
+while holding both components exactly fixed.
 
 **Human observers.** The ten observers of the same release, 1,280 trials each,
 scored by the identical rule. Our recomputation reproduces the published shape
@@ -1206,6 +1226,325 @@ in the favourable direction.
 each written down before the corresponding analysis was run. Two of the four
 predictions failed and are reported as failures in the sections above.
 
+**What "pre-registered" means here, exactly.** These predictions were written
+into a version-controlled project plan (`docs/PAPER_PLAN.md`) and committed
+before the corresponding analysis was run, so the ordering is verifiable from
+the git history and the relevant commit hashes are given in the Supplementary.
+This is *internal pre-specification*, not registration with a public registry:
+there is no OSF or AsPredicted entry, no third party held the plan, and nothing
+prevented the plan itself from being revised. We use the term in that restricted
+sense throughout and claim nothing stronger.
+
+**Uncertainty notation.** Throughout, `±` denotes the **range across the three
+training seeds** (max − min), not a standard deviation, standard error or
+confidence interval, and it is reported over seeds because seeds are the unit
+the corresponding claim generalises over. Two exceptions are labelled where they
+occur: cue-conflict values carry a **bootstrap 95% CI over cue-conflict images**
+(§4.3), and the human observer figure 0.958 ±0.019 is the **range across the ten
+observers**. Where a within-subject quantity is summarised across the eight NSD
+subjects, the subject-level spread is reported as an explicit range or as dz,
+never as `±`.
+
+**Multiplicity.** This paper reports 36 p-values. They fall into three families,
+and we state the correction for each rather than applying one blanket rule.
+(i) The **pre-specified confirmatory family** — the front-end 2×2 (§2.4), the
+inverted-front-end prediction (§2.5), the five untrained-on OOD corruptions
+(§2.6.2) and the error-consistency hypothesis (§2.6.3) — comprises 18 tests
+declared before the corresponding analyses; Holm–Bonferroni across these leaves
+every claim we make significant, because each rests on the exact Wilcoxon floor
+p=.0078 at n=8 and 18 × .0078 = .140 is the largest adjusted value only for the
+single least extreme test, which we do not claim. (ii) The **ROI screen** behind
+§2.2(b) and the retired regional claims covers 20 Kastner2015 ROIs; it is
+exploratory, the surviving claim is the *gradient* rather than any single ROI,
+and the four analyses that did not survive their controls are reported as
+failures under *Claims deliberately not made* rather than corrected into
+significance. (iii) **Equivalence tests** (§77–§78) are one-sided by
+construction with bounds fixed in advance and are not corrected, since each
+bounds a separate pre-declared null. The general caution stands: with n=8 the
+exact test has a floor of .0078 and cannot distinguish among strong effects, so
+we report complete subject separation (8/8) alongside every p-value and treat
+that, not the p-value, as the evidence.
+
+---
+
+## Reporting and availability statements
+
+**Ethics.** This study analysed two existing human datasets and collected no new
+human data. Neuroimaging data are from the Natural Scenes Dataset (Allen et al.,
+2022), collected under approval of the University of Minnesota institutional
+review board with written informed consent from all eight participants; see that
+publication for the full protocol. Behavioural data are the ten observers of
+Geirhos et al. (2018a, 2021), collected under the approval described in those
+papers. Our secondary analysis of both datasets required no additional approval
+under our institution's policy for de-identified, publicly released data. No
+participant-identifying information was accessed at any point.
+
+**Sample and constraints on generality.** The behavioural reference is ten adult
+observers tested under controlled laboratory viewing in a German university
+laboratory; the neuroimaging sample is eight adults in the United States. Neither
+sample's demographics beyond adulthood are reported in the source publications at
+a level we can restate, and we do not restate them. Both are small, Western,
+convenience-recruited samples of adults with normal or corrected-to-normal
+vision. Claims in this paper about "human observers" should be read as claims
+about these samples; nothing here establishes cross-cultural, developmental or
+clinical generality, and the developmental motivation of the front end is a
+motivation for the model, not a claim about any developmental population we
+measured.
+
+**Data availability.** The Natural Scenes Dataset is available at
+`naturalscenesdataset.org` under its own data-use agreement, which requires
+registration; we used the `betas_fithrf_GLMdenoise_RR` (b3) preparation and the
+`nsdgeneral` mask. The Geirhos cue-conflict stimuli and human observer responses
+are distributed at `github.com/rgeirhos/texture-vs-shape` and
+`github.com/bethgelab/model-vs-human`. MiniEcoset is at `osf.io/msna2` (Thorat &
+Kietzmann, 2024). Derived results tables and the fitted encoding-model summaries
+needed to reproduce every figure will be deposited with a DOI on acceptance.
+
+**Code availability.** Training, front-end, encoding, behavioural and analysis
+code will be released with a DOI and an environment manifest on acceptance. The
+modules that produce the numbers reported here are named by path in §4.1–§4.7.
+
+**Materials.** The cue-conflict stimulus set is the public Geirhos release, used
+unmodified apart from the 16-category and shape≠texture restrictions described
+in §4.3. **The licence of that release is being confirmed with the authors and
+will be stated before submission; we make no licence assertion here.**
+
+**Competing interests.** The authors declare no competing interests.
+
+---
+
+## References
+
+Alain, G., & Bengio, Y. (2016). Understanding intermediate layers using linear
+classifier probes. *arXiv*. https://doi.org/10.48550/arXiv.1610.01644
+
+Allen, E. J., St-Yves, G., Wu, Y., Breedlove, J. L., Prince, J. S., Dowdle,
+L. T., Nau, M., Caron, B., Pestilli, F., Charest, I., Hutchinson, J. B.,
+Naselaris, T., & Kay, K. (2022). A massive 7T fMRI dataset to bridge cognitive
+neuroscience and artificial intelligence. *Nature Neuroscience*, 25(1), 116–126.
+https://doi.org/10.1038/s41593-021-00962-x
+
+Bakhtiari, S., Mineault, P., Lillicrap, T., Pack, C., & Richards, B. (2021). The
+functional specialization of visual cortex emerges from training parallel
+pathways with self-supervised predictive learning. *Advances in Neural
+Information Processing Systems*, 34, 25164–25178.
+
+Casagrande, V. A. (1994). A third parallel visual pathway to primate area V1.
+*Trends in Neurosciences*, 17(7), 305–310.
+https://doi.org/10.1016/0166-2236(94)90065-5
+
+Cohen, J. (1960). A coefficient of agreement for nominal scales. *Educational and
+Psychological Measurement*, 20(1), 37–46.
+https://doi.org/10.1177/001316446002000104
+
+Deng, J., Dong, W., Socher, R., Li, L.-J., Li, K., & Fei-Fei, L. (2009).
+ImageNet: A large-scale hierarchical image database. *IEEE Conference on Computer
+Vision and Pattern Recognition*, 248–255.
+https://doi.org/10.1109/CVPR.2009.5206848
+
+Derrington, A. M., & Lennie, P. (1984). Spatial and temporal contrast
+sensitivities of neurones in lateral geniculate nucleus of macaque. *The Journal
+of Physiology*, 357(1), 219–240. https://doi.org/10.1113/jphysiol.1984.sp015498
+
+Derrington, A. M., Krauskopf, J., & Lennie, P. (1984). Chromatic mechanisms in
+lateral geniculate nucleus of macaque. *The Journal of Physiology*, 357(1),
+241–265. https://doi.org/10.1113/jphysiol.1984.sp015499
+
+DiCarlo, J. J., Zoccolan, D., & Rust, N. C. (2012). How does the brain solve
+visual object recognition? *Neuron*, 73(3), 415–434.
+https://doi.org/10.1016/j.neuron.2012.01.010
+
+Doerig, A., Sommers, R. P., Seeliger, K., Richards, B., Ismael, J., Lindsay,
+G. W., Kording, K. P., Konkle, T., Van Gerven, M. A., Kriegeskorte, N., &
+Kietzmann, T. C. (2023). The neuroconnectionist research programme. *Nature
+Reviews Neuroscience*, 24(7), 431–450.
+https://doi.org/10.1038/s41583-023-00705-w
+
+Dupré la Tour, T., Eickenberg, M., Nunez-Elizalde, A. O., & Gallant, J. L.
+(2022). Feature-space selection with banded ridge regression. *NeuroImage*, 264,
+119728. https://doi.org/10.1016/j.neuroimage.2022.119728
+
+Felleman, D. J., & Van Essen, D. C. (1991). Distributed hierarchical processing
+in the primate cerebral cortex. *Cerebral Cortex*, 1(1), 1–47.
+https://doi.org/10.1093/cercor/1.1.1-a
+
+Ferrera, V. P., Nealey, T. A., & Maunsell, J. H. R. (1994). Responses in macaque
+visual area V4 following inactivation of the parvocellular and magnocellular LGN
+pathways. *Journal of Neuroscience*, 14(4), 2080–2088.
+https://doi.org/10.1523/JNEUROSCI.14-04-02080.1994
+
+Gao, P., Trautmann, E., Yu, B., Santhanam, G., Ryu, S., Shenoy, K., &
+Ganguli, S. (2017). A theory of multineuronal dimensionality, dynamics and
+measurement. *bioRxiv*. https://doi.org/10.1101/214262
+
+Gatys, L. A., Ecker, A. S., & Bethge, M. (2016). Image style transfer using
+convolutional neural networks. *IEEE Conference on Computer Vision and Pattern
+Recognition*, 2414–2423. https://doi.org/10.1109/CVPR.2016.265
+
+Geirhos, R., Rubisch, P., Michaelis, C., Bethge, M., Wichmann, F. A., & Brendel,
+W. (2018a). ImageNet-trained CNNs are biased towards texture; increasing shape
+bias improves accuracy and robustness. *International Conference on Learning
+Representations* (ICLR 2019). https://openreview.net/forum?id=Bygh9j09KX
+
+Geirhos, R., Temme, C. R. M., Rauber, J., Schütt, H. H., Bethge, M., &
+Wichmann, F. A. (2018b). Generalisation in humans and deep neural networks.
+*Advances in Neural Information Processing Systems*, 31.
+
+Geirhos, R., Meding, K., & Wichmann, F. A. (2020). Beyond accuracy: Quantifying
+trial-by-trial behaviour of CNNs and humans by measuring error consistency.
+*Advances in Neural Information Processing Systems*, 33.
+https://doi.org/10.48550/arXiv.2006.16736
+
+Geirhos, R., Narayanappa, K., Mitzkus, B., Thieringer, T., Bethge, M.,
+Wichmann, F. A., & Brendel, W. (2021). Partial success in closing the gap
+between human and machine vision. *Advances in Neural Information Processing
+Systems*, 34, 23885–23899. https://doi.org/10.48550/arXiv.2106.07411
+
+Goodale, M. A., & Milner, A. D. (1992). Separate visual pathways for perception
+and action. *Trends in Neurosciences*, 15(1), 20–25.
+https://doi.org/10.1016/0166-2236(92)90344-8
+
+He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image
+recognition. *IEEE Conference on Computer Vision and Pattern Recognition*,
+770–778. https://doi.org/10.1109/CVPR.2016.90
+
+Hermann, K., Chen, T., & Kornblith, S. (2020). The origins and prevalence of
+texture bias in convolutional neural networks. *Advances in Neural Information
+Processing Systems*, 33. https://doi.org/10.48550/arXiv.1911.09071
+
+Hubel, D. H., & Wiesel, T. N. (1968). Receptive fields and functional
+architecture of monkey striate cortex. *The Journal of Physiology*, 195(1),
+215–243. https://doi.org/10.1113/jphysiol.1968.sp008455
+
+Jagadeesh, A. V., & Gardner, J. L. (2022). Texture-like representation of objects
+in human visual cortex. *Proceedings of the National Academy of Sciences*, 119,
+e2115302119. https://doi.org/10.1073/pnas.2115302119
+
+Jagadeesh, A. V., & Livingstone, M. S. (2024). Texture bias in primate ventral
+visual cortex. *ICLR 2024 Workshop on Representational Alignment*.
+https://openreview.net/forum?id=D6YvyvZ7P7
+
+Jang, H., & Tong, F. (2021). Convolutional neural networks trained with a
+developmental sequence of blurry to clear images reveal core differences between
+face and object processing. *Journal of Vision*, 21(12), 6.
+https://doi.org/10.1167/jov.21.12.6
+
+Kaplan, E., & Shapley, R. M. (1982). X and Y cells in the lateral geniculate
+nucleus of macaque monkeys. *The Journal of Physiology*, 330(1), 125–143.
+https://doi.org/10.1113/jphysiol.1982.sp014333
+
+Kingma, D. P., & Ba, J. (2017). Adam: A method for stochastic optimization.
+*arXiv*. https://doi.org/10.48550/arXiv.1412.6980
+
+Kobatake, E., & Tanaka, K. (1994). Neuronal selectivities to complex object
+features in the ventral visual pathway of the macaque cerebral cortex. *Journal
+of Neurophysiology*, 71(3), 856–867. https://doi.org/10.1152/jn.1994.71.3.856
+
+Komatsu, H., & Goda, N. (2018). Neural mechanisms of material perception: Quest
+on Shitsukan. *Neuroscience*, 392, 329–347.
+https://doi.org/10.1016/j.neuroscience.2018.09.001
+
+Kriegeskorte, N., Mur, M., & Bandettini, P. A. (2008). Representational
+similarity analysis — connecting the branches of systems neuroscience.
+*Frontiers in Systems Neuroscience*, 2, 4.
+https://doi.org/10.3389/neuro.06.004.2008
+
+Lakens, D. (2017). Equivalence tests: A practical primer for t tests,
+correlations, and meta-analyses. *Social Psychological and Personality Science*,
+8(4), 355–362. https://doi.org/10.1177/1948550617697177
+
+Landau, B., Smith, L. B., & Jones, S. S. (1988). The importance of shape in early
+lexical learning. *Cognitive Development*, 3(3), 299–321.
+https://doi.org/10.1016/0885-2014(88)90014-7
+
+Lin, T.-Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Dollár,
+P., & Zitnick, C. L. (2014). Microsoft COCO: Common objects in context.
+*European Conference on Computer Vision*, 740–755.
+https://doi.org/10.1007/978-3-319-10602-1_48
+
+Linsley, D., Feng, P., & Serre, T. (2025). Better artificial intelligence does
+not mean better models of biology. *arXiv*.
+https://doi.org/10.48550/arXiv.2504.16940
+
+Livingstone, M. S., & Hubel, D. H. (1987). Psychophysical evidence for separate
+channels for the perception of form, color, movement, and depth. *Journal of
+Neuroscience*, 7(11), 3416–3468.
+https://doi.org/10.1523/JNEUROSCI.07-11-03416.1987
+
+Lu, Z., Thorat, S., Cichy, R. M., & Kietzmann, T. C. (2026). Adopting a human
+developmental visual diet yields robust and shape-based AI vision. *Nature
+Machine Intelligence*, 8(5), 735–748.
+https://doi.org/10.1038/s42256-026-01228-6
+
+Masri, R. A., Grünert, U., & Martin, P. R. (2020). Analysis of parvocellular and
+magnocellular visual pathways in human retina. *Journal of Neuroscience*, 40(42),
+8132–8148. https://doi.org/10.1523/JNEUROSCI.1671-20.2020
+
+Mehrer, J., Spoerer, C. J., Jones, E. C., Kriegeskorte, N., & Kietzmann, T. C.
+(2021). An ecologically motivated image dataset for deep learning yields better
+models of human vision. *Proceedings of the National Academy of Sciences*,
+118(8), e2011417118. https://doi.org/10.1073/pnas.2011417118
+
+Mishkin, M., Ungerleider, L. G., & Macko, K. A. (1983). Object vision and spatial
+vision: Two cortical pathways. *Trends in Neurosciences*, 6, 414–417.
+https://doi.org/10.1016/0166-2236(83)90190-X
+
+Nassi, J. J., & Callaway, E. M. (2009). Parallel processing strategies of the
+primate visual system. *Nature Reviews Neuroscience*, 10(5), 360–372.
+https://doi.org/10.1038/nrn2619
+
+Okazawa, G., Tajima, S., & Komatsu, H. (2015). Image statistics underlying
+natural texture selectivity of neurons in macaque V4. *Proceedings of the
+National Academy of Sciences*, 112(4), E351–E360.
+https://doi.org/10.1073/pnas.1415146112
+
+Paszke, A., Gross, S., Massa, F., Lerer, A., Bradbury, J., Chanan, G., Killeen,
+T., Lin, Z., Gimelshein, N., Antiga, L., Desmaison, A., Köpf, A., Yang, E.,
+DeVito, Z., Raison, M., Tejani, A., Chilamkurthy, S., Steiner, B., Fang, L.,
+Bai, J., & Chintala, S. (2019). PyTorch: An imperative style, high-performance
+deep learning library. *arXiv*. https://doi.org/10.48550/arXiv.1912.01703
+
+Prince, J. S., Charest, I., Kurzawski, J. W., Pyles, J. A., Tarr, M. J., & Kay,
+K. N. (2022). Improving the accuracy of single-trial fMRI response estimates
+using GLMsingle. *eLife*, 11, e77599. https://doi.org/10.7554/eLife.77599
+
+Schuirmann, D. J. (1987). A comparison of the two one-sided tests procedure and
+the power approach for assessing the equivalence of average bioavailability.
+*Journal of Pharmacokinetics and Biopharmaceutics*, 15(6), 657–680.
+https://doi.org/10.1007/BF01068419
+
+Sincich, L. C., Park, K. F., Wohlgemuth, M. J., & Horton, J. C. (2004). Bypassing
+V1: A direct geniculate input to area MT. *Nature Neuroscience*, 7(10),
+1123–1128. https://doi.org/10.1038/nn1318
+
+Skottun, B. C., & Skoyles, J. R. (2011). On identifying magnocellular and
+parvocellular responses on the basis of contrast-response functions.
+*Schizophrenia Bulletin*, 37(1), 23–26. https://doi.org/10.1093/schbul/sbq114
+
+Smith, A. T., Singh, K. D., Williams, A. L., & Greenlee, M. W. (2001).
+Estimating receptive field size from fMRI data in human striate and extrastriate
+visual cortex. *Cerebral Cortex*, 11(12), 1182–1190.
+https://doi.org/10.1093/cercor/11.12.1182
+
+Tanaka, K. (1996). Inferotemporal cortex and object vision. *Annual Review of
+Neuroscience*, 19, 109–139.
+https://doi.org/10.1146/annurev.ne.19.030196.000545
+
+Thorat, S., & Kietzmann, T. C. (2024). MiniEcoset.
+https://doi.org/10.17605/OSF.IO/MSNA2
+
+Wandell, B. A., Dumoulin, S. O., & Brewer, A. A. (2007). Visual field maps in
+human cortex. *Neuron*, 56(2), 366–383.
+https://doi.org/10.1016/j.neuron.2007.10.012
+
+Wang, L., Mruczek, R. E. B., Arcaro, M. J., & Kastner, S. (2015). Probabilistic
+maps of visual topography in human cortex. *Cerebral Cortex*, 25(10), 3911–3931.
+https://doi.org/10.1093/cercor/bhu277
+
+Yamins, D. L. K., & DiCarlo, J. J. (2016). Using goal-driven deep learning models
+to understand sensory cortex. *Nature Neuroscience*, 19(3), 356–365.
+https://doi.org/10.1038/nn.4244
+
 ---
 
 ## Limitations
@@ -1286,6 +1625,24 @@ predictions failed and are reported as failures in the sections above.
    new set of training runs (3 seeds x ~2 days GPU) and is not reported.
 13. **`rgb_tsn`'s channels are DKL lum/rg/by, not R/G/B**, and this condition
    alone was trained with `RandomGrayscale(p=0.5)`.
+14. **The readout weight is fixed, not learned and not fitted to humans.** The
+   integration in §2.3 is a linear sum of the two streams' features at a fixed
+   w = 0.5 (§4.3). We report shape bias across the full range of w to show the
+   readout account's central dependence, but no value of w was fitted to human
+   data, and nothing here estimates what weighting a human readout would use.
+   The claim is that *a* mixing readout over oppositely biased components yields
+   shape-biased behaviour, not that this is the human mixture.
+15. **The species scope of the motivating premise is mixed.** One human study
+   (Jagadeesh & Gardner, 2022) and a macaque literature (Okazawa et al., 2015;
+   Jagadeesh & Livingstone, 2024; Komatsu & Goda, 2018) motivate the paradox.
+   Our cortical measurements are human (NSD), our behavioural reference is
+   human, and our model is not a model of macaque; but the premise is not
+   carried by human data alone, and §1 states this rather than leaving it to be
+   discovered.
+16. **The single-stream control is not parameter-matched.** It has half the
+   parameters of the two-stream model (§2.3). The confound runs against the
+   accuracy result and in favour of the shape-bias result; the pre-registered
+   `resnet34` matched arm has not been run (PLAN §72.6).
 
 
 ## Claims deliberately not made
@@ -1392,6 +1749,102 @@ Recorded so the omissions are visible rather than silent.
   stream difference is attributable to the input.
 
 
+---
+
+## Supplementary Note S1 — corrections to our own earlier analyses
+
+Every number in this paper has at some point been computed a different way, and
+five passages of the Results previously carried the full narrative of those
+revisions. They are project history rather than results, so they are collected
+here; the substantive consequence of each remains in the main text at the point
+where it bears on a claim. Nothing is withdrawn by being moved. The single cause
+behind four of the five is the same: results were originally scored on the final
+training checkpoint, and the diet arm — uniquely — degrades after its per-epoch
+peak, so the final checkpoint measured degraded weights (PLAN §67, §68, §71).
+
+### S1.1 — the 28-fold comparison (§2.2)
+
+checkpoints. (An earlier version of this sentence gave 28-fold, against a §2.5
+seed range of 0.904 that was itself a final-checkpoint artefact; see §2.5 and
+PLAN §71.10. The cortical instrument is still the tighter of the two, but not by
+the margin previously claimed, and we no longer attribute §2.5's spread to the
+participation-ratio measure — it belonged to the checkpoint.) The
+raw statistic
+
+### S1.2 — which instruments are seed-stable (§2.4)
+
+*A note on which instruments are seed-stable.* The conjunction cell's probe bias
+varies by **0.014** across seeds — the tightest number in this paper. The same
+three checkpoints vary by **0.120** on the magno/parvo dimensionality ratio of
+§2.5 when both are scored at the best saved checkpoint. §2.5 still claims a side
+rather than a level, but because its within-arm spread exceeds its between-arm
+gap (§2.5), not because its instrument is unstable — an earlier version of this
+note gave that spread as 0.904 and drew the wrong conclusion from it
+(PLAN §71.10).
+
+### S1.3 — the seed-spread correction (§2.5)
+
+**A correction to the seed spread we previously reported.** An earlier version of
+this table scored every seed at its final checkpoint and gave the diet/luminance
+seed range as 0.904 and the `swap` range as 2.388. Both were inflated by the
+late-training degradation documented in §2.6.2: on weights selected by validation
+accuracy the two ranges fall to **0.120 and 0.787**, a 7.6× and 3.0× tightening,
+while the two arms whose best checkpoint *is* the final one do not move at all.
+The same correction appeared independently on accuracy (§2.6.2, seed range
+0.180 → 0.012). The diet arm is therefore **not** markedly less reproducible than
+the control on either instrument; it was being scored on degraded weights
+(PLAN §71.10).
+
+### S1.4 — checkpoint policy on the OOD table (§2.6.2)
+
+*Checkpoint policy.* An earlier version scored this table on final checkpoints.
+Moving to best saved checkpoints **strengthens** the dissociation on the three
+pre-registered H1 corruptions — uniform noise goes from overlapping to
+completely separated — while phase-scrambling moves the other way, from
+separated to overlapping. The count of separated corruptions is four of five
+under both policies; only which one is excluded changes. The pre-registered
+crossover prediction (H2, that the diet should degrade *more* under
+phase-scrambling) was supported only on the degraded weights; PLAN §54.2 had
+already refused to report it as supported on the grounds that its apparent
+support was vacuous, and that refusal is now vindicated for a second,
+independent reason.
+
+### S1.5 — how the models were selected, and the 37% / 16.5% / 20.7% history (§2.6.2)
+
+**A correction to how these models were selected.** Every result in this paper
+was computed on the final training checkpoint. The per-epoch validation logs
+show that is the wrong checkpoint for the diet arm, and only for the diet arm:
+the diet models reach a per-epoch maximum of 0.592 (seed range 0.008) and end at
+**0.445** (seed range 0.180), losing −0.060, −0.246 and −0.136 from their own
+maxima, while the no-diet models lose −0.008, −0.013 and −0.003. The training
+procedure (§4.2) has no validation-based model selection.
+
+Weights were written every 25 epochs, so those per-epoch maxima are not
+recoverable; the relevant comparison is the **best saved checkpoint** per seed
+(diet: epochs 125, 75, 50; no-diet: epoch 150 for all three). On that basis the
+diet arm reaches **0.556** (range 0.012) against the control's **0.701** (range
+0.007).
+
+Two consequences. The accuracy cost is **20.7%** relative, not the 37% a
+final-checkpoint comparison suggests — and not the 16.5% that the unsaved
+per-epoch maxima would imply, which we report only to characterise the schedule,
+never as the cost of a model anyone could evaluate. And the diet arm is **not**
+markedly less stable across seeds: at its best saved checkpoint it agrees to
+0.012 against the control's 0.007, against 0.180 at the final checkpoint. The
+apparent instability is an artefact of taking the last checkpoint. What is real,
+and is a separate finding, is that **the diet destabilises late training**: the
+diet arm degrades after its peak, the control does not.
+
+Re-running cue-conflict on each diet seed's best saved checkpoint gives a shape
+bias of **0.903** (range 0.028) against 0.878 at the final checkpoint — slightly
+*higher* on the non-degraded models, even though those models are 0.111 more
+accurate. The §2.4 probe cell is likewise insensitive to the choice: magno
++0.806 (range 0.013) against the published +0.819 (range 0.014), with all three
+seeds on the predicted side and the magno−parvo seed range *tightening* from
+0.081 to 0.034. Degradation does not produce the effect reported in §2.4; if
+anything it dilutes it (PLAN §67, §68, §71).
+
+
 ## Open items before submission
 
 - [x] **Geirhos human observer data obtained** (2026-09-02) —
@@ -1434,16 +1887,31 @@ Recorded so the omissions are visible rather than silent.
       the §77–§78 equivalence tests +0.18. Two hard overrides cap it at
       Major revision and **both are clerical** — undefined `±` and the
       missing ethics statements — so neither needs new data or compute.
-- [ ] **Blockers carried over from the referee simulation**, none needing new
-      compute: no References section at all; `±` undefined throughout though it
-      carries the §2.5 headline table; ~44 p-values with no multiplicity
-      statement; no ethics / data / code / materials statements for either human
-      dataset. **The equivalence gap is closed** — a parallel session ran the
+- [x] **Blockers carried over from the referee simulation** — **all four
+      cleared 2026-09-06.** References section written (52 entries, every one
+      verified against the source rather than transcribed from the BA); `±`
+      defined in §4.7 as the across-seed range, with the two labelled
+      exceptions; the 36 p-values split into three declared families with the
+      correction stated for each (§4.7); ethics, constraints-on-generality,
+      data, code, materials and competing-interests statements added as a
+      *Reporting and availability* section. The Geirhos licence remains the one
+      open sub-item and is flagged in the materials statement itself. **The equivalence gap is closed** — a parallel session ran the
       TOST intervals (PLAN §77–§78, `results/equivalence/`) and all four nulls
       clear a pre-fixed bound; the achieved bounds are now quoted in §2.6.2,
       §2.6.3 and the VO entry, with the two caveats §78.3 requires. See `docs/NHB_REVIEW_2026-09-06.md` §"Specific
       Improvement Suggestions" for the ranked list.
-- [ ] **Cite the paradox's second horn — the most urgent item in the draft.**
+- [x] **Cite the paradox's second horn — DONE 2026-09-06, and the check paid
+      off.** The BA cited three sources for the texture-like premise
+      (Jagadeesh & Livingstone 2024; Komatsu & Goda 2018; Okazawa et al. 2015)
+      and **all three are macaque**, while the draft claimed "regions of the
+      *human* ventral stream". Jagadeesh & Livingstone 2024 is additionally an
+      **ICLR workshop paper**, not a journal article. The human result the
+      premise actually needs is **Jagadeesh & Gardner (2022), PNAS 119,
+      e2115302119** — human fMRI, category-selective cortex, feature-matched
+      scrambles — which the BA never cited. The abstract and §1 now cite it as
+      the human evidence, keep the macaque work as convergent support, and
+      state the species scope explicitly (Limitation 15).
+      *Superseded description of the original problem:*
       The claim that human ventral-stream representations are texture-like
       appears **eight times** ("have been described as", "well described as")
       with **no author, no year, no study anywhere in the manuscript**. Under
@@ -1478,7 +1946,8 @@ Recorded so the omissions are visible rather than silent.
       condition trained at w=0.9 is already registered in
       `src/training/standalone_trainer.py:58`, giving a second arm where the
       weighting differs at *training* time (v2 referee sim, M3).
-- [ ] **Carry Limitation 9's role-vs-content caveat into the abstract and §1.**
+- [x] **Carry Limitation 9's role-vs-content caveat into the abstract and §1**
+      (2026-09-06) — the abstract now closes on it explicitly.
       The model's texture-biased component is chromatic (L−M); the human
       ventral texture finding is not about chromaticity. The concession exists
       only in Limitations while the title and abstract present the resolution
@@ -1487,10 +1956,12 @@ Recorded so the omissions are visible rather than silent.
       ~7,950 because the reframe adds its own framing before anything was cut.
       The six self-correction passages in Results are project history rather
       than results and belong in Supplementary (~1,500–2,000 words).
-- [ ] **Add §72's single-stream control** — still absent. It answers "why two
-      streams at all?", which under the new frame is the first question a
-      referee asks. Split buys 0.088 shape bias, costs 0.043 accuracy, at half
-      the parameters, complete separation under both checkpoint policies.
+- [x] **§72's single-stream control added to §2.3** (2026-09-06). Split buys
+      0.088 shape bias, costs 0.043 accuracy, at half the parameters, complete
+      separation under both checkpoint policies. It also fixes the ordering the
+      section needed: magno alone 0.903 > integrated 0.655 > single 0.567, so
+      integration is not what destroys the shape bias. Both §72.6 limits travel
+      with it (diet-on-luminance only; not parameter-matched).
 - [x] **Methods expanded** (2026-09-03) — §4.1–4.7, every parameter read from
       the code and run scripts rather than from memory; 3 seeds per condition
       stated, and the subject vs seed inferential axes separated in §4.7.
