@@ -752,6 +752,12 @@ ordering in both statistics (§8). On phase-scrambling the two arms are
 indistinguishable (relative overlaps at the 3v3 floor, p = 0.70), so we claim
 nothing there. The two conditions without a shape bias (`swap`,
 `parvo_highsf`) pattern with the no-diet model on 8 of 10 comparisons.
+Equivalence: the difference is **within ±0.033** (Δ = +0.0092, 90% CI
+[−0.0145, +0.0330], TOST p = .0287), below the smallest OOD effect this paper
+claims (rotation, 0.041). This is the weakest of the paper's four equivalence
+results and is labelled as such: with 3 seeds per arm it rests on a Welch
+interval at **2.3 degrees of freedom**, and PLAN §77.4 declared in advance that
+no *nonparametric* equivalence result is obtainable at 3v3 at any bound.
 
 The **only** corruption on which the diet is more robust is low-pass — which we
 declared trained-in before running, because the diet *is* a low-pass blur. The
@@ -848,16 +854,33 @@ Human–human ceiling: **kappa = 0.234** (45 observer pairs, sd 0.095).
 | *VGG* (published) | *0.172* | *0.017* | *7%* |
 
 **We pre-registered the prediction that the diet-trained model would be more
-human-consistent than its control. It is not.** It is numerically less so on the
-stream readout, and no model of ours exceeds AlexNet. Our shape-biased stream
-carries **twice AlexNet's shape bias and no more agreement with human
-decisions**.
+human-consistent than its control. It is not**, on either readout. The sharpest
+true statement the table supports is stronger than a comparison against any one
+baseline: **our most shape-biased model has the lowest error consistency of all
+seven**. The diet-trained magno stream carries shape bias 0.878 — 5× VGG-16's
+0.172 — and returns a mean kappa of **0.0089**, 3.8% of the human–human ceiling,
+against VGG-16's 0.0170 (7.3%). Moving a model 5× up the field's most-cited
+human-alignment metric moved it *down* on trial-level agreement with humans.
+*(An earlier version of this paragraph said "no model of ours exceeds AlexNet".
+That is false by the table three lines above it — the no-diet magno stream
+reaches 0.036–0.041 against AlexNet's 0.032 — and is corrected here;
+PLAN §78.4.)*
 
-Across all six models the shape-bias rate spans 0.17 to 0.89 — a 5× range —
-while human agreement stays flat at 7–18% of ceiling. **Shape bias, the field's
+Across all seven models the shape-bias rate spans 0.17 to 0.89 — a 5× range —
+while trial-level agreement with humans never exceeds **18%** of the
+human–human ceiling for any of them. **Shape bias, the field's
 most-cited human-alignment metric for vision models, does not track human
 decision structure.** That is this paper's third dissociation and the only one
 that concerns human behaviour directly.
+
+*The null is bounded, not merely unrejected.* Equivalence intervals were fixed
+before any interval was computed (PLAN §77.5, §78). The diet-vs-no-diet
+difference in kappa is **within ±0.013**, i.e. ±5.4% of the human–human ceiling
+(Δ = −0.0060, 90% CI [−0.0127, +0.0006], TOST p = .0030). Across the observed
+0.706 span of shape bias the data **exclude a kappa change larger than 0.037 —
+15.8% of the ceiling**. The claim is therefore not "we failed to detect a
+relationship": spanning 5× in shape bias moves trial-level agreement with humans
+by at most a sixth of the ceiling.
 
 *Validation, run before the result was read.* The 10 observers reproduce the
 published shape bias of 0.958 exactly (range 0.919–0.987); kappa returns +1.000
@@ -948,7 +971,7 @@ and a model matching the human rate is routinely described as having human-like
 representations. Our system shows that inference is invalid twice over. The same
 network contains components at +0.819 and -0.518 and behaves at 0.675, so the
 rate does not identify a representation. And §2.6.3 shows the rate does not
-identify a *decision process* either: across six models spanning a 5x range of
+identify a *decision process* either: across seven models spanning a 5x range of
 shape bias, trial-by-trial agreement with ten human observers stays flat at
 7-18% of the human-human ceiling, with our shape-biased stream no better than
 AlexNet. We pre-registered the opposite prediction.
@@ -1335,9 +1358,15 @@ Recorded so the omissions are visible rather than silent.
   report the gradient (§2.2b) and make no anatomical-stream claim.
 - **That the chromatic stream predicts colour-biased cortex.** The natural
   prediction from a parvo/chromatic stream is that it should win in VO. It does
-  not: pooled VO is **+0.0045 (p = .46)** — if anything magno-preferring — on the
+  not: pooled VO is **+0.0045 (p = .46)**, bounded by equivalence to **within
+  ±0.017** (90% CI [−0.0082, +0.0171], TOST p = .0297; percentile bootstrap
+  [−0.0065, +0.0142], 20k resamples) — if anything magno-preferring — on the
   same 20-ROI profile, and hV4's parvo preference (−0.012, 2/8) is weak. This is
-  a failed prediction and we report it as one. It is also what makes the konio
+  a failed prediction and we report it as one. *The equivalence result should not
+  be over-read:* at n = 8 the effect detectable at 80% power is 0.0220, slightly
+  **above** the ±0.0195 interval declared for this test, so equivalence is
+  achieved because the point estimate sits near zero rather than because the
+  design is highly sensitive (PLAN §78.3). It is also what makes the konio
   control of §2.2(b) interpretable: because L−M already fails at VO, the two
   live readings were "the chromatic stream does not predict colour cortex" and
   "L−M is the wrong chromatic axis". Swapping in S−(L+M) settles it as the
@@ -1401,9 +1430,11 @@ Recorded so the omissions are visible rather than silent.
 - [ ] **Blockers carried over from the referee simulation**, none needing new
       compute: no References section at all; `±` undefined throughout though it
       carries the §2.5 headline table; ~44 p-values with no multiplicity
-      statement; the three §2.6 dissociations are nulls with no equivalence
-      bound or Bayes factor; no ethics / data / code / materials statements for
-      either human dataset. See `docs/NHB_REVIEW_2026-09-06.md` §"Specific
+      statement; no ethics / data / code / materials statements for either human
+      dataset. **The equivalence gap is closed** — a parallel session ran the
+      TOST intervals (PLAN §77–§78, `results/equivalence/`) and all four nulls
+      clear a pre-fixed bound; the achieved bounds are now quoted in §2.6.2,
+      §2.6.3 and the VO entry, with the two caveats §78.3 requires. See `docs/NHB_REVIEW_2026-09-06.md` §"Specific
       Improvement Suggestions" for the ranked list.
 - [ ] **Length.** Main text is ~9,300 words against NHB's ≈4,000–6,000, up from
       ~7,950 because the reframe adds its own framing before anything was cut.
