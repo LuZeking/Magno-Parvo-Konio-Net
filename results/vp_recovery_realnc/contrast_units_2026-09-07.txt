@@ -1,0 +1,34 @@
+==========================================================================
+(i-iii) §2.2 REPRODUCTION -- which construction gives the published number?
+==========================================================================
+
+diet  (n=8 subjects)
+  ratio, MEDIAN-OF-RATIOS            -0.8335  0/8 pos  p=0.0078   published -0.862  gap +0.0285
+  ratio, RATIO-OF-MEDIANS            -0.8165  0/8 pos  p=0.0078   published -0.862  gap +0.0455
+  difference of medians              -0.1650  0/8 pos  p=0.0078   published -0.176  gap +0.0110
+
+no diet  (n=8 subjects)
+  ratio, MEDIAN-OF-RATIOS            -0.0785  0/8 pos  p=0.0078   published -0.101  gap +0.0225
+  ratio, RATIO-OF-MEDIANS            -0.0693  0/8 pos  p=0.0078   published -0.101  gap +0.0317
+  difference of medians              -0.0258  2/8 pos  p=0.0391   published -0.034  gap +0.0082
+
+==========================================================================
+(iv) FLOOR in §2.2's contrast statistic, from condition B
+==========================================================================
+arm(s): ['dkl_base_seed0_trained'], n=8
+  ratio index contrast               +0.0511  8/8 pos  p=0.0078
+  difference contrast                +0.0009  4/8 pos  p=0.8438
+  ratio contrast range +0.0070..+0.0936
+
+  NOTE: the JSONs store only per-ROI MEDIANS, so this ratio index is
+  RATIO-OF-MEDIANS. §2.2 uses MEDIAN-OF-RATIOS. Same-name, different
+  estimator -- see the gap measured above.
+
+==========================================================================
+(v) CONDITION A magnitude fidelity, per statistic
+==========================================================================
+  ratio  est = 1.338 x true   -> INFLATES by 1.338x   r=+0.987
+  diff   est = 0.713 x true   -> compresses by 1.403x   r=+0.997
+
+  If the two statistics are biased in OPPOSITE directions there is no
+  bounding direction, and 'the reported value is a floor' cannot stand.

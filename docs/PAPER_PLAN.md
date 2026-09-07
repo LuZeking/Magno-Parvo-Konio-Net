@@ -8994,3 +8994,165 @@ the wrong thing. §85 has two more, both about *reporting* rather than computing
    disagreement was never arithmetic — it was that neither number carried its
    units. This is the third time the same ambiguity has cost us (§73, §83.5,
    here). A statistic reported without its denominator is not a result.
+
+---
+
+## §86 The units question resolved: §2.2 is a contrast, the floor is +0.051,
+## and §2.2's published values do not exactly reproduce
+
+6f336f5 answered §85.3's question with code rather than a guess:
+`visualrois.py:72-75` computes `paired(spi[:, hV4], v1)` with
+`v1 = mean(V1v, V1d)`, so §2.2 reports an **hV4 − V1 contrast**, not a value at
+hV4 and not a median over the ROI profile. Recomputed here independently from
+the same eight condition-B files:
+
+| statistic, in §2.2's contrast form | floor | subjects | p |
+|---|---|---|---|
+| ratio index `(uₘ−uₚ)/(uₘ+uₚ)` | **+0.0511** | 8/8 positive | **.0078** |
+| difference `uₘ−uₚ` | **+0.0009** | 4/8 | .84 |
+
+Both match 6f336f5 to four decimals. Two consequences for §85, which was
+written against the wrong statistic:
+
+### §86.1 My §84.3 prediction did not fail — §85.5's scoring is withdrawn
+
+§84.3 registered "something small and positive, order **+0.05** normalised".
+In §2.2's actual statistic the artefact is **+0.0511**. §85.5 scored this as
+"FAIL, 60× too large" because it compared against a median over the ROI
+profile (+0.0008), a statistic the paper does not report. **The scoring table
+in §85.5 is wrong and is superseded by this section.**
+
+| claim | predicted | observed (contrast) | verdict |
+|---|---|---|---|
+| sign | positive | +0.0511 | PASS |
+| magnitude | order +0.05 | **+0.0511** | **PASS** |
+
+The §85.5 lesson — that a prediction scaled from an unchecked baseline
+inherits its errors — survives only as it applies to the **−0.351**, which
+still does not reproduce (−0.0242 at 1000 components). What actually went wrong
+in §85 was different and worse: I scored a registered prediction against a
+statistic other than the one it was registered in.
+
+### §86.2 My withdrawn "no gradient" claim was correct, for one statistic
+
+§85.2 withdrew "condition B manufactures essentially no gradient (+0.0008)".
+On the **difference** statistic the contrast is **+0.0009**, 4/8, p = .84 —
+indistinguishable from zero. The withdrawal was itself an error. The accurate
+statement names both:
+
+> The ratio index manufactures a small positive artefact (+0.051, 8/8,
+> p = .0078); the difference statistic manufactures nothing measurable
+> (+0.0009, p = .84). Neither is negative, so neither can produce §2.2's
+> negative contrast.
+
+### §86.3 The nc-units objection is conceded, and the naming problem is worse
+
+`variance_partition` returns **both** forms (`banded_ridge.py:225-237`):
+`unique_magno_raw = r2_joint − r2_parvo`, and `unique_magno = unique_m / nc`.
+`visualrois.py:34` reads `z["unique_magno"]` — the **÷nc** form. So the paper's
+"raw" (the difference statistic) is also ÷nc, and §85.4's proposed **+0.0094**
+(`est_diff × nc`) is in units the paper never reports. Conceded.
+
+But this makes the naming worse, not better: the codebase's own `_raw` suffix
+means *not divided by nc*, which is the **opposite** of the paper's "raw",
+which means *the difference rather than the ratio* and is divided by nc. That
+is a fourth incompatible sense:
+
+1. §73 / `cc_ladder.py` — the VSB **numerator**
+2. `variance_partition`'s `*_raw` keys — **not ÷nc**
+3. §2.2 / §E2.1 — the **difference** statistic, which *is* ÷nc
+4. §84–85 (mine, withdrawn) — `est_diff × nc`
+
+Sense 2 and sense 3 are both live in code that the paper depends on, and they
+disagree. E2.1 defining both constructions in a table is the right fix; the
+codebase keys should be renamed too, or a reader following `_raw` from code to
+paper lands on the wrong quantity.
+
+### §86.4 NEW: §2.2's four published values do not exactly reproduce
+
+Recomputing §2.2's contrast from `results/encoding/` under both possible
+ratio constructions, all n=8:
+
+| arm | construction | recomputed | published | gap |
+|---|---|---|---|---|
+| diet | ratio, median-of-ratios | −0.8335 | −0.862 | **+0.0285** |
+| diet | ratio, ratio-of-medians | −0.8165 | −0.862 | +0.0455 |
+| diet | difference of medians | −0.1650 | −0.176 | **+0.0110** |
+| no diet | ratio, median-of-ratios | −0.0785 | −0.101 | **+0.0225** |
+| no diet | ratio, ratio-of-medians | −0.0693 | −0.101 | +0.0317 |
+| no diet | difference of medians | −0.0258 | −0.034 | **+0.0082** |
+
+Median-of-ratios is closest in both arms, which **confirms the contrast
+reading** — no other construction gets the right order of magnitude on all
+four. But "all four reproduce" overstates it. **All four gaps carry the same
+sign**: every published value is more negative than any recomputation, by
+0.008–0.046. A one-directional offset across four independent numbers is not
+rounding; it points to a selection or provenance difference — `NC_MIN`,
+`MIN_VOX`, the `(uₘ+uₚ) > 1e-3` mask, a checkpoint/epoch, or a subject subset.
+
+This does not threaten the sign or the ordering, and the floor-to-effect ratio
+is nearly unchanged (6.1% of −0.834 vs 5.9% of −0.862). But E2.1 should not
+quote a +0.051 floor against a −0.862 that the current code returns as −0.834
+without stating which is authoritative.
+
+### §86.5 NEW: the floor is a different estimator from the effect it bounds
+
+§2.2 takes **median-of-ratios** over voxels. The recovery JSONs store only
+per-ROI medians, so the +0.0511 floor is necessarily **ratio-of-medians**. On
+real data the two differ at the contrast level by **0.017 (diet)** and
+**0.009 (no diet)** — the same order as a third of the floor itself.
+
+So +0.051 carries an estimator-mismatch uncertainty it does not currently
+disclose. Fixing it means re-running condition B recording the per-voxel ratio
+median, not just the medians of `uₘ` and `uₚ`. Until then E2.1 should give the
+floor as approximate and say why.
+
+### §86.6 NEW: the floor is negligible for the diet arm and not for no-diet
+
+| arm | contrast (recomputed) | floor | floor as % of effect |
+|---|---|---|---|
+| diet | −0.8335 | +0.0511 | **6.1%** |
+| no diet | −0.0785 | +0.0511 | **65%** |
+
+Against the published values, 5.9% and 51%. The floor is positive and the
+effects negative, so both arms are **understated**; correcting both by +0.051
+gives diet ≈ −0.885, no-diet ≈ −0.130, and shrinks the between-arm ratio from
+**8.5× to 6.8×** — a ~20% reduction that leaves the diet/no-diet separation
+large but should not be silently absorbed.
+
+The consequence for wording: any phrase like "nearly flat without the diet" is
+partly describing the artefact, since the artefact is 65% of the no-diet
+contrast and points the other way. The honest form is that the no-diet arm
+shows a shallow but non-zero negative gradient whose magnitude is comparable to
+the instrument's floor.
+
+**Caveat:** this floor was measured on **no-diet feature geometry only** — the
+diet arm was lost to the filename collision. The submit script's own rationale
+says the artefact depends on feature geometry, so applying +0.051 to the diet
+arm assumes what that script denies. The diet-arm floor comes from 26442320.
+
+### §86.7 Condition A is not magnitude-faithful, and the two figures disagree
+
+| statistic | est/true | direction |
+|---|---|---|
+| ratio index | **1.338** (6f336f5 reports 1.255) | inflates |
+| difference | **0.713** (agrees) | compresses 1.403× |
+
+Direction agrees on both, so 6f336f5's withdrawal of "−0.862 is a floor rather
+than a ceiling" is correct and §2.2 should read as **sign-and-ordering only**.
+§85's "1.40× compression, so −0.862 is a floor" is withdrawn with it; that
+figure was the difference statistic's and does not carry to the ratio.
+
+But 1.338 vs 1.255 is a 6% disagreement on a number neither of us stated an
+estimator for — the same failure that produced this whole exchange. Mine is an
+OLS slope of est on true pooled over 56 cells (r = +0.987).
+
+### §86.8 Job hygiene: the duplicate array was correctly cancelled
+
+26442351 (mine) and 26442320 (theirs) both had `WorkDir` in `mpk-dev` and, with
+the writer now model-tagged, both wrote the identical eight paths — 12 tasks
+racing on 8 files, the same failure that lost the diet arm originally.
+26442320 was submitted first and survives (6 running / 2 queued at check).
+Cancelling the second was right; I should have checked for an in-flight
+equivalent before submitting, since the owner had just diagnosed the collision
+and re-running was the obvious next step for either of us.
