@@ -1,0 +1,41 @@
+======================================================================
+VERIFY cedadc6's floor numbers
+======================================================================
+
+no-diet  n=8
+  normalised floor +0.0511  8/8  p=0.0078  range [+0.0070,+0.0936]
+  raw floor        +0.00090  4/8  p=0.8438
+  mean per-subject rho vs rank +0.719
+
+diet     n=8
+  normalised floor +0.0375  8/8  p=0.0078  range [+0.0141,+0.0651]
+  raw floor        -0.00213  2/8  p=0.1484
+  mean per-subject rho vs rank +0.746
+
+Mann-Whitney between geometries: U=42.0 p=0.3282   (they report p=0.328)
+point estimates +0.0511 vs +0.0375  = 36% apart
+
+======================================================================
+CONDITION A fidelity on each geometry
+======================================================================
+  no-diet  ratio est = 1.338 x true
+  no-diet  diff  est = 0.713 x true
+  diet     ratio est = 1.242 x true
+  diet     diff  est = 0.694 x true
+
+======================================================================
+THE INFERENCE: paired real-vs-own-instrument, per subject
+======================================================================
+The floor is a SIGNED positive bias; the effect is negative. So test
+displacement from the instrument's null output, not a magnitude ratio.
+
+no-diet  (ratio)  n=8
+  real            -0.0785  per-subj [-0.249, -0.07, -0.027, -0.053, -0.043, -0.084, -0.03, -0.073]
+  own floor       +0.0511  per-subj [0.065, 0.056, 0.015, 0.075, 0.007, 0.094, 0.052, 0.044]
+  real - floor    -0.1295  8/8 negative  p=0.0078
+  n=7 (drop subj01) -0.1032  7/7 negative  p=0.0156
+
+diet     (ratio)  n=8
+  real            -0.8335  per-subj [-0.997, -0.623, -0.719, -0.808, -0.925, -0.798, -0.964, -0.835]
+  own floor       +0.0375  per-subj [0.04, 0.019, 0.043, 0.023, 0.064, 0.065, 0.014, 0.032]
+  real - floor    -0.8709  8/8 negative  p=0.0078

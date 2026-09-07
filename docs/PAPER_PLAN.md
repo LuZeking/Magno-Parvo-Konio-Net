@@ -9800,3 +9800,105 @@ Two constraints worth recording for anyone who picks this up: a candidate must
 reproduce raw **and** normalised simultaneously across all twelve, and it must
 not disturb the untrained raw match, which is now good to 0.002 and is the one
 row with continuous provenance to 2026-08-28.
+
+---
+
+## §93 The diet-arm floor verifies, but the no-diet gradient IS resolvable:
+## comparing a signed bias to an effect as a magnitude ratio is the wrong test
+
+cedadc6 delivered the diet-arm floor and asked directly whether the direction of
+one inference was read the same way here. It is not, and the disagreement
+changes a claim rather than a number.
+
+### §93.1 Everything in cedadc6 verifies
+
+| quantity | cedadc6 | recomputed here |
+|---|---|---|
+| diet normalised floor | +0.0375, 8/8, p=.0078 | **+0.0375, 8/8, p=.0078** |
+| diet range | [+0.0141, +0.0651] | **identical** |
+| diet raw floor | −0.00213, 2/8, p=.148 | **−0.00213, 2/8, p=.1484** |
+| no-diet normalised floor | +0.0511, 8/8, p=.0078 | **+0.0511, 8/8, p=.0078** |
+| Mann–Whitney between geometries | p = 0.328 | **U=42.0, p=0.3282** |
+
+The two known estimator differences recur and are not errors: their
+monotonicity ρ (+0.804 diet) is the *median* of per-subject ρ where mine
+(+0.746) is the mean (§85.1), and their condition-A ratio fidelity (×1.151) is
+a ratio of across-subject means where mine (×1.242) is the OLS slope over 56
+cells (§86.7). The difference-statistic fidelity agrees closely (×0.686 vs
+×0.694). The opposite-direction bias on the two statistics replicates on diet
+geometry, so §86.7's withdrawal of "−0.862 is a floor rather than a ceiling"
+now rests on both.
+
+**Their headline stands and is worth having:** the floor is indistinguishable
+between geometries at 8v8, so it is a property of the instrument rather than of
+the model being fitted. §86.6's single-geometry caveat lifts and §90's bound
+stands. Writing that as a positive finding rather than a null is right.
+
+### §93.2 The inference asked about: a signed bias is not a noise level
+
+cedadc6 compares |effect| to |floor| as a ratio — no-diet 0.054 against
+0.051 ± 0.007, spanning 0.93×–1.23× — and reads "it can sit below its own
+floor" as *strengthening* "no gradient resolvable without the diet".
+
+**The floor and the effect have opposite signs.** The floor is **+0.051**
+(toward magno); the no-diet contrast is **−0.054**. A ratio of magnitudes
+treats the floor as if it were dispersion, when condition B measures a *signed
+bias*: it is what the instrument returns when the truth is exactly zero. Two
+quantities of opposite sign being similar in magnitude says nothing about
+whether one could have produced the other — it cannot, in either direction.
+
+The right comparison is per-subject and paired: is the real contrast displaced
+from what the **same subject's own instrument** returns under a true zero?
+
+| arm | real | own floor | real − floor | subjects negative | p |
+|---|---|---|---|---|---|
+| no diet | −0.0785 | +0.0511 | **−0.1295** | **8/8** | **.0078** |
+| no diet, n=7 (drop subj01) | −0.0542 | +0.0500 | **−0.1032** | **7/7** | **.0156** |
+| diet | −0.8335 | +0.0375 | **−0.8709** | 8/8 | .0078 |
+
+Since the instrument returns `true + bias`, `real − floor` estimates the true
+contrast — recovering ≈ −0.130 for no-diet, exactly the §86.6 correction — and
+the Wilcoxon on it tests whether that true contrast differs from zero.
+
+**It does, in every subject, at the exact n=8 and n=7 Wilcoxon floors.** The
+no-diet gradient is not at the instrument's floor and does not disappear under
+leave-one-out. Dropping subj01 *reduces* the displacement from −0.130 to
+−0.103 but leaves it 7/7 consistent.
+
+### §93.3 What this means for §2.2's wording
+
+"A large gradient with the diet and **none resolvable** without it" is not what
+the data support. The supported claim is:
+
+> a large gradient with the diet (**−0.87** displacement from its own
+> instrument null) and a **much smaller but still resolvable** one without it
+> (**−0.13**, or −0.10 at n=7; 8/8 and 7/7 subjects, p = .0078 / .0156).
+
+That is a factor of **6.7×** between arms, which carries the mechanism claim
+§2.5 needs perfectly well. The diet is what makes the gradient *large*, not
+what makes it *exist* — a weaker rhetorical claim and a true one, and the
+standing rule is explicit that overclaiming is not licensed by a cleaner story.
+
+Note this cuts against the direction cedadc6 read: the ratio framing made the
+no-diet arm look marginal, and the paired test shows it is not. So the previous
+"1.5×, or 1.1× under leave-one-out" framing understated the no-diet arm rather
+than flattering it.
+
+### §93.4 The assumption this rests on, stated
+
+`real − floor` assumes the instrument's bias is approximately **additive** —
+that the +0.051 measured under a zero-truth structure also applies under the
+no-diet arm's actual structure. That is an assumption, not a measurement.
+
+Two things support it and neither proves it: the bias is statistically
+indistinguishable across two very different feature geometries (p = .33) whose
+real contrasts differ 15-fold (−0.83 vs −0.05), and condition A shows the
+estimator preserves ordering with a stable multiplicative distortion. If the
+bias were strongly structure-dependent, the diet and no-diet floors would be
+expected to differ, and they do not.
+
+So the honest form for §2.2: report the displacement test as the primary
+evidence that the no-diet gradient is non-zero, and disclose that it assumes an
+additive instrument bias supported by the cross-geometry equivalence. That is a
+stronger and more defensible statement than either the magnitude ratio or
+"none resolvable".
