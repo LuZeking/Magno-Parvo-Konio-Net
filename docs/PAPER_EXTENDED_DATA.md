@@ -255,29 +255,51 @@ the declared source for §2.2. And the contrast reading is confirmed: it is
 hV4 − V1 (`visualrois.py:72-75`), since no other definition reaches the right
 order of magnitude on all four seed-0 values.
 
-**The subj01 question, unresolved.** Per-subject no-diet contrasts at seed 0
-(normalised): −0.249, −0.070, −0.027, −0.053, −0.043, −0.084, −0.030, −0.073.
-Subject 01 is 4.65× the sibling median. It is *not* an outlier in the diet arm
-(1.23×), and the same asymmetry holds on the raw statistic (3.45× versus 1.11×).
-`results/encoding/quarantine/README.md` condemned a file with exactly this
-signature on 2026-09-01 and required a provenance-stamped replacement to be
-copied in rather than the original restored; the present file carries no
-provenance stamp, and the quarantine directory now holds only the README. We
-cannot tell which file this is. Sensitivity, both statistics, all three seeds:
+**Subject 01: a resolved provenance question and a real influence result.**
+Per-subject no-diet contrasts at seed 0 (normalised): −0.249, −0.070, −0.027,
+−0.053, −0.043, −0.084, −0.030, −0.073. Subject 01 is the steepest. We first
+read this as the quarantined wrong-front-end fit of
+`results/encoding/quarantine/README.md` having been restored. It is not. The
+repair round's job log records the front end for the exact task
+(`slurm/logs/enccc_26399760_16.out`: `task=16 model=dkl_base_seed0_trained
+subject=1 frontend='--no-lum-blur --no-lum-cs'`) — the two flags the defective
+job 26386734_0 omitted — and it recomputed features rather than trusting an
+unstamped cache. Its mtime (2026-09-01 05:27:47) and size (2.85 MB) separate it
+from its siblings (2026-08-29/30, 1.4–2.0 MB), marking it as the only cc-round
+file present in `results/encoding/`, and it is byte-identical to the
+`encoding_cc` copy.
 
-| statistic | seed | no diet, n=8 | no diet, n=7 | diet | p (n=8) | p (n=7) | separation |
-|---|---|---|---|---|---|---|---|
-| normalised | 0 | −0.079 | −0.054 | −0.834 | .0078 | .0156 | 8/8 |
-| normalised | 1 | −0.096 | −0.085 | −0.785 | .0078 | .0156 | 8/8 |
-| normalised | 2 | −0.049 | −0.031 | −0.745 | .0078 | .0156 | 8/8 |
-| raw | 0 | −0.027 | −0.021 | −0.166 | .0078 | .0156 | 8/8 |
-| raw | 1 | −0.031 | −0.030 | −0.145 | .0078 | .0156 | 8/8 |
-| raw | 2 | −0.023 | −0.021 | −0.153 | .0078 | .0156 | 8/8 |
+Two inferences of ours failed here and both are recorded because the second is
+instructive. The absent provenance stamp is not evidence: no file this writer
+produces carries one, including the uncontested subj02 from the same round, so
+the README promised a stamp the code never implemented. And the anomaly is *not*
+confined to the no-diet arm, which was our reason for suspecting the front end.
+Expressed as a displacement rather than a ratio:
 
-Every row keeps complete separation and the exact Wilcoxon floor for its sample
-size. The exclusion only shrinks the no-diet magnitude, which moves that arm
-*closer* to the artefact floor and therefore supports the reading §2.2 adopts.
-The claim does not depend on the answer; the number does, so both are given.
+| fit | subj01 | sibling median | ratio | displacement |
+|---|---|---|---|---|
+| no diet, seed 0 | −0.2487 | −0.0535 | 4.65× | **−0.1952** |
+| no diet, seed 1 | −0.1798 | −0.0892 | 2.02× | **−0.0907** |
+| no diet, seed 2 | −0.1746 | −0.0305 | 5.73× | **−0.1441** |
+| diet, seed 0 | −0.9970 | −0.8077 | 1.23× | **−0.1894** |
+| diet, seed 1 | −0.9237 | −0.7185 | 1.29× | **−0.2053** |
+| diet, seed 2 | −0.8865 | −0.7711 | 1.15× | **−0.1154** |
+
+The ratio spans 1.15× to 5.73×; the displacement spans −0.091 to −0.205. In the
+two seed-0 arms it is −0.195 and −0.189, identical to within 0.006. The ratio
+looked arm-specific only because the baselines differ fifteen-fold (−0.054
+against −0.808). Subject 01 has a steeper ventral gradient than the other seven,
+in both arms and in all three seeds — including the two no-diet seeds the
+defective job never touched. This is the fourth time in this analysis that a
+ratio compared against baselines of unequal scale produced a false inference
+(§73's VSB numerator, the inverted noise-ceiling ramp, the median-over-profile
+floor, and here); the displacements are the stable quantity and are pinned in
+`verify_new_claims.py` for that reason.
+
+What remains is an influence result, reported as one. Subject 01 carries about
+**31%** of the no-diet contrast (−0.079 → −0.054 on exclusion, i.e. 1.5× → 1.1×
+the artefact floor). n = 8 is primary; n = 7 is a leave-one-subject-out check,
+not the removal of a bad fit.
 
 
 ## E3 — §2.3, the readout sweep and the single-stream control

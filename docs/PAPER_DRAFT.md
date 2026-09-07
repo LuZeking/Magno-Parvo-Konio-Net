@@ -273,26 +273,35 @@ earlier draft's "79% reduction" phrasing compared two numbers as though both
 measured something, and is withdrawn. The claim is a large gradient with the
 diet and none detectable without it.
 
-*A subject-level provenance issue affects the no-diet arm only, and the claim
-holds either way.* `results/encoding/quarantine/README.md` records that
-`dkl_base_seed0_trained_subj01.npz` was excluded on 2026-09-01 for having been
-fitted through the wrong front end, one of its three diagnostics being that its
-hV4−V1 was a six-fold outlier against its siblings; the README states that this
-model should load as n=7 until a provenance-stamped repair is *copied in*, and
-that it must not simply be restored. A subj01 file is now present in both
-encoding directories, numerically identical between them, carrying **no
-provenance stamp**, and its hV4−V1 is still a **4.65× outlier** (−0.249 against
-a sibling median of −0.054) — and outlying in the no-diet arm only (4.65×) and
-not in the diet arm (1.23×), which is the asymmetry a wrong-front-end fit
-predicts and a subject-level peculiarity does not. We could not determine
-whether this is the repair or the original. It does not change the result:
-excluding it moves the no-diet contrast from −0.079 to −0.054, leaves complete
-8/8 separation in all three seeds and both statistics, and the paired test stays
-at the exact Wilcoxon floor for its sample size (p = .0078 at n = 8, p = .0156
-at n = 7). Its only effect is on the no-diet magnitude, in the direction of
-making that arm flatter — the reading we adopt above. **This must be resolved
-before submission**, and until it is, every no-diet number here is reported at
-both n = 8 and n = 7 (Extended Data §E2.1).
+*One subject carries a third of the no-diet effect, and that is a property of
+the subject.* Subject 01's hV4−V1 is the steepest in the no-diet arm (−0.249
+against a sibling median of −0.054). We initially read this as a provenance
+failure, because `results/encoding/quarantine/README.md` had excluded a file of
+that name on 2026-09-01 for a wrong-front-end fit, citing an outlying hV4−V1 as
+one of its diagnostics. That reading was wrong on both legs. The fit is correct:
+the job log for the repair round records the front end explicitly
+(`task=16 model=dkl_base_seed0_trained subject=1 frontend='--no-lum-blur
+--no-lum-cs'`), which are precisely the flags the defective run omitted, and it
+recomputed features rather than trusting an unstamped cache; the file's mtime and
+size separate it from its siblings, and it is byte-identical to the copy in the
+declared source directory. And the apparent confinement of the anomaly to the
+no-diet arm was an artefact of expressing it as a ratio: subject 01 is displaced
+from the sibling median by **−0.195 in the no-diet arm and −0.189 in the diet
+arm** — the same shift to within 0.006 — and the ratio only looked arm-specific
+because the two baselines differ fifteen-fold. Across all six fits the
+displacement is stable (−0.091 to −0.205) while the ratio ranges from 1.15× to
+5.73×. Subject 01 simply has a steeper ventral gradient than the others.
+
+That leaves a real influence result rather than a provenance one, and we report
+it as such. Subject 01 alone accounts for about **31%** of the no-diet contrast:
+excluding it moves that arm from −0.079 to −0.054, i.e. from 1.5× the artefact
+floor to 1.1×. The n = 8 figure is primary; the n = 7 figure is a
+leave-one-subject-out influence check, not the exclusion of a bad fit. Every row
+of the table keeps complete 8/8 separation and the exact Wilcoxon floor for its
+sample size under both (p = .0078 at n = 8, p = .0156 at n = 7), so the claim —
+a large gradient with the diet, none resolvable without it — does not turn on
+this subject; only the size of the unresolvable residual does. Full per-seed
+sensitivity in Extended Data §E2.2.
 
 **This gradient was not pre-specified, and it is the survivor of a family.** We
 state that here rather than leave it to be assembled from the *Claims
@@ -349,7 +358,9 @@ backwards, and inverted the artefact's sign.)
 Four properties make this more than a single fitted number, each set out with
 its numbers in Extended Data §E2. **Training decides the direction; the input
 only supplies the starting point** — an untrained network on the diet front end
-already sits at −0.544, training with the diet takes it to −0.834, and training
+already sits at −0.544 (this control exists only in `results/encoding/`, not
+in the declared source directory — see Open Items), training with the diet
+takes it to −0.834, and training
 without it leaves nothing resolvable above the floor (−0.079 at n = 8, −0.054 at
 n = 7). **It replicates across codebases**, our standalone model and the
 independent thesis checkpoint giving −0.834 and −0.793, a difference that does
@@ -1825,20 +1836,36 @@ Methods in §4.5.
 
 ## Open items before submission
 
-- [ ] **BLOCKER: `dkl_base_seed0_trained_subj01.npz` provenance is unresolved.**
-      `results/encoding/quarantine/README.md` excluded a file with this name on
-      2026-09-01 for having been fitted through the wrong front end, requiring a
-      provenance-stamped repair to be *copied in* and explicitly forbidding a
-      restore. A subj01 file is now present in both `results/encoding/` and
-      `results/encoding_cc/`, numerically identical between them, with **no
-      provenance stamp**, and its hV4−V1 is still a **4.65× outlier** — in the
-      no-diet arm only (4.65×), not the diet arm (1.23×), which is the asymmetry
-      a wrong-front-end fit predicts. The quarantine directory now holds only
-      the README. Either confirm this is the repair (and stamp it) or re-fit the
-      subject. §2.2 and Extended Data §E2.2 report every no-diet number at both
-      n = 8 and n = 7 until then; the claim holds either way (8/8 separation and
-      the exact Wilcoxon floor in all three seeds and both statistics), only the
-      no-diet magnitude moves.
+- [x] **subj01 provenance RESOLVED 2026-09-07 — it is the repair, and the
+      outlier is a subject property.** Settled from the surviving job log rather
+      than a re-fit: `slurm/logs/enccc_26399760_16.out` line 1 records
+      `frontend='--no-lum-blur --no-lum-cs'` for task 16 / `dkl_base_seed0` /
+      subject 1 — the flags job 26386734_0 omitted — and the run recomputed
+      features rather than trusting an unstamped cache. mtime
+      (2026-09-01 05:27:47, against siblings on 08-29/30) and size (2.85 MB
+      against 1.4–2.0 MB) mark it as the only cc-round file in
+      `results/encoding/`, consistent with the `cp -p` the README instructed,
+      and it is byte-identical to the `encoding_cc` copy. **Two errors of mine
+      here.** I treated the absent provenance stamp as evidence, but no file the
+      writer produces carries one — the uncontested subj02 from the same round
+      has the same 28 keys and no stamp either, so the README promised a stamp
+      the code never implemented (worth fixing, but it cannot discriminate).
+      And I inferred a front-end fault from the anomaly being arm-specific,
+      which it is not: subject 01 is displaced from the sibling median by
+      **−0.195 (no diet) and −0.189 (diet)**, the same to within 0.006, and the
+      ratio looked arm-specific only because the baselines differ 15-fold.
+      Displacement across all six fits is −0.091 to −0.205 while the ratio spans
+      1.15× to 5.73×. **A ratio compared against baselines of different scale —
+      the fourth time that exact error has bitten in this thread, and this time
+      it was mine.** Now reported as a leave-one-out influence check (subj01
+      carries ~31% of the no-diet contrast), n = 8 primary.
+- [ ] **The untrained control is not in the declared source directory.**
+      §2.2 declares `results/encoding_cc/` authoritative, but
+      `untrained_seed0` exists only in `results/encoding/`, so the −0.544
+      untrained figure cannot be regenerated from the declared source. Either
+      fit the untrained model into `encoding_cc` or state the exception
+      explicitly in §4.7. `verify_new_claims.py` pins the twelve table values
+      to `encoding_cc` and does not currently check the untrained number.
 - [x] **§2.2's table restated from `results/encoding_cc/` 2026-09-07.** The
       previously reported values (normalised −0.862 / −0.802 / −0.781; raw
       −0.176 / −0.151 / −0.160; dz −11.70; untrained −0.471; cross-codebase

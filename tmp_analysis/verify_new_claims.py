@@ -189,16 +189,41 @@ def check_production_statistic() -> None:
     chk("diet / floor (draft 16x)", diet / 0.0511, 16.3, 0.2)
     chk("no-diet / floor (draft 1.5x)", nod / 0.0511, 1.54, 0.05)
 
-    # subj01 is outlying in the no-diet arm ONLY -- the asymmetry a
-    # wrong-front-end fit predicts and a subject peculiarity does not.
-    subs, pn_ = roi_profile(ENCODING_DIR, "dkl_base_seed0_trained", True)
-    c = {s: hv4_minus_v1(pn_[i]) for i, s in enumerate(subs)}
-    others = [v for k, v in c.items() if k != 1]
-    chk("subj01 no-diet outlier factor", c[1] / float(np.median(others)), 4.65, 0.05)
-    subs, pd2 = roi_profile(ENCODING_DIR, "dkl_bcs_seed0_trained", True)
-    cd2 = {s: hv4_minus_v1(pd2[i]) for i, s in enumerate(subs)}
-    od = [v for k, v in cd2.items() if k != 1]
-    chk("subj01 diet outlier factor", cd2[1] / float(np.median(od)), 1.23, 0.05)
+    # subj01's DISPLACEMENT is the stable quantity; the ratio is not. Expressed
+    # as a ratio the anomaly looks confined to the no-diet arm (4.65x vs 1.23x)
+    # and we wrongly inferred a wrong-front-end fit from that. The baselines
+    # differ ~15-fold, so the ratio is meaningless across arms: the absolute
+    # shift is -0.195 vs -0.189, identical to within 0.006. Pinning both makes
+    # the discrepancy visible rather than inferable.
+    check_subj01_displacement()
+
+
+# (arm prefix, seed): subj01 minus the sibling median, normalised statistic.
+# Ratios for the same six fits span 1.15x to 5.73x; these span -0.091 to -0.205.
+SUBJ01_DISPLACEMENT = {
+    ("dkl_base", 0): -0.1952, ("dkl_base", 1): -0.0907, ("dkl_base", 2): -0.1441,
+    ("dkl_bcs", 0): -0.1894, ("dkl_bcs", 1): -0.2053, ("dkl_bcs", 2): -0.1154,
+}
+
+
+def check_subj01_displacement() -> None:
+    print("  [subj01 displacement, stable across arms]")
+    for (pre, seed), want in SUBJ01_DISPLACEMENT.items():
+        subs, pr = roi_profile(ENCODING_DIR, f"{pre}_seed{seed}_trained", True)
+        c = {s: hv4_minus_v1(pr[i]) for i, s in enumerate(subs)}
+        others = [v for k, v in c.items() if k != 1]
+        chk(f"{pre} seed{seed} displacement",
+            c[1] - float(np.median(others)), want, 0.001)
+    # The claim that overturned the front-end inference: same shift, both arms.
+    def disp(pre: str) -> float:
+        subs, pr = roi_profile(ENCODING_DIR, f"{pre}_seed0_trained", True)
+        c = {s: hv4_minus_v1(pr[i]) for i, s in enumerate(subs)}
+        return c[1] - float(np.median([v for k, v in c.items() if k != 1]))
+    gap = abs(disp("dkl_base") - disp("dkl_bcs"))
+    print(f"  {'OK ' if gap < 0.01 else 'BAD'} seed-0 arms agree to {gap:.4f} "
+          f"(draft says within 0.006)")
+    if gap >= 0.01:
+        FAILS.append("subj01 arm agreement")
 
 
 # (dvd_trans, diet mean, diet min, diet max, no-diet mean) as the draft states them
