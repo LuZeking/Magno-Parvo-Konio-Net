@@ -52,6 +52,11 @@ weights -- the input is the only thing that can differentiate them. That is why
 > account is in §E2.2. Numbers below are retained so the original reasoning can
 > be audited, not because they are current. Where a bullet made a *claim* on
 > those numbers rather than merely reporting them, the claim is corrected inline.
+> The six-control table below carries a further limitation: its seven control
+> models exist only in `results/encoding/`, not in the `results/encoding_cc/`
+> directory that sources §2.2's three-seed table, so it **cannot be regenerated
+> from the same directory as the table it supports** (§E2.2). It is left as
+> written rather than half-rebuilt.
 
 Moved from §2.2: the full raw-statistic paragraph, the three-seed replication of the in-silico cue conflict, the five supporting points with the six-control table, the koniocellular substitution, the per-control seed coverage, and the RSA comparison in full.
 
@@ -377,8 +382,41 @@ control (−0.073, opposite direction) are therefore left disclosed as provenanc
 drift with no established cause. Two findings came out of the search and
 both are kept. `results/encoding_cc/` is the directory that holds all three
 seeds for both arms — `results/encoding/` has the diet arm at seed 0 only — and
-where the two overlap they are numerically identical, so `encoding_cc` is now
-the declared source for §2.2. And the contrast reading is confirmed: it is
+where the two overlap they are numerically identical, so `encoding_cc` is the
+declared source **for the three-seed table**.
+
+*The declaration has to be per-table, because neither directory is a superset.*
+Three fits (`dkl_base_seed2`, `dkl_bcs_seed1`, `dkl_bcs_seed2`) exist only in
+`encoding_cc`. Seven exist only in `encoding`: `dkl_bcs_parvo_highsf_seed0`,
+`dkl_bcs_swap_seed0`, `gabor_noblur`, `untrained_konio_matched`,
+`untrained_konio_raw`, `untrained_seed0` and `untrained_seed0_noblur`. The two
+directories are complementary rather than one being a refit of the other, so the
+three-seed table sources from `encoding_cc` while the front-end control table and
+the untrained baseline necessarily source from `encoding`. A consequence worth
+stating plainly: **the six-control table cannot be regenerated from the same
+directory as the table it supports**, and is flagged as such in §E2 rather than
+half-rebuilt.
+
+*Identifying the untrained-on-diet control.* Its label is ambiguous, because the
+front end is a fitting-time flag rather than part of the model name — the default
+is the blur + contrast-sensitivity front end, and `_noblur` marks the exception.
+So the untrained-on-diet control is `untrained_seed0`, not a separately named
+model, and `untrained_seed0_noblur` is the no-blur baseline. The identification
+is confirmed on the raw statistic, which reproduces the control table's −0.118 as
+**−0.1199**, within 0.002. (`untrained_seed0_noblur` gives −0.479 against the
+−0.488 quoted for the no-blur baseline.)
+
+*A lead we are not pursuing.* That identification exposes the same split seen in
+the main table: the **raw** statistic reproduces closely (−0.1199 against −0.118)
+while the **normalised** one does not (−0.5441 against −0.471). Since the two
+differ only by the (uₘ+uₚ) denominator, a denominator difference would be the
+natural explanation, and it is a tight constraint rather than a free parameter
+because any candidate must leave the already-matching raw values untouched. None
+of the variants tried satisfies it: an absolute-value denominator and clipping at
+zero both leave the value unchanged at −0.5441, and dropping voxels with negative
+unique variance gives −0.4458, overshooting. We record the pattern for whoever
+returns to it and stop there, because continuing would be fitting the convention
+to the numbers. And the contrast reading is confirmed: it is
 hV4 − V1 (`visualrois.py:72-75`), since no other definition reaches the right
 order of magnitude on all four seed-0 values.
 

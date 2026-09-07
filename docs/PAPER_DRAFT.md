@@ -231,8 +231,13 @@ The profile **declines steeply with the diet, and without it is flat to within
 the resolution of the instrument** — early visual cortex is relatively more
 magno-explained and hV4 relatively more parvo-explained, the direction a
 luminance/low-SF versus chromatic split predicts. Contrast = hV4 − mean(V1v,V1d)
-of the per-ROI median, fitted on `results/encoding_cc/`, all three seeds and both
-statistics (§4.7):
+of the per-ROI median, all three seeds and both statistics (§4.7). **The source
+is declared per table, not globally**: this table comes from
+`results/encoding_cc/`, which is the only directory holding all six diet and
+no-diet seed fits; the front-end control table and the untrained baseline come
+from `results/encoding/`, which is the only directory holding those seven
+models. Neither directory is a superset of the other, and where they overlap
+they are numerically identical (§E2.2):
 
 | statistic | seed | diet | no diet | p | separation |
 |---|---|---|---|---|---|
