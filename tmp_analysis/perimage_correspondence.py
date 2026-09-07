@@ -181,6 +181,10 @@ def main():
     p.add_argument("--n-splits", type=int, default=200)
     p.add_argument("--n-boot", type=int, default=2000)
     p.add_argument("--w-step", type=float, default=0.005)
+    p.add_argument("--expect-n", type=int, default=None,
+                   help="fail if this many logit files are not present; a "
+                        "partially-finished extraction array otherwise yields "
+                        "a table that silently omits configurations")
     args = p.parse_args()
 
     H = np.load(os.path.join(args.run_dir, "human_perimage.npz"),
@@ -210,6 +214,10 @@ def main():
 
     files = sorted(glob.glob(os.path.join(args.run_dir, "logits",
                                           "*_perimage_logits.npz")))
+    if args.expect_n is not None and len(files) != args.expect_n:
+        raise SystemExit(
+            f"expected {args.expect_n} logit files, found {len(files)}:\n  "
+            + "\n  ".join(os.path.basename(f) for f in files))
     print(f"\n{len(files)} model configurations\n")
     for f in files:
         Z = np.load(f, allow_pickle=True)

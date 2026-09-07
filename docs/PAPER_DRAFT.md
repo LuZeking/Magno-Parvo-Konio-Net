@@ -1023,7 +1023,7 @@ rate; in the first case the representation is interrogated by something other
 than the network's own decision, and in the second the representation does not
 stay fixed. Here it does. The classifier is affine and the two fusion weights
 sum to one, so `clf(w*y1 + (1-w)*y2) = w*clf(y1) + (1-w)*clf(y2)` holds exactly
-(max deviation 1.07e-06 on a logit scale of 0.32; §2.3). The shape-bias rate
+(§2.3; maximum deviation 1.1 × 10⁻⁶). The shape-bias rate
 therefore sweeps 0.373 to 0.913 -- most of the attainable range, and across the
 human value -- while both representations stay bit-identical and the sweep is
 exact linear interpolation rather than an empirical trend. The rate is not
