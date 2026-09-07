@@ -284,12 +284,6 @@ def check_displacement() -> None:
 
 # Recovered true contrast under each treatment of the multiplicative term.
 # The factor is what the claim rests on, and it barely moves; the magnitudes do.
-SLOPE_TREATMENTS = {
-    "additive only": (-0.130, -0.871, 6.7),
-    "per-ROI, bias removed": (-0.101, -0.720, 7.1),
-}
-
-
 def check_slope_model() -> None:
     """The contrast floor must equal b(hV4) - b(V1) exactly, and the slope must
     be fitted after removing each ROI's OWN bias -- the simulated bias rises
@@ -316,12 +310,49 @@ def check_slope_model() -> None:
         want_i = {"dkl_base": -0.043, "dkl_bcs": -0.002}[arm]
         chk(f"{arm} slope (bias removed)", a, want_a, 0.005)
         chk(f"{arm} residual intercept", icept, want_i, 0.005)
-    for name, (wn, wd, wf) in SLOPE_TREATMENTS.items():
-        if name == "per-ROI, bias removed":
-            chk("no-diet true contrast", out["dkl_base"], wn, 0.001)
-            chk("diet true contrast", out["dkl_bcs"], wd, 0.001)
-            chk("factor, bias-removed slope", out["dkl_bcs"] / out["dkl_base"],
-                wf, 0.05)
+    chk("no-diet true contrast", out["dkl_base"], -0.101, 0.001)
+    chk("diet true contrast", out["dkl_bcs"], -0.720, 0.001)
+    chk("factor, bias-removed slope", out["dkl_bcs"] / out["dkl_base"], 7.1, 0.05)
+    check_residual_treatment()
+
+
+def check_residual_treatment() -> None:
+    """The fullest treatment, which is why §2.2 claims only the difference.
+
+    Removing the fit's ROI-structured residual as well leaves the DIET arm
+    non-zero in every subject and the NO-DIET arm at 5/8, p = .31. A pooled
+    intercept hides this because averaging over ROIs cancels exactly the
+    structure a contrast exposes -- so this check exists to stop the no-diet
+    arm's resolvability being asserted again.
+    """
+    print("  [fullest treatment: bias + slope + residual contrast removed]")
+    want = {"dkl_base": (-0.034, 5, False), "dkl_bcs": (-0.626, 8, True)}
+    for arm, (wv, wneg, should_hold) in want.items():
+        A = [_ab(f, "A_recovery") for f in _files(arm)]
+        B = [_ab(f, "B_manufacture") for f in _files(arm)]
+        b_roi = np.mean([x[1] for x in B], axis=0)
+        T = np.stack([x[0] for x in A])
+        E = np.stack([x[1] for x in A]) - b_roi
+        a = float(np.sum(E * T) / np.sum(T * T))
+        res_con = float(hv4_minus_v1((E - a * T).mean(0)))
+        subs_r, pr = roi_profile(ENCODING_DIR, f"{arm}_seed0_trained", True)
+        real = {s: hv4_minus_v1(pr[i]) for i, s in enumerate(subs_r)}
+        floor = {}
+        for f in _files(arm):
+            j = json.load(open(f))
+            floor[j["subject"]] = stats_from(
+                j["conditions"]["B_manufacture"]["rows"], "est_")[0]
+        ss = sorted(set(real) & set(floor))
+        v = np.array([(real[s] - floor[s] - res_con) / a for s in ss])
+        chk(f"{arm} fullest-treatment contrast", float(v.mean()), wv, 0.002)
+        neg, pv = int((v < 0).sum()), wilcoxon(v).pvalue
+        holds = pv < 0.02 and neg == len(v)
+        ok = holds == should_hold and neg == wneg
+        print(f"  {'OK ' if ok else 'BAD'} {arm} {neg}/{len(v)} negative, "
+              f"p={pv:.4f} -> {'holds' if holds else 'does NOT hold'} "
+              f"(draft: {wneg}/8, {'holds' if should_hold else 'does not hold'})")
+        if not ok:
+            FAILS.append(f"{arm} fullest treatment")
 
 
 def _ab(path: str, cond: str) -> tuple[np.ndarray, np.ndarray]:

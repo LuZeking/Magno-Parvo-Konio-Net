@@ -280,19 +280,23 @@ committed script still reproduces, and it is the one that breaks the pattern.
 Extended Data
 §E2.2 records the dating and the solve.*
 
-**The diet makes the gradient large; it does not make it exist.** Both arms
-carry a resolvable gradient once the instrument's signed bias is subtracted
-(−0.871 with the diet, −0.130 without, each non-zero in every subject), so the
-diet's effect is a factor of about seven on an effect that is already present.
-That is what §2.5's mechanism predicts and it is the claim we make. Two earlier
-framings are withdrawn. The first — "nearly flat without it", with a 79%
+**The diet's gradient is robust; the no-diet arm's is not, and we claim only
+the difference.** Under the minimal correction both arms are non-zero in every
+subject (−0.871 and −0.130); under the fullest one only the diet arm is. So the
+defensible statement is comparative: the diet produces a gradient 7–19× larger
+that survives every treatment of the instrument, against one that survives only
+the weakest. That is what §2.5's mechanism needs, and it does not require
+settling whether the no-diet gradient is exactly zero. Three earlier framings
+are withdrawn. The first — "nearly flat without it", with a 79%
 reduction — used numbers that do not regenerate (§E2.2), but its *structure* was
 right, and the honest correction is 85% rather than a withdrawal: our objection
 that it "compared two numbers as though both measured something" was wrong,
 because both do. The second, which replaced it, claimed no gradient was
 resolvable without the diet. That was an error of ours in the opposite
 direction: it compared the magnitude of the no-diet contrast to the magnitude of
-the floor, as though the floor were a noise level. The floor is a **signed
+the floor, as though the floor were a noise level. The third asserted the
+no-diet gradient *was* resolvable; that holds only under the minimal
+correction, so it is narrowed to the comparative claim above. The floor is a **signed
 positive bias**, and a positive bias cannot manufacture a negative
 observation — it masks one. Treating a signed quantity as an unsigned tolerance
 is the same mistake that made subject 01's outlier look arm-specific, and it is
@@ -395,33 +399,49 @@ truth plus bias, so real − floor estimates the true contrast.
 Both arms carry a gradient that is non-zero in **every subject** at the exact
 Wilcoxon floor for its sample size, and the diet arm's is **6.7× larger**.
 
-*Why subtracting the floor is exact for the additive part.* The simulated bias
-is not constant across ROIs — it rises from +0.099 at V1v to +0.148 at hV4
-(no diet) and +0.132 to +0.164 (diet) — so the model is
-estimate(ROI) = *a* · truth(ROI) + *b*(ROI), and the contrast's bias is then
-*b*(hV4) − *b*(V1) by construction. That identity holds numerically to all
-reported digits: +0.0511 and +0.0375, exactly the measured contrast floors. So
-the displacement removes the additive term without assuming anything; what
-remains to be estimated is the multiplicative term *a*.
+*What the subtraction assumes.* The simulated bias is not constant across ROIs —
+it rises from +0.099 at V1v to +0.148 at hV4 (no diet) and +0.132 to +0.164
+(diet) — so the model is estimate(ROI) = *a* · truth(ROI) + *b*(ROI). An earlier
+version of this section claimed that this made the subtraction assumption-free,
+on the grounds that the contrast's bias then equals *b*(hV4) − *b*(V1)
+"verified numerically exact". That check was a **tautology**: the contrast floor
+*is* the contrast of condition B's profile, and *b*(ROI) *is* that profile, so
+both sides are the same arithmetic and agree to machine precision (2.8 × 10⁻¹⁷).
+It carried no evidential weight. What the subtraction actually requires is that
+*b*(ROI) is the same when the truth is non-zero as when it is zero, and
+condition B measures it only at zero. The assumption is relocated from the
+contrast to the individual ROI — weaker and more plausible, but not removed.
 
-*Estimating it rather than assuming it away.* Fitting the slope on the recovery
-condition after removing each ROI's own bias gives *a* = 1.28 (no diet) and 1.21
-(diet), and recovered true contrasts of **−0.101** and **−0.720**, a ratio of
-**7.1×**. Three cruder treatments bracket it: no slope correction at all gives
-−0.130 / −0.871 (6.7×), a slope fitted per subject gives −0.106 / −0.777 (7.3×),
-and a slope fitted per ROI with a single pooled intercept gives −0.096 / −0.669
-(7.0×). **The between-arm factor is 6.7–7.3× under every treatment**, no sign
-changes, and both arms stay non-zero — because the sign and the per-subject
-consistency come from the displacement, and any *a* > 0 rescales both arms
-alike. The magnitudes carry real slack; the factor does not.
+*The multiplicative term is estimable; the model's misfit is not negligible.*
+Fitting the slope after removing each ROI's own bias gives *a* = 1.28 (no diet)
+and 1.21 (diet), and recovered true contrasts of −0.101 and −0.720. But the
+residuals of that fit are not flat across ROIs — they run from −0.199 to +0.108
+(no diet) and −0.167 to +0.158 (diet) — and a contrast is precisely the
+operation that exposes ROI-structured residuals rather than cancelling them. The
+residual *contrast* is −0.086 and −0.113, which is **67% of the no-diet
+bias-removed contrast and 13% of the diet one**. (A pooled intercept, which
+averages over ROIs, reports 42% and 0% and so understates this for the arm where
+it matters.)
 
-*Where the model does not fit, disclosed.* With the per-ROI bias removed, a free
-intercept should return to zero if the form is right. It does for the diet arm
-(−0.002) but not quite for the no-diet arm (−0.043), so the linear-plus-ROI-bias
-form is a good approximation for the arm carrying the large effect and a looser
-one for the arm carrying the small one. We therefore report the recovered
-no-diet magnitude as approximate, and rest the claim on the displacement's sign
-and per-subject consistency, which no slope can alter.
+*What survives, and what we therefore do not claim.* Removing that residual as
+well — a fuller treatment, though one resting on a stronger transfer assumption
+than the bias correction — leaves the diet arm at **−0.626, 8/8, p = .0078** and
+the no-diet arm at **−0.034, 5/8, p = .31**.
+
+| treatment | no diet | diet | factor |
+|---|---|---|---|
+| displacement only | −0.130 (8/8, p = .0078) | −0.871 (8/8, p = .0078) | 6.7× |
+| + estimated slope | −0.101 | −0.720 | 7.1× |
+| + residual removed | **−0.034 (5/8, p = .31)** | **−0.626 (8/8, p = .0078)** | 18.6× |
+
+The diet arm's gradient is non-zero in every subject under **every** treatment.
+The no-diet arm's is not: whether it is resolvable depends on how the
+instrument's misfit is handled, and a plausible treatment absorbs it entirely.
+**We therefore claim the diet arm's gradient and decline to claim the no-diet
+arm's in either direction** — it is not shown to be zero and not shown to be
+non-zero. The between-arm statement is the robust one and is what §2.5's
+mechanism needs: the diet arm's gradient is 7–19× larger and survives every
+correction, where the no-diet arm's survives only the minimal one.
 
 What the simulation does *not* license is a claim about the effect's exact
 magnitude. The companion recovery condition, given a true gradient, returns the
