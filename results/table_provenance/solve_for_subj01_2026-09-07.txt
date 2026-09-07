@@ -1,0 +1,26 @@
+
+=== NO DIET (dkl_base_seed0_trained) ===
+  ratio published -0.1010   current n=8 -0.0785   n=7 -0.0542
+        subj01 now -0.2487;  to reach the published mean it would need -0.4289
+        that is 8.0x the sibling median (-0.0535), and 53% of the published effect
+        sibling range -0.0845..-0.0266
+  diff  published -0.0340   current n=8 -0.0258   n=7 -0.0206
+        subj01 now -0.0619;  to reach the published mean it would need -0.1275
+        that is 6.0x the sibling median (-0.0212), and 47% of the published effect
+        sibling range -0.0470..+0.0048
+
+=== DIET (control: never defective) (dkl_bcs_seed0_trained) ===
+  ratio published -0.8620   current n=8 -0.8335   n=7 -0.8101
+        subj01 now -0.9970;  to reach the published mean it would need -1.2252
+        that is 1.5x the sibling median (-0.8077), and 18% of the published effect
+        sibling range -0.9643..-0.6227
+  diff  published -0.1760   current n=8 -0.1650   n=7 -0.1623
+        subj01 now -0.1838;  to reach the published mean it would need -0.2721
+        that is 1.8x the sibling median (-0.1528), and 19% of the published effect
+        sibling range -0.2068..-0.1336
+
+README describes the defective file as a SIX-FOLD outlier that
+contributed 57% of the no-diet effect. If the solved values land near
+6x and 57% for the no-diet arm, the published no-diet numbers date to
+BEFORE the 2026-09-01 quarantine. The diet arm had no defective file,
+so an implausible solved value there means its gap has another cause.

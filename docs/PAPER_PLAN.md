@@ -9294,3 +9294,119 @@ the stored files and independently reports
 `median (unique_magno/pre_nc)*nc = 1.0`, confirming §86.3's claim that
 `unique_*` is the ÷nc form; and a synthetic check confirms
 `unique_magno == unique_magno_pre_nc / nc` with the old key absent.
+
+---
+
+## §88 The published table is dated: the no-diet numbers were computed before
+## the 2026-09-01 quarantine, with the defective subj01 still in the set
+
+b778201 left one thread open — dating the published table — as worth more than
+further configuration search. It is datable, and the answer explains the
+no-diet gap exactly while confirming that the diet gap has a different cause.
+
+### §88.1 When the numbers were written
+
+`git log -S"-0.862" -- docs/` gives three commits; the earliest introduces the
+value:
+
+| commit | date | how |
+|---|---|---|
+| **c0002a2** | **2026-09-06 14:24** | added as new prose ("declines … by **-0.862** … against **-0.101**") |
+| 391e336 | 2026-09-06 16:26 | edited |
+| 8d4f22d | 2026-09-06 22:30 | edited |
+
+The value entered the repository as written text, not as generated output.
+(The pickaxe also hits three older commits, but those are `results/eeg_rsa/*
+group_summary.csv` files that contain −0.862 coincidentally — unrelated.)
+
+### §88.2 Nothing the table depends on changed after it was written
+
+| dependency | last change |
+|---|---|
+| `tmp_analysis/visualrois.py` | **2026-08-28** (4ef1a3f) |
+| `src/analysis/encoding/stats.py` (`load_results`) | **2026-08-29** (f9a465b) |
+| diet fits `results/encoding/*bcs_seed0*` | **2026-08-30** |
+| `results/encoding_cc/*` | **2026-09-01** |
+| table written | 2026-09-06 14:24 |
+
+The only change to `src/analysis/encoding/` after 2026-09-06 is §87's rename
+today, which the nc-invariant ratio cannot feel. **Post-hoc code or data drift
+is ruled out**: every input was already frozen when the numbers were written.
+
+### §88.3 The committed script cannot have produced the table
+
+`visualrois.py:22` reads
+
+```python
+res = load_results("results/encoding", "untrained_seed0")
+```
+
+The model is **hardcoded**, and running the script unmodified today prints
+`SPI hV4 - V1  mean diff=-0.5441  p=0.0078  0/8 positive` — the untrained
+number, not the diet one. So the diet and no-diet table values required an
+**uncommitted edit** of that line, run and then reverted. That is why they are
+unauditable: the configuration that produced them was never recorded, and this
+is a stronger reason than "we cannot find the right settings".
+
+It also explains the untrained row's direction: −0.5441 is what the committed
+script emits, against a published −0.471, and that is the one row the script
+can still be checked against.
+
+### §88.4 The no-diet numbers date to before the quarantine
+
+Solving for the subj01 value that the published n=8 mean requires, against the
+seven siblings' actual values:
+
+| statistic | published | needs subj01 | × sibling median | share of effect |
+|---|---|---|---|---|
+| ratio | −0.101 | **−0.4289** | **8.0×** | 53% |
+| difference | −0.034 | **−0.1275** | **6.0×** | 47% |
+
+The quarantine README describes the defective file, independently and before
+any of this, as a **"six-fold outlier"** that **"contributed 57% of the
+reported no-diet effect size"** and "was the difference between significant and
+not on the raw statistic". The solved difference statistic lands at **exactly
+6.0×**, and the shares at 53%/47% against 57%.
+
+**So §2.2's no-diet values were computed with the defective subj01 in the n=8
+set — i.e. before 2026-09-01 — and transcribed into the draft on 2026-09-06,
+five days after that file had been quarantined for being wrong.** The gap was
+never a configuration difference. The data those numbers came from was
+deliberately removed, which is why no configuration reproduces them.
+
+Consistency check: the repaired file gives a marginal raw no-diet contrast
+(p = .0391, 2/8 positive), matching the README's "difference between
+significant and not".
+
+### §88.5 The diet gap is not a subject substitution
+
+Applying the same solve to the diet arm, which never had a defective file:
+
+| statistic | published | needs subj01 | sibling range |
+|---|---|---|---|
+| ratio | −0.862 | **−1.2252** | −0.9643..−0.6227 |
+| difference | −0.176 | −0.2721 | −0.2068..−0.1336 |
+
+−1.2252 lies far outside all 48 observed subject×model cells. It is not
+strictly impossible — with correlated bands a voxel can have negative unique
+variance while `uₘ+uₚ > 0`, so the ratio is not bounded at ±1 — but nothing
+remotely like it occurs anywhere in the data. **The diet gap therefore has a
+different cause from the no-diet gap**, which supports b778201's per-number
+provenance-drift reading over any single missing configuration.
+
+### §88.6 What this settles for the paper
+
+- The decision to restate the table from `encoding_cc` and stop searching was
+  correct, and now has a mechanism rather than a shrug: the no-diet numbers
+  were computed from data that was intentionally deleted.
+- §2.2's supersession note can say **why** the old numbers do not regenerate,
+  which is much stronger than recording that they do not.
+- The remaining unexplained gaps are the diet arm (+0.029 ratio, +0.011
+  difference) and the untrained row (−0.073, the other direction). Neither is
+  attributable to subj01, and both should stay disclosed as drift.
+- Standing lesson: `visualrois.py` hardcodes its model on line 22. Any table
+  built by editing that line and re-running leaves no record. The fix is to
+  take the model as an argument and write the emitted numbers to a
+  provenance-stamped file under `results/`, so a published table always has a
+  regenerable source. This is the same defect class as §84's hardcoded
+  `roi_nc` — a value whose provenance lives only in someone's shell history.
