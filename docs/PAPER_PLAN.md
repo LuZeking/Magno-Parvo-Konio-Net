@@ -9718,11 +9718,18 @@ winning every raw row.
 | model | stat | V1 ref | V123 ref | published | winner |
 |---|---|---|---|---|---|
 | untrained_seed0 | norm | −0.5441 | **−0.4868** | −0.471 | V123 |
-| untrained_seed0 | raw | −0.1251 | −0.0919 | −0.118 | V1 |
+| untrained_seed0 | raw | −0.1199 | −0.0874 | −0.118 | V1 |
 | dkl_bcs_seed0 | norm | **−0.8335** | −0.4630 | −0.862 | V1 |
-| dkl_bcs_seed0 | raw | −0.1650 | −0.1041 | −0.176 | V1 |
+| dkl_bcs_seed0 | raw | −0.1660 | −0.1051 | −0.176 | V1 |
 | dkl_base_seed0 | norm | **−0.0785** | −0.0333 | −0.101 | V1 |
-| dkl_base_seed0 | raw | −0.0258 | +0.0017 | −0.034 | V1 |
+| dkl_base_seed0 | raw | −0.0271 | +0.0001 | −0.034 | V1 |
+
+(Raw rows regenerated under the paper's median-of-differences estimator after
+§92.2 identified it. The first run of this grid used difference-of-medians and
+printed −0.1251 / −0.0919 / −0.1650 / −0.1041 / −0.0258 / +0.0017; every
+verdict is unchanged, since V1 wins each raw row under either estimator. The
+0.0045 disagreement with 5a6459f on untrained V123 raw was this and is now
+resolved — the numbers above match on both sides.)
 
 V123 wins **1 of 6**, and loses catastrophically where it matters: diet
 normalised is −0.4630 against a published −0.862, off by 0.399. **The

@@ -1,10 +1,10 @@
 model                      stat     V1 ref  V123 ref  published  |V1-pub|  |V123-pub|  winner
 untrained_seed0            norm    -0.5441   -0.4868     -0.471    0.0731      0.0158    V123
-untrained_seed0            raw     -0.1251   -0.0919     -0.118    0.0071      0.0261      V1
+untrained_seed0            raw     -0.1199   -0.0874     -0.118    0.0019      0.0306      V1
 dkl_bcs_seed0_trained      norm    -0.8335   -0.4630     -0.862    0.0285      0.3990      V1
-dkl_bcs_seed0_trained      raw     -0.1650   -0.1041     -0.176    0.0110      0.0719      V1
+dkl_bcs_seed0_trained      raw     -0.1660   -0.1051     -0.176    0.0100      0.0709      V1
 dkl_base_seed0_trained     norm    -0.0785   -0.0333     -0.101    0.0225      0.0677      V1
-dkl_base_seed0_trained     raw     -0.0258   +0.0017     -0.034    0.0082      0.0357      V1
+dkl_base_seed0_trained     raw     -0.0271   +0.0001     -0.034    0.0069      0.0341      V1
 
 closer-to-published tally: {'V1': 5, 'V123': 1}
 

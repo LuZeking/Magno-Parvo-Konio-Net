@@ -48,7 +48,13 @@ def profiles(model, src):
             if v.sum() >= MIN_VOX:
                 r = (um[v] - up[v]) / (um[v] + up[v])
                 a.append(np.median(r[np.isfinite(r)]))
-                b.append(np.median(um[v]) - np.median(up[v]))
+                # median-of-DIFFERENCES: the paper's raw statistic (§92.2).
+                # This file originally used med(u_m) - med(u_p), which is a
+                # different estimator and was identified as the wrong one only
+                # after the grid was first run. The verdicts are unchanged --
+                # V1 wins every raw row either way -- but the numbers below
+                # are now in the paper's own convention.
+                b.append(np.median(um[v] - up[v]))
             else:
                 a.append(np.nan); b.append(np.nan)
         norm.append(a); raw.append(b)
