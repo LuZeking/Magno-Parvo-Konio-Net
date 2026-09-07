@@ -1,0 +1,2 @@
+task=16 model=dkl_base_seed0_trained subject=1 frontend='--no-lum-blur --no-lum-cs'
+[stage +13782.3s] saved -> /home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev/results/encoding_cc/dkl_base_seed0_trained_subj01.npz

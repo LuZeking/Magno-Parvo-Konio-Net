@@ -9156,3 +9156,141 @@ racing on 8 files, the same failure that lost the diet arm originally.
 Cancelling the second was right; I should have checked for an in-flight
 equivalent before submitting, since the owner had just diagnosed the collision
 and re-running was the obvious next step for either of us.
+
+---
+
+## §87 subj01's provenance is settled from Slurm, and the file is legitimate:
+## the "arm-asymmetric outlier" is a ratio artefact, not a bad fit
+
+8bfa2c5 left the subj01 question as an open blocker because the file carries no
+provenance stamp. Slurm settles it without a re-fit.
+
+### §87.1 The file is the repair, proven three ways
+
+The quarantine README names the repair as tasks 16-23 of job 26399760. That
+job's records and logs both survive:
+
+```
+slurm/logs/enccc_26399760_16.out, line 1:
+  task=16 model=dkl_base_seed0_trained subject=1
+          frontend='--no-lum-blur --no-lum-cs'
+  [cache] no provenance recorded in this cache file (missing 7 keys)
+          -- recomputing features rather than trusting it
+  [stage +13782.3s] saved -> .../results/encoding_cc/
+                              dkl_base_seed0_trained_subj01.npz
+```
+
+- **The front end is correct.** `--no-lum-blur --no-lum-cs` is exactly the pair
+  the defective job `26386734_0` omitted, and the run refused to trust the
+  cached features and recomputed them.
+- **The timestamps match to the microsecond.**
+  `results/encoding/dkl_base_seed0_trained_subj01.npz` has mtime
+  `2026-09-01 05:27:47.293126`; task 16 ended `05:27:50`. Its siblings in
+  `results/encoding/` date from 2026-08-29 and are 1.5-1.7 MB against
+  subj01's 2.85 MB, i.e. subj01 is the only file there from the cc round —
+  consistent with a `cp -p` of the repair, as the README instructed.
+- **The two copies are byte-identical** (`cmp` clean), and the defective job
+  ran 2026-08-30 02:00-06:06, which matches neither copy.
+
+### §87.2 The missing stamp is not evidence
+
+`results/encoding_cc/dkl_base_seed0_trained_subj02.npz` — an uncontested file
+from the same repair round — has the same 28 keys and no provenance key either.
+**No file the writer produces carries a stamp.** So "unstamped" cannot
+discriminate the repair from the original; it is a property of the writer. The
+README's promise of a "provenance-stamped version" was never fulfilled by the
+code, which is a real gap, but not a reason to distrust this file.
+
+### §87.3 The outlier survives the repair — so it is not a front-end artefact
+
+subj01 is still extreme: no-diet ratio contrast **−0.2487** against a sibling
+median of −0.0535 (**4.65×**, sibling range −0.0845..−0.0266). Since §87.1
+establishes the front end was correct, **the outlier cannot be attributed to
+the wrong front end.** The README's original 6× shrank to 4.65×, but did not go
+away.
+
+### §87.4 The arm asymmetry is an artefact of dividing by different baselines
+
+8bfa2c5's inference was: "A subject-level peculiarity would show in both arms;
+a wrong-front-end no-diet fit shows in one." The ratios do look arm-specific
+(4.65× no-diet, 1.23× diet). But the arms' baselines differ ~15-fold, so a
+ratio against each baseline is not a comparison. The **absolute displacement**
+is:
+
+| arm | subj01 | sibling median | ratio | displacement |
+|---|---|---|---|---|
+| no diet | −0.2487 | −0.0535 | 4.65× | **−0.1952** |
+| diet | −0.9970 | −0.8077 | 1.23× | **−0.1894** |
+
+The same shift, to within 0.006. **The asymmetry is entirely a ratio
+artefact.** This is the fourth appearance of one failure mode in this thread
+(§73, §83.5, §86, here): a ratio and its numerator answering different
+questions while sharing a name.
+
+### §87.5 The displacement is in every fit, including ones the bad job never touched
+
+| model | subj01 | sibling median | ratio | displacement |
+|---|---|---|---|---|
+| dkl_base_seed0 | −0.2487 | −0.0535 | 4.65× | −0.1952 |
+| dkl_base_seed1 | −0.1798 | −0.0892 | 2.02× | −0.0907 |
+| dkl_base_seed2 | −0.1746 | −0.0305 | 5.73× | −0.1441 |
+| dkl_bcs_seed0 | −0.9970 | −0.8077 | 1.23× | −0.1894 |
+| dkl_bcs_seed1 | −0.9237 | −0.7185 | 1.29× | −0.2053 |
+| dkl_bcs_seed2 | −0.8865 | −0.7711 | 1.15× | −0.1154 |
+
+Mean displacement: no-diet **−0.143**, diet **−0.170**, differing by 0.027 —
+while the *ratios* span 1.15× to 5.73× on the same underlying shift.
+
+`26386734_0` touched only seed 0, subject 1, of the no-diet arm. Seeds 1 and 2
+of that arm were never re-fitted, and subj01 is displaced by −0.091 and −0.144
+in them. **subj01 is a subject-level effect** — a genuinely steeper hV4−V1
+gradient in this subject — present in six independent fits.
+
+### §87.6 Recommendation: keep subj01, report n=7 as influence, not exclusion
+
+The provenance question is closed and the file is legitimate, so n=8 is the
+correct primary analysis and subj01 must not be dropped as contaminated.
+
+The n=7 sensitivity still belongs in the paper, but as an **influence check**:
+subj01 alone moves the no-diet contrast from −0.0542 to −0.0785, so ~31% of the
+no-diet effect rests on one subject. That is worth disclosing on its own terms.
+It does not weaken §2.2's reframed claim — at n=8 the no-diet contrast is ~1.5×
+the artefact floor and at n=7 ~1.1×, so "a large gradient with the diet and
+none resolvable without it" holds under either, and now holds *without* an
+unresolved provenance caveat attached.
+
+### §87.7 §86.4 corrected: twelve values, and the offset is not one-directional
+
+8bfa2c5's two corrections are accepted, and the second is verified here:
+`untrained_seed0` recomputes at **−0.5441** against a published −0.471 — more
+negative in the *recomputation*, the opposite direction to all six §2.2 values.
+So my §86.4 inference ("one-directional across four numbers is not rounding")
+does not survive the wider set: a single selection difference cannot produce
+gaps in both directions, and per-number provenance drift is the better reading.
+§86.4's *observation* stands for the six §2.2 values; its *conclusion* is
+withdrawn.
+
+Accepted without re-deriving: the ~200-configuration search, the twelve-value
+table from `encoding_cc`, and the decision to stop searching rather than fit
+the convention to the numbers. That is the right call under the standing rule
+that the fix for messy results is reframing the claim, not more compute.
+
+One gap to note: `untrained_seed0` exists only in `results/encoding/`, not in
+`results/encoding_cc/`. If the verifier locks `encoding_cc` as the sole
+declared source, the untrained control cannot be recomputed from it.
+
+### §87.8 The `_raw` rename is done
+
+`variance_partition` now returns `unique_magno_pre_nc`, `unique_parvo_pre_nc`,
+`shared_pre_nc` (`banded_ridge.py:225-237`). Checked before changing: only one
+reader (`tmp_analysis/group_check.py:7`) and nothing globs or pattern-matches
+`_raw`.
+
+`run_encoding.py:446` splats the dict straight into `np.savez`, so the rename
+propagates to all future fits while the ~188 stored `.npz` files keep the old
+keys. `group_check.py` therefore reads the new name with a fallback to the old,
+commented as such. Verified after the change: `group_check.py` still runs on
+the stored files and independently reports
+`median (unique_magno/pre_nc)*nc = 1.0`, confirming §86.3's claim that
+`unique_*` is the ÷nc form; and a synthetic check confirms
+`unique_magno == unique_magno_pre_nc / nc` with the old key absent.

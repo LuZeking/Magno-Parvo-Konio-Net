@@ -1,0 +1,16 @@
+model                        subj01  sib med   ratio  DISPLACEMENT
+dkl_base_seed0_trained      -0.2487  -0.0535    4.65x       -0.1952
+dkl_base_seed1_trained      -0.1798  -0.0892    2.02x       -0.0907
+dkl_base_seed2_trained      -0.1746  -0.0305    5.73x       -0.1441
+dkl_bcs_seed0_trained       -0.9970  -0.8077    1.23x       -0.1894
+dkl_bcs_seed1_trained       -0.9237  -0.7185    1.29x       -0.2053
+dkl_bcs_seed2_trained       -0.8865  -0.7711    1.15x       -0.1154
+
+The ratio is arm-specific because the baselines differ 15-fold.
+The DISPLACEMENT is the estimator-free quantity. If it is the same in
+both arms and across seeds the bad job never touched, subj01 is a
+subject-level effect, not a defective no-diet fit.
+
+  no-diet displacements: [-0.1952, -0.0907, -0.1441]  mean -0.1433
+  diet    displacements: [-0.1894, -0.2053, -0.1154]  mean -0.1700
+  difference of means: +0.0267

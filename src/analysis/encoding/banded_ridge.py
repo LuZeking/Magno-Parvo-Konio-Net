@@ -222,10 +222,17 @@ def variance_partition(
     unique_p = r2_joint - r2_magno
     shared = r2_magno + r2_parvo - r2_joint
 
+    # NB: these were named *_raw until 2026-09-07. That collided head-on with
+    # the manuscript's "raw", which means the DIFFERENCE statistic (u_m - u_p)
+    # and is itself divided by the noise ceiling -- the opposite sense. A
+    # reader following `_raw` from code to paper landed on the wrong quantity
+    # (PAPER_PLAN §86.3). `_pre_nc` says what these actually are.
+    # Files written before the rename carry the old keys; readers of stored
+    # .npz must fall back (see tmp_analysis/group_check.py).
     out = {
-        "unique_magno_raw": unique_m,
-        "unique_parvo_raw": unique_p,
-        "shared_raw": shared,
+        "unique_magno_pre_nc": unique_m,
+        "unique_parvo_pre_nc": unique_p,
+        "shared_pre_nc": shared,
     }
     if noise_ceiling is not None:
         nc = np.where(noise_ceiling > 0, noise_ceiling, np.nan)

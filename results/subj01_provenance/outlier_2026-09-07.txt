@@ -1,0 +1,30 @@
+
+=== dkl_base_seed0_trained -- NO DIET (the arm in question) ===
+subj  ratio hV4-V1  diff hV4-V1
+   1       -0.2487      -0.0619  <-- subj01
+   2       -0.0696       0.0035
+   3       -0.0266      -0.0336
+   4       -0.0535      -0.0397
+   5       -0.0427      -0.0212
+   6       -0.0845      -0.0470
+   7       -0.0296       0.0048
+   8       -0.0726      -0.0114
+  ratio: subj01 -0.2487  sibling median -0.0535  ratio 4.65x  sibling range -0.0845..-0.0266
+       n=8 mean -0.0785   n=7 (drop subj01) -0.0542
+  diff: subj01 -0.0619  sibling median -0.0212  ratio 2.92x  sibling range -0.0470..+0.0048
+       n=8 mean -0.0258   n=7 (drop subj01) -0.0206
+
+=== dkl_bcs_seed0_trained -- DIET (control for subject) ===
+subj  ratio hV4-V1  diff hV4-V1
+   1       -0.9970      -0.1838  <-- subj01
+   2       -0.6227      -0.1456
+   3       -0.7189      -0.1364
+   4       -0.8077      -0.1597
+   5       -0.9250      -0.2068
+   6       -0.7977      -0.1336
+   7       -0.9643      -0.2010
+   8       -0.8346      -0.1528
+  ratio: subj01 -0.9970  sibling median -0.8077  ratio 1.23x  sibling range -0.9643..-0.6227
+       n=8 mean -0.8335   n=7 (drop subj01) -0.8101
+  diff: subj01 -0.1838  sibling median -0.1528  ratio 1.20x  sibling range -0.2068..-0.1336
+       n=8 mean -0.1650   n=7 (drop subj01) -0.1623

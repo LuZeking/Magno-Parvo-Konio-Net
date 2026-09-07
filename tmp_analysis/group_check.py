@@ -4,7 +4,11 @@ import numpy as np
 
 z = np.load("results/encoding/untrained_seed0_subj01.npz", allow_pickle=True)
 nc = z["noise_ceiling"]
-raw = z["unique_magno_raw"]
+# `unique_magno_pre_nc` since 2026-09-07; older stored fits use the former
+# `unique_magno_raw`. Both mean the same array: unique variance BEFORE the
+# noise-ceiling division (§86.3).
+raw = z["unique_magno_pre_nc"] if "unique_magno_pre_nc" in z.files \
+    else z["unique_magno_raw"]
 norm = z["unique_magno"]
 ok = (nc > 0.1) & (raw != 0)
 ratio = (norm[ok] / raw[ok]) * nc[ok]
