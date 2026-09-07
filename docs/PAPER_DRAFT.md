@@ -282,9 +282,9 @@ Extended Data
 
 **The no-diet arm is at the instrument's floor, and we no longer read a residual
 gradient into it.** The artefact floor established below is +0.051 in the
-normalised statistic. The diet contrast is **16× that floor**; the no-diet
-contrast is **1.5×** it, and drops to 1.1× under the subject-exclusion
-sensitivity described next. So the correct statement is not that the no-diet
+normalised statistic, measured on each arm's own feature geometry. The diet
+contrast is **22× its floor**; the no-diet contrast is **1.5×** its, and drops
+to 1.1× under the leave-one-out check described next. So the correct statement is not that the no-diet
 profile is shallow-but-real: it is that no gradient is resolvable there. An
 earlier draft's "79% reduction" phrasing compared two numbers as though both
 measured something, and is withdrawn. The claim is a large gradient with the
@@ -353,24 +353,38 @@ the same axis as a declining effect is exactly the confound a reader should
 suspect, so we simulated it: synthetic voxels built from the fitted feature
 spaces with the measured per-ROI noise ceilings imposed and the true
 magno−parvo unique-variance difference solved to zero in every ROI, then scored
-through the identical hV4 − V1 contrast reported above. The floor is **+0.051 on
-the normalised statistic (8/8 subjects, p = .0078, range +0.007 to +0.094) and
-+0.0009 on the raw statistic (4/8, p = .84, indistinguishable from zero)**, and
-the simulated profile *rises* with hierarchical rank (per-subject ρ = +0.68)
-where the observed profile falls (−0.964). The artefact therefore has the
-opposite sign to the observed effect on both statistics and on the gradient, and
-on the normalised statistic it is 6% of the effect it would have to explain. It
-cannot produce this result; it opposes it. What the simulation does *not*
-license is a claim about the effect's exact magnitude: the companion recovery
-condition, given a true gradient, returns the ROI ordering perfectly (ρ = +1.000
-in 8/8) but is not magnitude-faithful, inflating the normalised contrast by
-1.26× while compressing the raw contrast to 0.71× of truth. We therefore read
-−0.834 as a sign-and-ordering result, not a calibrated effect size. (Computed on
-the no-diet feature geometry, which is the harder case: that model predicts BOLD
-better, §2.7. The diet-arm geometry is being run and will be reported
-alongside. Extended Data §E2.1 records an earlier version of this simulation
-that used a hardcoded *ascending* noise-ceiling ramp, ran the nuisance
-backwards, and inverted the artefact's sign.)
+through the identical hV4 − V1 contrast. Because the artefact depends on feature
+geometry, this was run separately on both arms' fitted features.
+
+| geometry | normalised floor | raw floor | monotonicity ρ |
+|---|---|---|---|
+| no-diet features | **+0.051** (8/8, p = .0078) | +0.0009 (4/8, p = .84) | +0.68 |
+| diet features | **+0.038** (8/8, p = .0078) | −0.0021 (2/8, p = .15) | +0.80 |
+
+Three things follow. The artefact is **positive and rising** with hierarchical
+rank on both geometries, where the observed effect is negative and falling
+(−0.834, ρ = −0.964): wrong sign twice over, so it cannot produce this result —
+it opposes it. On the raw statistic it is indistinguishable from zero in both
+geometries, so that statistic shows no artefact at all. And the two geometries
+agree: 0.038 against 0.051 is a 27% difference in point estimate but not a
+detectable one (Mann–Whitney p = .33, 8 versus 8), so the floor is a property of
+the instrument rather than of the model being fitted.
+
+Comparing each arm against the floor measured on **its own** geometry, the diet
+contrast is **22× its floor** and the no-diet contrast **1.5×** (1.1× under the
+leave-one-out check below). That is the quantitative form of the claim: a
+gradient far above the instrument's resolution with the diet, and one at that
+resolution without it.
+
+What the simulation does *not* license is a claim about the effect's exact
+magnitude. The companion recovery condition, given a true gradient, returns the
+ROI ordering perfectly (ρ = +1.000 in 8/8 on both geometries) but is not
+magnitude-faithful, and it errs in **opposite directions on the two statistics** —
+inflating the normalised contrast (×1.26 no-diet, ×1.15 diet) while compressing
+the raw one (×0.71, ×0.69). We therefore read −0.834 as a sign-and-ordering
+result, not a calibrated effect size. Extended Data §E2.1 records an earlier
+version of this simulation that used a hardcoded *ascending* noise-ceiling ramp,
+ran the nuisance backwards, and inverted the artefact's sign.
 
 Four properties make this more than a single fitted number, each set out with
 its numbers in Extended Data §E2. **Training decides the direction; the input
@@ -1909,7 +1923,7 @@ Methods in §4.5.
       the right order of magnitude. `verify_new_claims.py` now locks all twelve
       values, the p-values, the separation counts and the source directory.
       Sign, ordering, monotonicity (ρ −0.964 vs −0.536) and significance are
-      unchanged; the diet contrast is 16× the artefact floor.
+      unchanged; the diet contrast is 22× its own geometry's artefact floor.
       **CAUSE ESTABLISHED 2026-09-07 — the search could not have succeeded.**
       The no-diet figures were computed with the defective subj01 file still in
       the set, before the 2026-09-01 quarantine, and transcribed on 2026-09-06
@@ -1934,7 +1948,9 @@ Methods in §4.5.
       to ±0.002 and change nothing, so under the standing rule it is not
       justified. The mismatch stays disclosed in §E2.1 **with its bound**, which
       is a stronger disclosure than a promised fix. Contingent on the diet-arm
-      floor being the same order as +0.051 (job 26442320 pending). Also pinned:
+      floor being the same order as +0.051 — **confirmed 2026-09-07**: the
+      diet-arm floor is +0.038, within the same order and not distinguishable
+      (Mann–Whitney p = .33, 8v8), so the bound stands. Also pinned:
       the ×1.26 / ×0.71 magnitude-fidelity figures are ratios of across-subject
       means; an OLS slope over the 56 cells gives 1.34 for the ratio index.
 - [x] **Artefact floor for §2.2 — DONE (no-diet arm) 2026-09-07** (job
@@ -1961,14 +1977,21 @@ Methods in §4.5.
       from should not be scored against it either. (In §2.2's actual statistic
       that prediction lands at +0.051, which is right; it was judged failed
       only against our wrong statistic.)
-- [ ] **Diet-arm half of the artefact floor — RUNNING** (job 26442320, array
-      0-7%6, `main`, no GPU). `vp_recovery_realnc.py` originally named its
-      output by subject only, so tasks 8-15 of job 26440398 (`dkl_base`)
-      **overwrote** tasks 0-7 (`dkl_bcs`) and the diet half was lost. The model
-      is now in the filename and the eight surviving `dkl_base` files were
-      renamed in place, not recomputed. §2.2 and §E2.1 currently state the
-      no-diet geometry and say so; add the diet figure when it lands and re-run
-      `tmp_analysis/verify_new_claims.py`.
+- [x] **Diet-arm half of the artefact floor — DONE 2026-09-07** (job 26442320,
+      array 0-7%6, `main`, no GPU, 8/8 COMPLETED at 1:36–1:46 per task). The
+      floor on diet-arm feature geometry is **+0.038 normalised** (8/8,
+      p = .0078, range +0.014 to +0.065) and **−0.0021 raw** (2/8, p = .15,
+      indistinguishable from zero), with the simulated profile rising at
+      ρ = +0.80. Against the no-diet geometry's +0.051 that is a 27% difference
+      in point estimate and **not a detectable one** (Mann–Whitney p = .33,
+      8 versus 8), so the floor is a property of the instrument rather than of
+      the model being fitted, and the single-geometry caveat is lifted. Matched
+      to each arm's own geometry the ratios *improve*: diet **22×** (was 16×
+      against the wrong denominator) and no-diet **1.5×** / 1.1×. Recovery
+      fidelity replicates the opposite-direction bias on the second geometry
+      too (ratio ×1.15, difference ×0.69), so the withdrawal of "−0.862 is a
+      floor" now rests on both arms. The earlier filename collision that lost
+      this arm is recorded above.
 - [x] **Progressive-transition OOD arm — DONE 2026-09-07** (job 26440500,
       single job, N=1; `results/ood_bestep/thesis_dvd_trans.json`, §2.6.1 and
       Extended Data §E6.2). This answers the strongest objection to §2.6.1 —

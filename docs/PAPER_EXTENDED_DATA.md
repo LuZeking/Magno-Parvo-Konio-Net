@@ -239,8 +239,12 @@ checking that a number reproduces — a number can reproduce exactly and still b
 the wrong statistic.
 
 Computed on the no-diet feature geometry, the harder case, since that model
-predicts BOLD better (§2.7); the diet-arm geometry is running (job 26442320) and
-the artefact depends on feature geometry, so it may differ. Code:
+predicts BOLD better (§2.7). The diet-arm geometry was run separately because
+the artefact depends on feature geometry, and gives +0.038 normalised /
+−0.0021 raw against the no-diet arm's +0.051 / +0.0009 — a 27% difference in
+point estimate that is not detectable at 8 versus 8 (Mann–Whitney p = .33). The
+floor is therefore a property of the instrument, not of the model being fitted,
+and each arm in §2.2 is compared against its own geometry's floor. Code:
 `tmp_analysis/vp_recovery_realnc.py`, checked by
 `tmp_analysis/verify_new_claims.py`; results under `results/vp_recovery_realnc/`.
 
@@ -274,9 +278,13 @@ no-diet seeds being 0.4% and 0.6%, so the 2.8% mean is inflated by a single
 subject. A per-voxel re-run of condition B would tighten ±0.007 to about ±0.002
 and move no conclusion, so it has not been done and is not treated as
 outstanding. The mismatch stays disclosed; it is the re-run that is closed.
-*These ratios are computed against the floor measured on the no-diet geometry;
-the diet-arm floor is still running, and if it proves much smaller the
-denominators here change.* Second, the ×1.26 and ×0.71 magnitude-fidelity figures are
+*These ratios use the no-diet floor of 0.051, which is the denominator for the
+no-diet arm. The diet arm's own floor is 0.038, so its ratio is 22× rather than
+16× and the bound is correspondingly looser in absolute terms and identical in
+conclusion. The one case worth naming: at n = 7 the no-diet contrast of 0.054
+against a floor of 0.051 ± 0.007 spans 0.93× to 1.23×, so it can sit marginally
+**below** the floor — which strengthens rather than weakens the reading that no
+gradient is resolvable in that arm.* Second, the ×1.26 and ×0.71 magnitude-fidelity figures are
 **ratios of the across-subject means** of the estimated and true contrasts
 (n = 8). An OLS slope of estimated on true, pooled over the 56 ROI × subject
 cells, gives 1.34 rather than 1.26 for the ratio index (r = +0.99); the two

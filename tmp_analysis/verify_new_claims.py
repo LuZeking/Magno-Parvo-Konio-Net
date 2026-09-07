@@ -58,19 +58,57 @@ def stats_from(rows: list[dict], prefix: str) -> tuple[float, float, float]:
     return hv4_minus_v1(ratio), hv4_minus_v1(um - up), rho
 
 
-def check_recovery() -> None:
-    files = sorted(glob.glob(
-        "results/vp_recovery_realnc/vp_recovery_dkl_base*.json"))
-    assert len(files) == 8, f"expected 8 no-diet subjects, found {len(files)}"
+# Floors are geometry-specific, so BOTH arms are pinned. (arm, condition):
+# (ratio contrast, diff contrast, rho, n positive on ratio)
+FLOORS = {
+    ("dkl_base", "B_manufacture"): (0.051, 0.0009, 0.68, 8),
+    ("dkl_base", "A_recovery"): (1.700, 0.499, 1.000, 8),
+    ("dkl_bcs", "B_manufacture"): (0.038, -0.0021, 0.80, 8),
+    ("dkl_bcs", "A_recovery"): (1.476, 0.480, 1.000, 8),
+}
+# est/true on each geometry: the ratio index inflates, the difference compresses.
+# Opposite directions on BOTH geometries is why "-0.862 is a floor" is withdrawn.
+FIDELITY = {"dkl_base": (1.255, 0.713), "dkl_bcs": (1.151, 0.686)}
 
-    # (condition, ratio contrast, diff contrast, rho, n positive on ratio)
-    want = [("B_manufacture", 0.051, 0.0009, 0.68, 8),
-            ("A_recovery", 1.700, 0.499, 1.000, 8)]
+
+def check_recovery() -> None:
+    for arm in ("dkl_base", "dkl_bcs"):
+        _check_recovery_arm(arm)
+    # The two geometries must stay indistinguishable, else §2.2's claim that the
+    # floor is a property of the instrument rather than the fitted model fails.
+    from scipy.stats import mannwhitneyu
+    a = _ratio_contrasts("dkl_base", "B_manufacture")
+    b = _ratio_contrasts("dkl_bcs", "B_manufacture")
+    pv = mannwhitneyu(a, b).pvalue
+    print("[floor geometry comparison]")
+    chk("no-diet floor", a.mean(), 0.051, 0.001)
+    chk("diet floor", b.mean(), 0.038, 0.001)
+    print(f"  {'OK ' if pv > 0.05 else 'BAD'} not distinguishable at 8v8: "
+          f"p={pv:.3f} (draft .33)")
+    if pv <= 0.05:
+        FAILS.append("floor geometries distinguishable")
+
+
+def _files(arm: str) -> list[str]:
+    files = sorted(glob.glob(
+        f"results/vp_recovery_realnc/vp_recovery_{arm}_seed0_trained_subj*.json"))
+    assert len(files) == 8, f"expected 8 {arm} subjects, found {len(files)}"
+    return files
+
+
+def _ratio_contrasts(arm: str, cond: str) -> np.ndarray:
+    return np.array([stats_from(json.load(open(f))["conditions"][cond]["rows"],
+                                "est_")[0] for f in _files(arm)])
+
+
+def _check_recovery_arm(arm: str) -> None:
+    files = _files(arm)
+    want = [(c, *FLOORS[(arm, c)]) for c in ("B_manufacture", "A_recovery")]
     for cond, wr, wd, wrho, wpos in want:
         vals = [stats_from(json.load(open(f))["conditions"][cond]["rows"], "est_")
                 for f in files]
         RAT, DIF, RHO = (np.array(x) for x in zip(*vals))
-        print(f"[{cond}]")
+        print(f"[{arm} {cond}]")
         chk("normalised (ratio) contrast", RAT.mean(), wr, 0.001)
         chk("raw (difference) contrast", DIF.mean(), wd, 0.001)
         chk("monotonicity rho median", float(np.median(RHO)), wrho, 0.005)
@@ -80,8 +118,10 @@ def check_recovery() -> None:
         if pos != wpos:
             FAILS.append(f"{cond} sign")
         if cond == "B_manufacture":
-            chk("B ratio range low", RAT.min(), 0.007, 0.001)
-            chk("B ratio range high", RAT.max(), 0.094, 0.001)
+            lo, hi = {"dkl_base": (0.007, 0.094),
+                      "dkl_bcs": (0.014, 0.065)}[arm]
+            chk("B ratio range low", RAT.min(), lo, 0.001)
+            chk("B ratio range high", RAT.max(), hi, 0.001)
             # the whole point: the truth really is solved to zero
             tru = [stats_from(json.load(open(f))["conditions"][cond]["rows"], "true_")
                    for f in files]
@@ -91,16 +131,21 @@ def check_recovery() -> None:
             if mx != 0:
                 FAILS.append("B truth nonzero")
             p = wilcoxon(DIF).pvalue
-            print(f"  {'OK ' if p > 0.5 else 'BAD'} raw floor n.s. p={p:.4f} "
-                  f"(draft .84), {int((DIF > 0).sum())}/8 positive (draft 4/8)")
+            wp, wn = {"dkl_base": (0.84, 4), "dkl_bcs": (0.15, 2)}[arm]
+            ok = p > 0.05 and int((DIF > 0).sum()) == wn
+            print(f"  {'OK ' if ok else 'BAD'} raw floor n.s. p={p:.4f} "
+                  f"(draft {wp}), {int((DIF > 0).sum())}/8 positive (draft {wn}/8)")
+            if not ok:
+                FAILS.append(f"{arm} raw floor")
         if cond == "A_recovery":
             # magnitude fidelity: the two statistics are biased OPPOSITE ways,
             # which is why "-0.862 is a floor" was withdrawn.
             tru = [stats_from(json.load(open(f))["conditions"][cond]["rows"], "true_")
                    for f in files]
             TR = np.array([t[0] for t in tru]); TD = np.array([t[1] for t in tru])
-            chk("ratio inflation est/true", RAT.mean() / TR.mean(), 1.26, 0.01)
-            chk("diff compression est/true", DIF.mean() / TD.mean(), 0.71, 0.01)
+            wi, wc = FIDELITY[arm]
+            chk("ratio inflation est/true", RAT.mean() / TR.mean(), wi, 0.01)
+            chk("diff compression est/true", DIF.mean() / TD.mean(), wc, 0.01)
 
     # The measured profile the simulation is conditioned on. Its DECLINE is the
     # whole point: the first run used an ascending ramp and inverted the sign.
@@ -186,8 +231,12 @@ def check_production_statistic() -> None:
     _, pn_ = roi_profile(ENCODING_DIR, "dkl_base_seed0_trained", True)
     diet = abs(float(np.nanmean([hv4_minus_v1(r) for r in pd_])))
     nod = abs(float(np.nanmean([hv4_minus_v1(r) for r in pn_])))
-    chk("diet / floor (draft 16x)", diet / 0.0511, 16.3, 0.2)
-    chk("no-diet / floor (draft 1.5x)", nod / 0.0511, 1.54, 0.05)
+    # Each arm against the floor measured on ITS OWN geometry -- the pairing
+    # §2.2 uses, and the reason the diet ratio is 22x rather than 16x.
+    diet_floor = _ratio_contrasts("dkl_bcs", "B_manufacture").mean()
+    nod_floor = _ratio_contrasts("dkl_base", "B_manufacture").mean()
+    chk("diet / diet floor (draft 22x)", diet / diet_floor, 22.3, 0.3)
+    chk("no-diet / no-diet floor (draft 1.5x)", nod / nod_floor, 1.54, 0.05)
 
     # subj01's DISPLACEMENT is the stable quantity; the ratio is not. Expressed
     # as a ratio the anomaly looks confined to the no-diet arm (4.65x vs 1.23x)
