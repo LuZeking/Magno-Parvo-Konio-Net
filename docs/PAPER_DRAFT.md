@@ -135,11 +135,11 @@ The model splits its input once, before any convolution: stream 1 receives the
 luminance channel carrying the developmental transform, stream 2 the
 untransformed L-M chromatic channel (Methods §4.1). Read out separately with a
 linear probe, the two streams end training on opposite sides of the
-shape/texture boundary, and the same holds behaviourally.
+shape/texture boundary, and the same holds behaviourally (**Figure 1a**).
 
 **And the decomposition is asymmetric in how it arises** — scoring the same
 probe on an untrained network with the same front end separates the two routes
-(Table 1).
+(Table 1; **Extended Data Fig. 1a**).
 
 **Table 1. The two streams end on opposite sides of the boundary, by different
 routes.**
@@ -196,7 +196,8 @@ ventral hierarchy is explained by. We fit voxelwise banded-ridge encoding models
 per stream on NSD (8 subjects; Methods §4.5) and use them as measurement
 instruments twice: first to confirm that the two streams' cortical mappings are
 oppositely organised, then to locate where along the hierarchy each does its
-explanatory work.
+explanatory work (**Figure 2**). **Figure 1b** is the same instrument's verdict
+on §2.1's stream contrast, reached with no probe and no readout.
 
 **(a) In-silico cue conflict.** The encoding models are fitted on natural scenes
 only; no participant ever viewed a cue-conflict image. Passing the 1,200
@@ -653,6 +654,9 @@ the chromatic-transform cell straddles 0.5 across seeds (0.478–0.516), which i
 the denominator caveat below rather than a texture preference: that cell decides
 only 165 of 1,200 images and returns something near a coin flip by construction.
 
+Both instruments are drawn together in **Figure 1a**, where the interaction is
+the non-parallelism of the two lines.
+
 **Both single factors move a stream substantially toward neutral and neither
 crosses zero. Only the conjunction crosses, and it goes all the way.** This is an
 interaction, measured on all four cells rather than inferred from two, and it is
@@ -676,7 +680,7 @@ epoch nearest the diet arm's 0.556: epoch 10 at **0.548**, matched to within
 | cue-conflict, magno-only | **0.903** | 0.421 | **0.455** |
 
 **Matching accuracy closes 7.6% of the probe gap and 7.0% of the behavioural
-gap** — two instruments built on different machinery agreeing to within 0.6
+gap** (**Extended Data Fig. 1b,c**) — two instruments built on different machinery agreeing to within 0.6
 percentage points. The matched model's probe bias remains *negative*: it is
 still on the texture side of the sign flip, with every no-diet seed. Lowering a
 no-diet network's accuracy to the diet's moves it about a fourteenth of the way,
@@ -696,7 +700,7 @@ converges to, and this section tests it on an independent instrument, where a
 front end built to point the wrong way can falsify it.
 
 The four front ends of §2.4 hand a network very different stream asymmetries
-before any learning -- the untrained magno/parvo dimensionality ratio spans 0.59
+before any learning (**Figure 1c**) -- the untrained magno/parvo dimensionality ratio spans 0.59
 to 1.91 across them (quantified in Extended Data §E6.1). What does training do with them?
 
 The first-order answer, from the two conditions available previously, was that
@@ -794,7 +798,7 @@ models' own 112-way label space, 3 seeds per condition, on all four cells of
 §E6.2).
 
 **The diet-trained model is less robust on four of the five corruptions it was
-not trained on**, with complete seed separation on all four and the same
+not trained on** (**Figure 4**), with complete seed separation on all four and the same
 ordering in both statistics (§8). On phase-scrambling the two arms are
 indistinguishable, so we claim nothing there; the difference is bounded by
 equivalence to within **±0.033**, below the smallest OOD effect this paper
@@ -878,7 +882,8 @@ objective all at once, so it cannot say whether some *readout* of these
 components would agree with humans. §2.3's sweep answers that directly, because
 it moves the rate over frozen representations. Recomputing error consistency at
 all 21 values of `w`, for 3 seeds × 2 checkpoint policies of the diet arm and 3
-seeds of the no-diet arm (9 runs, 189 readouts), against the same 10 observers:
+seeds of the no-diet arm (9 runs, 189 readouts), against the same 10 observers
+(**Figure 5a**):
 
 | | diet arm | no-diet arm |
 |---|---|---|
@@ -948,7 +953,8 @@ shape-minus-texture logit margin rather than a binary choice, and — because th
 classifier is affine and the mixture weights sum to one (§2.3) — the entire
 readout sweep is exact arithmetic on two stored per-stream logit vectors.
 Choosing `w` on half the images and scoring it on the held-out half, as a
-percentage of the ceilings just quoted, with category effects removed:
+percentage of the ceilings just quoted, with category effects removed
+(**Figure 5b**):
 
 | | predicts *which cue* humans pick | predicts *whether either cue* resolves |
 |---|---|---|
@@ -978,7 +984,7 @@ item-level difficulty are separately addressable, which is consistent with the
 second point above: if the streams ordered images alike, matching the rate would
 also come close to matching the ordering, and it does not.
 
-*What we do not conclude from it.* The diet arm's difficulty correspondence
+*What we do not conclude from it* (**Figure 5c**)*.* The diet arm's difficulty correspondence
 (24.1%) exceeds the no-diet arm's (9.2%) with no overlap across seeds, at both
 checkpoint policies and on both correlation types — which invites the reading
 that the developmental front end makes the model's difficulty profile more
@@ -1011,8 +1017,8 @@ jobs 26444506, 26444507, 26444523, 26444525, 26444526.
 Stated here rather than in a limitations footnote, because a reviewer finds these
 immediately and because they bound the claim.
 
-**Prediction accuracy.** The no-diet model predicts BOLD **better**: median
-R²/NC **0.464 without the diet against 0.405 with it**, p=.0078 on both
+**Prediction accuracy** (**Figure 1d**)**.** The no-diet model predicts BOLD
+**better**: median R²/NC **0.464 without the diet against 0.405 with it**, p=.0078 on both
 statistics, 8/8 subjects — a ~13% cost in explained variance. The diet's case
 rests on stream differentiation and on the ventral gradient, **not** on
 prediction accuracy, and we do not argue otherwise.
@@ -2473,12 +2479,33 @@ Methods in §4.5.
       condition in `results/cue_conflict` (0.511 instead of 0.416), and a span
       annotation that drew the across-seed envelope (0.54) where the text
       reports the mean-curve span (0.505).
-- [ ] **Figures.** 3 of ~6 exist (`fig1_convergence`, `fig2_ventral_gradient`,
-      `fig3_readout_sweep`)
-      and the text has 2 figure callouts across seven result sections. Needed:
-      §2.1's two routes, §2.3's **w-sweep curve** (the data are in
-      `results/fusion_sweep/`, ready to plot), §2.4's 2×2, §2.6.1's degradation
-      curves, §2.6.2's shape-bias-against-κ scatter.
+- [x] **Figures complete for the main text** (2026-09-07). Five main figures
+      plus one Extended Data figure, each with a caption file in
+      `results/figures/`:
+      **Fig 1** `fig1_convergence` (§2.1/§2.4/§2.5/§2.7),
+      **Fig 2** `fig2_ventral_gradient` (§2.2),
+      **Fig 3** `fig3_readout_sweep` (§2.3),
+      **Fig 4** `fig4_ood_degradation` (§2.6.1, NEW),
+      **Fig 5** `fig5_human_correspondence` (§2.6.2, NEW),
+      **Extended Data Fig 1** `figE1_routes_and_accuracy` (§2.1 routes and
+      §2.4's accuracy control, NEW). Built by
+      `tmp_analysis/fig{4,5}_*.py` and `figE1_*.py` via `slurm/build_figures.sh`
+      (array 26444920); every value is read from committed results files.
+      **Two entries on the superseded list above were stale:** §2.3's w-sweep
+      curve is Figure 3a, built 2026-09-06, and §2.4's 2×2 is Figure 1a, built
+      2026-09-02 — neither was missing. The real gap was the callouts: the draft
+      had **one** (Figure 3a) across seven result sections, so Figures 1 and 2
+      existed uncited. Eleven callouts are now placed, covering every panel of
+      every figure.
+      *Two choices worth recording.* (i) §2.1's routes and §2.4's accuracy
+      control went to Extended Data rather than the main text because each rests
+      on one model per cell — the untrained references carry no training seed and
+      the matched arm is a single retrained run — so the figure's placement
+      matches the evidence's strength. (ii) An earlier draft of Extended Data
+      Fig 1 put the probe and cue-conflict instruments on twin y-axes; they have
+      different zero points (0 = sign flip, 0.5 = parity), which placed each
+      cue-conflict point at a probe value it does not have. Split into two
+      single-axis panels.
 - [x] **Methods expanded** (2026-09-03) — §4.1–4.7, every parameter read from
       the code and run scripts rather than from memory; 3 seeds per condition
       stated, and the subject vs seed inferential axes separated in §4.7.
