@@ -1,0 +1,46 @@
+
+============================================================================
+statistic = raw   (ALL fits from results/encoding)
+============================================================================
+model                       n              ecc|size              size|ecc
+gabor_blur_cs               8   +0.096 7/8 p=0.1094 +0.004 5/8neg p=0.9453
+gabor_noblur                8   +0.201 8/8 p=0.0078 -0.137 8/8neg p=0.0078
+untrained_seed0             8   +0.401 8/8 p=0.0078 -0.187 8/8neg p=0.0078
+untrained_seed0_noblur      8   +0.470 8/8 p=0.0078 -0.292 8/8neg p=0.0078
+dkl_bcs_seed0_trained       8   +0.325 8/8 p=0.0078 -0.356 8/8neg p=0.0078
+dkl_base_seed0_trained      8   +0.028 5/8 p=0.8438 +0.163 0/8neg p=0.0078
+
+  MATCHED contrast (ecc|size)                        diff   sign        p
+  diet:    trained - its OWN init (diet FE)        -0.077   2/8   0.1094
+  no diet: trained - its OWN init (noblur FE)      -0.442   0/8   0.0078
+  untrained diet   - input null diet               +0.306   8/8   0.0078
+  untrained noblur - input null noblur             +0.268   8/8   0.0078
+  trained diet     - input null diet               +0.229   7/8   0.0156
+  trained no-diet  - input null noblur             -0.173   2/8   0.1094
+
+  MATCHED contrast (size|ecc)                        diff   sign        p
+  diet:    trained - its OWN init (diet FE)        -0.169   0/8   0.0078
+  no diet: trained - its OWN init (noblur FE)      +0.454   8/8   0.0078
+
+============================================================================
+statistic = norm   (ALL fits from results/encoding)
+============================================================================
+model                       n              ecc|size              size|ecc
+gabor_blur_cs               8   +0.035 6/8 p=0.1484 +0.002 4/8neg p=0.9453
+gabor_noblur                8   +0.022 6/8 p=0.4609 -0.015 5/8neg p=0.5469
+untrained_seed0             8   +0.083 7/8 p=0.0156 -0.038 6/8neg p=0.0391
+untrained_seed0_noblur      8   +0.089 7/8 p=0.0234 -0.038 8/8neg p=0.0078
+dkl_bcs_seed0_trained       8   +0.119 8/8 p=0.0078 -0.086 8/8neg p=0.0078
+dkl_base_seed0_trained      8   -0.004 4/8 p=1.0000 +0.035 0/8neg p=0.0078
+
+  MATCHED contrast (ecc|size)                        diff   sign        p
+  diet:    trained - its OWN init (diet FE)        +0.036   6/8   0.1094
+  no diet: trained - its OWN init (noblur FE)      -0.093   2/8   0.1484
+  untrained diet   - input null diet               +0.048   6/8   0.1094
+  untrained noblur - input null noblur             +0.067   8/8   0.0078
+  trained diet     - input null diet               +0.084   8/8   0.0078
+  trained no-diet  - input null noblur             -0.026   3/8   0.4609
+
+  MATCHED contrast (size|ecc)                        diff   sign        p
+  diet:    trained - its OWN init (diet FE)        -0.048   1/8   0.0156
+  no diet: trained - its OWN init (noblur FE)      +0.073   8/8   0.0078

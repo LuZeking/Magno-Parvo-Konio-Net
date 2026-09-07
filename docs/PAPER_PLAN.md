@@ -10642,6 +10642,17 @@ written, and §99.4's suggested companion is retracted.
 
 ### §100.3 The finding underneath: this is architectural, not diet-created
 
+> **CORRECTED BY §101 — use that table, not this one.** Three defects here:
+> (a) the no-diet arm is contrasted against `untrained_seed0`, the **diet**
+> front end, when its own initialisation is `untrained_seed0_noblur` — so
+> −0.374 confounds front end with training; corrected it is **−0.442**;
+> (b) "untrained already exceeds trained diet" reads a direction off a null
+> (−0.077, p=.1094) and is withdrawn — the supported statement is "essentially
+> unchanged"; (c) four of the five contrasts cross `encoding_cc` against
+> `encoding`, a boundary that is removable since all six models exist in
+> `encoding`. §101 redoes the whole table within-pipeline. The conclusion
+> survives and strengthens, but is **raw-statistic-specific** (§101.4).
+
 Both untrained models carry the dissociation strongly — ecc|size **+0.401** and
 **+0.470** raw, 8/8, larger than the trained diet arm's +0.325. It is present
 at initialisation regardless of front end.
@@ -10719,3 +10730,109 @@ counted twice. That is right and the count should be **two**, not three: §98's
 suppression and §99's marginal-vs-partial gap are the same eccentricity/size
 structure seen at within-arm and between-arm level, not two independent
 instances. Recorded rather than quietly dropped.
+
+---
+
+## §101 §100.3 corrected: within-pipeline, each arm against its own
+## initialisation — the destruction is larger, and it is raw-statistic-specific
+
+`950c6df` raised three defects in §100.3. All three are real and all three are
+fixed here. Every fit below is from `results/encoding`, so **no contrast
+crosses the pipeline boundary**.
+
+### §101.1 Each arm against its OWN initialisation
+
+§100.3 contrasted the no-diet arm against `untrained_seed0` — the **diet**
+front end. Its own initialisation is `untrained_seed0_noblur`, so the published
+−0.374 confounded front end with training. Corrected, and the legs become
+parallel:
+
+| arm | initialisation | trained | change | subjects | p |
+|---|---|---|---|---|---|
+| diet | +0.401 | +0.325 | **−0.077** | 2/8 | .1094 |
+| no diet | +0.470 | +0.028 | **−0.442** | **0/8** | **.0078** |
+
+The destruction is **larger** than §100.3 claimed, not smaller. The `size|ecc`
+term, within arm:
+
+| arm | change in size\|ecc | subjects | p |
+|---|---|---|---|
+| diet | −0.169 (more negative) | 0/8 | .0078 |
+| no diet | **+0.454 (reverses sign)** | 8/8 | .0078 |
+
+### §101.2 "Untrained exceeds trained diet" is withdrawn
+
+§100.3 said untrained diet (+0.401) "already exceeds" trained diet (+0.325).
+That difference is −0.077, 2/8, **p = .1094** — a direction read off a null,
+the §98.4 fallacy one notch quieter. Withdrawn.
+
+The supported statement is **"training with the diet leaves it essentially
+unchanged"**, which is also the better fit to the reframing: a critical-period
+account predicts structure *held*, not structure reduced, and the stronger
+phrasing invited a question the evidence cannot answer.
+
+### §101.3 The input-null asymmetry, answered
+
+§100.5 flagged that `gabor_noblur` (+0.201) carries more than `gabor_blur_cs`
+(+0.096) and offered no account. The matched contrast settles what that does
+and does not mean:
+
+| contrast | diff | subjects | p |
+|---|---|---|---|
+| untrained diet − input null **diet** | +0.306 | 8/8 | .0078 |
+| untrained no-blur − input null **no-blur** | **+0.268** | **8/8** | **.0078** |
+| trained diet − input null diet | +0.229 | 7/8 | .0156 |
+| **trained no-diet − input null no-blur** | **−0.173** | 2/8 | .1094 |
+
+**The asymmetry is in the inputs, not in what the network adds.** Both
+untrained models exceed their own input null by a similar margin (+0.306,
++0.268), so "present at initialisation and largely not inherited from the
+input" holds for **both** front ends, symmetrically. I still have no account
+for why the two Gabor banks differ, and 950c6df notes the obvious guess —
+blur removes high-SF, which should *raise* an eccentricity gradient — predicts
+the wrong sign. Left unexplained rather than furnished with a story.
+
+The fourth row is the sharpest single result here: **after no-diet training the
+model carries no more eccentricity structure than a Gabor bank on its own
+input** (−0.173, n.s.), while the diet-trained model clearly does (+0.229,
+p = .0156).
+
+### §101.4 The honest split: this is a raw-statistic result
+
+On the norm statistic the same table is much weaker, and two load-bearing
+contrasts do not reach significance:
+
+| contrast | raw | norm |
+|---|---|---|
+| no diet: trained − own init | −0.442, 0/8, **.0078** | −0.093, 2/8, **.1484** |
+| untrained diet − input null diet | +0.306, 8/8, **.0078** | +0.048, 6/8, **.1094** |
+| trained diet − input null diet | +0.229, 7/8, .0156 | +0.084, 8/8, .0078 |
+| untrained no-blur − input null no-blur | +0.268, 8/8, .0078 | +0.067, 8/8, .0078 |
+| no diet: size\|ecc reversal | +0.454, 8/8, .0078 | +0.073, 8/8, .0078 |
+
+So the claim must be stated as resting on the **difference** statistic. What
+survives on both is the `size|ecc` **sign reversal** in the no-diet arm (8/8,
+p = .0078 on each) — that is the single most robust element of the whole
+result, and it is the one to lead with if only one is quoted.
+
+The norm index is bounded and divides by (uₘ+uₚ), which shrinks exactly where
+the unique variances are small; that is a plausible reason for the attenuation
+but it is a rationalisation, not a test, and the split should be reported
+rather than argued away.
+
+### §101.5 The cost of going within-pipeline, stated
+
+`dkl_bcs_seed1/2` and `dkl_base_seed1/2` are `encoding_cc`-only (§91.2), so
+this table is **seed 0 by construction**. Leg (c) therefore has a choice, and
+must say which it took:
+
+- **within-pipeline at one seed** (this table), or
+- **three seeds across the pipeline boundary** (§100.3's version).
+
+I take within-pipeline first, on 950c6df's reasoning that a confound you can
+eliminate beats one you can only disclose. Seed stability for the *trained
+arms* is already established separately in `encoding_cc`: §98.2 showed all
+three seeds agree on every within-arm term and §99.1 showed the arm interaction
+holds for all three seed pairings. What is seed-0-only is specifically the
+**comparison against untrained and against the input null**, because those
+models have one seed by construction and no `encoding_cc` counterpart.
