@@ -227,8 +227,8 @@ only the magno stream accounts for (Uₘ) and the part only the parvo stream doe
 (Uₚ), and summarising each retinotopic ROI by that contrast, gives a
 stream-preference profile from V1v to hV4.
 
-The profile **declines steeply with the diet, and without it is flat to within
-the resolution of the instrument** — early visual cortex is relatively more
+The profile **declines steeply with the diet and much more shallowly without
+it** — early visual cortex is relatively more
 magno-explained and hV4 relatively more parvo-explained, the direction a
 luminance/low-SF versus chromatic split predicts. Contrast = hV4 − mean(V1v,V1d)
 of the per-ROI median, all three seeds and both statistics (§4.7). **The source
@@ -280,15 +280,24 @@ committed script still reproduces, and it is the one that breaks the pattern.
 Extended Data
 §E2.2 records the dating and the solve.*
 
-**The no-diet arm is at the instrument's floor, and we no longer read a residual
-gradient into it.** The artefact floor established below is +0.051 in the
-normalised statistic, measured on each arm's own feature geometry. The diet
-contrast is **22× its floor**; the no-diet contrast is **1.5×** its, and drops
-to 1.1× under the leave-one-out check described next. So the correct statement is not that the no-diet
-profile is shallow-but-real: it is that no gradient is resolvable there. An
-earlier draft's "79% reduction" phrasing compared two numbers as though both
-measured something, and is withdrawn. The claim is a large gradient with the
-diet and none detectable without it.
+**The diet makes the gradient large; it does not make it exist.** Both arms
+carry a resolvable gradient once the instrument's signed bias is subtracted
+(−0.871 with the diet, −0.130 without, each non-zero in every subject), so the
+diet's effect is a factor of about seven on an effect that is already present.
+That is what §2.5's mechanism predicts and it is the claim we make. Two earlier
+framings are withdrawn. The first — "nearly flat without it", with a 79%
+reduction — used numbers that do not regenerate (§E2.2), but its *structure* was
+right, and the honest correction is 85% rather than a withdrawal: our objection
+that it "compared two numbers as though both measured something" was wrong,
+because both do. The second, which replaced it, claimed no gradient was
+resolvable without the diet. That was an error of ours in the opposite
+direction: it compared the magnitude of the no-diet contrast to the magnitude of
+the floor, as though the floor were a noise level. The floor is a **signed
+positive bias**, and a positive bias cannot manufacture a negative
+observation — it masks one. Treating a signed quantity as an unsigned tolerance
+is the same mistake that made subject 01's outlier look arm-specific, and it is
+the reason the paired displacement above, not a ratio, is the statistic we
+report.
 
 *One subject carries a third of the no-diet effect, and that is a property of
 the subject.* Subject 01's hV4−V1 is the steepest in the no-diet arm (−0.249
@@ -311,13 +320,14 @@ displacement is stable (−0.091 to −0.205) while the ratio ranges from 1.15×
 
 That leaves a real influence result rather than a provenance one, and we report
 it as such. Subject 01 alone accounts for about **31%** of the no-diet contrast:
-excluding it moves that arm from −0.079 to −0.054, i.e. from 1.5× the artefact
-floor to 1.1×. The n = 8 figure is primary; the n = 7 figure is a
+excluding it moves that arm from −0.079 to −0.054, and the bias-corrected
+displacement from −0.130 to −0.103, which stays non-zero in 7/7 subjects
+(p = .0156). The n = 8 figure is primary; the n = 7 figure is a
 leave-one-subject-out influence check, not the exclusion of a bad fit. Every row
 of the table keeps complete 8/8 separation and the exact Wilcoxon floor for its
 sample size under both (p = .0078 at n = 8, p = .0156 at n = 7), so the claim —
-a large gradient with the diet, none resolvable without it — does not turn on
-this subject; only the size of the unresolvable residual does. Full per-seed
+a large gradient with the diet and a much smaller resolvable one without it —
+does not turn on this subject; only the size of the smaller gradient does. Full per-seed
 sensitivity in Extended Data §E2.2.
 
 **This gradient was not pre-specified, and it is the survivor of a family.** We
@@ -370,11 +380,35 @@ agree: 0.038 against 0.051 is a 27% difference in point estimate but not a
 detectable one (Mann–Whitney p = .33, 8 versus 8), so the floor is a property of
 the instrument rather than of the model being fitted.
 
-Comparing each arm against the floor measured on **its own** geometry, the diet
-contrast is **22× its floor** and the no-diet contrast **1.5×** (1.1× under the
-leave-one-out check below). That is the quantitative form of the claim: a
-gradient far above the instrument's resolution with the diet, and one at that
-resolution without it.
+Because the floor is a *signed* bias rather than a noise level, the right
+comparison is not a ratio of magnitudes but a paired displacement: is each
+subject's real contrast displaced from what that same subject's own instrument
+returns when the truth is exactly zero? The instrument returns approximately
+truth plus bias, so real − floor estimates the true contrast.
+
+| arm | real | own floor | displacement | sign | p |
+|---|---|---|---|---|---|
+| diet | −0.834 | +0.038 | **−0.871** | 8/8 | .0078 |
+| no diet | −0.079 | +0.051 | **−0.130** | 8/8 | .0078 |
+| no diet, n = 7 | −0.054 | +0.049 | **−0.103** | 7/7 | .0156 |
+
+Both arms carry a gradient that is non-zero in **every subject** at the exact
+Wilcoxon floor for its sample size, and the diet arm's is **6.7× larger**. The
+conclusion does not depend on the bias being purely additive: fitting
+estimate = *a* · truth + *b* from both simulation conditions gives *a* = 1.22
+(no diet) and 1.12 (diet) with *b* the measured floor, and the recovered true
+contrasts are then −0.106 and −0.777, a ratio of 7.3×. Every version of the
+correction leaves the no-diet gradient resolvable and the diet gradient roughly
+seven times larger.
+
+*The assumption, stated rather than buried.* Subtracting the floor assumes the
+instrument's bias is not strongly dependent on the true structure it is added
+to. Two pieces of evidence support that and neither proves it: the floors
+measured on the two arms' feature geometries are indistinguishable (above)
+despite their real contrasts differing fifteen-fold, and the recovery condition
+lets the multiplicative term be estimated rather than assumed, which is the
+robustness check in the previous paragraph. We report the displacement as the
+better-founded statistic, not an exact one.
 
 What the simulation does *not* license is a claim about the effect's exact
 magnitude. The companion recovery condition, given a true gradient, returns the
@@ -1923,7 +1957,7 @@ Methods in §4.5.
       the right order of magnitude. `verify_new_claims.py` now locks all twelve
       values, the p-values, the separation counts and the source directory.
       Sign, ordering, monotonicity (ρ −0.964 vs −0.536) and significance are
-      unchanged; the diet contrast is 22× its own geometry's artefact floor.
+      unchanged; the bias-corrected diet displacement is −0.871.
       **CAUSE ESTABLISHED 2026-09-07 — the search could not have succeeded.**
       The no-diet figures were computed with the defective subj01 file still in
       the set, before the 2026-09-01 quarantine, and transcribed on 2026-09-06
@@ -1986,8 +2020,10 @@ Methods in §4.5.
       in point estimate and **not a detectable one** (Mann–Whitney p = .33,
       8 versus 8), so the floor is a property of the instrument rather than of
       the model being fitted, and the single-geometry caveat is lifted. Matched
-      to each arm's own geometry the ratios *improve*: diet **22×** (was 16×
-      against the wrong denominator) and no-diet **1.5×** / 1.1×. Recovery
+      to each arm's own geometry the bias-corrected displacements are
+      **−0.871** (diet) and **−0.130** (no diet), each non-zero in every
+      subject; the ratio framing this replaced is retired (see the
+      displacement item below). Recovery
       fidelity replicates the opposite-direction bias on the second geometry
       too (ratio ×1.15, difference ×0.69), so the withdrawal of "−0.862 is a
       floor" now rests on both arms. The earlier filename collision that lost

@@ -231,12 +231,54 @@ def check_production_statistic() -> None:
     _, pn_ = roi_profile(ENCODING_DIR, "dkl_base_seed0_trained", True)
     diet = abs(float(np.nanmean([hv4_minus_v1(r) for r in pd_])))
     nod = abs(float(np.nanmean([hv4_minus_v1(r) for r in pn_])))
-    # Each arm against the floor measured on ITS OWN geometry -- the pairing
-    # §2.2 uses, and the reason the diet ratio is 22x rather than 16x.
-    diet_floor = _ratio_contrasts("dkl_bcs", "B_manufacture").mean()
-    nod_floor = _ratio_contrasts("dkl_base", "B_manufacture").mean()
-    chk("diet / diet floor (draft 22x)", diet / diet_floor, 22.3, 0.3)
-    chk("no-diet / no-diet floor (draft 1.5x)", nod / nod_floor, 1.54, 0.05)
+    check_displacement()
+
+
+# §2.2's statistic for both arms: real contrast minus the SAME subject's own
+# zero-truth floor. A ratio of magnitudes would be wrong -- the floor is a
+# signed positive bias, not a noise level, so it cannot manufacture a negative
+# observation and its magnitude is not a tolerance. (draft: displacement, sign)
+DISPLACEMENT = {
+    ("dkl_bcs", ()): (-0.871, 8),
+    ("dkl_base", ()): (-0.130, 8),
+    ("dkl_base", (1,)): (-0.103, 7),
+}
+
+
+def check_displacement() -> None:
+    print("  [paired displacement: real - own zero-truth floor]")
+    for (arm, drop), (want, wn) in DISPLACEMENT.items():
+        tag = f"{arm}_seed0_trained"
+        subs_r, pr = roi_profile(ENCODING_DIR, tag, True, drop=drop)
+        real = {s: hv4_minus_v1(pr[i]) for i, s in enumerate(subs_r)}
+        floor = {}
+        for f in _files(arm):
+            d = json.load(open(f))
+            floor[d["subject"]] = stats_from(
+                d["conditions"]["B_manufacture"]["rows"], "est_")[0]
+        subs = [s for s in sorted(set(real) & set(floor)) if s not in drop]
+        disp = np.array([real[s] - floor[s] for s in subs])
+        label = f"{arm}{' n=7' if drop else ''}"
+        chk(f"{label} displacement", float(disp.mean()), want, 0.001)
+        neg, p = int((disp < 0).sum()), wilcoxon(disp).pvalue
+        ok = neg == wn == len(disp) and p < 0.02
+        print(f"  {'OK ' if ok else 'BAD'} {label} sign {neg}/{len(disp)} "
+              f"negative (draft {wn}), p={p:.4f}")
+        if not ok:
+            FAILS.append(f"{label} displacement sign")
+    # The between-arm factor §2.2 quotes.
+    def d(arm, drop=()):
+        tag = f"{arm}_seed0_trained"
+        subs_r, pr = roi_profile(ENCODING_DIR, tag, True, drop=drop)
+        real = {s: hv4_minus_v1(pr[i]) for i, s in enumerate(subs_r)}
+        fl = {}
+        for f in _files(arm):
+            j = json.load(open(f))
+            fl[j["subject"]] = stats_from(
+                j["conditions"]["B_manufacture"]["rows"], "est_")[0]
+        ss = [s for s in sorted(set(real) & set(fl)) if s not in drop]
+        return float(np.mean([real[s] - fl[s] for s in ss]))
+    chk("between-arm factor (draft 6.7x)", d("dkl_bcs") / d("dkl_base"), 6.7, 0.1)
 
     # subj01's DISPLACEMENT is the stable quantity; the ratio is not. Expressed
     # as a ratio the anomaly looks confined to the no-diet arm (4.65x vs 1.23x)

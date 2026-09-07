@@ -110,11 +110,12 @@ Five points make this more than a single fitted number:
   > the trained diet arm −0.834, so training *reduces* the magnitude rather than
   > amplifying it by 1.8× — the "amplification" was an artefact of the
   > superseded pair. The no-diet endpoint is not a smaller gradient but no
-  > resolvable gradient at all (−0.079, 1.5× the instrument floor), so the "79%
-  > reduction" framing is **withdrawn**: it compared two numbers as though both
-  > measured something. What survives is the direction — the diet arm keeps a
-  > large gradient and the no-diet arm does not — which is what §2.5's mechanism
-  > predicts and all that this bullet needs.
+  > gradient of −0.130 once the instrument's signed bias is subtracted, against
+  > −0.871 with the diet. So the "79% reduction" framing was structurally right
+  > and numerically superseded: the corrected figure is **85%**, or a factor of
+  > 6.7. An intermediate draft of ours withdrew the framing outright on the
+  > grounds that it "compared two numbers as though both measured something";
+  > that objection was wrong, because both do.
 - **It replicates across codebases.** Our standalone-trained model and the
   independent thesis checkpoint give −0.8618 and −0.8593 — two trainers, two
   augmentation pipelines, two seeds, agreeing to 0.0025 — and are statistically
@@ -278,13 +279,14 @@ no-diet seeds being 0.4% and 0.6%, so the 2.8% mean is inflated by a single
 subject. A per-voxel re-run of condition B would tighten ±0.007 to about ±0.002
 and move no conclusion, so it has not been done and is not treated as
 outstanding. The mismatch stays disclosed; it is the re-run that is closed.
-*These ratios use the no-diet floor of 0.051, which is the denominator for the
-no-diet arm. The diet arm's own floor is 0.038, so its ratio is 22× rather than
-16× and the bound is correspondingly looser in absolute terms and identical in
-conclusion. The one case worth naming: at n = 7 the no-diet contrast of 0.054
-against a floor of 0.051 ± 0.007 spans 0.93× to 1.23×, so it can sit marginally
-**below** the floor — which strengthens rather than weakens the reading that no
-gradient is resolvable in that arm.* Second, the ×1.26 and ×0.71 magnitude-fidelity figures are
+*§2.2 no longer expresses the comparison as a ratio to the floor, because the
+floor is a signed bias rather than a noise level; it reports the paired
+displacement (real − floor) instead. The estimator-mismatch bound bears on that
+displacement through the floor term, where a ±0.007 uncertainty on a floor of
+0.051 moves the no-diet displacement between −0.123 and −0.137 and the n = 7
+figure between −0.096 and −0.110. Both stay non-zero in every subject and the
+between-arm factor stays near 6.7, so the bound changes no conclusion here
+either.* Second, the ×1.26 and ×0.71 magnitude-fidelity figures are
 **ratios of the across-subject means** of the estimated and true contrasts
 (n = 8). An OLS slope of estimated on true, pooled over the 56 ROI × subject
 cells, gives 1.34 rather than 1.26 for the ratio index (r = +0.99); the two
@@ -501,9 +503,10 @@ floor, and here); the displacements are the stable quantity and are pinned in
 `verify_new_claims.py` for that reason.
 
 What remains is an influence result, reported as one. Subject 01 carries about
-**31%** of the no-diet contrast (−0.079 → −0.054 on exclusion, i.e. 1.5× → 1.1×
-the artefact floor). n = 8 is primary; n = 7 is a leave-one-subject-out check,
-not the removal of a bad fit.
+**31%** of the no-diet contrast (−0.079 → −0.054 on exclusion; bias-corrected
+displacement −0.130 → −0.103, still non-zero in 7/7 subjects, p = .0156). n = 8
+is primary; n = 7 is a leave-one-subject-out check, not the removal of a bad
+fit.
 
 
 ## E3 — §2.3, the readout sweep and the single-stream control
