@@ -56,7 +56,11 @@ weights -- the input is the only thing that can differentiate them. That is why
 > models exist only in `results/encoding/`, not in the `results/encoding_cc/`
 > directory that sources §2.2's three-seed table, so it **cannot be regenerated
 > from the same directory as the table it supports** (§E2.2). It is left as
-> written rather than half-rebuilt.
+> written rather than half-rebuilt. One label in it is a trap worth naming: the
+> "untrained, diet front end" row is the model `untrained_seed0`, whose name
+> contains no diet marker, because the front end is a fitting-time flag whose
+> *default* is the blur + contrast-sensitivity diet and `_noblur` marks the
+> exception. A reader searching for a model named for the diet will not find one.
 
 Moved from §2.2: the full raw-statistic paragraph, the three-seed replication of the in-silico cue conflict, the five supporting points with the six-control table, the koniocellular substitution, the per-control seed coverage, and the RSA comparison in full.
 
@@ -414,9 +418,36 @@ natural explanation, and it is a tight constraint rather than a free parameter
 because any candidate must leave the already-matching raw values untouched. None
 of the variants tried satisfies it: an absolute-value denominator and clipping at
 zero both leave the value unchanged at −0.5441, and dropping voxels with negative
-unique variance gives −0.4458, overshooting. We record the pattern for whoever
-returns to it and stop there, because continuing would be fitting the convention
-to the numbers. And the contrast reading is confirmed: it is
+unique variance gives −0.4458, overshooting. One structural candidate outside
+the denominator space was also pre-specified and tested, because `visualrois.py`
+prints `SPI hV4 − V1` and `SPI hV4 − V1/V2/V3` adjacently and a mix-up between
+two adjacently-printed contrasts is the error this analysis has repeatedly
+produced. For untrained, the V1–V3 reference gives −0.4868 against a published
+−0.471, much closer than V1's −0.5441. The declared criterion was that the
+V1–V3 reference must win *every* normalised row while V1 keeps every raw row.
+It wins **1 of 6**, and on the diet normalised row it misses by 0.399 against
+V1's 0.029. Rejected. Keeping the untrained near-match while discarding the diet
+row is precisely the convention-fitting we declined.
+
+Two constraints are recorded for anyone returning to this: a candidate must
+reproduce the raw *and* normalised values across all twelve simultaneously
+rather than closing one gap, and it must not disturb the untrained raw match,
+which is good to 0.002 and belongs to the one row with continuous provenance
+back to 2026-08-28. We stop here, because a fourth or fifth variant that happened
+to fit would not be evidence.
+
+*The raw estimator, identified.* Resolving a 0.005 disagreement between two
+independent recomputations established what §2.2's raw statistic actually is:
+the **median over voxels of (uₘ − uₚ)**, not the difference of the two per-ROI
+medians. On the untrained control the first gives −0.1199 against a published
+−0.118 (gap 0.002) and the second −0.1251 (gap 0.007). This is the
+median-of-differences versus difference-of-medians distinction one level below
+the ratio-index question above, and it tightens the untrained match, slightly
+strengthening the raw-reproduces/normalised-does-not split. Computed *before*
+the ÷nc division the same two give −0.049 and −0.042, both off by more than
+0.07, which is a third independent confirmation that both of §2.2's statistics
+are nc-divided. The twelve values in §2.2 are computed on this estimator and are
+unchanged by its identification. And the contrast reading is confirmed: it is
 hV4 − V1 (`visualrois.py:72-75`), since no other definition reaches the right
 order of magnitude on all four seed-0 values.
 
