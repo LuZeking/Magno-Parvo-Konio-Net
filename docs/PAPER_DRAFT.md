@@ -1004,6 +1004,41 @@ it is -- a readout statistic -- alongside error consistency wherever human trial
 data exist, and a shape-bias rate should not be used on its own to license a
 claim about a model's representations.
 
+**This dissociation has precedent, and the precedent sharpens the claim rather
+than pre-empting it.** Hermann et al. (2020) report that ImageNet-trained
+networks "make texture-based classification decisions a majority of the time,
+even if shape information is decodable from their hidden representations", and
+that the largest lever on the behavioural rate is data augmentation rather than
+architecture or objective. Islam et al. (2021) find shape information encoded
+more widely than the behavioural rate implies, concentrated in the last few
+layers and acquired within the first few epochs of training. Both establish that
+a representation can hold more shape than its behaviour reveals. We are not the
+first to report that the two come apart, and any reading of our title that
+claims otherwise is wrong.
+
+What is new here is the *form* of the dissociation. In both prior
+demonstrations the evidence is that a separately trained decoder recovers shape
+the classifier does not use, or that a different training run yields a different
+rate; in the first case the representation is interrogated by something other
+than the network's own decision, and in the second the representation does not
+stay fixed. Here it does. The classifier is affine and the two fusion weights
+sum to one, so `clf(w*y1 + (1-w)*y2) = w*clf(y1) + (1-w)*clf(y2)` holds exactly
+(max deviation 1.07e-06 on a logit scale of 0.32; §2.3). The shape-bias rate
+therefore sweeps 0.373 to 0.913 -- most of the attainable range, and across the
+human value -- while both representations stay bit-identical and the sweep is
+exact linear interpolation rather than an empirical trend. The rate is not
+merely an underestimate of the shape information present: within this family it
+is a free parameter of the readout, so a rate measured at one operating point
+constrains the representation no further than the family's range already does.
+That is the strong form of this section's title, and it is what licenses the
+methodological consequence above.
+
+Two further differences are worth stating plainly, because they mark the limits
+of the comparison as much as its scope. Neither prior study reports brain data,
+so the ventral-stream gradient of §2.2 has no counterpart in them. And neither
+asks whether any readout of a fixed pair of representations reaches human
+decision structure; §2.6.2 bounds that directly, and the answer is no.
+
 The two-condition literature invites the reading that the magnocellular channel
 *is* the shape pathway. §2.4 and Extended Data §E6.1 jointly rule that out. Shape bias
 requires a carrier x transform conjunction: an achromatic carrier alone does not
@@ -1483,6 +1518,11 @@ e2115302119. https://doi.org/10.1073/pnas.2115302119
 Jagadeesh, A. V., & Livingstone, M. S. (2024). Texture bias in primate ventral
 visual cortex. *ICLR 2024 Workshop on Representational Alignment*.
 https://openreview.net/forum?id=D6YvyvZ7P7
+
+Islam, M. A., Kowal, M., Esser, P., Jia, S., Ommer, B., Derpanis, K. G., &
+Bruce, N. (2021). Shape or texture: Understanding discriminative features in
+CNNs. *International Conference on Learning Representations*.
+https://doi.org/10.48550/arXiv.2101.11604
 
 Jang, H., & Tong, F. (2021). Convolutional neural networks trained with a
 developmental sequence of blurry to clear images reveal core differences between
