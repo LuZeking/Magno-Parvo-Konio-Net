@@ -1,0 +1,134 @@
+{
+  "script": "tmp_analysis/visualrois.py",
+  "written": "2026-09-07T12:08:14",
+  "git": {
+    "commit": "b9e39ab",
+    "dirty": "yes"
+  },
+  "model": "dkl_base_seed0_trained",
+  "src": "results/encoding_cc",
+  "subjects": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "convention": {
+    "nc_min": 0.1,
+    "min_voxels": 20,
+    "denominator_mask": "(unique_magno + unique_parvo) > 0.001",
+    "voxel_aggregation": "median-of-ratios",
+    "spi": "(unique_magno - unique_parvo)/(unique_magno + unique_parvo) per voxel, then median over voxels",
+    "note": "unique_* are divided by the noise ceiling; the pre-nc arrays are unique_*_pre_nc (formerly *_raw, \u00a786.3)",
+    "v1_reference": "mean(V1v, V1d)",
+    "across_subject_test": "Wilcoxon signed-rank, two-sided"
+  },
+  "inputs": [
+    {
+      "file": "dkl_base_seed0_trained_subj01.npz",
+      "bytes": 2853394,
+      "mtime": "2026-09-01T05:27:47.293126"
+    },
+    {
+      "file": "dkl_base_seed0_trained_subj02.npz",
+      "bytes": 2591668,
+      "mtime": "2026-09-01T05:44:38.377681"
+    },
+    {
+      "file": "dkl_base_seed0_trained_subj03.npz",
+      "bytes": 2763256,
+      "mtime": "2026-09-01T05:46:44.011946"
+    },
+    {
+      "file": "dkl_base_seed0_trained_subj04.npz",
+      "bytes": 2388043,
+      "mtime": "2026-09-01T05:51:44.741776"
+    },
+    {
+      "file": "dkl_base_seed0_trained_subj05.npz",
+      "bytes": 2367409,
+      "mtime": "2026-09-01T07:48:58.061413"
+    },
+    {
+      "file": "dkl_base_seed0_trained_subj06.npz",
+      "bytes": 3248517,
+      "mtime": "2026-09-01T07:45:20.299840"
+    },
+    {
+      "file": "dkl_base_seed0_trained_subj07.npz",
+      "bytes": 2302792,
+      "mtime": "2026-09-01T08:43:26.029420"
+    },
+    {
+      "file": "dkl_base_seed0_trained_subj08.npz",
+      "bytes": 2611216,
+      "mtime": "2026-09-01T07:58:41.772442"
+    }
+  ],
+  "spi_roi_means": {
+    "V1v": 0.8930322230762885,
+    "V1d": 0.8972831639674543,
+    "V2v": 0.8235912356807236,
+    "V2d": 0.8206310162093766,
+    "V3v": 0.8293884435540728,
+    "V3d": 0.8357711960240516,
+    "hV4": 0.8166825056319579
+  },
+  "contrasts": {
+    "SPI hV4 - V1": {
+      "mean_diff": -0.07847518788991355,
+      "W": 0.0,
+      "p": 0.0078125,
+      "n_positive": 0,
+      "n": 8,
+      "per_subject": [
+        -0.2487053804921352,
+        -0.06960243648387543,
+        -0.026591106745004978,
+        -0.05348848935781769,
+        -0.04271680863838023,
+        -0.08445452394523212,
+        -0.029644413339077857,
+        -0.07259834411778487
+      ]
+    },
+    "SPI hV4 - V1/V2/V3": {
+      "mean_diff": -0.03326704078670338,
+      "W": 7.0,
+      "p": 0.1484375,
+      "n_positive": 2,
+      "n": 8,
+      "per_subject": [
+        -0.16636751363470303,
+        -0.006089113658600875,
+        -0.0030923932766759865,
+        -0.02118124830699797,
+        0.005334064093516777,
+        -0.04334954217043807,
+        0.03966006650022558,
+        -0.07105064583995346
+      ]
+    },
+    "SPI dorsal - ventral bank": {
+      "mean_diff": 0.0025578246299326063,
+      "W": 16.0,
+      "p": 0.84375,
+      "n_positive": 4,
+      "n": 8,
+      "per_subject": [
+        -0.0397146307949634,
+        -0.027201348407553727,
+        0.037207035190863436,
+        0.030738514376220438,
+        -0.06476809147334794,
+        0.04347439215642357,
+        -0.007822741660410193,
+        0.04854946765222867
+      ]
+    }
+  }
+}

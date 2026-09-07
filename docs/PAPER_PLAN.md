@@ -9410,3 +9410,69 @@ provenance-drift reading over any single missing configuration.
   provenance-stamped file under `results/`, so a published table always has a
   regenerable source. This is the same defect class as §84's hardcoded
   `roi_nc` — a value whose provenance lives only in someone's shell history.
+
+---
+
+## §89 The §88.6 fix landed: `visualrois.py` takes `--model` and stamps its output
+
+The defect §88.3 identified — a published table produced by editing a
+hardcoded model string and re-running, leaving no record — is now closed at
+the source rather than only described.
+
+### §89.1 What changed
+
+- `--model` (default `untrained_seed0`), `--src` (default `results/encoding`),
+  `--out-dir` (default `results/visualrois`), and `--no-write`.
+- Every run writes `<model>_<date>.json` + `.txt` carrying: the git commit and
+  whether the tree was dirty, the model and source directory, the subject list,
+  **the convention** (`nc_min`, `min_voxels`, the denominator mask,
+  median-of-ratios, the SPI definition, the V1 reference, the test), the exact
+  input files with sizes and mtimes, the per-ROI SPI means, and all three
+  paired contrasts including per-subject differences.
+- The convention is recorded in the artifact because inferring it from code is
+  what §86 cost a full exchange, and the input sizes/mtimes are recorded
+  because that is what settled §87 and §88.
+
+### §89.2 The audit anchor is preserved, and proved so
+
+The default is deliberately unchanged behaviour. Verified by diffing the new
+script's default output against the pre-refactor output captured before any
+edit:
+
+```
+diff baseline.txt after.txt  ->  ANCHOR BYTE-IDENTICAL TO BASELINE
+```
+
+`SPI hV4 - V1  mean diff=-0.5441  W=0  p=0.0078  0/8 positive` still reproduces
+with no arguments. That row is the only one with continuous provenance back to
+2026-08-28, so it stays the thing a future reader can check the script against.
+
+A refactor of a script that produces published numbers is only safe if the old
+numbers are captured *first*; a diff after the fact against a remembered value
+would not have been evidence.
+
+### §89.3 The other paths exercised
+
+| invocation | `SPI hV4 − V1` | matches |
+|---|---|---|
+| (no arguments) | −0.5441 | §88.3 anchor |
+| `--model dkl_bcs_seed0_trained` | **−0.8335** | §86.4 recomputation |
+| `--src results/encoding_cc --model dkl_base_seed0_trained` | **−0.0785** | §86.4 / §87.6 |
+| `--model nonexistent_model` | clean message, exit 1 | — |
+
+The restated table now has a regenerable source: the three artifacts in
+`results/visualrois/` were produced by the committed script with no
+uncommitted edits, which is precisely what §2.2's superseded numbers lacked.
+
+### §89.4 What this does not fix
+
+The artifact records the tree as **dirty** when it is, which is honest but
+means an artifact is only as trustworthy as that flag. It does not capture the
+`src` directory's full contents, so a fit added between two runs of the same
+model would change the numbers without changing the recorded convention — the
+input list would show it, but only if someone reads it.
+
+`verify_new_claims.py` deliberately reimplements the convention rather than
+importing this script, so the twelve locked table values stay independently
+checked regardless of what happens here. That separation should be preserved:
+a verifier that imports the thing it verifies checks nothing.
