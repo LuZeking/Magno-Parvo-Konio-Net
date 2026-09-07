@@ -250,18 +250,30 @@ with the diet against −0.536 without) and the effect sizes differ by a factor 
 six (dz −6.60 vs −1.09).
 
 *These values supersede an earlier version of this table (normalised −0.862 /
-−0.802 / −0.781; raw −0.176 / −0.151 / −0.160) which **we were unable to
-reproduce**. Every one of the twelve superseded values was more negative than the
-recomputation, by 0.006 to 0.036 — a one-directional offset that is not
-rounding. We searched for the responsible configuration across noise-ceiling
-thresholds, the minimum-voxel and (uₘ+uₚ) masks, median-of-ratios versus
-ratio-of-medians, four V1 reference definitions, two across-subject
-aggregations, and both encoding output directories; no combination reproduces
-the superseded table, and none brings dz within reach of the −11.70 previously
-reported (the largest attainable is −8.74). Rather than quote numbers we cannot
-regenerate, the table above is what the production script returns, and the
-sign, ordering, monotonicity and significance are unchanged. Extended Data
-§E2.1 records the search.*
+−0.802 / −0.781; raw −0.176 / −0.151 / −0.160), and the reason the earlier ones
+cannot be regenerated is now established: **the no-diet figures were computed
+from a fit that was subsequently quarantined as defective and deleted.** The
+`dkl_base_seed0_trained` subject-01 file excluded on 2026-09-01 (§E2.2) was
+still in the set when they were computed; the values were transcribed into this
+draft on 2026-09-06, five days after the exclusion. Solving for the subject-01
+value that the published n = 8 means require, against the seven siblings'
+actual values, gives −0.429 on the normalised statistic (8.0× the sibling
+median, 53% of the reported effect) and −0.124 on the raw (6.3×, 46%) — and the
+quarantine README, written independently and earlier, describes the defective
+file as a "six-fold outlier" contributing "57% of the reported no-diet effect
+size" and being "the difference between significant and not on the raw
+statistic". The repaired file does leave the raw no-diet contrast marginal
+(p = .039). No configuration search could have recovered these numbers, because
+the data behind them no longer exists. Two residual gaps are **not** explained
+this way and remain disclosed as provenance drift: the diet column (the same
+solve would need a subject-01 value of −1.225, outside all 48 observed
+subject × model cells) and the untrained control, which moved in the opposite
+direction. A contributing cause is structural: `visualrois.py` hardcodes its
+model at line 23, so the diet and no-diet rows required an uncommitted edit,
+run and reverted, leaving no record — the untrained row is the only one the
+committed script still reproduces, and it is the one that breaks the pattern.
+Extended Data
+§E2.2 records the dating and the solve.*
 
 **The no-diet arm is at the instrument's floor, and we no longer read a residual
 gradient into it.** The artefact floor established below is +0.051 in the
@@ -1859,6 +1871,17 @@ Methods in §4.5.
       the fourth time that exact error has bitten in this thread, and this time
       it was mine.** Now reported as a leave-one-out influence check (subj01
       carries ~31% of the no-diet contrast), n = 8 primary.
+- [ ] **`visualrois.py` should take its model as an argument and stamp its
+      output.** Line 23 hardcodes `untrained_seed0`, so producing any other
+      row means editing the line, running, and reverting — which is precisely
+      how §2.2's table became unauditable. The durable fix is a `--model`
+      argument plus a provenance-stamped write under `results/`, so a published
+      table always has a regenerable source. Same defect class as the hardcoded
+      `roi_nc` ramp that inverted the artefact's sign: a load-bearing value
+      whose provenance lives only in a shell history. Note
+      `verify_new_claims.py` reimplements the convention independently rather
+      than importing this script, so the twelve table values stay checked
+      either way.
 - [ ] **The untrained control is not in the declared source directory.**
       §2.2 declares `results/encoding_cc/` authoritative, but
       `untrained_seed0` exists only in `results/encoding/`, so the −0.544
@@ -1882,6 +1905,19 @@ Methods in §4.5.
       values, the p-values, the separation counts and the source directory.
       Sign, ordering, monotonicity (ρ −0.964 vs −0.536) and significance are
       unchanged; the diet contrast is 16× the artefact floor.
+      **CAUSE ESTABLISHED 2026-09-07 — the search could not have succeeded.**
+      The no-diet figures were computed with the defective subj01 file still in
+      the set, before the 2026-09-01 quarantine, and transcribed on 2026-09-06
+      (−0.862 enters `docs/` in c0002a2, 14:24, with every input frozen since
+      08-28/29). Solving for the subj01 value each published mean requires gives
+      8.0× the sibling median and 53% of the effect on the normalised statistic,
+      6.3× and 46% on the raw — against a quarantine README, written earlier and
+      independently, that calls the file a "six-fold outlier" contributing "57%"
+      and "the difference between significant and not on the raw statistic".
+      Three independent quantities agree. The data no longer exists, so no
+      configuration could have reproduced those two numbers. The diet column
+      (which would need subj01 at −1.225, outside all 48 observed cells) and the
+      untrained control remain disclosed as drift with no established cause.
 - [ ] **Re-run condition B recording per-voxel ratio medians.** The floor
       (+0.051) is a ratio-of-medians while §2.2's effect is a median-of-ratios;
       on real data the two differ by 0.017 (diet) and 0.009 (no diet), about a

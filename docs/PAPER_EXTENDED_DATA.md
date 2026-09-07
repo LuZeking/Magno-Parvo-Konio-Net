@@ -247,7 +247,51 @@ reported dz of −11.70 is not attainable at all. The configurations searched:
 | output directory | `results/encoding/`, `results/encoding_cc/` |
 
 The closest joint match leaves the normalised values 0.014–0.021 off and reaches
-dz = −8.74 against the −11.70 reported. Two findings came out of the search and
+dz = −8.74 against the −11.70 reported. **The search could not have succeeded**,
+and the reason is now established rather than inferred.
+
+*The table is datable.* The value −0.862 enters `docs/` in commit c0002a2 on
+2026-09-06 14:24, as written prose. Every input was frozen well before that:
+`visualrois.py` unchanged since 2026-08-28, `stats.py` since 2026-08-29, the
+diet fits 2026-08-30, `encoding_cc` 2026-08-31 to 09-01. So post-hoc drift in
+the analysis code is ruled out — nothing the table depends on changed between
+computation and transcription.
+
+*The committed script cannot have produced it.* `visualrois.py:23` reads
+`load_results("results/encoding", "untrained_seed0")` — the model is hardcoded.
+Run unmodified it returns the untrained contrast (−0.5441), not the diet or
+no-diet rows. Those rows therefore required an uncommitted edit of that line,
+run and reverted. This is a stronger and more uncomfortable statement than "we
+cannot find the settings": the configuration was never recorded at all. It also
+explains why the untrained row is the only one still checkable against the
+committed script, and why it is the one whose discrepancy runs the opposite way.
+
+*The no-diet figures date to before the quarantine.* Solving for the subject-01
+value that each published n = 8 mean requires, holding the seven siblings at
+their actual values:
+
+| statistic | published | 7 siblings | subj01 required | × sibling median | share of effect | repaired subj01 |
+|---|---|---|---|---|---|---|
+| normalised | −0.101 | −0.0542 | **−0.4289** | 8.0× | 53% | −0.2487 (4.65×) |
+| raw | −0.034 | −0.0211 | **−0.1241** | 6.3× | 46% | −0.0685 (3.45×) |
+
+The quarantine README — written on 2026-09-01, independently, and before any of
+this analysis — describes the defective file as a **"six-fold outlier"**
+contributing **"57%"** of the reported no-diet effect size and being "the
+difference between significant and not on the raw statistic". The raw solve
+lands at 6.3× and 46%, and the repaired file does leave the raw no-diet contrast
+marginal (mean −0.027, p = .039, 6/8). Three independent quantities agree. The
+published no-diet values were computed with the defective file in the set,
+before 2026-09-01, and transcribed on 2026-09-06 — five days after that file was
+excluded and deleted. The data behind them no longer exists.
+
+*The diet column is something else.* The same solve would require a subject-01
+diet value of −1.225. The most extreme of the 48 observed subject × model cells
+is −0.997. The ratio index is not strictly bounded at ±1 once unique variance
+can be negative, so this is not impossible, but nothing near it occurs anywhere
+in the data. The diet gap (+0.029 normalised, +0.011 raw) and the untrained
+control (−0.073, opposite direction) are therefore left disclosed as provenance
+drift with no established cause. Two findings came out of the search and
 both are kept. `results/encoding_cc/` is the directory that holds all three
 seeds for both arms — `results/encoding/` has the diet arm at seed 0 only — and
 where the two overlap they are numerically identical, so `encoding_cc` is now
