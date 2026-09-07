@@ -279,20 +279,25 @@ to hV4 (0.408 → 0.322, ρ = −0.893, p = .007, n = 8). A declining nuisance a
 the same axis as a declining effect is exactly the confound a reader should
 suspect, so we simulated it: synthetic voxels built from the fitted feature
 spaces with the measured per-ROI noise ceilings imposed and the true
-magno−parvo unique-variance difference solved to zero in every ROI. The
-recovered contrast is **positive, +0.126 normalised (+0.025 raw), in 8/8
-subjects (p = .0078), and it *rises* with hierarchical rank (ρ = +0.68)**. The
-artefact therefore has the opposite sign to the observed effect on both the
-contrast and the gradient: it cannot produce a −0.862 declining at ρ = −0.964,
-and its presence means the measured contrast understates the true one. The
-companion recovery condition confirms the instrument is not merely inert — given
-a true gradient it recovers the ROI ordering exactly (ρ = +1.000 in 8/8) while
-compressing magnitudes toward zero, so −0.862 is a floor rather than a ceiling
-on the underlying difference. (Computed on the no-diet feature geometry, which
-is the harder case: that model predicts BOLD better, §2.7. The diet-arm
-geometry is being run and will be reported alongside; an earlier version of
-this simulation used a hardcoded *ascending* noise-ceiling ramp, ran the
-nuisance backwards, and produced a spurious −0.351 — see Extended Data.)
+magno−parvo unique-variance difference solved to zero in every ROI, then scored
+through the identical hV4 − V1 contrast reported above. The floor is **+0.051 on
+the normalised statistic (8/8 subjects, p = .0078, range +0.007 to +0.094) and
++0.0009 on the raw statistic (4/8, p = .84, indistinguishable from zero)**, and
+the simulated profile *rises* with hierarchical rank (per-subject ρ = +0.68)
+where the observed profile falls (−0.964). The artefact therefore has the
+opposite sign to the observed effect on both statistics and on the gradient, and
+on the normalised statistic it is 6% of the effect it would have to explain. It
+cannot produce this result; it opposes it. What the simulation does *not*
+license is a claim about the effect's exact magnitude: the companion recovery
+condition, given a true gradient, returns the ROI ordering perfectly (ρ = +1.000
+in 8/8) but is not magnitude-faithful, inflating the normalised contrast by
+1.26× while compressing the raw contrast to 0.71× of truth. We therefore read
+−0.862 as a sign-and-ordering result, not a calibrated effect size. (Computed on
+the no-diet feature geometry, which is the harder case: that model predicts BOLD
+better, §2.7. The diet-arm geometry is being run and will be reported
+alongside. Extended Data §E2.1 records an earlier version of this simulation
+that used a hardcoded *ascending* noise-ceiling ramp, ran the nuisance
+backwards, and inverted the artefact's sign.)
 
 Four properties make this more than a single fitted number, each set out with
 its numbers in Extended Data §E2. **Training decides the direction; the input
@@ -1773,15 +1778,26 @@ Methods in §4.5.
       26440398, array 0-15%6, `main`, no GPU;
       `tmp_analysis/vp_recovery_realnc.py`, Extended Data §E2.1). With the
       *measured* declining noise-ceiling profile imposed and the true contrast
-      solved to zero, the recovered contrast is **+0.126 normalised / +0.025
-      raw, 8/8 subjects, rising with rank (ρ = +0.68)** — the opposite sign to
-      the reported effect on both the contrast and the gradient, so the
-      estimator opposes §2.2's result rather than manufacturing it. The
-      recovery condition returns ρ = +1.000 in 8/8 with magnitudes compressed
-      toward zero, making −0.862 a floor. This also closes out the −0.351
-      alarm: that run used a hardcoded *ascending* ramp and drove the nuisance
-      backwards. The registered prediction (small and positive) held on sign;
-      its magnitude estimate (+0.05) was low by roughly 2.5×.
+      solved to exactly zero, the floor in §2.2's own hV4 − V1 contrast is
+      **+0.051 normalised (8/8, p = .0078) and +0.0009 raw (4/8, p = .84)**,
+      with the simulated profile *rising* (ρ = +0.68) where the observed one
+      falls. Opposite sign on both statistics and on the gradient, and 6% of
+      the effect's magnitude: the estimator opposes §2.2's result rather than
+      manufacturing it. **Two corrections went in with it.** The floor was
+      first computed as a median over the ROI profile (+0.126 / +0.025) — a
+      2.5× overstatement and, more importantly, *not §2.2's statistic*; a
+      parallel session's units challenge is what surfaced it, and
+      `verify_new_claims.py` now pins all four of §2.2's published numbers to
+      the hV4 − V1 reading, which is the only reading they reproduce under.
+      And the claim that −0.862 is "a floor rather than a ceiling" is
+      **withdrawn**: condition A shows the two statistics biased in opposite
+      directions (ratio ×1.26, difference ×0.71), so §2.2 now reads as
+      sign-and-ordering, not calibrated magnitude. No number from the earlier
+      ascending-ramp pilot is quoted anywhere — it does not reproduce at 1,000
+      components, so the registered +0.05 magnitude prediction it was scaled
+      from should not be scored against it either. (In §2.2's actual statistic
+      that prediction lands at +0.051, which is right; it was judged failed
+      only against our wrong statistic.)
 - [ ] **Diet-arm half of the artefact floor — RUNNING** (job 26442320, array
       0-7%6, `main`, no GPU). `vp_recovery_realnc.py` originally named its
       output by subject only, so tasks 8-15 of job 26440398 (`dkl_base`)

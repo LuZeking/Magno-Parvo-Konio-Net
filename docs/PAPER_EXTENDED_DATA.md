@@ -142,44 +142,71 @@ gradient belongs to the model whose global preference points the *other* way.
 
 ### E2.1 — the artefact floor, and a correction to how we first computed it
 
-The gradient in §2.2 is a difference of cross-validated R² across seven ROIs
-whose measurement noise is itself graded, so we asked what contrast the
-estimator returns when the true contrast is zero. Synthetic voxels were built
-from the fitted feature spaces, the true magno and parvo unique variances were
-solved so that their difference is exactly zero in every ROI, and the measured
-per-ROI noise ceiling was imposed. Two conditions were run per subject:
-**A_recovery** (a true gradient is present) and **B_manufacture** (the true
-difference is zero everywhere).
+**What the two statistics of §2.2 actually are.** The word *raw* has caused
+three separate errors in this analysis, so it is defined here once and used
+nowhere loosely. Both of §2.2's statistics are computed on the
+noise-ceiling-divided unique variances (`banded_ridge.variance_partition`
+returns `unique_magno = unique_m / nc`; `tmp_analysis/visualrois.py` reads those
+and prints them under the header *"Median unique variance / NC"*):
 
-| condition | normalised, subject-median | raw | sign | monotonicity ρ |
-|---|---|---|---|---|
-| B_manufacture (truth = 0) | **+0.126** (range +0.038 to +0.207) | +0.025 | 8/8 positive, p = .0078 | **+0.68** |
-| A_recovery (truth graded) | +0.361 | +0.064 | 8/8, p = .0078 | **+1.000** in 8/8 |
+| §2.2 label | construction | seed-0 diet | seed-0 no diet |
+|---|---|---|---|
+| **normalised** | ratio index, median over voxels of (uₘ−uₚ)/(uₘ+uₚ), then hV4 − mean(V1v,V1d) | −0.834 (paper −0.862) | −0.079 (paper −0.101) |
+| **raw** | difference, median over voxels of (uₘ−uₚ), then hV4 − mean(V1v,V1d) | −0.166 (paper −0.176) | −0.027 (paper −0.034) |
 
-Two things follow. The artefact under the real noise-ceiling profile is
-**positive and rising** with hierarchical rank, where the reported effect is
-negative and falling (−0.862, ρ = −0.964): it has the wrong sign twice over and
-so cannot manufacture the result — it opposes it, which makes the reported
-contrast an understatement. And the estimator is not inert: given a true
-gradient it recovers the ROI ordering perfectly (ρ = +1.000 in every subject)
-while compressing magnitudes toward zero, so the observed contrast is a floor
-on the underlying one.
+So *normalised* means normalised **by (uₘ+uₚ)**, not by the noise ceiling —
+both statistics are already nc-divided, and the ratio index is in any case
+exactly invariant to that division (it is unchanged to 4 dp when recomputed on
+the stored `unique_magno_raw` arrays). The statistic is a **hV4 − V1 contrast**,
+not a value at hV4 and not a median over the ROI profile; all four published
+numbers reproduce under that reading and under no other.
 
-**How we first got this wrong.** The first version of this simulation used a
-hardcoded noise-ceiling ramp that *ascends* from V1v to hV4 (0.15 → 0.45). The
-measured profile does the opposite — it declines (0.408 → 0.322, ρ = −0.893,
+**The floor.** Synthetic voxels were built from the fitted feature spaces, the
+true magno and parvo unique variances were solved so their difference is exactly
+zero in every ROI (verified: max |true contrast| = 0), and the measured per-ROI
+noise ceiling was imposed. Scored through the identical contrast:
+
+| condition | normalised (ratio index) | raw (difference) | monotonicity ρ |
+|---|---|---|---|
+| **B_manufacture** (truth = 0) | **+0.051**, 8/8 positive, p = .0078, range +0.007 to +0.094 | **+0.0009**, 4/8, p = .84 | **+0.68** |
+| **A_recovery** (truth graded) | +1.700 (truth +1.355; **×1.26**) | +0.499 (truth +0.700; **×0.71**) | **+1.000** in 8/8 |
+
+Two things follow, and a third does not. The artefact under the real
+noise-ceiling profile is **positive and rising** with hierarchical rank where the
+reported effect is negative and falling: wrong sign twice over, 6% of the
+effect's magnitude on the normalised statistic and indistinguishable from zero on
+the raw one. It cannot manufacture the result — it opposes it. And the estimator
+is not inert: given a true gradient it recovers the ROI ordering perfectly in
+every subject. What does **not** follow is that −0.862 is a lower bound. The
+recovery condition is not magnitude-faithful and the two statistics are biased in
+*opposite* directions — the ratio index inflated 1.26×, the difference compressed
+to 0.71×. An earlier draft of this section claimed the observed contrast was a
+floor rather than a ceiling; that was wrong, and §2.2 now reads the result as
+sign-and-ordering rather than as a calibrated effect size.
+
+**How we first got this wrong, twice.** The first version of this simulation
+used a hardcoded noise-ceiling ramp that *ascends* from V1v to hV4 (0.15 → 0.45).
+The measured profile does the opposite — it declines (0.408 → 0.322, ρ = −0.893,
 p = .007, n = 8; independently confirmed at ρ = −0.929) — so that run drove the
-nuisance backwards and manufactured a **negative** contrast of −0.351, which
-read as a serious threat to §2.2 for as long as it stood. It was not a threat;
-it was the same artefact with its sign inverted by an input that did not match
-the data. The mechanism is the 1/noise-ceiling normalisation, and the corrected
-sign was registered as a prediction before this run was scored. Verifying that
-a simulation is internally correct is not verifying that it simulates the right
-thing.
+nuisance backwards and inverted the artefact's sign, producing a negative
+contrast that read as a serious threat to §2.2 for as long as it stood. It was
+not a threat; it was this same artefact pointing the wrong way. Its alarming
+magnitude was additionally a low-resolution effect: re-run at the 1,000
+components used here it shrinks by more than an order of magnitude, so no number
+from that pilot is quoted. The second error was ours in the opposite direction —
+the floor was first reported as a median over the ROI profile (+0.126) rather
+than as §2.2's hV4 − V1 contrast (+0.051), which is a 2.5× overstatement of the
+artefact and was corrected before it left the draft. The mechanism in both cases
+is the 1/noise-ceiling normalisation. Verifying that a simulation is internally
+correct is not verifying that it simulates the right thing, and neither is
+checking that a number reproduces — a number can reproduce exactly and still be
+the wrong statistic.
 
 Computed on the no-diet feature geometry, the harder case, since that model
-predicts BOLD better (§2.7). Code: `tmp_analysis/vp_recovery_realnc.py`;
-results under `results/vp_recovery_realnc/`.
+predicts BOLD better (§2.7); the diet-arm geometry is running (job 26442320) and
+the artefact depends on feature geometry, so it may differ. Code:
+`tmp_analysis/vp_recovery_realnc.py`, checked by
+`tmp_analysis/verify_new_claims.py`; results under `results/vp_recovery_realnc/`.
 
 
 ## E3 — §2.3, the readout sweep and the single-stream control
