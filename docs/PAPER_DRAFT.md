@@ -272,6 +272,28 @@ manipulation that produces the apparent regional structure in the first place
 (see the closing paragraph of *Claims deliberately not made*, where that
 diagnosis is set out for the six).
 
+**The estimator cannot manufacture this gradient; it works against it.** Unique
+variance is a subtraction of cross-validated R² (§4.7), and measurement noise is
+not constant across the seven ROIs — the mean noise ceiling *declines* from V1v
+to hV4 (0.408 → 0.322, ρ = −0.893, p = .007, n = 8). A declining nuisance along
+the same axis as a declining effect is exactly the confound a reader should
+suspect, so we simulated it: synthetic voxels built from the fitted feature
+spaces with the measured per-ROI noise ceilings imposed and the true
+magno−parvo unique-variance difference solved to zero in every ROI. The
+recovered contrast is **positive, +0.126 normalised (+0.025 raw), in 8/8
+subjects (p = .0078), and it *rises* with hierarchical rank (ρ = +0.68)**. The
+artefact therefore has the opposite sign to the observed effect on both the
+contrast and the gradient: it cannot produce a −0.862 declining at ρ = −0.964,
+and its presence means the measured contrast understates the true one. The
+companion recovery condition confirms the instrument is not merely inert — given
+a true gradient it recovers the ROI ordering exactly (ρ = +1.000 in 8/8) while
+compressing magnitudes toward zero, so −0.862 is a floor rather than a ceiling
+on the underlying difference. (Computed on the no-diet feature geometry, which
+is the harder case: that model predicts BOLD better, §2.7. The diet-arm
+geometry is being run and will be reported alongside; an earlier version of
+this simulation used a hardcoded *ascending* noise-ceiling ramp, ran the
+nuisance backwards, and produced a spurious −0.351 — see Extended Data.)
+
 Four properties make this more than a single fitted number, each set out with
 its numbers in Extended Data §E2. **Training decides the direction; the input
 only supplies the starting point** — an untrained network on the diet front end
@@ -604,6 +626,28 @@ else, which is the strongest available evidence that the four nulls are real
 rather than a broken measurement. Note that the diet is *not* more robust to
 contrast reduction even though its front end includes a contrast-sensitivity
 cut, so "trained-in" does not automatically confer robustness either.
+
+**The schedule does not rescue it.** Our front end is fixed at a single
+developmental age (48 months, §4.1), whereas the developmental proposal it
+implements is about the *order* in which acuity and contrast sensitivity are
+relaxed. A reader may reasonably object that the nulls above test a static
+approximation and not the developmental trajectory. We therefore ran the same
+battery on an independently trained arm that does carry the progressive age
+transition (`thesis_dvd_trans`, thesis codebase). It behaves like the static
+diet, not like the no-diet control: its relative-accuracy AUC falls **inside the
+static diet arm's three-seed range on five of the seven corruptions** (uniform
+noise 0.640 in [0.619, 0.647]; high-pass 0.680 in [0.647, 0.696]; rotation 0.572
+in [0.567, 0.582]; low-pass 0.436 in [0.434, 0.464]; contrast 0.489 in [0.460,
+0.493]) and is closer to the diet arm than to the no-diet arm on six of seven.
+On the two corruptions where it sits outside that range — false colour 0.839 and
+phase-scrambling 0.362 — it is *below* the diet arm, i.e. further from the
+no-diet control (0.938, 0.373), not nearer. Clean accuracy behaves the same way:
+0.568, against 0.553 for the static diet and 0.695 without a diet, so the
+schedule recovers neither the robustness nor the accuracy. This arm has **one
+seed and one saved checkpoint** (epoch 147, the last), so we claim containment
+within the diet arm's observed seed range and not an equivalence test; that
+single checkpoint is also a late one, and the diet arm is the one that degrades
+late, which makes the agreement conservative rather than flattering.
 
 > **The claim.** Shape bias and OOD robustness are not intrinsically coupled.
 > This does not contradict Geirhos et al., who showed that *Stylized-ImageNet
@@ -1725,6 +1769,39 @@ Methods in §4.5.
 
 ## Open items before submission
 
+- [x] **Artefact floor for §2.2 — DONE (no-diet arm) 2026-09-07** (job
+      26440398, array 0-15%6, `main`, no GPU;
+      `tmp_analysis/vp_recovery_realnc.py`, Extended Data §E2.1). With the
+      *measured* declining noise-ceiling profile imposed and the true contrast
+      solved to zero, the recovered contrast is **+0.126 normalised / +0.025
+      raw, 8/8 subjects, rising with rank (ρ = +0.68)** — the opposite sign to
+      the reported effect on both the contrast and the gradient, so the
+      estimator opposes §2.2's result rather than manufacturing it. The
+      recovery condition returns ρ = +1.000 in 8/8 with magnitudes compressed
+      toward zero, making −0.862 a floor. This also closes out the −0.351
+      alarm: that run used a hardcoded *ascending* ramp and drove the nuisance
+      backwards. The registered prediction (small and positive) held on sign;
+      its magnitude estimate (+0.05) was low by roughly 2.5×.
+- [ ] **Diet-arm half of the artefact floor — RUNNING** (job 26442320, array
+      0-7%6, `main`, no GPU). `vp_recovery_realnc.py` originally named its
+      output by subject only, so tasks 8-15 of job 26440398 (`dkl_base`)
+      **overwrote** tasks 0-7 (`dkl_bcs`) and the diet half was lost. The model
+      is now in the filename and the eight surviving `dkl_base` files were
+      renamed in place, not recomputed. §2.2 and §E2.1 currently state the
+      no-diet geometry and say so; add the diet figure when it lands and re-run
+      `tmp_analysis/verify_new_claims.py`.
+- [x] **Progressive-transition OOD arm — DONE 2026-09-07** (job 26440500,
+      single job, N=1; `results/ood_bestep/thesis_dvd_trans.json`, §2.6.1 and
+      Extended Data §E6.2). This answers the strongest objection to §2.6.1 —
+      that our front end is static at 48 months while the developmental
+      proposal is about the training *order*. The arm that carries the actual
+      age transition lands **inside the static diet arm's three-seed range on
+      five of seven corruptions**, closer to the diet arm than to the no-diet
+      arm on six of seven, and *below* the diet arm on the two exceptions.
+      Clean accuracy 0.568 against 0.553 (diet) and 0.695 (no diet): the
+      schedule recovers neither robustness nor accuracy. One seed and one saved
+      checkpoint (epoch 147), so the claim is containment in the observed seed
+      range, not equivalence.
 - [x] **Geirhos human observer data obtained** (2026-09-02) —
       `/scratch/byrong/VST_data/geirhos_human_data/cue_conflict`, computed by
       `tmp_analysis/geirhos_humans.py`, recorded in PLAN §52. Human mean 0.958;

@@ -140,6 +140,47 @@ the demonstration: the diet-trained and no-diet models sit on opposite sides of
 the global stream-bias axis (-0.495 against +0.849), and the strong regional
 gradient belongs to the model whose global preference points the *other* way.
 
+### E2.1 — the artefact floor, and a correction to how we first computed it
+
+The gradient in §2.2 is a difference of cross-validated R² across seven ROIs
+whose measurement noise is itself graded, so we asked what contrast the
+estimator returns when the true contrast is zero. Synthetic voxels were built
+from the fitted feature spaces, the true magno and parvo unique variances were
+solved so that their difference is exactly zero in every ROI, and the measured
+per-ROI noise ceiling was imposed. Two conditions were run per subject:
+**A_recovery** (a true gradient is present) and **B_manufacture** (the true
+difference is zero everywhere).
+
+| condition | normalised, subject-median | raw | sign | monotonicity ρ |
+|---|---|---|---|---|
+| B_manufacture (truth = 0) | **+0.126** (range +0.038 to +0.207) | +0.025 | 8/8 positive, p = .0078 | **+0.68** |
+| A_recovery (truth graded) | +0.361 | +0.064 | 8/8, p = .0078 | **+1.000** in 8/8 |
+
+Two things follow. The artefact under the real noise-ceiling profile is
+**positive and rising** with hierarchical rank, where the reported effect is
+negative and falling (−0.862, ρ = −0.964): it has the wrong sign twice over and
+so cannot manufacture the result — it opposes it, which makes the reported
+contrast an understatement. And the estimator is not inert: given a true
+gradient it recovers the ROI ordering perfectly (ρ = +1.000 in every subject)
+while compressing magnitudes toward zero, so the observed contrast is a floor
+on the underlying one.
+
+**How we first got this wrong.** The first version of this simulation used a
+hardcoded noise-ceiling ramp that *ascends* from V1v to hV4 (0.15 → 0.45). The
+measured profile does the opposite — it declines (0.408 → 0.322, ρ = −0.893,
+p = .007, n = 8; independently confirmed at ρ = −0.929) — so that run drove the
+nuisance backwards and manufactured a **negative** contrast of −0.351, which
+read as a serious threat to §2.2 for as long as it stood. It was not a threat;
+it was the same artefact with its sign inverted by an input that did not match
+the data. The mechanism is the 1/noise-ceiling normalisation, and the corrected
+sign was registered as a prediction before this run was scored. Verifying that
+a simulation is internally correct is not verifying that it simulates the right
+thing.
+
+Computed on the no-diet feature geometry, the harder case, since that model
+predicts BOLD better (§2.7). Code: `tmp_analysis/vp_recovery_realnc.py`;
+results under `results/vp_recovery_realnc/`.
+
 
 ## E3 — §2.3, the readout sweep and the single-stream control
 
@@ -417,6 +458,29 @@ claims (rotation, 0.041). This is the weakest of the paper's four equivalence
 results and is labelled as such: with 3 seeds per arm it rests on a Welch
 interval at **2.3 degrees of freedom**, and PLAN §77.4 declared in advance that
 no *nonparametric* equivalence result is obtainable at 3v3 at any bound.
+
+**The progressive-transition arm.** `thesis_dvd_trans` (thesis codebase, one
+seed, one saved checkpoint at epoch 147) carries the actual developmental age
+transition rather than our fixed 48-month front end. Relative-accuracy AUC,
+against the static arms above:
+
+| corruption | `dvd_trans` | static diet (3-seed range) | no diet | inside diet range |
+|---|---|---|---|---|
+| uniform noise | 0.640 | 0.634 [0.619, 0.647] | 0.729 | yes |
+| high-pass | 0.680 | 0.678 [0.647, 0.696] | 0.827 | yes |
+| rotation | 0.572 | 0.574 [0.567, 0.582] | 0.615 | yes |
+| false colour | 0.839 | 0.854 [0.845, 0.860] | 0.938 | no — *below* diet |
+| phase-scrambling | 0.362 | 0.382 [0.365, 0.391] | 0.373 | no — *below* diet |
+| *low-pass (trained-in)* | *0.436* | *0.444 [0.434, 0.464]* | *0.356* | *yes* |
+| *contrast (trained-in)* | *0.489* | *0.481 [0.460, 0.493]* | *0.549* | *yes* |
+
+Inside the static diet arm's seed range on five of seven; closer to the diet
+arm than to the no-diet arm on six of seven; on the two exceptions it is below
+the diet arm rather than toward the no-diet control. Clean accuracy 0.5682,
+against 0.5530 (diet) and 0.6951 (no diet). At one seed no separation statistic
+is available, so the main text claims containment in the observed diet range
+and not equivalence. The single checkpoint is a late one and the diet arm is
+the arm that degrades late, so the agreement is conservative.
 
 *Checkpoint policy.* Four of five corruptions separate under **both** the final-
 and the best-checkpoint policy; only which one is excluded changes. The

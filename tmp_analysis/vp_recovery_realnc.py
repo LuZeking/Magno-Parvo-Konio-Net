@@ -373,8 +373,12 @@ def main() -> int:
         print(f"  [{cond}] rho(true, rank)={rho_true:+.3f}  "
               f"rho(est, rank)={rho_est:+.3f}\n", flush=True)
 
+    # Model MUST be in the filename: the submit script runs both arms over the
+    # same eight subjects, and a subject-only name silently lets the second arm
+    # overwrite the first (it did, on job 26440398 -- the diet half was lost).
     path = os.path.join(
-        args.out_dir, f"vp_recovery_subj{args.subject:02d}.json")
+        args.out_dir,
+        f"vp_recovery_{args.model}_subj{args.subject:02d}.json")
     with open(path, "w") as f:
         json.dump(results, f, indent=2)
     print(f"saved -> {path}")

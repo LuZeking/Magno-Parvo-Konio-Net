@@ -1,0 +1,40 @@
+==================================================================
+(3) IDENTIFIABILITY SPECTRUM at n_comp=1000
+==================================================================
+run    n  sig_shared    sig_min  sig_mean  sig_med
+ASC    8      0.9258   1.61e-04    0.3065   0.2933
+REAL   8      0.9539   3.00e-04    0.3243   0.3068
+
+pilot record (S82, n_comp=60): sig_min 0.0029, sig_max 0.813
+
+==================================================================
+(1) BIAS MAGNITUDE, condition B (true difference is exactly 0)
+==================================================================
+
+ASC: nc 0.150-0.450 (factor 3.00), rho(nc,rank)=+1.000
+   normalised bias  mean +0.0473  spread 0.0284  rho vs rank -0.857 (p=0.014)
+   raw bias         mean +0.0132  spread 0.0076  rho vs rank +0.750
+   contrast hV4-V1v (normalised) = -0.0242
+   raw ~ nc^+0.43   corr(norm, 1/nc) = +0.854
+
+REAL: nc 0.320-0.413 (factor 1.29), rho(nc,rank)=-0.893
+   normalised bias  mean +0.0256  spread 0.0019  rho vs rank +0.536 (p=0.215)
+   raw bias         mean +0.0094  spread 0.0021  rho vs rank -0.893
+   contrast hV4-V1v (normalised) = +0.0008
+   raw ~ nc^+0.90   corr(norm, 1/nc) = +0.381
+
+==================================================================
+(2) DISCRETISATION CHECK -- are est_diff values quantised?
+==================================================================
+ASC: n=112  unique@6dp=112  unique@3dp=83  min gap 2.80e-05
+REAL: n=112  unique@6dp=112  unique@3dp=81  min gap 2.30e-06
+
+==================================================================
+CONDITION A at 1000 components -- attenuation, not just rank
+==================================================================
+ASC: rho(est,rank) mean +1.000 (min +1.000)
+   true range -0.3037..+0.4541  est range -0.0453..+0.3916
+   est = 0.584 x true  -> attenuation 1.71x
+REAL: rho(est,rank) mean +1.000 (min +1.000)
+   true range -0.3315..+0.4263  est range -0.2335..+0.3078
+   est = 0.713 x true  -> attenuation 1.40x
