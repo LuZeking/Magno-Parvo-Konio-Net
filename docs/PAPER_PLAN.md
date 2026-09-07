@@ -10251,3 +10251,96 @@ The diet arm is 8/8 at p = .0078 in **all six** combinations.
 So the settled position is doubly supported: the residual is a generator
 artefact (§96.2), and the treatment that ignores it is the only one that does
 not depend on how the floor is paired.
+
+---
+
+## §97 The parameter-matched control is submitted — §64.5's B branch is being
+## resolved rather than carried as a caveat
+
+§72.6 recorded the `resnet34` arm as "3 seeds × ~26 h and has not been
+submitted; that is a decision, not an oversight." That decision is reversed.
+Job **26444916** (`--array=0-2`, `agcichy`, `qos=standard`, `gpu:a5000:1`,
+32G, 4-day limit) trains three seeds of `dkl_bcs_single34`.
+
+### §97.1 Why it had to be run
+
+`train_single_stream.sh` pre-committed the trigger: the param-matched arm is
+needed "only if this arm LOSES … and that run should be submitted then, not
+now." It lost. §72.1 recorded outcome **B** — the split buys shape bias — and
+§64.5's B branch names a `resnet34` arm as *required* in exactly that case.
+
+Two readings currently survive the result that a half-capacity single stream
+beat the two-stream model's 0.6749 integrated shape bias: the **split** buys
+shape bias, or **twice the trunk parameters** do. This arm holds parameters
+fixed and varies only the split, so:
+
+- if `resnet34`-single still beats 0.6749, the effect is **capacity**, and leg
+  (b) must stop attributing it to the two-stream architecture;
+- if it does not, the split is doing the work and the 0.0875 gap stands with
+  the confound **retired** rather than disclosed.
+
+Either outcome resolves §64.5's B. Leaving it open means a referee who reads
+the pre-registration finds a branch the paper declared binding and then did not
+follow.
+
+### §97.2 The premise was measured, not assumed
+
+§72.6 asserted "~21.3M against ~22.4M". Verified before spending the GPU time:
+
+| model | architecture | in-channels | parameters | vs two-stream |
+|---|---|---|---|---|
+| `dkl_bcs` | two ResNet18 trunks | (1, 1) | **22,397,936** | — |
+| `dkl_bcs_single` | one ResNet18 trunk | (2, 0) | 11,230,832 | **50.1%** |
+| **`dkl_bcs_single34`** | **one ResNet34 trunk** | (2, 0) | **21,338,992** | **95.3%** |
+
+A 4.7% mismatch, against the 49.9% deficit of the arm that triggered this. The
+control is genuinely parameter-matched, and §72.6's figures are confirmed to
+three significant figures. Forward pass checked on the real input shape
+(2-channel, 256², logits (2, 112)) for both single-stream arms.
+
+### §97.3 The collision was designed out, not remembered
+
+The run directory is `{condition}_seed{n}` with **no architecture in it**. So
+`--condition dkl_bcs_single --like-resnet resnet34` would have written a
+ResNet34 run into `dkl_bcs_single_seed0`, overwritten the existing ResNet18
+checkpoints, and let `--resume` load them — silently, since the array would
+report success. That is §87's failure exactly, which cost a whole arm of a
+16-task array.
+
+Fixed structurally rather than by remembering the flag:
+
+- `like_resnet` now lives in the **condition** (`dkl_bcs_single34`), so the
+  name and the architecture cannot diverge;
+- `--like-resnet` defaults to `None` and still overrides for one-off probes,
+  resolved as `args.like_resnet or cfg.get("like_resnet", "resnet18")`;
+- the resolved architecture and total parameter count are printed at startup
+  **and** written to `config.json` as `like_resnet_resolved` / `n_trunk_params`,
+  because `vars(args)` alone would have recorded `like_resnet: null`.
+
+The last point is §89's lesson applied to the trainer: an artefact should state
+what was built, not leave it inferable.
+
+### §97.4 Resources sized from measurement
+
+`mpk_single` (26421237, ResNet18) ran 150 epochs in 1d02–03h with
+**MaxRSS 23,067,728K = 22.0 GiB against a 22G request** — sitting exactly at
+its limit with no headroom. ResNet34 is deeper, so `--mem=32G` (measured +
+~45%), inside the 64G project cap. Expect ~2 days per seed at ~1.8× the
+ResNet18 FLOPs; `--time=4-00:00:00` leaves margin. Checked before submitting:
+no `QOSMaxGRESPerUser` pending, 12 GPU jobs running, `standard` caps at 16.
+
+### §97.5 The analysis protocol is already fixed
+
+§64.6 binds, and is not renegotiable after seeing the numbers: assert 150
+epochs and report sd(val_top1) over the last 20 plus best-epoch as well as
+last-epoch accuracy; three seeds both sides; report complete separation and the
+raw difference with its range, **not** a p-value, since 3v3 floors at p = 0.10;
+report the cue-conflict decision rate alongside the shape bias; no stream
+statistics, as this arm has none.
+
+One addition from §92–§96: whichever shape-bias statistic is quoted must be
+named with its estimator. The single-stream comparison is a difference of two
+scalars, so it has none of §2.2's ratio-versus-numerator ambiguity — but the
+decision-rate caveat in §64.6(4) is the same shape of problem, a ratio whose
+denominator changes between arms, and should be reported as a count over a
+named subset rather than as a bare percentage.

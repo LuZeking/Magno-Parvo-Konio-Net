@@ -75,6 +75,21 @@ CONDITIONS = {
     # §64 write-up: that confound only bites if this arm LOSES.
     "dkl_bcs_single": dict(input_mode="dkl", blur=True, cs=True,
                            single_stream=True),
+    # The parameter-matched version of the arm above, triggered by the letter
+    # of §64.5's outcome B: the split bought shape bias, so the capacity
+    # confound has to be retired before that is attributed to the split rather
+    # than to having twice the trunk parameters. One ResNet34 trunk (~21.3M)
+    # against two ResNet18 trunks (~22.4M) -- see §97 for the measured counts.
+    #
+    # `like_resnet` lives in the CONDITION, not only in the CLI flag, because
+    # the run directory is named `{condition}_seed{n}` with no architecture in
+    # it. Passing --like-resnet alone would write a ResNet34 run into
+    # `dkl_bcs_single_seed0`, overwriting the existing ResNet18 checkpoints and
+    # letting --resume load them. Binding the architecture to the condition
+    # name makes the two impossible to separate (§87 lost an arm to exactly
+    # this class of collision).
+    "dkl_bcs_single34": dict(input_mode="dkl", blur=True, cs=True,
+                             single_stream=True, like_resnet="resnet34"),
 }
 
 
@@ -265,7 +280,10 @@ def main():
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--num-workers", type=int, default=8)
     p.add_argument("--num-classes", type=int, default=112)
-    p.add_argument("--like-resnet", default="resnet18")
+    # Default None, not "resnet18": the condition supplies the architecture
+    # for arms that pin one (dkl_bcs_single34), and a truthy default here
+    # would silently win over it. Falls back to resnet18 when neither sets it.
+    p.add_argument("--like-resnet", default=None)
     p.add_argument("--age-months", type=int, default=48)
     p.add_argument("--max-steps", type=int, default=None,
                    help="stop early (smoke test)")
@@ -289,6 +307,11 @@ def main():
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    # Explicit --like-resnet wins (one-off probes), then the condition's own
+    # architecture, then the historical default. Resolved before the run
+    # directory is created so config.json records what was actually built.
+    arch = args.like_resnet or cfg.get("like_resnet", "resnet18")
 
     run = f"{args.condition}_seed{args.seed}"
     out_dir = os.path.join(args.out_dir, run)
@@ -318,7 +341,7 @@ def main():
     single = cfg.get("single_stream", False)
     model = TwoStreamNetwork(
         num_classes=args.num_classes,
-        like_resnet=args.like_resnet,
+        like_resnet=arch,
         seperate_from_layer=0,
         # baseline=True builds ONE trunk (stream2_block1 = None) and takes the
         # x_2=None forward path; combined_color makes its stem 2-channel so the
@@ -344,10 +367,16 @@ def main():
     criterion = nn.CrossEntropyLoss()
 
     with open(os.path.join(out_dir, "config.json"), "w") as f:
+        # `like_resnet` in vars(args) is None whenever the condition supplied
+        # the architecture, so record what was actually built rather than
+        # leaving the resolved value inferable only from condition_cfg.
         json.dump({**vars(args), "condition_cfg": cfg,
+                   "like_resnet_resolved": arch,
+                   "n_trunk_params": sum(p.numel() for p in model.parameters()),
                    "in_channels": [c1, c2]}, f, indent=2)
 
     print(f"[{run}] train={len(train_ds)} val={len(val_ds)} device={device} "
+          f"arch={arch} params={sum(p.numel() for p in model.parameters()):,} "
           f"in_channels={c1},{c2} amp={amp} workers={n_workers}",
           flush=True)
 

@@ -1,0 +1,18 @@
+condition              arch        in_ch       params
+dkl_bcs                resnet18   (1, 1)   22,397,936
+dkl_bcs_single         resnet18   (2, 0)   11,230,832
+dkl_bcs_single34       resnet34   (2, 0)   21,338,992
+
+two ResNet18 trunks   22,397,936
+one ResNet18 trunk    11,230,832   (50.1% of two-stream)
+one ResNet34 trunk    21,338,992   (95.3% of two-stream)
+
+§72.6 claims ~21.3M vs ~22.4M -> ratio 0.951
+measured ratio resnet34-single / two-stream = 0.953
+parameter mismatch 4.7% (MATCHED, control is valid)
+
+forward pass, batch 2 x 2ch x 256 x 256:
+  dkl_bcs_single       resnet18  -> logits (2, 112)
+  dkl_bcs_single34     resnet34  -> logits (2, 112)
+
+OK
