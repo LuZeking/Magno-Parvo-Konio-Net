@@ -1,0 +1,11 @@
+implementation verified: HL CI excludes zero iff Wilcoxon p < alpha, 300 random samples, alpha in {.05, .10}
+
+null                                     stat        HL         90% CI (exact)  Wilcoxon p  excl 0
+N1 diet: trained - own init              raw     -0.082       [-0.148, +0.001]      0.1094      no
+N1 diet: trained - own init              norm    +0.036       [-0.002, +0.085]      0.1094      no
+N2 trained no-diet - input null (noblur) raw     -0.176       [-0.343, +0.001]      0.1094      no
+N2 trained no-diet - input null (noblur) norm    -0.029       [-0.101, +0.046]      0.4609      no
+
+If these intervals contain zero, §102.3's two reversals were artefacts
+of the t-based interval and the nulls return to UNBOUNDED under the
+declared test -- neither asserted nor overturned.

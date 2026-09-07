@@ -61,6 +61,16 @@ def tost_paired(d, sesoi):
 
 
 def _tost_from(diff, se, df, sesoi):
+    # THIS INTERVAL IS PARAMETRIC; THE PAPER'S DECLARED TEST IS NOT.
+    # PAPER_DRAFT.md:1351 declares the paired exact Wilcoxon signed-rank test
+    # at n=8. Use this to BOUND a null -- how large an effect could the data
+    # have hidden -- which is existing practice (§2.6.1, §2.6.2) and fine.
+    # Do NOT use it to overturn a Wilcoxon verdict: at n=8 the two disagree
+    # around alpha (§103 found t-p ~.075 against Wilcoxon .1094 on the same
+    # data, which briefly turned two accepted nulls into "significant"
+    # findings). For an interval that can speak to the verdict, use
+    # Hodges-Lehmann with the Walsh-average CI -- exact at n=8 and consistent
+    # with Wilcoxon by construction (tmp_analysis/prf_hodges_lehmann.py).
     # 90% CI is the interval whose containment in +-sesoi <=> both one-sided
     # tests reject at alpha=.05.
     tcrit = sps.t.ppf(1 - ALPHA, df)

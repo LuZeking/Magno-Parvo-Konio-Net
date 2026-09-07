@@ -10904,6 +10904,17 @@ only piece of the §100 reframing that survives §8 intact.
 
 ### §102.3 Both nulls fail, and "preserved" fails in a way I did not expect
 
+> **BOTH REVERSALS WITHDRAWN — SUPERSEDED BY §103.** The intervals below are
+> **paired-t** (`_tost_from`), while the declared test is the paired exact
+> Wilcoxon (`PAPER_DRAFT.md:1351`). Using a t-TOST interval to *bound* a null
+> is existing practice and fine; using it to *reverse* the declared verdict is
+> not, and all three affected cells straddle α = .10. The exact
+> Hodges–Lehmann/Walsh intervals contain zero in **all four** cells, so "N1 is
+> not a null at all" and "sits significantly below its own input null" are both
+> withdrawn. Under the declared test both nulls are **unbounded** — neither
+> asserted nor overturned. This does not reinstate §101.2's "essentially
+> unchanged" either; that term is simply unresolved.
+
 Neither null can be stated. §77.5 forbids choosing a SESOI after seeing the
 interval and none of §77.3's pre-registered bounds covers this contrast, so
 these are reported as intervals and MDEs, not as equivalence:
@@ -10961,3 +10972,98 @@ uncharacterisable), and "no more than its own input" is gone. What replaced it
 is one dissociation that clears every gate the project has. That is the trade
 the §8 rule was written to force, and it worked as intended on a result I had
 already written up twice.
+
+---
+
+## §103 §102.3's two reversals were an estimator switch — withdrawn. Both
+## nulls are unbounded under the declared test, neither asserted nor overturned
+
+`950c6df` caught that §102.3's reversals rest on an estimator the paper does
+not declare. Verified: `tost_paired` → `_tost_from` builds a **paired-t**
+interval (`se = d.std(ddof=1)/√n`, `t(.95, n−1)`), while
+`PAPER_DRAFT.md:1351` declares "**the paired exact Wilcoxon signed-rank test,
+n = 8**" and every p-value in this thread is Wilcoxon — the discrete
+.0078/.0156/.1094 ladder is the signature.
+
+### §103.1 The distinction that matters
+
+Using a t-TOST interval to **bound** a null is this paper's existing practice
+and is defensible: §2.6.2's VO entry quotes a TOST interval beside a Wilcoxon
+p, and §2.6.1 openly calls phase-scrambling "a Welch interval at 2.3 degrees of
+freedom". *How large an effect could the data have hidden* is a different
+question from *did the declared test reject*.
+
+What that interval cannot do is **reverse** the declared verdict. "N1 is not a
+null at all" and "the trained no-diet model sits significantly below its own
+input null" are both reversals, and both were produced by switching estimator
+after Wilcoxon returned n.s. Back-solved, all three affected cells straddle
+α = .10 (t-p ≈ .075, .077, .044 against Wilcoxon .1094).
+
+### §103.2 The interval the declared test implies
+
+Hodges–Lehmann with the exact Walsh-average distribution-free CI — the interval
+Wilcoxon implies, exact at n = 8:
+
+| null | statistic | HL | 90% CI (exact) | Wilcoxon p | excludes 0 |
+|---|---|---|---|---|---|
+| N1 diet: trained − own init | raw | −0.082 | [−0.148, +0.001] | .1094 | **no** |
+| N1 diet: trained − own init | norm | +0.036 | [−0.002, +0.085] | .1094 | **no** |
+| N2 no-diet − input null | raw | −0.176 | [−0.343, +0.001] | .1094 | **no** |
+| N2 no-diet − input null | norm | −0.029 | [−0.101, +0.046] | .4609 | **no** |
+
+**All four contain zero.** §102.3's reversals are withdrawn.
+
+So under the declared test both N1 and N2 are **unbounded nulls** — neither
+asserted nor overturned. §102.3's "N1 is not a null at all" is wrong: it is a
+null, whose two point estimates happen to have opposite signs and are both
+consistent with zero. §102.3's "carries *less* than a Gabor bank" is likewise
+withdrawn.
+
+`950c6df` is right that this does **not** reinstate §101.2's "essentially
+unchanged": that wording was withdrawn on evidence which does not support the
+withdrawal, but it still needs a bound before it can be asserted. The ecc|size
+term is **unresolved**, which is where §8 leaves it regardless.
+
+### §103.3 The implementation bug the verification caught
+
+The first version of `hl_ci` took `walsh[k+1]` where the exact interval is
+`[W_(k+1), W_(M−k)]` = `walsh[k] .. walsh[m−1−k]` zero-indexed. That off-by-one
+narrows the interval, and it made **N1 raw exclude zero** — reproducing
+§102.3's false reversal through a second, independent route.
+
+It was caught by an assertion written before the result was looked at: the HL
+interval must exclude zero **iff** the two-sided Wilcoxon p < α, checked on 300
+random samples at α ∈ {.05, .10}. That assertion is the only reason the bug did
+not survive into this section, and it is the §82 lesson again — an assertion
+that a quantity *equals* a separately-derived value cannot pass for the wrong
+reason.
+
+### §103.4 A durable fix in the module
+
+`equivalence_tests.py` was built for bounding nulls, where parametric is fine,
+and it silently carries a different test into contexts where the verdict is at
+stake. A comment now says so at the top of `_tost_from`, since the next reader
+will reach for it exactly as I did.
+
+### §103.5 Unaffected
+
+The double dissociation and the two supporting contrasts rest on Wilcoxon
+p-values under both statistics with **no interval doing any work**:
+
+| contrast | raw | norm |
+|---|---|---|
+| size\|ecc, diet: trained − own init | −0.169, .0078 | −0.048, .0156 |
+| size\|ecc, no diet: trained − own init | +0.454, .0078 | +0.073, .0078 |
+| ecc\|size, trained diet − input null diet | +0.229, .0156 | +0.084, .0078 |
+| ecc\|size, untrained no-blur − null no-blur | +0.268, .0078 | +0.067, .0078 |
+
+§102.4's leg (c) wording stands as written, including "the eccentricity term's
+fate differs between statistics and is therefore not claimed".
+
+### §103.6 Note on where the shrinkage came from
+
+Across §100–§103 this result went from a four-part reframing to one
+dissociation. Every reduction came from applying standards the project had
+already written down — §8.1's both-statistics rule, §77.5's bound-fixing rule,
+§4.7's declared test — and none from new data. Three of the four retractions
+were of claims I had already committed.
