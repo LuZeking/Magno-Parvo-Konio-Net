@@ -972,10 +972,11 @@ no-diet range comes out 0.309–0.461 against the 0.312–0.459 quoted, because 
 sweep steps `w` at 0.05 and this one at 0.005 and the no-diet extremes fall at
 interior `w` rather than at the endpoints both grids contain. Second, the two
 streams rank images almost independently (residualised r = −0.030 to +0.072), so
-`w` moves the aggregate rate across a 0.46 span while barely reordering *which*
-images are hard. Within this family the rate and item-level difficulty are
-separately addressable — which is the mechanism behind the second point above,
-where the rate-matching `w` carried no agreement.
+`w` moves the aggregate rate across a span of 0.433–0.517 per diet run while
+barely reordering *which* images are hard. Within this family the rate and
+item-level difficulty are separately addressable, which is consistent with the
+second point above: if the streams ordered images alike, matching the rate would
+also come close to matching the ordering, and it does not.
 
 *What we do not conclude from it.* The diet arm's difficulty correspondence
 (24.1%) exceeds the no-diet arm's (9.2%) with no overlap across seeds, at both
