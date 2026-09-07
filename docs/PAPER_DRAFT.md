@@ -280,23 +280,24 @@ committed script still reproduces, and it is the one that breaks the pattern.
 Extended Data
 §E2.2 records the dating and the solve.*
 
-**The diet's gradient is robust; the no-diet arm's is not, and we claim only
-the difference.** Under the minimal correction both arms are non-zero in every
-subject (−0.871 and −0.130); under the fullest one only the diet arm is. So the
-defensible statement is comparative: the diet produces a gradient 7–19× larger
-that survives every treatment of the instrument, against one that survives only
-the weakest. That is what §2.5's mechanism needs, and it does not require
-settling whether the no-diet gradient is exactly zero. Three earlier framings
-are withdrawn. The first — "nearly flat without it", with a 79%
+**The diet makes the gradient large; it does not make it exist.** Correcting
+each arm for its own measured instrument bias gives −0.720 with the diet and
+−0.101 without, each non-zero in every subject at the exact Wilcoxon floor
+(p = .0078), so the diet's effect is a factor of **7.1** on a gradient that is
+already present. The comparative claim is the robust one — it holds across every
+treatment of the instrument we tried, including the one we reject below — and it
+is what §2.5's mechanism needs. Three earlier framings are withdrawn. The first — "nearly flat without it", with a 79%
 reduction — used numbers that do not regenerate (§E2.2), but its *structure* was
 right, and the honest correction is 85% rather than a withdrawal: our objection
 that it "compared two numbers as though both measured something" was wrong,
 because both do. The second, which replaced it, claimed no gradient was
 resolvable without the diet. That was an error of ours in the opposite
 direction: it compared the magnitude of the no-diet contrast to the magnitude of
-the floor, as though the floor were a noise level. The third asserted the
-no-diet gradient *was* resolvable; that holds only under the minimal
-correction, so it is narrowed to the comparative claim above. The floor is a **signed
+the floor, as though the floor were a noise level. The third, ours again, declined to claim the no-diet
+gradient in either direction on the strength of a residual correction that we
+have since identified as a simulation artefact (below). The claim above is the
+second framing's structure with the first framing's direction and numbers that
+regenerate. The floor is a **signed
 positive bias**, and a positive bias cannot manufacture a negative
 observation — it masks one. Treating a signed quantity as an unsigned tolerance
 is the same mistake that made subject 01's outlier look arm-specific, and it is
@@ -423,25 +424,28 @@ bias-removed contrast and 13% of the diet one**. (A pooled intercept, which
 averages over ROIs, reports 42% and 0% and so understates this for the arm where
 it matters.)
 
-*What survives, and what we therefore do not claim.* Removing that residual as
-well — a fuller treatment, though one resting on a stronger transfer assumption
-than the bias correction — leaves the diet arm at **−0.626, 8/8, p = .0078** and
-the no-diet arm at **−0.034, 5/8, p = .31**.
+*The misfit is a property of the simulation, not of the estimator.* Removing
+that residual as well would leave the no-diet arm at −0.034 and the diet arm at
+−0.626. We do **not** apply it, for two measured reasons. First, condition A
+builds its sources on a fixed schedule (a = 0.30 + 0.10·i, b = 0.90 − 0.10·i, so
+total source power is U-shaped across ROI index at 0.90, 0.80, 0.74, 0.72, 0.74,
+0.80, 0.90), and the residual tracks *that* rather than the truth it is supposed
+to be missing: correlation **−0.85** with total source power against **+0.08**
+with the true contrast, and the two arms' residual profiles correlate at
+**+0.989** despite their real effects differing tenfold. The real data has no
+such schedule, so subtracting this residual imports a construction artefact
+instead of removing a bias. Second, the correction is under-specified: four
+defensible implementations — group versus per-subject floor, residual removed
+before or after scaling — give the same point estimate but p values of .055,
+.31, .31 and .84. A quantity whose significance spans that range on
+implementation choices is not evidence about the data.
 
-| treatment | no diet | diet | factor |
-|---|---|---|---|
-| displacement only | −0.130 (8/8, p = .0078) | −0.871 (8/8, p = .0078) | 6.7× |
-| + estimated slope | −0.101 | −0.720 | 7.1× |
-| + residual removed | **−0.034 (5/8, p = .31)** | **−0.626 (8/8, p = .0078)** | 18.6× |
-
-The diet arm's gradient is non-zero in every subject under **every** treatment.
-The no-diet arm's is not: whether it is resolvable depends on how the
-instrument's misfit is handled, and a plausible treatment absorbs it entirely.
-**We therefore claim the diet arm's gradient and decline to claim the no-diet
-arm's in either direction** — it is not shown to be zero and not shown to be
-non-zero. The between-arm statement is the robust one and is what §2.5's
-mechanism needs: the diet arm's gradient is 7–19× larger and survives every
-correction, where the no-diet arm's survives only the minimal one.
+*The honest limitation.* Showing that condition A's residual is
+non-transferable does not show the estimator is free of misfit on real data;
+it shows only that this simulation cannot measure it. The no-diet arm's
+gradient therefore rests on the floor correction alone with real-data misfit
+unquantified, which is weaker footing than the diet arm's — that one survives
+every treatment we have tried, including the one we reject.
 
 What the simulation does *not* license is a claim about the effect's exact
 magnitude. The companion recovery condition, given a true gradient, returns the

@@ -317,42 +317,68 @@ def check_slope_model() -> None:
 
 
 def check_residual_treatment() -> None:
-    """The fullest treatment, which is why §2.2 claims only the difference.
+    """Pin the DIAGNOSIS, not the artefact.
 
-    Removing the fit's ROI-structured residual as well leaves the DIET arm
-    non-zero in every subject and the NO-DIET arm at 5/8, p = .31. A pooled
-    intercept hides this because averaging over ROIs cancels exactly the
-    structure a contrast exposes -- so this check exists to stop the no-diet
-    arm's resolvability being asserted again.
+    An earlier version pinned the fullest treatment's no-diet value (-0.034,
+    5/8, p = .31) so its resolvability could not be quietly re-asserted. That
+    was the wrong thing to lock: the residual it removes is a property of
+    condition A's source schedule, not of the estimator, so pinning it would
+    make the verifier enforce a simulation artefact. What is pinned instead is
+    (a) the evidence that the residual is a generator property, and (b) that the
+    correction is under-specified -- either of which failing would mean the
+    decision to reject the correction needs revisiting.
     """
-    print("  [fullest treatment: bias + slope + residual contrast removed]")
-    want = {"dkl_base": (-0.034, 5, False), "dkl_bcs": (-0.626, 8, True)}
-    for arm, (wv, wneg, should_hold) in want.items():
+    i = np.arange(7)
+    power = (0.30 + 0.10 * i) ** 2 + (0.90 - 0.10 * i) ** 2
+    print("  [residual diagnosis: generator property, not estimator misfit]")
+    prof = {}
+    for arm in ("dkl_base", "dkl_bcs"):
         A = [_ab(f, "A_recovery") for f in _files(arm)]
         B = [_ab(f, "B_manufacture") for f in _files(arm)]
         b_roi = np.mean([x[1] for x in B], axis=0)
         T = np.stack([x[0] for x in A])
         E = np.stack([x[1] for x in A]) - b_roi
         a = float(np.sum(E * T) / np.sum(T * T))
-        res_con = float(hv4_minus_v1((E - a * T).mean(0)))
-        subs_r, pr = roi_profile(ENCODING_DIR, f"{arm}_seed0_trained", True)
-        real = {s: hv4_minus_v1(pr[i]) for i, s in enumerate(subs_r)}
-        floor = {}
-        for f in _files(arm):
-            j = json.load(open(f))
-            floor[j["subject"]] = stats_from(
-                j["conditions"]["B_manufacture"]["rows"], "est_")[0]
-        ss = sorted(set(real) & set(floor))
-        v = np.array([(real[s] - floor[s] - res_con) / a for s in ss])
-        chk(f"{arm} fullest-treatment contrast", float(v.mean()), wv, 0.002)
-        neg, pv = int((v < 0).sum()), wilcoxon(v).pvalue
-        holds = pv < 0.02 and neg == len(v)
-        ok = holds == should_hold and neg == wneg
-        print(f"  {'OK ' if ok else 'BAD'} {arm} {neg}/{len(v)} negative, "
-              f"p={pv:.4f} -> {'holds' if holds else 'does NOT hold'} "
-              f"(draft: {wneg}/8, {'holds' if should_hold else 'does not hold'})")
-        if not ok:
-            FAILS.append(f"{arm} fullest treatment")
+        prof[arm] = (E - a * T).mean(0)
+        want_p, want_t = {"dkl_base": (-0.847, 0.080),
+                          "dkl_bcs": (-0.820, 0.005)}[arm]
+        chk(f"{arm} corr(residual, source power)",
+            float(np.corrcoef(prof[arm], power)[0, 1]), want_p, 0.01)
+        chk(f"{arm} corr(residual, true contrast)",
+            float(np.corrcoef(prof[arm], T.mean(0))[0, 1]), want_t, 0.01)
+    chk("corr(no-diet residual, diet residual)",
+        float(np.corrcoef(prof["dkl_base"], prof["dkl_bcs"])[0, 1]), 0.989, 0.005)
+
+    # Under-specification: same point estimate, p from .055 to .84.
+    from scipy.stats import wilcoxon as _w
+    arm = "dkl_base"
+    A = [_ab(f, "A_recovery") for f in _files(arm)]
+    B = [_ab(f, "B_manufacture") for f in _files(arm)]
+    b_roi = np.mean([x[1] for x in B], axis=0)
+    T = np.stack([x[0] for x in A])
+    E = np.stack([x[1] for x in A]) - b_roi
+    a = float(np.sum(E * T) / np.sum(T * T))
+    cg = float(hv4_minus_v1((E - a * T).mean(0)))
+    floor = {}
+    for f in _files(arm):
+        j = json.load(open(f))
+        floor[j["subject"]] = stats_from(
+            j["conditions"]["B_manufacture"]["rows"], "est_")[0]
+    fg = float(np.mean(list(floor.values())))
+    subs_r, pr = roi_profile(ENCODING_DIR, f"{arm}_seed0_trained", True)
+    real = {s: hv4_minus_v1(pr[k]) for k, s in enumerate(subs_r)}
+    ss = sorted(set(real) & set(floor))
+    variants = {
+        "per-subject floor": [(real[s] - floor[s] - cg) / a for s in ss],
+        "group floor": [(real[s] - fg - cg) / a for s in ss],
+        "residual after scaling": [(real[s] - floor[s]) / a - cg for s in ss],
+    }
+    ps = [float(_w(np.array(v)).pvalue) for v in variants.values()]
+    spread_ok = min(ps) < 0.06 and max(ps) > 0.8
+    print(f"  {'OK ' if spread_ok else 'BAD'} correction under-specified: "
+          f"p = {', '.join(f'{x:.3f}' for x in sorted(ps))} (draft .055 to .84)")
+    if not spread_ok:
+        FAILS.append("residual correction no longer under-specified")
 
 
 def _ab(path: str, cond: str) -> tuple[np.ndarray, np.ndarray]:
