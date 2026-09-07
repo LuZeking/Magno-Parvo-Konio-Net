@@ -1,12 +1,12 @@
 {
   "script": "tmp_analysis/visualrois.py",
-  "written": "2026-09-07T12:08:06",
+  "written": "2026-09-07T12:11:38",
   "git": {
-    "commit": "b9e39ab",
+    "commit": "22c5b92",
     "dirty": "yes"
   },
   "model": "untrained_seed0",
-  "src": "results/encoding",
+  "src": "/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-dev/results/encoding",
   "subjects": [
     1,
     2,

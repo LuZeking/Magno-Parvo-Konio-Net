@@ -22,10 +22,10 @@ that is the only row with continuous provenance back to 2026-08-28 and it is
 the audit anchor: running this script with no arguments must keep reproducing
 `SPI hV4 - V1  mean diff=-0.5441  p=0.0078  0/8 positive`.
 
-Usage:
-    PYTHONPATH=. python tmp_analysis/visualrois.py                  # anchor
-    PYTHONPATH=. python tmp_analysis/visualrois.py --model dkl_bcs_seed0_trained
-    PYTHONPATH=. python tmp_analysis/visualrois.py --src results/encoding_cc \
+Usage (no PYTHONPATH needed, and works from any directory):
+    python tmp_analysis/visualrois.py                  # the audit anchor
+    python tmp_analysis/visualrois.py --model dkl_bcs_seed0_trained
+    python tmp_analysis/visualrois.py --src results/encoding_cc \
         --model dkl_base_seed0_trained
 """
 
@@ -37,11 +37,21 @@ import glob
 import json
 import os
 import subprocess
+import sys
 
 import numpy as np
 from scipy import stats as sps
 
-from src.analysis.encoding.stats import load_results
+# Make the anchor runnable with a bare `python tmp_analysis/visualrois.py`,
+# from any directory. Without this the failure mode for someone following the
+# docs is a ModuleNotFoundError rather than a number, which is a bad property
+# for the one row a referee may be pointed at. The import below must therefore
+# come after this block (E402 is deliberate).
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if REPO not in sys.path:
+    sys.path.insert(0, REPO)
+
+from src.analysis.encoding.stats import load_results  # noqa: E402
 
 VIS = {1: "V1v", 2: "V1d", 3: "V2v", 4: "V2d", 5: "V3v", 6: "V3d", 7: "hV4"}
 NC_MIN = 0.1
@@ -55,7 +65,10 @@ def git_head() -> dict[str, str]:
     for key, cmd in (("commit", ["git", "rev-parse", "--short", "HEAD"]),
                      ("dirty", ["git", "status", "--porcelain"])):
         try:
-            r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            # cwd=REPO: the stamp must describe THIS repo, not whatever
+            # directory the script happened to be invoked from.
+            r = subprocess.run(cmd, capture_output=True, text=True,
+                               timeout=30, cwd=REPO)
             out[key] = r.stdout.strip() if r.returncode == 0 else "unavailable"
         except Exception:
             out[key] = "unavailable"
@@ -80,9 +93,11 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--model", default="untrained_seed0",
                    help="model tag; default is the §88 audit anchor")
-    p.add_argument("--src", default="results/encoding",
+    # Defaults are anchored at the repo root so a zero-argument run works from
+    # any cwd. A path passed explicitly is used as given, i.e. relative to cwd.
+    p.add_argument("--src", default=os.path.join(REPO, "results/encoding"),
                    help="directory of *_subj*.npz fits")
-    p.add_argument("--out-dir", default="results/visualrois",
+    p.add_argument("--out-dir", default=os.path.join(REPO, "results/visualrois"),
                    help="where the provenance-stamped artifact is written")
     p.add_argument("--no-write", action="store_true",
                    help="print only; do not write an artifact")

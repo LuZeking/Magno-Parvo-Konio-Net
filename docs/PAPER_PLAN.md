@@ -9476,3 +9476,43 @@ input list would show it, but only if someone reads it.
 importing this script, so the twelve locked table values stay independently
 checked regardless of what happens here. That separation should be preserved:
 a verifier that imports the thing it verifies checks nothing.
+
+### §89.5 The anchor now runs bare, from any directory
+
+22c5b92 flagged that `python tmp_analysis/visualrois.py` exited 1 with
+`ModuleNotFoundError: No module named 'src'` without `PYTHONPATH=.`. Not a
+regression — the pre-§89 script had the same import — but a bad property for
+the one row a referee may be pointed at: the failure mode for someone
+following the documentation was an exception rather than a number.
+
+Fixed three things, since the import was hiding two others:
+
+1. The script inserts its own repo root on `sys.path` (`E402` on the following
+   import is deliberate and marked).
+2. `--src` and `--out-dir` **defaults** are now anchored at the repo root, so a
+   zero-argument run works from any cwd. A path passed explicitly is still
+   used as given, i.e. relative to cwd. The import fix alone would have turned
+   a foreign-cwd run from an import error into a "no fits matched" error.
+3. `git_head()` runs with `cwd=REPO`. Without it, a run from another directory
+   would have stamped **whatever repository the invoker happened to be
+   standing in** — a provenance stamp that silently describes the wrong tree is
+   worse than none, and this is the §84 defect class again.
+
+Verified, all against the baseline captured before §89 touched the file:
+
+| invocation | result |
+|---|---|
+| `python tmp_analysis/visualrois.py --no-write` | byte-identical to baseline |
+| same, run from `/scratch/.../tmp` | byte-identical to baseline |
+| `PYTHONPATH=. python ...` (old style) | byte-identical — no regression |
+| `--model dkl_bcs_seed0_trained` | −0.8335 |
+| `--src results/encoding_cc --model dkl_base_seed0_trained` | −0.0785 |
+
+The foreign-cwd run stamped `commit 22c5b92`, matching the repo HEAD rather
+than the invocation directory, confirming (3).
+
+Not re-run on the other two paths by the draft owner, deliberately and
+correctly: `−0.8335` and `−0.0785` are locked in `verify_new_claims.py` from an
+independent reimplementation of the convention, so agreement between this CLI
+and that verifier is a stronger check than re-running this script would be.
+They agree.
