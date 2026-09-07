@@ -529,10 +529,97 @@ def check_ood() -> None:
         chk(f"clean acc {lab}", float(c), want, 0.0005)
 
 
+PERIMAGE_DIR = ("/scratch/byrong/mpk/perimage_behavior/results/"
+                "2026-09-07_geirhos_perimage")
+
+
+def check_perimage() -> None:
+    """Pin §2.6.2's per-image analysis, including the control that killed a claim.
+
+    The last block matters more than the numbers above it. The diet arm beats the
+    no-diet arm on difficulty correspondence with no overlap, and the crossed 2x2
+    is the only thing standing between that and a claim we would not be able to
+    support. If a future edit ever makes the crossed cells look attributable,
+    this should fail loudly rather than quietly license the claim.
+    """
+    print("\n--- §2.6.2 per-image correspondence ---")
+    cf = os.path.join(PERIMAGE_DIR, "perimage_correspondence.json")
+    if not os.path.exists(cf):
+        FAILS.append("perimage results missing")
+        print(f"  BAD perimage results missing at {cf}")
+        return
+    R = json.load(open(cf))
+    M, C = R["models"], R["human_ceiling"]
+
+    for key, want in [("shape_rate", 0.658), ("shape_rate_resid", 0.624),
+                      ("valid_rate", 0.794), ("valid_rate_resid", 0.728)]:
+        chk(f"human ceiling {key}", C[key]["pearson_mean"], want, 0.001)
+
+    diet  = [f"dkl_bcs_seed{s}_final" for s in (0, 1, 2)]
+    dietb = [f"dkl_bcs_seed{s}_best" for s in (0, 1, 2)]
+    nod   = [f"dkl_base_seed{s}_final" for s in (0, 1, 2)]
+
+    def pct(names, tgt, kind="pearson"):
+        return [M[n][f"{tgt}__{kind}"]["oos_pct_ceiling"] for n in names]
+
+    for lab, names, tgt, want in [
+            ("diet decision",   diet,  "shape_rate_resid",  8.7),
+            ("diet difficulty", diet,  "valid_rate_resid", 24.1),
+            ("nodiet decision", nod,   "shape_rate_resid",  8.0),
+            ("nodiet difficulty", nod, "valid_rate_resid",  9.2)]:
+        chk(f"{lab} % ceiling", float(np.mean(pct(names, tgt))), want, 0.05)
+
+    # the positive control: difficulty >> decision WITHIN the diet system
+    ratio = np.mean(pct(diet, "valid_rate_resid")) / np.mean(pct(diet, "shape_rate_resid"))
+    chk("diet difficulty:decision ratio", float(ratio), 2.8, 0.05)
+    rb = np.mean(pct(dietb, "valid_rate_resid")) / np.mean(pct(dietb, "shape_rate_resid"))
+    chk("diet-best difficulty:decision", float(rb), 2.0, 0.05)
+
+    # independent replication of the diet rate range quoted in §2.6.2
+    lo = min(M[n]["rate_range"][0] for n in diet + dietb)
+    hi = max(M[n]["rate_range"][1] for n in diet + dietb)
+    chk("diet rate range lo", float(lo), 0.373, 0.0005)
+    chk("diet rate range hi", float(hi), 0.913, 0.0005)
+
+    # w moves the rate without reordering image difficulty
+    rr = [M[n]["stream_margin_pearson_resid"] for n in diet + dietb + nod]
+    if not (-0.031 <= min(rr) and max(rr) <= 0.073):
+        FAILS.append("stream margins no longer near-independent")
+        print(f"  BAD stream margin resid range {min(rr):+.3f}..{max(rr):+.3f}")
+    else:
+        print(f"  OK  stream margin resid range          "
+              f"{min(rr):+.3f}..{max(rr):+.3f} (draft -0.030..+0.072)")
+
+    # THE CONTROL. Crossed cells must stay non-positive and the ordering must
+    # reverse with the front end off; otherwise the withdrawn diet claim would
+    # become sayable and the draft would be understating what it can support.
+    crossed = {
+        "diet_off":   [f"dkl_bcs_seed{s}_final_nofe" for s in (0, 1, 2)],
+        "nodiet_on":  [f"dkl_base_seed{s}_final_fe" for s in (0, 1, 2)],
+    }
+    if not all(n in M for v in crossed.values() for n in v):
+        FAILS.append("crossed 2x2 cells missing")
+        print("  BAD crossed 2x2 cells missing")
+        return
+    d_off = float(np.mean(pct(crossed["diet_off"], "valid_rate_resid")))
+    n_on = float(np.mean(pct(crossed["nodiet_on"], "valid_rate_resid")))
+    n_off = float(np.mean(pct(nod, "valid_rate_resid")))
+    chk("crossed diet-weights/no-frontend", d_off, -0.6, 0.05)
+    chk("crossed nodiet-weights/frontend", n_on, -3.7, 0.05)
+    if not (d_off < n_off):
+        FAILS.append("front-end-off ordering no longer reverses")
+        print(f"  BAD ordering with front end off: diet {d_off:+.1f} "
+              f"vs no-diet {n_off:+.1f} -- no longer reversed")
+    else:
+        print(f"  OK  front-end-off ordering reverses     "
+              f"diet {d_off:+.1f} < no-diet {n_off:+.1f}")
+
+
 def main() -> int:
     check_recovery()
     check_production_statistic()
     check_ood()
+    check_perimage()
     print("\nFAILURES:", FAILS if FAILS else "none")
     return 1 if FAILS else 0
 

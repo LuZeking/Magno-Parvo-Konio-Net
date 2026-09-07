@@ -925,6 +925,82 @@ which is why every model is reported as a percentage of that same ceiling; that
 does not explain why the diet model scores *below* its own no-diet control
 (Extended Data §E6.3).
 
+*The null is specific to the decision, not a property of the instrument.* Kappa
+scores one observer's single binary response per image, so a reader may
+reasonably ask whether a flat result reflects the models or the measure. We
+therefore repeated the comparison with a better-estimated target and a
+continuous model statistic, on the same 1200 cue-conflict images (1280 stimuli
+less the 80 same-cue pairs Geirhos also excluded) and the same ten observers,
+who each viewed every image once. Averaged over all ten, the per-image profile
+is reliable: split-half reliability across all 126 exhaustive half-splits,
+Spearman–Brown corrected, is **r = .658** [.602, .706] for the shape rate and
+**r = .794** [.777, .809] for whether either cue was resolved at all. Both
+survive removal of shape-category *and* texture-category main effects (**.624**
+and **.728**), so the reliable structure is image-specific and not a restatement
+of which of the 16 categories are easier. Two facts about the observers follow
+directly, and the aggregate rate hides both: only **80.3%** of human responses
+were the shape or the texture category at all, and **240 of the 1200 images**
+drew at least one texture response. Human cue-conflict behaviour is not
+homogeneous across images.
+
+Against that target the model statistic becomes the continuous
+shape-minus-texture logit margin rather than a binary choice, and — because the
+classifier is affine and the mixture weights sum to one (§2.3) — the entire
+readout sweep is exact arithmetic on two stored per-stream logit vectors.
+Choosing `w` on half the images and scoring it on the held-out half, as a
+percentage of the ceilings just quoted, with category effects removed:
+
+| | predicts *which cue* humans pick | predicts *whether either cue* resolves |
+|---|---|---|
+| diet arm (3 seeds) | 8.7% [2.0, 15.5] | **24.1%** [22.9, 25.4] |
+| no-diet arm (3 seeds) | 8.0% [5.8, 10.8] | 9.2% [5.2, 13.0] |
+
+**The instrument does detect a correspondence when one is there.** Within the
+diet system, the same machinery on the same images and observers reaches 24.1%
+of the ceiling on image difficulty against 8.7% on the shape–texture decision —
+a 2.8-fold gap, 3.6-fold on ranks, replicated under the other checkpoint policy
+(22.5% against 11.2%). This is the positive control the equivalence interval
+cannot supply on its own. The claim is not that the measure is three times more
+sensitive in general; it is that on this system and these images the very same
+measure demonstrably recovers roughly three times as much structure from a
+neighbouring aspect of the same human responses. A measure that finds nothing
+anywhere is uninformative about the decision; this one does not.
+
+Two further observations. First, this analysis reproduces the diet arm's rate
+range above **exactly** (0.373–0.913) through an independent code path; the
+no-diet range comes out 0.309–0.461 against the 0.312–0.459 quoted, because that
+sweep steps `w` at 0.05 and this one at 0.005 and the no-diet extremes fall at
+interior `w` rather than at the endpoints both grids contain. Second, the two
+streams rank images almost independently (residualised r = −0.030 to +0.072), so
+`w` moves the aggregate rate across a 0.46 span while barely reordering *which*
+images are hard. Within this family the rate and item-level difficulty are
+separately addressable — which is the mechanism behind the second point above,
+where the rate-matching `w` carried no agreement.
+
+*What we do not conclude from it.* The diet arm's difficulty correspondence
+(24.1%) exceeds the no-diet arm's (9.2%) with no overlap across seeds, at both
+checkpoint policies and on both correlation types — which invites the reading
+that the developmental front end makes the model's difficulty profile more
+human-like. **We do not make that claim, because our own control does not
+support it.** Each arm is evaluated with its own front end, so the two differ in
+test-time input as well as in learned weights. Completing the 2×2 as in §2.4 —
+diet weights without the front end, no-diet weights with it — yields a
+train/test *matching* pattern rather than a weights effect: both matched cells
+are positive (24.1%, 9.2%) and both crossed cells are not (−0.6%, −3.7%), and
+with the front end held off the ordering reverses. The crossed cells are in any
+case too degraded to arbitrate, resolving to neither cue on 70–85% of images at
+the balanced readout against 49–63% for the matched cells. The honest conclusion
+is that this design cannot separate the learned representation from the input
+transform, because separating them breaks the model. A control that verifies the
+front end leaves the chromatic stream untouched — the parvo-stream logits are
+bit-identical across the front-end manipulation (max deviation 0.00e+00) while
+the magno-stream logits differ by 49–80 — confirms the 2×2 itself is clean, so
+the failure is one of attribution, not of implementation.
+
+Method: `tmp_analysis/human_perimage.py`, `tmp_analysis/perimage_logits.py`,
+`tmp_analysis/perimage_correspondence.py`, `tmp_analysis/perimage_frontend_2x2.py`;
+jobs 26444506, 26444507, 26444523, 26444525, 26444526.
+
 ### 2.7 What the account costs
 
 
@@ -1775,6 +1851,19 @@ Recorded so the omissions are visible rather than silent.
   does not implement.
 - **That integration produces human-like shape bias** (§2.7).
 - **That the diet improves neural predictivity** — it does not (§2.7).
+- **That the diet makes the model's image-level difficulty profile more
+  human-like.** The per-image analysis in §2.6.2 shows the diet arm predicting
+  which images humans fail to resolve to either cue at 24.1% of the human noise
+  ceiling against the no-diet arm's 9.2%, with no overlap across three seeds, at
+  both checkpoint policies and on both correlation types. We ran the crossed
+  front-end 2×2 before writing that up, and it does not support the reading. The
+  pattern is train/test *matching*, not a weights effect — both matched cells are
+  positive and both crossed cells are not, and the ordering reverses with the
+  front end held off — and the crossed cells are too degraded to arbitrate
+  (resolving to neither cue on 70–85% of images against 49–63% matched). The
+  design cannot separate the learned representation from the input transform,
+  because separating them breaks the model. The comparison is reported in §2.6.2
+  with the control that kills it, rather than omitted.
 - **Any dorsal/ventral stream mapping.** The BA framing was
   "magno→dorsal, parvo→ventral". We tested it rather than dropping it on
   argument. The pre-declared dorsal−ventral interaction on the `streams` atlas
