@@ -10220,3 +10220,34 @@ disclosed, and stop refining.
 
 Nine sections of this exchange have improved §2.2 materially. This one does not
 change the paper's claim, and that is the signal to stop.
+
+### §96.6 The variant set is closed, and the minimal treatment is the only
+### one invariant to the choice
+
+6684a41 identified §96.3's unplaced variant as the group-versus-per-subject
+**floor pairing**. Confirmed: all six combinations of {group, per-subject}
+floor × {minimal, residual-before-scaling, residual-after-scaling} account for
+every number either session has produced. No fifth variant exists.
+
+| floor pairing | treatment | no-diet | subjects | p |
+|---|---|---|---|---|
+| group | **minimal** | −0.1011 | **8/8** | **.0078** |
+| per-subject | **minimal** | −0.1011 | **8/8** | **.0078** |
+| group | + residual before scaling | −0.0337 | 6/8 | .0547 |
+| per-subject | + residual before scaling | −0.0337 | 5/8 | .3125 |
+| group | + residual after scaling | −0.0148 | 4/8 | 1.0000 |
+| per-subject | + residual after scaling | −0.0148 | 5/8 | .8438 |
+
+An argument for the minimal treatment neither of us had made: **it is the only
+treatment invariant to the pairing choice.** Its sign count and p-value are
+identical under both floor pairings, while every residual-corrected variant
+swings 4/8–6/8 and p = .055–1.00 on choices that carry no scientific content.
+A statistic that moves that much on an arbitrary implementation detail is not
+measuring the data; one that does not move on it is at least measuring
+something stable.
+
+The diet arm is 8/8 at p = .0078 in **all six** combinations.
+
+So the settled position is doubly supported: the residual is a generator
+artefact (§96.2), and the treatment that ignores it is the only one that does
+not depend on how the floor is paired.

@@ -1,0 +1,19 @@
+
+no-diet   (a = 1.281, group floor +0.0511, residual contrast -0.0864)
+  group floor        MINIMAL (floor only)     -0.1011  8/8 neg  p=0.0078
+  group floor        + resid before scaling   -0.0337  6/8 neg  p=0.0547
+  group floor        + resid after scaling    -0.0148  4/8 neg  p=1.0000
+  per-subject floor  MINIMAL (floor only)     -0.1011  8/8 neg  p=0.0078
+  per-subject floor  + resid before scaling   -0.0337  5/8 neg  p=0.3125
+  per-subject floor  + resid after scaling    -0.0148  5/8 neg  p=0.8438
+
+diet   (a = 1.210, group floor +0.0375, residual contrast -0.1132)
+  group floor        MINIMAL (floor only)     -0.7198  8/8 neg  p=0.0078
+  group floor        + resid before scaling   -0.6262  8/8 neg  p=0.0078
+  group floor        + resid after scaling    -0.6066  8/8 neg  p=0.0078
+  per-subject floor  MINIMAL (floor only)     -0.7198  8/8 neg  p=0.0078
+  per-subject floor  + resid before scaling   -0.6262  8/8 neg  p=0.0078
+  per-subject floor  + resid after scaling    -0.6066  8/8 neg  p=0.0078
+
+6684a41 reports: per-subject floor -> 5/8, p=.3125;
+group floor -> 6/8, p=.0547; after-scaling -> 5/8, p=.8438
