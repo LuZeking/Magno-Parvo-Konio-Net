@@ -10762,6 +10762,12 @@ term, within arm:
 
 ### §101.2 "Untrained exceeds trained diet" is withdrawn
 
+> **ITS REPLACEMENT IS ALSO WITHDRAWN — see §102.3.** "Training with the diet
+> leaves it essentially unchanged" treats this as a null, and it is not one:
+> the raw and norm point estimates have **opposite signs** (−0.077 vs +0.036)
+> and **both** 90% intervals exclude zero. Neither "exceeds", "reduced" nor
+> "preserved" is supportable; the term cannot be characterised from these data.
+
 §100.3 said untrained diet (+0.401) "already exceeds" trained diet (+0.325).
 That difference is −0.077, 2/8, **p = .1094** — a direction read off a null,
 the §98.4 fallacy one notch quieter. Withdrawn.
@@ -10798,6 +10804,13 @@ input** (−0.173, n.s.), while the diet-trained model clearly does (+0.229,
 p = .0156).
 
 ### §101.4 The honest split: this is a raw-statistic result
+
+> **WITHDRAWN — SUPERSEDED BY §102.** "Write it up as a difference-statistic
+> result" is not an available remedy: §8.1 is pre-declared and says a result is
+> **claimed only where the two statistics agree**, and the draft already spends
+> that rule at line 346. Two contrasts are therefore REFUSED, not relabelled —
+> the no-diet ecc|size destruction (−0.442 vs −0.093 n.s.) and untrained-diet
+> vs its input null (+0.306 vs +0.048 n.s.). §102.2 carries what survives.
 
 On the norm statistic the same table is much weaker, and two load-bearing
 contrasts do not reach significance:
@@ -10836,3 +10849,115 @@ three seeds agree on every within-arm term and §99.1 showed the arm interaction
 holds for all three seed pairings. What is seed-0-only is specifically the
 **comparison against untrained and against the input null**, because those
 models have one seed by construction and no `encoding_cc` counterpart.
+
+---
+
+## §102 §8 applied to the pRF result: one claimable dissociation, two
+## contrasts refused, two nulls that cannot be stated at all
+
+§101.4 proposed writing the eccentricity result up as "a difference-statistic
+result". That is not an available remedy. §8.1 is pre-declared and explicit:
+
+> Every contrast is therefore reported under **both** … **A result is claimed
+> only where the two agree** (`blur_verdict.py`, `blur_control_unbounded.py`).
+
+The draft already spends this rule — line 346 refuses hMT+ specificity for
+exactly this reason. Labelling a raw-only result as raw-only is weaker than
+the rule the project pre-committed to, and §101.4 is withdrawn accordingly.
+
+### §102.1 The verdict table
+
+| contrast | raw | norm | §8 |
+|---|---|---|---|
+| **size\|ecc**, diet: trained − own init | −0.169, .0078 | −0.048, .0156 | **CLAIMABLE** |
+| **size\|ecc**, no diet: trained − own init | +0.454, .0078 | +0.073, .0078 | **CLAIMABLE** |
+| ecc\|size, trained diet − input null diet | +0.229, .0156 | +0.084, .0078 | **CLAIMABLE** |
+| ecc\|size, untrained no-blur − null no-blur | +0.268, .0078 | +0.067, .0078 | **CLAIMABLE** |
+| ecc\|size, no diet: trained − own init | −0.442, .0078 | −0.093, **.1484** | **REFUSED** |
+| ecc\|size, untrained diet − input null diet | +0.306, .0078 | +0.048, **.1094** | **REFUSED** |
+| ecc\|size, diet: trained − own init | −0.077 ns | +0.036 ns | null, see §102.3 |
+| ecc\|size, trained no-diet − null no-blur | −0.173 ns | −0.026 ns | null, see §102.3 |
+
+`950c6df` also corrects itself here and the correction matters: its earlier
+"`untrained diet − input null diet` = +0.306 is the load-bearing half that
+survives" is **raw-only** and fails the rule. What carries "present at
+initialisation, largely not inherited from the input" on both statistics is the
+**no-blur** front end (+0.268 / +0.067), not the diet one.
+
+### §102.2 The claimable result is a double dissociation on the size term
+
+Both `size|ecc` rows clear §8, and they run in **opposite directions**, each arm
+measured against its own initialisation:
+
+| arm | size\|ecc at init | after training | change (raw / norm) |
+|---|---|---|---|
+| diet | −0.187 | **−0.356** | −0.169 (.0078) / −0.048 (.0156) |
+| no diet | −0.292 | **+0.163** | +0.454 (.0078) / +0.073 (.0078) |
+
+Training with the diet makes magno preference fall *faster* with pRF size;
+training without it **reverses the term's sign entirely**. Both statistics
+agree in both arms — the only part of the whole pRF analysis that does.
+
+This is stronger than §101.4's proposed headline (the no-diet sign flip alone),
+because it is a dissociation rather than one arm's behaviour, and it is the
+only piece of the §100 reframing that survives §8 intact.
+
+### §102.3 Both nulls fail, and "preserved" fails in a way I did not expect
+
+Neither null can be stated. §77.5 forbids choosing a SESOI after seeing the
+interval and none of §77.3's pre-registered bounds covers this contrast, so
+these are reported as intervals and MDEs, not as equivalence:
+
+| null | raw diff, 90% CI | norm diff, 90% CI |
+|---|---|---|
+| **N1** diet "preserved" | **−0.077 [−0.146, −0.007]** | **+0.036 [+0.003, +0.068]** |
+| **N2** no-diet "no more than a Gabor bank" | **−0.173 [−0.308, −0.039]** | −0.026 [−0.089, +0.037] |
+
+**N1 is not a null at all.** The two statistics have **opposite signs** and
+*both* 90% intervals exclude zero. So the diet arm's ecc|size term neither
+stays put nor moves in an agreed direction — §8 refuses any claim, and
+"preserved" (§101.2's replacement wording) is withdrawn along with §100.3's
+"exceeds". Both formulations were wrong; the term simply cannot be
+characterised from these data.
+
+**N2 is worse than "no difference".** On raw the trained no-diet model sits
+*significantly below* its own input null (−0.173, CI excludes zero), while norm
+shows nothing. So "carries no more eccentricity structure than a Gabor bank" —
+§101.3's "sharpest single result" — is not supportable, and the raw direction
+suggests it carries *less*, which is a different and unexplained claim.
+**Withdrawn.**
+
+MDE at 80% power is **+0.232 raw / +0.110 norm** (dz = 1.16). This design
+detects only large effects, so both nulls are underpowered independently of
+everything above.
+
+### §102.4 What leg (c) can say
+
+> Training reorganises the pRF-size term in opposite directions depending on
+> the diet: with the developmental diet, magno preference comes to fall more
+> steeply with pRF size (−0.187 → −0.356); without it the term reverses sign
+> (−0.292 → +0.163). Both the difference and normalised statistics agree in
+> both arms, each measured against its own initialisation. The eccentricity
+> term's fate differs between the two statistics and is therefore not claimed.
+
+Two supporting contrasts also clear §8 and can be quoted: the diet-trained
+model exceeds its own input null on eccentricity (+0.229 / +0.084), and the
+untrained no-blur model exceeds its own input null (+0.268 / +0.067).
+
+### §102.5 On the denominator rationalisation
+
+§101.4 offered "the norm index divides by (uₘ+uₚ) and shrinks where unique
+variances are small" as a reason for the attenuation. `950c6df` notes it is
+testable — the norm/raw ratio should track median(uₘ+uₚ) across models and
+subjects — but that running it *after* seeing which side failed cannot lift a
+pre-declared rule; at best it would explain the failure. Agreed. Not run, and
+the split stands as reported rather than argued away.
+
+### §102.6 What this cost
+
+§100's reframing is now roughly a third of its original size: the
+"destroyed / preserved" pair is gone (one half refused by §8, the other half
+uncharacterisable), and "no more than its own input" is gone. What replaced it
+is one dissociation that clears every gate the project has. That is the trade
+the §8 rule was written to force, and it worked as intended on a result I had
+already written up twice.

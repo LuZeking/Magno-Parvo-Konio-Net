@@ -1,0 +1,29 @@
+
+==========================================================================
+N1 diet: trained - own init
+==========================================================================
+  raw  diff -0.077  90% CI [-0.146, -0.007]  MDE(80%) +0.120 (dz 1.16)
+       reference effect = -0.442 (the same contrast in the NO-DIET arm)
+       interval EXCLUDES the reference  -> smaller than it
+       TOST vs |reference| as bound: p=0.0000 (inside)
+  norm diff +0.036  90% CI [+0.003, +0.068]  MDE(80%) +0.057 (dz 1.16)
+       reference effect = -0.093 (the same contrast in the NO-DIET arm)
+       interval EXCLUDES the reference  -> smaller than it
+       TOST vs |reference| as bound: p=0.0065 (inside)
+
+==========================================================================
+N2 trained no-diet - input null (noblur)
+==========================================================================
+  raw  diff -0.173  90% CI [-0.308, -0.039]  MDE(80%) +0.232 (dz 1.16)
+       reference effect = +0.229 (the same contrast in the DIET arm)
+       interval EXCLUDES the reference  -> smaller than it
+       TOST vs |reference| as bound: p=0.2290 (not inside)
+  norm diff -0.026  90% CI [-0.089, +0.037]  MDE(80%) +0.110 (dz 1.16)
+       reference effect = +0.084 (the same contrast in the DIET arm)
+       interval EXCLUDES the reference  -> smaller than it
+       TOST vs |reference| as bound: p=0.0642 (not inside)
+
+No equivalence to ZERO is claimed anywhere above: these data have no
+pre-registered SESOI for this contrast, and choosing one now would be
+the move §77.5 forbids. What is reportable is the interval, the MDE,
+and whether the reference effect is excluded.
