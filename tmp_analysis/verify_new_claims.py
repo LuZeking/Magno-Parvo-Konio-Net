@@ -279,6 +279,59 @@ def check_displacement() -> None:
         ss = [s for s in sorted(set(real) & set(fl)) if s not in drop]
         return float(np.mean([real[s] - fl[s] for s in ss]))
     chk("between-arm factor (draft 6.7x)", d("dkl_bcs") / d("dkl_base"), 6.7, 0.1)
+    check_slope_model()
+
+
+# Recovered true contrast under each treatment of the multiplicative term.
+# The factor is what the claim rests on, and it barely moves; the magnitudes do.
+SLOPE_TREATMENTS = {
+    "additive only": (-0.130, -0.871, 6.7),
+    "per-ROI, bias removed": (-0.101, -0.720, 7.1),
+}
+
+
+def check_slope_model() -> None:
+    """The contrast floor must equal b(hV4) - b(V1) exactly, and the slope must
+    be fitted after removing each ROI's OWN bias -- the simulated bias rises
+    across ROIs, so a single pooled intercept is misspecified. A free intercept
+    on the bias-removed fit should return to zero; it does for the diet arm and
+    not quite for no-diet, which is why the no-diet magnitude is called
+    approximate in §2.2.
+    """
+    print("  [bias model]")
+    out = {}
+    for arm, obs in (("dkl_base", -0.0785), ("dkl_bcs", -0.8335)):
+        A = [_ab(f, "A_recovery") for f in _files(arm)]
+        B = [_ab(f, "B_manufacture") for f in _files(arm)]
+        b_roi = np.mean([x[1] for x in B], axis=0)
+        floor = float(hv4_minus_v1(b_roi))
+        measured = float(np.mean([hv4_minus_v1(x[1]) for x in B]))
+        chk(f"{arm} floor == b(hV4)-b(V1)", floor, measured, 1e-9)
+        T = np.concatenate([x[0] for x in A])
+        E = np.concatenate([x[1] for x in A]) - np.tile(b_roi, len(A))
+        a = float(np.sum(E * T) / np.sum(T * T))
+        slope, icept = (float(v) for v in np.polyfit(T, E, 1))
+        out[arm] = (obs - floor) / a
+        want_a = {"dkl_base": 1.281, "dkl_bcs": 1.210}[arm]
+        want_i = {"dkl_base": -0.043, "dkl_bcs": -0.002}[arm]
+        chk(f"{arm} slope (bias removed)", a, want_a, 0.005)
+        chk(f"{arm} residual intercept", icept, want_i, 0.005)
+    for name, (wn, wd, wf) in SLOPE_TREATMENTS.items():
+        if name == "per-ROI, bias removed":
+            chk("no-diet true contrast", out["dkl_base"], wn, 0.001)
+            chk("diet true contrast", out["dkl_bcs"], wd, 0.001)
+            chk("factor, bias-removed slope", out["dkl_bcs"] / out["dkl_base"],
+                wf, 0.05)
+
+
+def _ab(path: str, cond: str) -> tuple[np.ndarray, np.ndarray]:
+    """(true, estimated) per-ROI ratio index for one subject."""
+    r = json.load(open(path))["conditions"][cond]["rows"]
+    tm = np.array([x["true_unique_m"] for x in r])
+    tp = np.array([x["true_unique_p"] for x in r])
+    em = np.array([x["est_unique_m"] for x in r])
+    ep = np.array([x["est_unique_p"] for x in r])
+    return (tm - tp) / (tm + tp), (em - ep) / (em + ep)
 
     # subj01's DISPLACEMENT is the stable quantity; the ratio is not. Expressed
     # as a ratio the anomaly looks confined to the no-diet arm (4.65x vs 1.23x)

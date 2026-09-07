@@ -393,22 +393,35 @@ truth plus bias, so real − floor estimates the true contrast.
 | no diet, n = 7 | −0.054 | +0.049 | **−0.103** | 7/7 | .0156 |
 
 Both arms carry a gradient that is non-zero in **every subject** at the exact
-Wilcoxon floor for its sample size, and the diet arm's is **6.7× larger**. The
-conclusion does not depend on the bias being purely additive: fitting
-estimate = *a* · truth + *b* from both simulation conditions gives *a* = 1.22
-(no diet) and 1.12 (diet) with *b* the measured floor, and the recovered true
-contrasts are then −0.106 and −0.777, a ratio of 7.3×. Every version of the
-correction leaves the no-diet gradient resolvable and the diet gradient roughly
-seven times larger.
+Wilcoxon floor for its sample size, and the diet arm's is **6.7× larger**.
 
-*The assumption, stated rather than buried.* Subtracting the floor assumes the
-instrument's bias is not strongly dependent on the true structure it is added
-to. Two pieces of evidence support that and neither proves it: the floors
-measured on the two arms' feature geometries are indistinguishable (above)
-despite their real contrasts differing fifteen-fold, and the recovery condition
-lets the multiplicative term be estimated rather than assumed, which is the
-robustness check in the previous paragraph. We report the displacement as the
-better-founded statistic, not an exact one.
+*Why subtracting the floor is exact for the additive part.* The simulated bias
+is not constant across ROIs — it rises from +0.099 at V1v to +0.148 at hV4
+(no diet) and +0.132 to +0.164 (diet) — so the model is
+estimate(ROI) = *a* · truth(ROI) + *b*(ROI), and the contrast's bias is then
+*b*(hV4) − *b*(V1) by construction. That identity holds numerically to all
+reported digits: +0.0511 and +0.0375, exactly the measured contrast floors. So
+the displacement removes the additive term without assuming anything; what
+remains to be estimated is the multiplicative term *a*.
+
+*Estimating it rather than assuming it away.* Fitting the slope on the recovery
+condition after removing each ROI's own bias gives *a* = 1.28 (no diet) and 1.21
+(diet), and recovered true contrasts of **−0.101** and **−0.720**, a ratio of
+**7.1×**. Three cruder treatments bracket it: no slope correction at all gives
+−0.130 / −0.871 (6.7×), a slope fitted per subject gives −0.106 / −0.777 (7.3×),
+and a slope fitted per ROI with a single pooled intercept gives −0.096 / −0.669
+(7.0×). **The between-arm factor is 6.7–7.3× under every treatment**, no sign
+changes, and both arms stay non-zero — because the sign and the per-subject
+consistency come from the displacement, and any *a* > 0 rescales both arms
+alike. The magnitudes carry real slack; the factor does not.
+
+*Where the model does not fit, disclosed.* With the per-ROI bias removed, a free
+intercept should return to zero if the form is right. It does for the diet arm
+(−0.002) but not quite for the no-diet arm (−0.043), so the linear-plus-ROI-bias
+form is a good approximation for the arm carrying the large effect and a looser
+one for the arm carrying the small one. We therefore report the recovered
+no-diet magnitude as approximate, and rest the claim on the displacement's sign
+and per-subject consistency, which no slope can alter.
 
 What the simulation does *not* license is a claim about the effect's exact
 magnitude. The companion recovery condition, given a true gradient, returns the
