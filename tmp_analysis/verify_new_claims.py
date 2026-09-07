@@ -368,17 +368,70 @@ def check_residual_treatment() -> None:
     subs_r, pr = roi_profile(ENCODING_DIR, f"{arm}_seed0_trained", True)
     real = {s: hv4_minus_v1(pr[k]) for k, s in enumerate(subs_r)}
     ss = sorted(set(real) & set(floor))
-    variants = {
-        "per-subject floor": [(real[s] - floor[s] - cg) / a for s in ss],
-        "group floor": [(real[s] - fg - cg) / a for s in ss],
-        "residual after scaling": [(real[s] - floor[s]) / a - cg for s in ss],
-    }
-    ps = [float(_w(np.array(v)).pvalue) for v in variants.values()]
-    spread_ok = min(ps) < 0.06 and max(ps) > 0.8
-    print(f"  {'OK ' if spread_ok else 'BAD'} correction under-specified: "
-          f"p = {', '.join(f'{x:.3f}' for x in sorted(ps))} (draft .055 to .84)")
-    if not spread_ok:
+    # The decisive robustness argument: crossing the two arbitrary choices
+    # (group vs per-subject floor; residual removed before vs after rescaling)
+    # gives six variants. The MINIMAL treatment is the only one invariant to the
+    # pairing -- which is why §2.2 uses it, independently of the artefact
+    # diagnosis above.
+    ps = {}
+    for fname, fv in (("group", lambda s: fg), ("per-subject", lambda s: floor[s])):
+        for tname, fn in (
+                ("minimal", lambda s, f=fv: (real[s] - f(s)) / a),
+                ("resid-before", lambda s, f=fv: (real[s] - f(s) - cg) / a),
+                ("resid-after", lambda s, f=fv: (real[s] - f(s)) / a - cg)):
+            v = np.array([fn(s) for s in ss])
+            ps[(fname, tname)] = (float(v.mean()), int((v < 0).sum()),
+                                  float(_w(v).pvalue))
+    inv = (ps[("group", "minimal")] == ps[("per-subject", "minimal")])
+    print(f"  {'OK ' if inv else 'BAD'} minimal treatment invariant to floor "
+          f"pairing: {ps[('group', 'minimal')][1]}/8, p="
+          f"{ps[('group', 'minimal')][2]:.4f} under both")
+    if not inv:
+        FAILS.append("minimal treatment no longer pairing-invariant")
+    corr = [v for k, v in ps.items() if k[1] != "minimal"]
+    signs = {c[1] for c in corr}
+    pv = [c[2] for c in corr]
+    swung = len(signs) > 1 and min(pv) < 0.06 and max(pv) > 0.8
+    print(f"  {'OK ' if swung else 'BAD'} residual-corrected variants swing: "
+          f"signs {sorted(signs)}, p = {min(pv):.3f} to {max(pv):.3f} "
+          f"(draft 4/8-6/8, .055 to 1.00)")
+    if not swung:
         FAILS.append("residual correction no longer under-specified")
+    # And the diet arm holds in every one of the six.
+    dfloor, dreal, dcg, da, dss = _diet_variant_inputs()
+    held = 0
+    for fname, fv in (("group", lambda s: float(np.mean(list(dfloor.values())))),
+                      ("per-subject", lambda s: dfloor[s])):
+        for fn in ((lambda s, f=fv: (dreal[s] - f(s)) / da),
+                   (lambda s, f=fv: (dreal[s] - f(s) - dcg) / da),
+                   (lambda s, f=fv: (dreal[s] - f(s)) / da - dcg)):
+            v = np.array([fn(s) for s in dss])
+            if int((v < 0).sum()) == len(v) and _w(v).pvalue < 0.02:
+                held += 1
+    print(f"  {'OK ' if held == 6 else 'BAD'} diet arm holds in {held}/6 "
+          f"variants (draft 6/6)")
+    if held != 6:
+        FAILS.append("diet arm no longer holds in all six variants")
+
+
+def _diet_variant_inputs():
+    arm = "dkl_bcs"
+    A = [_ab(f, "A_recovery") for f in _files(arm)]
+    B = [_ab(f, "B_manufacture") for f in _files(arm)]
+    b_roi = np.mean([x[1] for x in B], axis=0)
+    T = np.stack([x[0] for x in A])
+    E = np.stack([x[1] for x in A]) - b_roi
+    a = float(np.sum(E * T) / np.sum(T * T))
+    cg = float(hv4_minus_v1((E - a * T).mean(0)))
+    floor = {}
+    for f in _files(arm):
+        j = json.load(open(f))
+        floor[j["subject"]] = stats_from(
+            j["conditions"]["B_manufacture"]["rows"], "est_")[0]
+    subs_r, pr = roi_profile(ENCODING_DIR, f"{arm}_seed0_trained", True)
+    real = {s: hv4_minus_v1(pr[k]) for k, s in enumerate(subs_r)}
+    ss = sorted(set(real) & set(floor))
+    return floor, real, cg, a, ss
 
 
 def _ab(path: str, cond: str) -> tuple[np.ndarray, np.ndarray]:

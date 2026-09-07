@@ -434,11 +434,26 @@ to be missing: correlation **−0.85** with total source power against **+0.08**
 with the true contrast, and the two arms' residual profiles correlate at
 **+0.989** despite their real effects differing tenfold. The real data has no
 such schedule, so subtracting this residual imports a construction artefact
-instead of removing a bias. Second, the correction is under-specified: four
-defensible implementations — group versus per-subject floor, residual removed
-before or after scaling — give the same point estimate but p values of .055,
-.31, .31 and .84. A quantity whose significance spans that range on
-implementation choices is not evidence about the data.
+instead of removing a bias. Second, the correction is under-specified, and the
+minimal treatment is the only one that is not. Crossing the two arbitrary
+choices — group versus per-subject noise floor, residual removed before or after
+rescaling — gives six variants:
+
+| floor | treatment | no diet | sign | p |
+|---|---|---|---|---|
+| group | minimal | −0.101 | 8/8 | **.0078** |
+| per-subject | minimal | −0.101 | 8/8 | **.0078** |
+| group | + residual, before scaling | −0.034 | 6/8 | .055 |
+| per-subject | + residual, before scaling | −0.034 | 5/8 | .31 |
+| group | + residual, after scaling | −0.015 | 4/8 | 1.00 |
+| per-subject | + residual, after scaling | −0.015 | 5/8 | .84 |
+
+**The minimal treatment is identical under both pairings**; every
+residual-corrected variant swings between 4/8 and 6/8 and between p = .055 and
+p = 1.00 on a choice that carries no scientific content. A statistic that moves
+that much on an implementation detail is not measuring the data. The diet arm,
+by contrast, is non-zero in all eight subjects at p = .0078 in **all six**
+variants.
 
 *The honest limitation.* Showing that condition A's residual is
 non-transferable does not show the estimator is free of misfit on real data;
