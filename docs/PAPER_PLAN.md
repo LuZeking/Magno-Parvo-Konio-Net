@@ -8833,6 +8833,22 @@ whatever its value.
 ## §85 The corrected recovery run: the artefact opposes §2.2, but "the floor"
 ## is two different numbers and the paper must pick the right units
 
+> **READ §86 FIRST — four claims below are superseded.** §85 was written
+> against a median over the ROI profile; §2.2's statistic is an hV4 − V1
+> contrast (§86), and in that statistic the floor is **+0.051**, not the
+> +0.0256 or +0.1244 argued over here. Specifically:
+>
+> | §85 claim | status |
+> |---|---|
+> | §85.2's withdrawal of "no gradient" | **reversed** — it was correct for the difference statistic (§86.2) |
+> | §85.5's "prediction FAILED by 60×" | **wrong** — scored against the wrong statistic; it passes (§86.1) |
+> | §85.4's `est_diff × nc` = +0.0094 as the "raw" figure | **conceded wrong** — the paper's raw is also ÷nc (§86.3) |
+> | "−0.862 is a floor, not a ceiling" (below) | **withdrawn** — condition A biases the two statistics in opposite directions (§86.7) |
+>
+> What survives: the headline sign argument, §85.6–85.9, and the naming
+> problem, which §86.3 sharpens rather than resolves. Quote §86 and §90, not
+> the numbers in this section.
+
 Job 26440398 ran `vp_recovery_realnc.py` with the measured, descending
 noise-ceiling profile. §84.3 recorded a quantitative prediction before the run
 existed, so it could fail. Condition B's null is exact — max |true_diff| =
@@ -8908,6 +8924,11 @@ Recommendation: retire the word. Write `est_diff (÷nc)`, `est_diff × nc`, and
 `ratio index` explicitly wherever these appear.
 
 ### §85.5 The prediction scored: sign right, magnitude 60× too large
+
+> **SUPERSEDED BY §86.1.** The verdict below is wrong. §84.3's prediction was
+> registered as a contrast and is scored here against a profile median. In
+> §2.2's actual statistic the artefact is +0.0511 against a predicted +0.05 —
+> the prediction PASSES on both sign and magnitude.
 
 Against the stored `est_diff`, which is what §84.3 predicted:
 
@@ -9069,6 +9090,14 @@ codebase keys should be renamed too, or a reader following `_raw` from code to
 paper lands on the wrong quantity.
 
 ### §86.4 NEW: §2.2's four published values do not exactly reproduce
+
+> **Conclusion withdrawn in §87.7; observation stands.** The "one-directional
+> across four numbers, therefore not rounding" inference does not survive the
+> wider set: `untrained_seed0` recomputes at −0.5441 against a published
+> −0.471, i.e. more negative the *other* way. It is twelve values, not four,
+> and per-number provenance drift is the right reading. §88 then dated the
+> no-diet pair to a pre-quarantine fit, which explains those two and only
+> those two.
 
 Recomputing §2.2's contrast from `results/encoding/` under both possible
 ratio constructions, all n=8:
