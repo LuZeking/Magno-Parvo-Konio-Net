@@ -1,0 +1,22 @@
+model                       med-of-rat  rat-of-med      gap  gap/|eff|
+dkl_base_seed0_trained         -0.0785     -0.0693  -0.0091      11.6%
+dkl_base_seed1_trained         -0.0964     -0.0968  +0.0004       0.4%
+dkl_base_seed2_trained         -0.0489     -0.0486  -0.0003       0.6%
+dkl_bcs_seed0_trained          -0.8335     -0.8165  -0.0170       2.0%
+dkl_bcs_seed1_trained          -0.7850     -0.7758  -0.0092       1.2%
+dkl_bcs_seed2_trained          -0.7447     -0.7360  -0.0087       1.2%
+
+corr(|effect|, |gap|) = +0.754
+|gap| absolute:     mean 0.0074  range 0.0003..0.0170
+|gap| proportional: mean 2.8%  range 0.4%..11.6%
+
+--- extrapolating to the floor (+0.0511) ---
+if PROPORTIONAL: floor gap ~ 0.0015  -> floor in [0.0496, 0.0526]
+if CONSTANT    : floor gap ~ 0.0074  -> floor in [0.0437, 0.0585]
+
+--- does either bound move a claim? ---
+  proportional: diet 15.9x..16.8x the floor;  no-diet 1.5x..1.6x
+  constant: diet 14.2x..19.1x the floor;  no-diet 1.3x..1.8x
+
+§2.2 claims a large gradient with the diet and none resolvable
+without it. That survives iff diet stays >> 1 and no-diet stays ~1.

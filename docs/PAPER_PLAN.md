@@ -9516,3 +9516,73 @@ correctly: `−0.8335` and `−0.0785` are locked in `verify_new_claims.py` from
 independent reimplementation of the convention, so agreement between this CLI
 and that verifier is a stronger check than re-running this script would be.
 They agree.
+
+---
+
+## §90 §86.5's estimator mismatch is bounded from existing data, and the
+## per-voxel re-run is not warranted
+
+§86.5 recorded that the +0.051 floor is **ratio-of-medians** (the recovery
+JSONs store only per-ROI medians) while §2.2's effect is **median-of-ratios**,
+and named a per-voxel re-run of condition B as the proper fix — roughly
+8 × 1.5 h of CPU. Before spending that, the gap is measurable on real fits,
+where both estimators are computable.
+
+### §90.1 The gap scales with effect magnitude
+
+| model | median-of-ratios | ratio-of-medians | gap | gap/\|effect\| |
+|---|---|---|---|---|
+| dkl_base_seed0 | −0.0785 | −0.0693 | −0.0091 | 11.6% |
+| dkl_base_seed1 | −0.0964 | −0.0968 | +0.0004 | 0.4% |
+| dkl_base_seed2 | −0.0489 | −0.0486 | −0.0003 | 0.6% |
+| dkl_bcs_seed0 | −0.8335 | −0.8165 | −0.0170 | 2.0% |
+| dkl_bcs_seed1 | −0.7850 | −0.7758 | −0.0092 | 1.2% |
+| dkl_bcs_seed2 | −0.7447 | −0.7360 | −0.0087 | 1.2% |
+
+`corr(|effect|, |gap|) = +0.754`. Absolute gap: mean 0.0074, range
+0.0003–0.0170. Proportional gap: mean 2.8%, range 0.4–11.6%.
+
+Two things worth naming. The gap is **directional** — median-of-ratios is the
+larger magnitude in 5 of 6 fits — so for a positive floor the same tendency
+would make it slightly *larger*, not smaller. And the 11.6% outlier is
+`dkl_base_seed0`, the fit containing subj01 (§87); the other two no-diet seeds
+sit at 0.4% and 0.6%, so the proportional mean of 2.8% is itself inflated by
+one influential subject and is conservative for a typical fit.
+
+### §90.2 Neither extrapolation moves a claim
+
+| extrapolation | floor gap | floor range | diet / floor | no-diet / floor |
+|---|---|---|---|---|
+| proportional (2.8%) | 0.0015 | 0.0496–0.0526 | 15.9–16.8× | 1.5–1.6× |
+| constant (0.0074) | 0.0074 | 0.0437–0.0585 | **14.2–19.1×** | **1.3–1.8×** |
+
+The constant-gap row is the conservative bound, and it is almost certainly too
+pessimistic given the +0.754 scaling. §2.2's reframed claim — a large gradient
+with the diet, none resolvable without it — requires diet ≫ 1 and no-diet ≈ 1.
+Both hold across the whole of both ranges.
+
+### §90.3 Therefore: no re-run
+
+The re-run would refine +0.051 to about ±0.002 (proportional) from a
+conservative ±0.007, and change **no** stated conclusion. Under the standing
+rule — do not stall on marginal gains; when results are messy the fix is
+reframing, not more compute — that compute is not justified.
+
+What §E2.1 should say changes, though: not "approximate, proper fix pending"
+but **"approximate, bounded at ±0.007 conservatively and ±0.002 on the
+observed scaling, and the bound does not move the comparison"**. A disclosed
+limitation with a bound is a much stronger disclosure than one with a promise
+attached, and it does not leave a referee wondering what the missing run would
+have shown.
+
+The estimator mismatch stays disclosed. It is the *re-run* that is closed, not
+the caveat.
+
+### §90.4 What would change this
+
+If the diet-arm floor from 26442320 comes back much smaller than +0.051, the
+ratios shift and the no-diet arm could fall below 1×, at which point a ±0.007
+uncertainty starts to matter for whether the no-diet effect is distinguishable
+from the instrument at all. So this conclusion is contingent on the diet-arm
+floor being of the same order, and should be re-checked when that lands rather
+than treated as settled independent of it.
