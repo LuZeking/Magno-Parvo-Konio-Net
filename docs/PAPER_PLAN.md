@@ -9902,3 +9902,106 @@ evidence that the no-diet gradient is non-zero, and disclose that it assumes an
 additive instrument bias supported by the cross-geometry equivalence. That is a
 stronger and more defensible statement than either the magnitude ratio or
 "none resolvable".
+
+---
+
+## §94 The estimated-slope correction verifies, my additivity justification was
+## wrong, and the fitting unit they chose is the badly-conditioned one
+
+e1ce0d3 replaced §93.4's justification with something better and was right to.
+Verified, then refined.
+
+### §94.1 My §93.4 reasoning was wrong
+
+I justified `real − floor` by the two floors being statistically
+indistinguishable across geometries whose real contrasts differ fifteen-fold.
+**Condition B sets truth to exactly zero in both arms.** So that comparison
+demonstrates independence from *feature geometry*, not independence from the
+*true contrast* — and the latter is the property the subtraction needs. The
+cross-geometry equivalence was the wrong evidence for the claim I attached it
+to. Conceded.
+
+### §94.2 Their slope estimate reproduces exactly
+
+Fitting `est = a·truth + b` with `b` fixed at the independently measured floor,
+over **per-subject contrasts**:
+
+| arm | a | recovered true contrast |
+|---|---|---|
+| no diet | **1.217** | **−0.1065** |
+| diet | **1.122** | **−0.7765** |
+
+Ratio **7.3×**. Identical to e1ce0d3 to four decimals. Estimating the
+multiplicative term rather than assuming it away is a genuinely better footing
+than my additivity argument.
+
+### §94.3 But that fitting unit carries almost no slope information
+
+Condition A's true split varies across ROIs by construction and is *the same
+for every subject*, so the eight per-subject true contrasts are nearly
+identical — there is almost no spread on the x-axis. The constrained fit is
+well-determined only because `b` is held fixed; the free fit in that unit
+collapses:
+
+| arm | unit | a (b fixed) | free OLS |
+|---|---|---|---|
+| no diet | per-subject contrast (n=8) | 1.217 | **a = 3.003, b = −2.369** |
+| diet | per-subject contrast (n=8) | 1.122 | a = 1.514, b = −0.466 |
+| no diet | per-ROI ratio (n=56) | 1.348 | **a = 1.338, b = +0.0775** |
+| diet | per-ROI ratio (n=56) | 1.302 | a = 1.242, b = +0.1378 |
+
+The per-ROI unit spans the real range of truth, and there the free and
+constrained slopes agree to within 0.01 (no diet) and 0.06 (diet) — the mark of
+a well-conditioned fit. In the per-subject unit they differ by a factor of 2.5.
+So the per-ROI estimate is the better-founded one:
+
+| arm | a | recovered true |
+|---|---|---|
+| no diet | 1.348 | **−0.0961** |
+| diet | 1.302 | **−0.6692** |
+
+Ratio **7.0×**.
+
+### §94.4 A model check neither of us ran
+
+If `est = a·truth + b` is the right form, a **free** fit's intercept should
+recover the independently measured condition-B floor. It partly does:
+
+| arm | free intercept (per-ROI) | measured floor | agreement |
+|---|---|---|---|
+| no diet | +0.0775 | +0.0511 | same order, 1.5× |
+| diet | +0.1378 | +0.0375 | **3.7× off** |
+
+So the linear-plus-offset form is an approximation, better for the no-diet arm
+than the diet arm, and the recovered magnitudes should be read as estimates
+with real slack rather than corrections. This is worth stating in E2.1
+alongside the slope, because it is the check that tests the *model* rather than
+its parameters — and it is the one step of this argument that neither session
+had performed.
+
+### §94.5 The conclusion is robust to all of it
+
+| method | no diet | diet | ratio |
+|---|---|---|---|
+| additive (§93) | −0.1295 | −0.8709 | 6.7× |
+| slope, per-ROI (§94.3) | −0.0961 | −0.6692 | 7.0× |
+| slope, per-subject (e1ce0d3) | −0.1065 | −0.7765 | 7.3× |
+
+**6.7–7.3× across every treatment.** Neither sign changes, both arms stay
+non-zero, and the between-arm factor moves by less than 10%. The sign and the
+per-subject consistency (8/8 and 7/7 at the exact Wilcoxon floors) come from
+the displacement itself, not from `a` — any `a > 0` rescales both arms
+identically. So §2.2's "the diet makes the gradient large; it does not make it
+exist" holds under all three, and the reduction is 85–86% however it is
+computed.
+
+### §94.6 On the framing that got reinstated
+
+e1ce0d3 notes this partly restores the paper's original "nearly flat without
+it" with its 79% reduction — structurally right, numerically superseded, now
+85–86%. That is worth recording as it stands: the record now carries **two
+withdrawn framings pointing in opposite directions**, each with the error
+named, rather than quietly arriving at a third. The first withdrawal was mine
+in effect (§86.6 argued the no-diet arm was at its floor), the second theirs,
+and the surviving claim is closer to the original than either intermediate
+position. That is what the sequence actually shows and it should not be tidied.

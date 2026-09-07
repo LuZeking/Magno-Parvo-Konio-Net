@@ -1,0 +1,22 @@
+
+=== no-diet (floor b = +0.0511) ===
+  per-ROI ratio (n=56)         a|b fixed = 1.348   free OLS a = 1.338, b = +0.0775
+                               -> recovered true contrast -0.0961
+  per-subject contrast (n=8)   a|b fixed = 1.217   free OLS a = 3.003, b = -2.3688
+                               -> recovered true contrast -0.1065
+
+=== diet (floor b = +0.0375) ===
+  per-ROI ratio (n=56)         a|b fixed = 1.302   free OLS a = 1.242, b = +0.1378
+                               -> recovered true contrast -0.6692
+  per-subject contrast (n=8)   a|b fixed = 1.122   free OLS a = 1.514, b = -0.4656
+                               -> recovered true contrast -0.7765
+
+--- ratio between arms under each fitting unit ---
+  roi: a = 1.348 / 1.302, true = -0.0961 / -0.6692, ratio 7.0x
+  con: a = 1.217 / 1.122, true = -0.1065 / -0.7765, ratio 7.3x
+
+e1ce0d3 reports a = 1.217 / 1.122, true -0.106 / -0.777, 7.3x
+
+Note the conclusion does not rest on a: any a > 0 rescales both arms
+without changing either sign or the per-subject consistency, which come
+from the displacement itself. The slope refines the MAGNITUDE only.
