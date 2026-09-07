@@ -10344,3 +10344,122 @@ scalars, so it has none of §2.2's ratio-versus-numerator ambiguity — but the
 decision-rate caveat in §64.6(4) is the same shape of problem, a ratio whose
 denominator changes between arms, and should be reported as a count over a
 named subset rather than as a bare percentage.
+
+---
+
+## §98 §7.2 item 2 done: the eccentricity bands were confounding two effects
+## of opposite sign, and controlling pRF size doubles the eccentricity result
+
+§7.2 item 2 asked for NSD's continuous pRF maps on the grounds that
+"magno explains *peripheral* voxels" and "magno explains *large-pRF* voxels"
+are different claims that the 5-bin eccentricity analysis cannot separate.
+They are different, they point in **opposite directions**, and separating them
+strengthens the eccentricity result rather than qualifying it.
+
+Data: `prf_eccentricity`, `prf_size`, `prf_angle`, `prf_R2` for all 8 subjects,
+fetched into the existing NSD tree on `/scratch` (32 volumes, ~44 MB, each
+verified against its Content-Length and gzip-tested — a truncated volume would
+have decompressed to garbage and failed late).
+
+### §98.1 Two preconditions, both tested before any model was fitted
+
+**Alignment.** The pRF volumes are indexed with the same `nsdgeneral` mask the
+fits used, via the project's own `_load_volume_zyx` — but that is a claim until
+tested. `prf-eccrois` is an ordinal band label attached through the same mask,
+so median pRF eccentricity must rise monotonically across it:
+
+| band | 0–0.5° | 0.5–1 | 1–2 | 2–4 | 4+ |
+|---|---|---|---|---|---|
+| median pRF ecc (subj 1) | 0.28 | 0.69 | 1.36 | 2.58 | 4.34 |
+
+Monotonic in **8/8 subjects**, and the values land inside the intervals their
+labels name. Indexing confirmed rather than assumed. `load_prf` lives in
+`nsd_data.py` beside `load_roi_labels` so the mask convention cannot drift from
+the fits.
+
+**Collinearity — the enabling result.** Eccentricity and pRF size both grow
+with distance from the fovea, so the question is only answerable if they are
+separable within subject. Measured: **r(log ecc, log size) = +0.611**
+(range +0.391..+0.698), **VIF = 1.66**. Had this been ~0.9 the partial betas
+would have been noise and the honest report would have been "these data cannot
+control for size". They can.
+
+Coverage also improves as §7.2 predicted: ~5.8k–9.8k voxels per subject at
+`prf_R2 > 5`, against the 33% of the mask that carries a band label.
+
+### §98.2 The result: a suppression effect the bands could not see
+
+Standardised OLS betas within subject, aggregated over 8 subjects (subject as
+the resampling unit), Wilcoxon signed-rank. Diet arm, seed 0, both statistics:
+
+| term | norm | raw |
+|---|---|---|
+| ecc alone | +0.066, 0/8 neg, p=.0078 | +0.103, 1/8, p=.0391 |
+| size alone | −0.013, 5/8, p=.3125 | −0.158, 8/8, p=.0078 |
+| **ecc \| size** | **+0.119, 0/8, p=.0078** | **+0.325, 0/8, p=.0078** |
+| **size \| ecc** | **−0.086, 8/8, p=.0078** | **−0.356, 8/8, p=.0078** |
+
+**Controlling pRF size nearly doubles the eccentricity beta** (+0.066 → +0.119
+norm; +0.103 → +0.325 raw). That is a textbook suppression pattern and it is
+mathematically expected here rather than surprising: the two predictors
+correlate at +0.61 and act with opposite signs, so each was masking the other
+in the marginal analysis. The banded result **understated** eccentricity.
+
+All three diet seeds agree on all four terms.
+
+Read plainly: within the diet arm, magno-unique variance rises toward the
+periphery **and**, at matched eccentricity, falls as pRF size grows. Those are
+two separate facts about the same cortex, and the 5-bin analysis reported their
+sum.
+
+### §98.3 Sensitivity, with the criterion stated before it was run
+
+Two conventions carry no scientific content — the `prf_R2` threshold and the
+log transform — so both were varied over 16 cells per arm, against a rule
+fixed in advance: the dissociation is a property of the data only if
+diet keeps `ecc|size > 0, size|ecc < 0` and no-diet keeps
+`ecc|size ≈ 0, size|ecc > 0` in **every** cell.
+
+**Diet passes all 16.** ecc|size runs +0.010 to +0.231 and size|ecc −0.009 to
+−0.231 across both parameterisations and R2 ∈ {0, 5, 10, 20}, with 8/8 sign
+consistency and p = .0078 in 14 of 16; the weakest cell is linear/R2>0
+(p = .0781), where including unfittable voxels attenuates everything.
+
+**No-diet fails, and the failing half is not claimed.** The absence of an
+eccentricity effect is robust (ns in all 8 cells, |β| ≤ 0.026 under log). But
+the apparently positive **size** effect is log-specific: +0.035 (p=.0078) under
+log at R2>5, yet it **flips sign** under the linear parameterisation at R2>5
+(−0.022) and R2>10 (−0.054), both ns. By the pre-stated rule that is the filter
+talking. §96's lesson applies unchanged — a statistic that moves on an
+arbitrary implementation choice is not measuring the data — so the no-diet
+size effect is recorded as **not established**, not as a finding.
+
+### §98.4 What this supports, and what it does not
+
+**Supported.** (i) In the diet arm, stream preference has an eccentricity
+component and a pRF-size component of opposite sign, both robust across every
+convention tested. (ii) The eccentricity component is **absent** in the no-diet
+arm under every convention — an arm difference on the retinotopic claim
+specifically, which is what leg (c) needs. (iii) §7.2 item 2's premise was
+correct: the two claims were confounded, and the confound was costing the
+eccentricity result about half its size.
+
+**Not supported.** Any statement about pRF size in the no-diet arm. And the
+suppression means the *marginal* eccentricity beta reported from bands is not
+the quantity to quote going forward — the partial is, with the size term
+reported beside it.
+
+### §98.5 Limitations
+
+- `prf_R2 > 5` retains 45–60% of the mask; the excluded voxels are those the
+  pRF model could not fit, which are not missing at random and are plausibly
+  the noisiest. The R2>0 row is the closest thing to an unfiltered check and
+  the diet dissociation survives it, weakly (p=.078 linear).
+- Betas are standardised within subject, so they are comparable across
+  subjects but are not effect sizes in degrees.
+- This is a *correlational* dissociation over voxels. It says the two axes
+  carry different information about stream preference; it does not establish
+  that either is the causal variable.
+- `prf_angle` was downloaded and is unused here. Polar angle is the obvious
+  next control — a genuine retinotopic account should be angle-invariant, and
+  anything that is not would point at a coverage artefact instead.

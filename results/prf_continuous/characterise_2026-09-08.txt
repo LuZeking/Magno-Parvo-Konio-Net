@@ -1,0 +1,40 @@
+subj  voxels    R2>0    R2>5   R2>10  ecc med  size med
+   1   15724   13406    9008    7493     1.63      0.57
+   2   14278   11398    7549    6001     1.87      0.30
+   3   15226   12874    8180    6630     2.10      0.34
+   4   13153   10129    5817    4498     2.02      0.47
+   5   13039   11082    8180    6920     1.32      0.39
+   6   17907   14868    9837    7850     1.37      0.36
+   7   12682   10731    6605    5230     0.82      0.20
+   8   14386   12060    8189    6555     1.65      0.30
+
+=== 1. ALIGNMENT: median pRF ecc by the existing eccroi band ===
+subj  0-0.5deg     0.5-1       1-2       2-4        4+   monotonic?
+   1      0.28      0.69      1.36      2.58      4.34   YES
+   2      0.30      0.71      1.38      2.80      4.22   YES
+   3      0.29      0.72      1.39      2.73      4.15   YES
+   4      0.32      0.65      1.41      2.47      4.24   YES
+   5      0.37      0.65      1.38      2.55      4.20   YES
+   6      0.28      0.67      1.29      2.50      4.26   YES
+   7      0.35      0.70      1.49      2.76      4.18   YES
+   8      0.30      0.71      1.42      2.71      4.13   YES
+
+monotonic in 8/8 subjects -> ALIGNMENT CONFIRMED
+
+=== 2/3. COLLINEARITY of the two predictors, within subject ===
+subj       n  r(ecc,size)  r(log,log)    VIF
+   1    9008        0.984       0.604   1.57
+   2    7549        0.725       0.679   1.85
+   3    8180        0.678       0.560   1.46
+   4    5817        0.410       0.609   1.59
+   5    8180        0.642       0.667   1.80
+   6    9837        0.975       0.679   1.86
+   7    6605        0.477       0.391   1.18
+   8    8189        0.637       0.698   1.95
+
+mean r(log ecc, log size) = +0.611  range +0.391..+0.698
+mean VIF = 1.66
+
+VIF < 5 -> the partial betas are interpretable and §7.2 item 2 is
+answerable; VIF > 10 -> 'controlling for size' is not something these
+data can support and that must be reported instead of a partial beta.

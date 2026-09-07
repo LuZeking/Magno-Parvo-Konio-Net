@@ -144,6 +144,39 @@ def load_roi_labels(subject: int, name: str, mask: np.ndarray) -> np.ndarray:
     return vol[mask].astype(np.int32)
 
 
+def _ppdata_dir(subject: int) -> str:
+    return os.path.join(
+        NSD_ROOT, "nsddata", "ppdata", f"subj{subject:02d}", "func1pt8mm"
+    )
+
+
+def load_prf(subject: int, name: str, mask: np.ndarray) -> np.ndarray:
+    """Continuous pRF parameter within ``mask`` (flat, len = mask.sum()).
+
+    ``name`` is one of ``eccentricity`` (deg), ``size`` (deg), ``angle``
+    (deg) or ``R2`` (percent variance explained by the pRF model).
+
+    Lives here rather than in an analysis script so the mask and axis
+    convention are the same object the fits used: the pRF volumes are indexed
+    with the caller's ``load_mask(subject, "nsdgeneral")``, through the same
+    ``_load_volume_zyx``, so element i of the result is element i of
+    ``unique_magno`` in the stored .npz. Re-deriving that indexing separately
+    is how a silent misalignment gets in.
+
+    NSD leaves voxels the pRF model could not fit as 0 in R2; filter on R2
+    before using eccentricity or size, and say what threshold was used
+    (§7.2 item 2).
+    """
+    vol = _load_volume_zyx(
+        os.path.join(_ppdata_dir(subject), f"prf_{name}.nii.gz")
+    )
+    if vol.shape != mask.shape:
+        raise ValueError(
+            f"prf_{name} shape {vol.shape} != mask shape {mask.shape}"
+        )
+    return vol[mask].astype(np.float64)
+
+
 def load_noise_ceiling(
     subject: int, mask: np.ndarray, n_reps_averaged: int = N_REPS
 ) -> np.ndarray:
