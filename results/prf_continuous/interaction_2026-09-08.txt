@@ -1,0 +1,41 @@
+n=8 two-sided Wilcoxon floor = 0.0078125; a p at the floor means 8/8 sign
+consistency, not an independently strong test.
+
+==========================================================================
+1. INTERACTION on ecc|size, seed-matched pairs, statistic = norm
+==========================================================================
+pairing                 mean diff              range   pos        p
+seed0 vs seed0             +0.123     -0.011..+0.234   7/8   0.0156
+seed1 vs seed1             +0.142     +0.034..+0.345   8/8   0.0078
+seed2 vs seed2             +0.137     +0.015..+0.218   8/8   0.0078
+
+seed-averaged within arm (the cleaner pairing):
+  norm  ecc|size      +0.134     +0.044..+0.252   8/8   0.0078
+  norm  size|ecc      -0.119     -0.172..-0.073   0/8   0.0078
+  raw   ecc|size      +0.305     +0.024..+0.700   8/8   0.0078
+  raw   size|ecc      -0.502     -0.755..-0.243   0/8   0.0078
+
+==========================================================================
+2. IS THE INTERACTION ROBUST to the same two arbitrary choices?
+==========================================================================
+ R2>    pred  stat            ecc interaction
+   0     log  norm        +0.063 6/8 p=0.0781
+   0     log   raw        +0.133 6/8 p=0.1484
+   5     log  norm        +0.123 7/8 p=0.0156
+   5     log   raw        +0.297 7/8 p=0.0156
+  10     log  norm        +0.135 8/8 p=0.0078
+  10     log   raw        +0.314 8/8 p=0.0078
+  20     log  norm        +0.131 7/8 p=0.0156
+  20     log   raw        +0.243 7/8 p=0.0156
+   0  linear  norm        +0.009 5/8 p=0.5469
+   0  linear   raw        -0.007 3/8 p=0.8438
+   5  linear  norm        +0.106 7/8 p=0.0234
+   5  linear   raw        +0.124 5/8 p=0.3125
+  10  linear  norm        +0.149 8/8 p=0.0078
+  10  linear   raw        +0.210 6/8 p=0.0391
+  20  linear  norm        +0.110 8/8 p=0.0078
+  20  linear   raw        +0.227 8/8 p=0.0078
+
+The arm difference is claimable only if the interaction holds sign
+and significance across these cells -- the same bar §98.3 set for the
+within-arm effects, applied to the between-arm one.

@@ -1,0 +1,9 @@
+stat  term           diet  no diet     diff   pos        p
+norm  marginal     +0.065   +0.005   +0.060   7/8   0.0156
+norm  partial      +0.122   -0.012   +0.134   8/8   0.0078
+raw   marginal     +0.089   +0.096   -0.008   3/8   0.8438
+raw   partial      +0.300   -0.006   +0.305   8/8   0.0078
+
+If marginal is n.s. and partial is significant, the draft's sentence
+is right about the quantity it names, and the size confound was hiding
+the arm difference rather than the draft having got it wrong.

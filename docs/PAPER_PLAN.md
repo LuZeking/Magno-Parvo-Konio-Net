@@ -10436,6 +10436,17 @@ size effect is recorded as **not established**, not as a finding.
 
 ### §98.4 What this supports, and what it does not
 
+> **Claim (ii) below is WITHDRAWN — see §99.** "The eccentricity component is
+> absent in the no-diet arm … an arm difference" rested on *significant in one
+> arm, not significant in the other*, which is not a test of the difference
+> (Gelman & Stern) and is a move §8 refuses elsewhere. The paired
+> within-subject interaction was then run and the arm difference does hold
+> (+0.134 norm / +0.305 raw, 8/8, at the n=8 floor) — but **conditionally on a
+> pRF-quality filter**, not "under every convention" as claimed here, and it
+> holds for the *partial* while the arms are indistinguishable on the
+> *marginal* slope. §99 supersedes this subsection's (ii) and its robustness
+> wording. Claims (i) and (iii) stand.
+
 **Supported.** (i) In the diet arm, stream preference has an eccentricity
 component and a pRF-size component of opposite sign, both robust across every
 convention tested. (ii) The eccentricity component is **absent** in the no-diet
@@ -10463,3 +10474,117 @@ reported beside it.
 - `prf_angle` was downloaded and is unused here. Polar angle is the obvious
   next control — a genuine retinotopic account should be angle-invariant, and
   anything that is not would point at a coverage artefact instead.
+
+---
+
+## §99 §98.4's arm-difference claim was the significant/not-significant
+## fallacy — tested properly it holds, and it reconciles with the draft
+
+`950c6df`'s session caught that §98.4 asserted "the eccentricity component is
+absent in the no-diet arm … an arm difference" on the strength of *significant
+in one arm, not significant in the other*. That is not a test of the difference
+(Gelman & Stern 2006), and §8 (line 346) already refuses exactly this move
+elsewhere in the paper. **§98.4's phrasing is withdrawn** and replaced by the
+paired test below.
+
+### §99.1 The interaction, tested the way the claim requires
+
+Per subject, per arm: the ecc|size partial. Differenced **within subject**,
+tested across the 8 subjects with the same estimator and resampling unit.
+
+| pairing | mean diff | range | subjects | p |
+|---|---|---|---|---|
+| seed0 vs seed0 | +0.123 | −0.011..+0.234 | 7/8 | .0156 |
+| seed1 vs seed1 | +0.142 | +0.034..+0.345 | 8/8 | .0078 |
+| seed2 vs seed2 | +0.137 | +0.015..+0.218 | 8/8 | .0078 |
+| **seed-averaged, norm** | **+0.134** | +0.044..+0.252 | **8/8** | .0078 |
+| **seed-averaged, raw** | **+0.305** | +0.024..+0.700 | **8/8** | .0078 |
+| seed-averaged, size\|ecc, norm | −0.119 | −0.172..−0.073 | 8/8 neg | .0078 |
+| seed-averaged, size\|ecc, raw | −0.502 | −0.755..−0.243 | 8/8 neg | .0078 |
+
+The arms differ on **both** partial terms, not only eccentricity.
+
+**Note on every p in §98 and here**: the two-sided Wilcoxon at n=8 floors at
+2/2⁸ = **.0078125**. A p at that value is *8/8 sign consistency*, not an
+independently strong test, and §98 should have said so. The interaction is
+therefore not a ninth confirmation stacked on the eight before it — it is one
+test, of the quantity the claim actually names.
+
+### §99.2 Robustness: 11 of 16, and the failures are not arbitrary
+
+Same 16-cell grid as §98.3, applied to the interaction:
+
+| filter | log/norm | log/raw | linear/norm | linear/raw |
+|---|---|---|---|---|
+| R2>0 | .0781 ✗ | .1484 ✗ | .5469 ✗ | .8438 ✗ |
+| R2>5 | .0156 ✓ | .0156 ✓ | .0234 ✓ | .3125 ✗ |
+| R2>10 | .0078 ✓ | .0078 ✓ | .0078 ✓ | .0391 ✓ |
+| R2>20 | .0156 ✓ | .0156 ✓ | .0078 ✓ | .0078 ✓ |
+
+**By §98.3's stated bar — every cell — this fails.** Stating that plainly
+rather than moving the bar: five cells do not clear .05.
+
+All four failures at R2>0 share one cause, and it is not an arbitrary
+convention. R2>0 admits voxels the pRF model could not fit, whose eccentricity
+and size values are noise; including them attenuates every effect toward zero,
+which is visible in the within-arm betas too (§98.3's diet linear/R2>0 cell
+fell to +0.010). R2>0 is not a threshold choice on the same footing as 5 vs 10
+vs 20 — it is the absence of a quality filter. The fifth failure
+(linear/raw, R2>5) has no such account and is simply a miss.
+
+**The defensible claim is therefore conditional and should be written that
+way**: the arm difference holds wherever the pRF estimates are usable — 7 of 8
+cells at R2 ≥ 5, and 4 of 4 at R2 ≥ 10 — and does not hold without a pRF-quality
+filter.
+
+### §99.3 The reconciliation: the draft's sentence is right
+
+The draft's live eccentricity sentence (line 1890) reports the arms as **not**
+differing: "raw slope +0.047 vs +0.041, 8/8 both, difference n.s." That is a
+**marginal** slope. §99.1 tests a **partial**. Running both on the same data:
+
+| statistic | term | diet | no diet | difference | subjects | p |
+|---|---|---|---|---|---|---|
+| raw | **marginal** | +0.089 | +0.096 | **−0.008** | 3/8 | **.8438** |
+| raw | **partial** | +0.300 | −0.006 | **+0.305** | 8/8 | **.0078** |
+| norm | marginal | +0.065 | +0.005 | +0.060 | 7/8 | .0156 |
+| norm | partial | +0.122 | −0.012 | +0.134 | 8/8 | .0078 |
+
+On the raw statistic — the one the draft names — the marginal interaction is
+emphatically null (p = .84, 3/8), reproducing the draft's "difference n.s."
+exactly. **The draft is correct about the quantity it names, and does not need
+correcting.**
+
+What the partial adds is the reason: in the no-diet arm the apparent
+eccentricity trend is **entirely carried by pRF size** — marginal +0.096
+collapses to **−0.006** once size is controlled. In the diet arm a genuine
+eccentricity effect remains (+0.300) after the same control. So the marginal
+comparison cannot separate the arms because it is comparing a real
+eccentricity effect against a size effect wearing eccentricity's clothes.
+
+That is a better result than "the draft was wrong", and it is the third time
+in this project that a confound has been hiding a difference rather than
+manufacturing one.
+
+### §99.4 What leg (c) can claim
+
+> Controlling pRF size, magno-unique variance rises with eccentricity in the
+> diet arm and not in the no-diet arm (paired within-subject difference
+> +0.134 norm / +0.305 raw, 8/8 subjects, at the n=8 sign-consistency floor),
+> while the two arms are indistinguishable on the *marginal* eccentricity
+> slope (raw, p = .84) because the no-diet arm's apparent trend is carried by
+> pRF size. Holds at every pRF-quality threshold tested (R2 ≥ 5 in 7 of 8
+> convention cells, R2 ≥ 10 in 4 of 4); not established without a quality
+> filter.
+
+The existing "difference n.s." sentence stays true and gains a companion rather
+than a correction.
+
+### §99.5 The angle control, with the aperture wrinkle
+
+`950c6df` adds the constraint that matters for the next step: NSD's aperture is
+~8.4°, so coverage is anisotropic near the edge and eccentricity and polar
+angle are not independent there. An apparent angle effect at high eccentricity
+could be aperture geometry rather than retinotopy, so the angle control is
+informative **within** an eccentricity band, not pooled — pooled, a null could
+be masking two artefacts that cancel. Recorded for whoever runs it.
