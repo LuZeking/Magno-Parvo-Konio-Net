@@ -1,0 +1,21 @@
+model                      stat     V1 ref  V123 ref  published  |V1-pub|  |V123-pub|  winner
+untrained_seed0            norm    -0.5441   -0.4868     -0.471    0.0731      0.0158    V123
+untrained_seed0            raw     -0.1251   -0.0919     -0.118    0.0071      0.0261      V1
+dkl_bcs_seed0_trained      norm    -0.8335   -0.4630     -0.862    0.0285      0.3990      V1
+dkl_bcs_seed0_trained      raw     -0.1650   -0.1041     -0.176    0.0110      0.0719      V1
+dkl_base_seed0_trained     norm    -0.0785   -0.0333     -0.101    0.0225      0.0677      V1
+dkl_base_seed0_trained     raw     -0.0258   +0.0017     -0.034    0.0082      0.0357      V1
+
+closer-to-published tally: {'V1': 5, 'V123': 1}
+
+The hypothesis needs V123 to win EVERY normalised row while V1 wins
+every raw row. Any other pattern means the reference is not the cause.
+
+--- normalised contrast, both references, all six seed fits ---
+model                         V1 ref  V123 ref
+dkl_base_seed0_trained       -0.0785   -0.0333
+dkl_base_seed1_trained       -0.0964   -0.0182
+dkl_base_seed2_trained       -0.0489   +0.0084
+dkl_bcs_seed0_trained        -0.8335   -0.4630
+dkl_bcs_seed1_trained        -0.7850   -0.4554
+dkl_bcs_seed2_trained        -0.7447   -0.4042

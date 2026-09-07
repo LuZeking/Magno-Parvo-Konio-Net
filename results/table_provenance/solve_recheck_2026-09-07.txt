@@ -1,0 +1,17 @@
+
+=== raw as median_of_diff ===
+  n=8 mean -0.0271   n=7 mean -0.0211   subj01 now -0.0685
+  to reach published -0.034, subj01 must be -0.1241
+  = 6.3x the sibling median (-0.0199), 46% of the effect
+
+=== raw as diff_of_medians ===
+  n=8 mean -0.0258   n=7 mean -0.0206   subj01 now -0.0619
+  to reach published -0.034, subj01 must be -0.1275
+  = 6.0x the sibling median (-0.0212), 47% of the effect
+
+07d4df6's solve: -0.1241, 6.3x, 46%
+§88's solve:     -0.1275, 6.0x, 47%
+
+If median_of_diff reproduces -0.1241/6.3x/46%, the 0.003 gap between
+the two sessions was the ESTIMATOR, not rounding -- and the README's
+'six-fold' is matched at 6.3x under the paper's own convention.

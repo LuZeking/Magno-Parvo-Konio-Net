@@ -9694,3 +9694,102 @@ means reading two directories with a stated reason for each, which is exactly
 the kind of thing that should be recorded in the artifact rather than in a
 shell history — the §89 stamp already records `src`, so a per-table
 regeneration would carry its own source declaration.
+
+---
+
+## §92 The structural lead is dead, the paper's raw estimator is identified,
+## and §88's "exactly 6.0×" was my own estimator artefact
+
+07d4df6 offered the raw-reproduces/normalised-doesn't split as the one
+structural lead, having searched denominator conventions and stopped on
+principle. One candidate lay outside that space and is tested here.
+
+### §92.1 The reference hypothesis: pre-specified, and dead
+
+`visualrois.py` prints two contrasts adjacently — `SPI hV4 - V1` and
+`SPI hV4 - V1/V2/V3`. For untrained the second is −0.4868 against a published
+−0.471, much closer than the V1 reference's −0.5441, so a reference mix-up was
+a live candidate — and exactly the kind of error this thread keeps producing.
+
+**Prediction stated before computing:** if the published normalised values are
+V1/V2/V3 contrasts, V123 must win *every* normalised row while V1 keeps
+winning every raw row.
+
+| model | stat | V1 ref | V123 ref | published | winner |
+|---|---|---|---|---|---|
+| untrained_seed0 | norm | −0.5441 | **−0.4868** | −0.471 | V123 |
+| untrained_seed0 | raw | −0.1251 | −0.0919 | −0.118 | V1 |
+| dkl_bcs_seed0 | norm | **−0.8335** | −0.4630 | −0.862 | V1 |
+| dkl_bcs_seed0 | raw | −0.1650 | −0.1041 | −0.176 | V1 |
+| dkl_base_seed0 | norm | **−0.0785** | −0.0333 | −0.101 | V1 |
+| dkl_base_seed0 | raw | −0.0258 | +0.0017 | −0.034 | V1 |
+
+V123 wins **1 of 6**, and loses catastrophically where it matters: diet
+normalised is −0.4630 against a published −0.862, off by 0.399. **The
+hypothesis is dead.** The untrained near-match is coincidence, and keeping it
+while discarding the diet row is precisely the "fitting the convention to the
+numbers" that 07d4df6 declined to do.
+
+Recorded as a failure, not omitted. A pre-specified test that fails is worth
+more than an unstated search that succeeds.
+
+### §92.2 The paper's raw statistic is median-of-DIFFERENCES
+
+07d4df6 reported untrained raw as −0.1199; I had −0.1251. Enumerating:
+
+| variant | untrained | \|gap to −0.118\| |
+|---|---|---|
+| difference of medians `med(uₘ) − med(uₚ)` | −0.1251 | 0.0071 |
+| **median of differences `med(uₘ − uₚ)`** | **−0.1199** | **0.0019** |
+| difference of medians, pre-nc | −0.0491 | 0.0689 |
+| median of differences, pre-nc | −0.0424 | 0.0756 |
+
+So the paper's "raw" is **`median(uₘ − uₚ)`** over voxels, not the difference
+of the two medians — the same distinction as median-of-ratios vs
+ratio-of-medians, one level down. It tightens the untrained match from 0.007 to
+**0.002**, which slightly *strengthens* the raw-reproduces/normalised-doesn't
+split.
+
+The two pre-nc rows are off by 0.069–0.076, a **third independent
+confirmation** of §86.3: the paper's raw is the ÷nc form.
+
+Under the correct estimator, §86.4's raw gaps become diet **0.010** (was 0.011)
+and no-diet **0.007** (was 0.008) — immaterial, but restated for accuracy.
+§90's bound concerns the normalised statistic and is unaffected.
+
+### §92.3 §88's solve corrected: 6.3×, not "exactly 6.0×"
+
+§88 reported the required subj01 raw value as −0.1275, **6.0×** the sibling
+median, 47% of the effect, and made rhetorical use of "exactly 6.0×" matching
+the quarantine README's "six-fold outlier". 07d4df6's solve gave −0.1241,
+6.3×, 46%, and attributed the 0.003 gap to rounding off the 3-dp published
+−0.034.
+
+It was not rounding. Redoing the solve under the paper's actual estimator:
+
+| raw as | required subj01 | × sibling median | share |
+|---|---|---|---|
+| median of differences (correct) | **−0.1241** | **6.3×** | **46%** |
+| difference of medians (§88's) | −0.1275 | 6.0× | 47% |
+
+The first row reproduces 07d4df6's numbers exactly, so **the inter-session gap
+was the estimator, not rounding.** The correct figure is 6.3×.
+
+§88's conclusion is unaffected — 6.3× still matches "six-fold", and the ratio
+statistic's 8.0×/53% is unchanged — but **"exactly 6.0×" was an artefact of my
+using the wrong estimator**, and the exactness was doing rhetorical work it had
+not earned. The honest statement is that the solve lands at 6.3× against a
+README that said six-fold, and at 46% against a README that said 57%.
+
+### §92.4 Stopping here, for the same reason
+
+The reference hypothesis was the only structural candidate outside the
+denominator space, and it failed. Continuing would mean searching for a variant
+that fits, which is what 07d4df6 correctly declined. The remaining unexplained
+gaps — diet normalised +0.029, diet raw +0.010, untrained normalised −0.073 —
+stay disclosed as per-number drift with no established cause.
+
+Two constraints worth recording for anyone who picks this up: a candidate must
+reproduce raw **and** normalised simultaneously across all twelve, and it must
+not disturb the untrained raw match, which is now good to 0.002 and is the one
+row with continuous provenance to 2026-08-28.
