@@ -305,11 +305,16 @@ definitions, the test) — the convention is in the artifact because inferring i
 from code is what the search above cost, and the sizes and mtimes are there
 because those are what settled the subject-01 question. Run with no arguments it
 still reproduces the untrained anchor byte-identically (−0.5441, p = .0078, 0/8),
-which is the one row with continuous provenance back to 2026-08-28. Two limits
-are worth knowing: the stamp records whether the tree was dirty but cannot make a
-dirty-tree artifact trustworthy, and it lists the input files without capturing
-the source directory's full contents, so a fit added between two runs of the same
-model would move the numbers while the recorded convention stayed identical. The
+which is the one row with continuous provenance back to 2026-08-28. The
+stamp resolves against the repository that holds the script rather than the
+invocation directory, verified by running it from an unrelated working directory
+and confirming both the anchor value and that the recorded commit is the
+repository's HEAD — a stamp that silently named whatever tree the caller happened
+to be standing in would be worse than no stamp. Two limits remain worth knowing:
+the stamp records whether the tree was dirty but cannot make a dirty-tree
+artifact trustworthy, and it lists the input files without capturing the source
+directory's full contents, so a fit added between two runs of the same model
+would move the numbers while the recorded convention stayed identical. The
 verification script deliberately reimplements the convention rather than
 importing this script, since a verifier that imports what it verifies checks
 nothing.
