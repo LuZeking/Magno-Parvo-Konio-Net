@@ -8827,3 +8827,170 @@ comment claimed it was — the error could not have occurred.
 
 Concretely: a literal that a comment describes as "measured" is a defect
 whatever its value.
+
+---
+
+## §85 The corrected recovery run: the artefact opposes §2.2, but "the floor"
+## is two different numbers and the paper must pick the right units
+
+Job 26440398 ran `vp_recovery_realnc.py` with the measured, descending
+noise-ceiling profile. §84.3 recorded a quantitative prediction before the run
+existed, so it could fail. Condition B's null is exact — max |true_diff| =
+1.11e-16 across all 56 cells — so every non-zero estimate is pure instrument.
+
+**The headline, which b5faaee and this section agree on:** the artefact is
+*positive* and *rising* with hierarchical rank, while §2.2's effect is negative
+(−0.862) and falling (ρ = −0.964). The artefact has the opposite sign on both
+the contrast and the gradient. It cannot manufacture §2.2's result; it opposes
+it, so the reported contrast **understates** the truth. Condition A returns
+ρ(est, rank) = +1.000 in 8/8 subjects with magnitudes compressed toward zero
+(`est = 0.713 × true`, 1.40× attenuation), so −0.862 is a floor, not a ceiling.
+
+### §85.1 Two statistics, both called "the floor", differing 5×
+
+b5faaee reports "+0.126 normalised / +0.025 raw … ρ = +0.68". Reproducing every
+candidate definition against the same eight files identifies all three exactly:
+
+| printed | definition that reproduces it | value |
+|---|---|---|
+| "+0.025 raw" | the **stored** `est_diff` = `est_unique_m − est_unique_p` | mean **+0.0256** |
+| "+0.126 normalised" | `(um − up)/(um + up)`, a VSB-style ratio index | mean **+0.1244**, median +0.1250 |
+| "ρ = +0.68" | **median of per-subject** Spearman ρ on the ratio index | **+0.679**, 8/8 positive |
+
+Those numbers are correct. The problem is not arithmetic, it is units.
+
+### §85.2 The gradient exists in one parameterisation and not the other
+
+| statistic | mean | ROI-mean ρ vs rank | p |
+|---|---|---|---|
+| stored `est_diff` (already ÷nc) | +0.0256 | +0.536 | .215 |
+| `est_diff × nc` (nc division undone) | +0.0094 | −0.893 | .007 |
+| ratio index `(um−up)/(um+up)` | +0.1244 | **+0.964** | **.0005** |
+
+An earlier draft of this section claimed condition B "manufactures essentially
+no gradient (+0.0008)". **That is true only of the stored `est_diff`.** The
+ratio index manufactures a significant rising gradient, and `est_diff × nc`
+manufactures a significant *falling* one. Three parameterisations of one
+simulation give ρ = +0.96, +0.54, and −0.89. Reporting any of them as "the"
+artefact gradient without naming the statistic is not defensible.
+
+The ratio index cancels nc exactly (both `um` and `up` carry the same 1/nc), so
+its rise is *not* a normalisation effect: total unique variance falls with rank
+faster than the difference does. The §84 diagnosis — that the ascending ramp's
+−0.351 was a 1/nc artefact — remains correct for that quantity, but it does not
+explain the ratio index's gradient, which has a different cause.
+
+### §85.3 Which floor the paper should disclose
+
+**The floor must be in the same units as the effect it bounds.** §2.2 reports
+−0.862, a magnitude only a bounded ratio index can take. If §2.2's contrast is
+the ratio index, the correct floor is **+0.124** — 14.4% of |−0.862|, opposite
+in sign — with a rising gradient (median per-subject ρ = +0.679, 8/8 subjects,
+Wilcoxon p = .0078, which is the exact n=8 floor per §80).
+
+**Action for §E2.1:** state which statistic §2.2 reports, then quote the floor
+computed in that statistic and no other. Quoting +0.126 beside a −0.862
+computed differently, or +0.025 beside it, would be a units error either way.
+This is a question for the draft owner, not a number I can settle from the
+recovery run alone.
+
+### §85.4 "raw" now has three incompatible meanings in this project
+
+1. §73 / `cc_ladder.py`: the VSB **numerator** η²_shape − η²_texture, versus the
+   ratio. (Caught in §83.5; the file was renamed.)
+2. §84–85 here: `est_diff × nc`, i.e. the nc division **undone**.
+3. b5faaee / §E2.1: the **stored** `est_diff`, which is already divided by nc.
+
+Sense 3 is not raw with respect to the noise ceiling. A referee reading
+"+0.025 raw" will reasonably take it as an un-normalised variance difference;
+that quantity is **+0.0094**. This is the same trap as §73, third occurrence.
+Recommendation: retire the word. Write `est_diff (÷nc)`, `est_diff × nc`, and
+`ratio index` explicitly wherever these appear.
+
+### §85.5 The prediction scored: sign right, magnitude 60× too large
+
+Against the stored `est_diff`, which is what §84.3 predicted:
+
+| claim | predicted | observed | verdict |
+|---|---|---|---|
+| sign of the manufactured contrast | positive | +0.0008 | PASS |
+| relative variation across hierarchy | ~16% | 7.4% | PASS (within 2×) |
+| absolute contrast | order +0.05 | +0.0008 | **FAIL, 60× too large** |
+
+I scaled from the backwards ramp's **−0.351**, a 60-component pilot figure.
+Re-running the *same* backwards ascending ramp at 1000 components gives a
+contrast of **−0.0242** — 15× smaller. The percentage reasoning was sound; the
+baseline it multiplied had never been checked at production scale.
+
+**The −0.351 must not enter the paper.** It is a low-rank pilot artefact that
+does not survive at production dimensionality. b5faaee already treats the
+−0.351 alarm as closed, which is right, but for the additional reason that the
+figure itself does not reproduce.
+
+### §85.6 The 1/nc mechanism is real but range-limited
+
+| run | nc range | raw ~ nc^p | corr(norm, 1/nc) | norm spread |
+|---|---|---|---|---|
+| ascending 0.15–0.45 (factor 3.0) | 0.150–0.450 | nc^+0.43 | **+0.854** | 0.0284 |
+| real, descending (factor 1.29) | 0.320–0.413 | nc^+0.90 | +0.381 | **0.0019** |
+
+Over a 3× ceiling range the normalisation dominates. Over the real 1.29× range
+it is negligible. The exponent difference is not a contradiction: 7 points over
+a 1.29× span cannot constrain a power law, and the low-nc end where the effect
+lives does not occur in the data at all.
+
+The severe shrinkage flagged earlier (first A cell true −0.3037 vs est −0.0453,
+~7×) was itself largely an artefact of the wrong ceiling: under the real
+profile the same cell reads true −0.3315 vs est −0.2335, a 1.42× compression.
+
+### §85.7 Discretisation: no evidence of quantisation
+
+The pilot's estimates appeared to cluster near ≈+0.020 and ≈0.000, suggesting
+the alpha grid or the 20-sample random gamma search discretised the output.
+It does not: **112 of 112** estimates are distinct at 6 dp in both runs, with
+minimum gaps of 2.8e-05 (ascending) and 2.3e-06 (real). The apparent clustering
+was small-n coincidence. Worry withdrawn.
+
+### §85.8 Identifiability at 1000 components
+
+| run | σ_shared | σ_min | σ_mean | σ_median |
+|---|---|---|---|---|
+| ascending | 0.9258 | 1.61e-04 | 0.3065 | 0.2933 |
+| real | 0.9539 | 3.00e-04 | 0.3243 | 0.3068 |
+
+(pilot, n_comp=60: σ_min 0.0029, σ_max 0.813.)
+
+At production dimensionality the bands hold a **near-degenerate leading shared
+direction** (σ ≈ 0.93–0.95, i.e. 86–91% shared variance) *and* directions that
+are essentially exactly separable (σ ≈ 1e-4). The typical pair shares only
+σ² ≈ 9%. Both facts belong in §4.5: the bands are neither redundant nor
+independent, which is why a subtraction-based partition needed validating
+rather than assuming.
+
+### §85.9 The diet arm was lost to an output-name collision
+
+All 16 tasks of 26440398 reported COMPLETED but only 8 files exist. The submit
+script maps tasks 0–7 to `dkl_bcs_seed0_trained` and 8–15 to
+`dkl_base_seed0_trained`, while the writer named outputs by subject alone — so
+the no-diet half (finishing 04:27–06:13) overwrote the diet half (finishing
+~03:00). Provenance was recoverable only because each JSON carries its own
+`model` field; the filenames did not.
+
+The writer is now model-tagged. The lost arm has been re-submitted as
+**26442351** (`--array=0-7%6`, `main`, no `--gres`), which cannot collide with
+the surviving files. **Every number in §85 is the no-diet arm**; the diet arm is
+expected to differ, because the artefact depends on feature geometry and the two
+models differ there (§2.7).
+
+### §85.10 The lesson, distinct from §84's
+
+§84's lesson was that a simulation can be internally correct while simulating
+the wrong thing. §85 has two more, both about *reporting* rather than computing:
+
+1. A prediction scaled from an earlier number inherits that number's errors.
+   State the baseline as a separately falsifiable quantity, or a passing sign
+   and a failing magnitude will look like one result instead of two.
+2. Two sessions computed this floor correctly and got +0.0256 and +0.1244. The
+   disagreement was never arithmetic — it was that neither number carried its
+   units. This is the third time the same ambiguity has cost us (§73, §83.5,
+   here). A statistic reported without its denominator is not a result.

@@ -1,0 +1,24 @@
+8 subjects, arm(s) ['dkl_base_seed0_trained']
+
+definition                              mean    median
+stored est_diff (already /nc)        +0.0256   +0.0270
+est_diff * nc  (undo the /nc)        +0.0094   +0.0097
+est_diff / nc  (divide again)        +0.0709   +0.0761
+(um-up)/(um+up)  ratio index         +0.1244   +0.1250
+(um-up)/mean(um,up)                  +0.2489   +0.2499
+
+targets from b5faaee: +0.126 'normalised', +0.025 'raw'
+
+definition                             rho       p  per-ROI means
+stored est_diff (already /nc)       +0.536   0.215  [0.0252, 0.025, 0.0259, 0.0248, 0.0267, 0.0257, 0.026]
+est_diff * nc  (undo the /nc)       -0.893   0.007  [0.0103, 0.0103, 0.0102, 0.0087, 0.0094, 0.0082, 0.0084]
+est_diff / nc  (divide again)       +0.964   0.000  [0.0618, 0.0605, 0.0662, 0.0706, 0.0759, 0.0803, 0.0807]
+(um-up)/(um+up)  ratio index        +0.964   0.000  [0.0986, 0.0956, 0.1066, 0.1332, 0.1425, 0.1464, 0.1481]
+(um-up)/mean(um,up)                 +0.964   0.000  [0.1972, 0.1912, 0.2133, 0.2664, 0.2849, 0.2927, 0.2963]
+
+sign consistency across subjects (stored est_diff, ROI mean):
+  [0.0219, 0.0344, 0.0132, 0.0394, 0.0099, 0.0301, 0.0289, 0.0271]
+  positive in 8/8 subjects
+  Wilcoxon vs 0: p = 0.0078 (exact floor at n=8 is 0.0078)
+
+per-subject rho(est_diff, rank): mean +0.040, median +0.054, positive in 5/8
