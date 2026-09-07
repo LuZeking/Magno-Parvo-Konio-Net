@@ -214,11 +214,33 @@ takes the median over voxels of the per-voxel ratio (median-of-ratios); the
 recovery simulation stores only per-ROI medians of uₘ and uₚ, so its ratio is
 necessarily a ratio-of-medians. On real data those two differ at the contrast
 level by 0.017 (diet) and 0.009 (no diet) — about a third of the floor itself.
-The +0.051 floor therefore carries an estimator-mismatch uncertainty of that
-order, and fixing it properly means re-running condition B recording the
-per-voxel ratio median. Until that is done the floor is approximate, and the
-comparisons in §2.2 (16× for the diet arm, 1.5× for no-diet) should be read with
-that tolerance. Second, the ×1.26 and ×0.71 magnitude-fidelity figures are
+The floor is therefore approximate — but the size of the
+mismatch is measurable rather than unknown, because both estimators can be
+computed on the real fits. Across all six (3 seeds × 2 arms) the gap is −0.0091,
++0.0004, −0.0003 (no diet) and −0.0170, −0.0092, −0.0087 (diet), i.e. 0.4% to
+11.6% of each effect, and it scales with effect magnitude (corr(|effect|, |gap|)
+= +0.754). Extrapolated to the floor, proportionally at the observed 2.8% mean or
+as a constant 0.0074 offset:
+
+| extrapolation | floor | diet / floor | no-diet / floor |
+|---|---|---|---|
+| proportional, 2.8% | 0.0496 – 0.0526 | 15.9 – 16.8× | 1.5 – 1.6× |
+| constant, 0.0074 | 0.0437 – 0.0585 | 14.2 – 19.1× | 1.3 – 1.8× |
+
+§2.2's claim needs the diet ratio ≫ 1 and the no-diet ratio ≈ 1. Both hold across
+the whole of both ranges, including the constant-offset row that the observed
+scaling says is the pessimistic one. Two further details make the bound
+conservative rather than optimistic: the gap is directional — median-of-ratios is
+the larger magnitude in 5 of 6 fits — so the same tendency would make a positive
+floor slightly *larger*, which is already inside the ranges above; and the 11.6%
+outlier is the one fit containing the influential subject 01, the other two
+no-diet seeds being 0.4% and 0.6%, so the 2.8% mean is inflated by a single
+subject. A per-voxel re-run of condition B would tighten ±0.007 to about ±0.002
+and move no conclusion, so it has not been done and is not treated as
+outstanding. The mismatch stays disclosed; it is the re-run that is closed.
+*These ratios are computed against the floor measured on the no-diet geometry;
+the diet-arm floor is still running, and if it proves much smaller the
+denominators here change.* Second, the ×1.26 and ×0.71 magnitude-fidelity figures are
 **ratios of the across-subject means** of the estimated and true contrasts
 (n = 8). An OLS slope of estimated on true, pooled over the 56 ROI × subject
 cells, gives 1.34 rather than 1.26 for the ratio index (r = +0.99); the two

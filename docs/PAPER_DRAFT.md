@@ -1918,13 +1918,20 @@ Methods in §4.5.
       configuration could have reproduced those two numbers. The diet column
       (which would need subj01 at −1.225, outside all 48 observed cells) and the
       untrained control remain disclosed as drift with no established cause.
-- [ ] **Re-run condition B recording per-voxel ratio medians.** The floor
-      (+0.051) is a ratio-of-medians while §2.2's effect is a median-of-ratios;
-      on real data the two differ by 0.017 (diet) and 0.009 (no diet), about a
-      third of the floor. Disclosed in §E2.1 as an approximation. Also worth
-      pinning the magnitude-fidelity estimator: the ×1.26 / ×0.71 figures are
-      ratios of across-subject means; an OLS slope over the 56 cells gives 1.34
-      for the ratio index.
+- [x] **Estimator-mismatch re-run CLOSED 2026-09-07 by bounding it instead.**
+      The floor is a ratio-of-medians while §2.2's effect is a median-of-ratios.
+      Rather than re-run condition B per-voxel (~8 × 1.5 h), both estimators were
+      computed on the six real fits: the gap is 0.4%–11.6% of each effect and
+      scales with magnitude (r = +0.754). Extrapolated, the floor is
+      0.0437–0.0585 even on the pessimistic constant-offset reading, giving diet
+      14.2–19.1× and no-diet 1.3–1.8× — and §2.2 needs only diet ≫ 1 and no-diet
+      ≈ 1, which holds across both entire ranges. The re-run would tighten ±0.007
+      to ±0.002 and change nothing, so under the standing rule it is not
+      justified. The mismatch stays disclosed in §E2.1 **with its bound**, which
+      is a stronger disclosure than a promised fix. Contingent on the diet-arm
+      floor being the same order as +0.051 (job 26442320 pending). Also pinned:
+      the ×1.26 / ×0.71 magnitude-fidelity figures are ratios of across-subject
+      means; an OLS slope over the 56 cells gives 1.34 for the ratio index.
 - [x] **Artefact floor for §2.2 — DONE (no-diet arm) 2026-09-07** (job
       26440398, array 0-15%6, `main`, no GPU;
       `tmp_analysis/vp_recovery_realnc.py`, Extended Data §E2.1). With the
