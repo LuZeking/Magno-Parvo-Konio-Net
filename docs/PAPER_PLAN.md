@@ -10122,3 +10122,101 @@ cannot silently become a different number. Those hold after both of us have
 forgotten the argument, and §95.2 is the reason the verifier should pin
 *statistics* and not just values — an identity pinned without its definition is
 exactly the tautology this section is about.
+
+---
+
+## §96 The residual is identified: it tracks condition A's source-power
+## schedule, not the truth — so it must not be transferred to the real data
+
+a9ba8d7 subtracts a residual contrast as well as the condition-B floor, taking
+the no-diet arm to −0.0337 and the factor to 18.6×, and flags the correction's
+legitimacy as open. It is no longer open.
+
+### §96.1 My nonlinearity hypothesis was wrong
+
+I predicted the residual was a nonlinear response to truth, which would make it
+non-transferable. A quadratic term in truth absorbs **57%** (no diet) and 28%
+(diet) of the residual *variance* but **0% of the residual contrast**
+(−0.0864 → −0.0889; −0.1132 → −0.1241). The residual is not simple
+nonlinearity. Hypothesis dead.
+
+### §96.2 What it actually is
+
+Condition A generates its sources on a fixed schedule, `a = 0.30 + 0.10i`,
+`b = 0.90 − 0.10i`, so total source power `a² + b²` is **U-shaped** in ROI
+index: 0.90, 0.80, 0.74, 0.72, 0.74, 0.80, 0.90. Against that:
+
+| arm | corr(residual, total power) | corr(residual, truth) |
+|---|---|---|
+| no diet | **−0.847** | +0.080 |
+| diet | **−0.820** | +0.005 |
+
+And across the two arms, whose real effects differ tenfold:
+
+> **corr(no-diet residual profile, diet residual profile) = +0.989**
+
+So the residual tracks the *magnitude schedule condition A was built with*,
+carries essentially no relationship to the truth ratio, and is
+near-identical in two arms whose effects differ by a factor of ten. It is a
+property of the simulation's construction, not of the estimator's response to
+either model.
+
+**The real data has no such schedule.** Its source magnitudes are whatever they
+are, unrelated to ROI index. So condition A's residual contrast measures the
+estimator's response to a synthetic power ramp that the real data does not
+share, and subtracting it from the real contrast is not a correction — it is
+importing an artefact of the generator. a9ba8d7's own suspicion ("a property of
+condition A's construction rather than of either model") was right, and is now
+measured at r = −0.83 rather than suspected.
+
+### §96.3 The correction is also not well enough defined to carry a claim
+
+Three equally defensible ways of removing the same residual contrast:
+
+| implementation | no-diet result | subjects | p |
+|---|---|---|---|
+| group residual, before scaling by a | −0.0337 | 6/8 | **.0547** |
+| per-subject residual | −0.0337 | 6/8 | **.1094** |
+| residual removed after scaling | −0.0148 | 4/8 | **1.0000** |
+
+None reproduces a9ba8d7's 5/8, p = .3125, so a fourth variant exists that I
+have not identified. That is the point: a correction whose p-value spans
+**.055 to 1.00** across arbitrary implementation choices cannot be the basis
+for concluding that the no-diet arm "does not hold". The spread is not evidence
+about the data; it is evidence that the quantity is under-specified.
+
+### §96.4 Recommendation: the minimal treatment is the best-founded one
+
+| treatment | no diet | diet | factor | status |
+|---|---|---|---|---|
+| floor only (minimal) | **−0.1011, 8/8, p=.0078** | −0.7198, 8/8, p=.0078 | 7.1× | **best founded** |
+| floor + residual contrast | −0.034 to −0.015, p=.055–1.00 | −0.6262, 8/8 | 18.6× | imports a generator artefact |
+
+So on the evidence the no-diet arm's gradient *is* resolvable, and a9ba8d7's
+earlier position was the correct one. The residual correction should be
+reported as a sensitivity check that fails for identifiable reasons, not as a
+bound on the claim.
+
+**One honest limitation in the other direction.** Showing that condition A's
+residual is non-transferable does not show the estimator has *no* misfit on
+real data — it shows condition A cannot measure it. So the no-diet claim rests
+on the floor correction alone, with real-data misfit unquantified and disclosed.
+That is a weaker footing than the diet arm's, which survives every treatment.
+
+### §96.5 Where to stop
+
+The comparative claim — the diet arm's gradient is non-zero in every subject
+under **every** treatment, and is 7–19× the no-diet arm's — is robust across
+all four treatments and both estimator families. §2.5's mechanism needs only
+that.
+
+Whether the no-diet arm's own gradient is separately resolvable now turns on a
+question n=8 cannot settle: whether an estimator misfit exists on real data
+that no simulation here measures. Under the standing rule the answer is to
+state what the data support and stop, not to build a fifth treatment. The
+recommendation is: claim the comparison, report the no-diet arm as resolvable
+under the best-founded correction with the sensitivity check and its diagnosis
+disclosed, and stop refining.
+
+Nine sections of this exchange have improved §2.2 materially. This one does not
+change the paper's claim, and that is the signal to stop.

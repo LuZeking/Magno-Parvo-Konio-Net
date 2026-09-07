@@ -1,0 +1,40 @@
+
+====================================================================
+no-diet
+====================================================================
+truth per ROI: [-0.6361, -0.4379, -0.1806, 0.1111, 0.3974, 0.6402, 0.8179]
+  across-subject SD per ROI: max 3.73e-03   -> truth is subject-varying
+
+LINEAR (b removed): a = 1.281
+  residual per-ROI mean [-0.109, -0.117, -0.032, 0.086, 0.108, -0.025, -0.199]
+  residual range -0.201..+0.164
+  residual CONTRAST -0.0864  = 85% of recovered -0.1011
+
+QUADRATIC in truth: a = 1.359, c = -0.278
+  residual per-ROI mean [0.053, -0.03, -0.009, 0.08, 0.121, 0.039, -0.077]
+  residual CONTRAST -0.0889   (linear was -0.0864; absorbed -3%)
+  residual SS: linear 0.745 -> quadratic 0.317  (57% explained)
+
+FULLEST treatment (floor + residual contrast removed):
+  -0.0337  6/8 negative  p=0.0547
+  minimal (floor only): -0.1011  8/8 negative  p=0.0078
+
+====================================================================
+diet
+====================================================================
+truth per ROI: [-0.5533, -0.3575, -0.11, 0.1655, 0.4336, 0.6605, 0.8273]
+  across-subject SD per ROI: max 6.23e-03   -> truth is subject-varying
+
+LINEAR (b removed): a = 1.210
+  residual per-ROI mean [-0.055, -0.052, -0.008, 0.11, 0.158, 0.002, -0.166]
+  residual range -0.170..+0.173
+  residual CONTRAST -0.1132  = 16% of recovered -0.7198
+
+QUADRATIC in truth: a = 1.292, c = -0.203
+  residual per-ROI mean [0.053, 0.003, 0.004, 0.102, 0.161, 0.036, -0.096]
+  residual CONTRAST -0.1241   (linear was -0.1132; absorbed -10%)
+  residual SS: linear 0.607 -> quadratic 0.438  (28% explained)
+
+FULLEST treatment (floor + residual contrast removed):
+  -0.6262  8/8 negative  p=0.0078
+  minimal (floor only): -0.7198  8/8 negative  p=0.0078

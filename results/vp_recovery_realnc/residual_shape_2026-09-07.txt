@@ -1,0 +1,29 @@
+condition A source schedule: a [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+                             b [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
+total power a^2+b^2          [0.9, 0.8, 0.74, 0.72, 0.74, 0.8, 0.9]  (U-shaped)
+
+no-diet: residual profile [-0.109, -0.117, -0.032, 0.086, 0.108, -0.025, -0.199]
+  corr(residual, total power) = -0.847
+  corr(residual, truth)       = +0.080
+
+diet: residual profile [-0.055, -0.052, -0.008, 0.11, 0.158, 0.002, -0.166]
+  corr(residual, total power) = -0.820
+  corr(residual, truth)       = +0.005
+
+corr(no-diet residual profile, diet residual profile) = +0.989
+Effects differ ~10x between arms; if the residual profile is near-
+identical, it is a property of condition A, not of either model.
+
+====================================================================
+SIGNIFICANCE, three ways of removing the residual contrast
+====================================================================
+
+no-diet  (floor +0.0511, a 1.281, group residual contrast -0.0864)
+  group residual                 -0.0337  6/8 neg  p=0.0547
+  per-subject residual           -0.0337  6/8 neg  p=0.1094
+  residual removed pre-scaling   -0.0148  4/8 neg  p=1.0000
+
+diet  (floor +0.0375, a 1.210, group residual contrast -0.1132)
+  group residual                 -0.6262  8/8 neg  p=0.0078
+  per-subject residual           -0.6262  8/8 neg  p=0.0078
+  residual removed pre-scaling   -0.6066  8/8 neg  p=0.0078
