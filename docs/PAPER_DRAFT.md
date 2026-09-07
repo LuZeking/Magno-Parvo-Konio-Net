@@ -227,25 +227,72 @@ only the magno stream accounts for (Uₘ) and the part only the parvo stream doe
 (Uₚ), and summarising each retinotopic ROI by that contrast, gives a
 stream-preference profile from V1v to hV4.
 
-The profile **declines steeply with the diet and is nearly flat without it** —
-early visual cortex is relatively more magno-explained and hV4 relatively more
-parvo-explained, the direction a luminance/low-SF versus chromatic split
-predicts. On all three seeds and both statistics (§4.7):
+The profile **declines steeply with the diet, and without it is flat to within
+the resolution of the instrument** — early visual cortex is relatively more
+magno-explained and hV4 relatively more parvo-explained, the direction a
+luminance/low-SF versus chromatic split predicts. Contrast = hV4 − mean(V1v,V1d)
+of the per-ROI median, fitted on `results/encoding_cc/`, all three seeds and both
+statistics (§4.7):
 
-| statistic | seed | diet | no diet | p | subjects |
+| statistic | seed | diet | no diet | p | separation |
 |---|---|---|---|---|---|
-| normalised | 0 | **−0.862** | −0.101 | .0078 | 8/8 |
-| normalised | 1 | **−0.802** | −0.132 | .0078 | 8/8 |
-| normalised | 2 | **−0.781** | −0.073 | .0078 | 8/8 |
-| raw | 0 | **−0.176** | −0.034 | .0078 | 8/8 |
-| raw | 1 | **−0.151** | −0.041 | .0078 | 8/8 |
-| raw | 2 | **−0.160** | −0.030 | .0078 | 8/8 |
+| normalised | 0 | **−0.834** | −0.079 | .0078 | 8/8 |
+| normalised | 1 | **−0.785** | −0.096 | .0078 | 8/8 |
+| normalised | 2 | **−0.745** | −0.049 | .0078 | 8/8 |
+| raw | 0 | **−0.166** | −0.027 | .0078 | 8/8 |
+| raw | 1 | **−0.145** | −0.031 | .0078 | 8/8 |
+| raw | 2 | **−0.153** | −0.023 | .0078 | 8/8 |
 
 **Both statistics reach the exact Wilcoxon floor with complete seed separation in
 every seed** — the two-statistics rule of §8 satisfied six times over.
-Monotonicity tracks it (Spearman ρ against hierarchical rank −0.964 with the diet
-against −0.502 without) and the effect sizes differ by an order of magnitude
-(dz −11.70 vs −1.06).
+Monotonicity tracks it (per-subject Spearman ρ against hierarchical rank −0.964
+with the diet against −0.536 without) and the effect sizes differ by a factor of
+six (dz −6.60 vs −1.09).
+
+*These values supersede an earlier version of this table (normalised −0.862 /
+−0.802 / −0.781; raw −0.176 / −0.151 / −0.160) which **we were unable to
+reproduce**. Every one of the twelve superseded values was more negative than the
+recomputation, by 0.006 to 0.036 — a one-directional offset that is not
+rounding. We searched for the responsible configuration across noise-ceiling
+thresholds, the minimum-voxel and (uₘ+uₚ) masks, median-of-ratios versus
+ratio-of-medians, four V1 reference definitions, two across-subject
+aggregations, and both encoding output directories; no combination reproduces
+the superseded table, and none brings dz within reach of the −11.70 previously
+reported (the largest attainable is −8.74). Rather than quote numbers we cannot
+regenerate, the table above is what the production script returns, and the
+sign, ordering, monotonicity and significance are unchanged. Extended Data
+§E2.1 records the search.*
+
+**The no-diet arm is at the instrument's floor, and we no longer read a residual
+gradient into it.** The artefact floor established below is +0.051 in the
+normalised statistic. The diet contrast is **16× that floor**; the no-diet
+contrast is **1.5×** it, and drops to 1.1× under the subject-exclusion
+sensitivity described next. So the correct statement is not that the no-diet
+profile is shallow-but-real: it is that no gradient is resolvable there. An
+earlier draft's "79% reduction" phrasing compared two numbers as though both
+measured something, and is withdrawn. The claim is a large gradient with the
+diet and none detectable without it.
+
+*A subject-level provenance issue affects the no-diet arm only, and the claim
+holds either way.* `results/encoding/quarantine/README.md` records that
+`dkl_base_seed0_trained_subj01.npz` was excluded on 2026-09-01 for having been
+fitted through the wrong front end, one of its three diagnostics being that its
+hV4−V1 was a six-fold outlier against its siblings; the README states that this
+model should load as n=7 until a provenance-stamped repair is *copied in*, and
+that it must not simply be restored. A subj01 file is now present in both
+encoding directories, numerically identical between them, carrying **no
+provenance stamp**, and its hV4−V1 is still a **4.65× outlier** (−0.249 against
+a sibling median of −0.054) — and outlying in the no-diet arm only (4.65×) and
+not in the diet arm (1.23×), which is the asymmetry a wrong-front-end fit
+predicts and a subject-level peculiarity does not. We could not determine
+whether this is the repair or the original. It does not change the result:
+excluding it moves the no-diet contrast from −0.079 to −0.054, leaves complete
+8/8 separation in all three seeds and both statistics, and the paired test stays
+at the exact Wilcoxon floor for its sample size (p = .0078 at n = 8, p = .0156
+at n = 7). Its only effect is on the no-diet magnitude, in the direction of
+making that arm flatter — the reading we adopt above. **This must be resolved
+before submission**, and until it is, every no-diet number here is reported at
+both n = 8 and n = 7 (Extended Data §E2.1).
 
 **This gradient was not pre-specified, and it is the survivor of a family.** We
 state that here rather than leave it to be assembled from the *Claims
@@ -292,7 +339,7 @@ license is a claim about the effect's exact magnitude: the companion recovery
 condition, given a true gradient, returns the ROI ordering perfectly (ρ = +1.000
 in 8/8) but is not magnitude-faithful, inflating the normalised contrast by
 1.26× while compressing the raw contrast to 0.71× of truth. We therefore read
-−0.862 as a sign-and-ordering result, not a calibrated effect size. (Computed on
+−0.834 as a sign-and-ordering result, not a calibrated effect size. (Computed on
 the no-diet feature geometry, which is the harder case: that model predicts BOLD
 better, §2.7. The diet-arm geometry is being run and will be reported
 alongside. Extended Data §E2.1 records an earlier version of this simulation
@@ -302,10 +349,14 @@ backwards, and inverted the artefact's sign.)
 Four properties make this more than a single fitted number, each set out with
 its numbers in Extended Data §E2. **Training decides the direction; the input
 only supplies the starting point** — an untrained network on the diet front end
-already sits at −0.471, training with the diet takes it to −0.862, and training
-without it ends at −0.101, a 79% reduction. **It replicates across codebases**,
-our standalone model and the independent thesis checkpoint giving −0.8618 and
-−0.8593 and being statistically indistinguishable (p = .84). **It survives all
+already sits at −0.544, training with the diet takes it to −0.834, and training
+without it leaves nothing resolvable above the floor (−0.079 at n = 8, −0.054 at
+n = 7). **It replicates across codebases**, our standalone model and the
+independent thesis checkpoint giving −0.834 and −0.793, a difference that does
+not reach significance (p = .20). *These four values also supersede earlier ones
+(−0.471, −0.862, −0.101, and p = .84) on the same provenance grounds as the
+table above; note that the untrained figure moved in the opposite direction to
+the rest, so the discrepancy is not a single uniform offset.* **It survives all
 six front-end controls on both statistics**, each at p=.0078 in 8/8 subjects —
 with the qualification §2.7 places on two of them. And **it is not a global
 stream preference**: the diet-trained and no-diet models sit on opposite sides
@@ -1774,6 +1825,43 @@ Methods in §4.5.
 
 ## Open items before submission
 
+- [ ] **BLOCKER: `dkl_base_seed0_trained_subj01.npz` provenance is unresolved.**
+      `results/encoding/quarantine/README.md` excluded a file with this name on
+      2026-09-01 for having been fitted through the wrong front end, requiring a
+      provenance-stamped repair to be *copied in* and explicitly forbidding a
+      restore. A subj01 file is now present in both `results/encoding/` and
+      `results/encoding_cc/`, numerically identical between them, with **no
+      provenance stamp**, and its hV4−V1 is still a **4.65× outlier** — in the
+      no-diet arm only (4.65×), not the diet arm (1.23×), which is the asymmetry
+      a wrong-front-end fit predicts. The quarantine directory now holds only
+      the README. Either confirm this is the repair (and stamp it) or re-fit the
+      subject. §2.2 and Extended Data §E2.2 report every no-diet number at both
+      n = 8 and n = 7 until then; the claim holds either way (8/8 separation and
+      the exact Wilcoxon floor in all three seeds and both statistics), only the
+      no-diet magnitude moves.
+- [x] **§2.2's table restated from `results/encoding_cc/` 2026-09-07.** The
+      previously reported values (normalised −0.862 / −0.802 / −0.781; raw
+      −0.176 / −0.151 / −0.160; dz −11.70; untrained −0.471; cross-codebase
+      p = .84) **do not regenerate**. Roughly 200 configurations were searched
+      across noise-ceiling threshold, both masks, min-voxel count,
+      median-of-ratios vs ratio-of-medians, negative-value handling, four
+      contrast definitions, four V1 references, two across-subject
+      aggregations, and both output directories (Extended Data §E2.2); the
+      closest joint match is still 0.014–0.021 off and dz tops out at −8.74.
+      Two useful results came out of it: `encoding_cc` is the only directory
+      holding all three seeds for both arms and is now the declared source, and
+      the hV4 − V1 contrast reading is confirmed because nothing else reaches
+      the right order of magnitude. `verify_new_claims.py` now locks all twelve
+      values, the p-values, the separation counts and the source directory.
+      Sign, ordering, monotonicity (ρ −0.964 vs −0.536) and significance are
+      unchanged; the diet contrast is 16× the artefact floor.
+- [ ] **Re-run condition B recording per-voxel ratio medians.** The floor
+      (+0.051) is a ratio-of-medians while §2.2's effect is a median-of-ratios;
+      on real data the two differ by 0.017 (diet) and 0.009 (no diet), about a
+      third of the floor. Disclosed in §E2.1 as an approximation. Also worth
+      pinning the magnitude-fidelity estimator: the ×1.26 / ×0.71 figures are
+      ratios of across-subject means; an OLS slope over the 56 cells gives 1.34
+      for the ratio index.
 - [x] **Artefact floor for §2.2 — DONE (no-diet arm) 2026-09-07** (job
       26440398, array 0-15%6, `main`, no GPU;
       `tmp_analysis/vp_recovery_realnc.py`, Extended Data §E2.1). With the

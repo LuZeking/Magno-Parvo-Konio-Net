@@ -111,34 +111,94 @@ def check_recovery() -> None:
     print(f"  OK  p={r.pvalue:.4f} (draft states .007)")
 
 
-def check_production_statistic() -> None:
-    """§2.2's four published numbers must reproduce under the hV4-V1 reading."""
+# §2.2's table as the draft now states it, from results/encoding_cc/.
+# (statistic, seed): (diet, no-diet n=8, no-diet n=7)
+TABLE_2_2 = {
+    ("normalised", 0): (-0.834, -0.079, -0.054),
+    ("normalised", 1): (-0.785, -0.096, -0.085),
+    ("normalised", 2): (-0.745, -0.049, -0.031),
+    ("raw", 0): (-0.166, -0.027, -0.021),
+    ("raw", 1): (-0.145, -0.031, -0.030),
+    ("raw", 2): (-0.153, -0.023, -0.021),
+}
+
+# Declared source. results/encoding/ holds the diet arm at seed 0 only; where
+# the two overlap they are numerically identical. The superseded table
+# (-0.862/-0.802/-0.781, -0.176/-0.151/-0.160, dz -11.70) does not regenerate
+# under any configuration searched -- see Extended Data E2.2.
+ENCODING_DIR = "results/encoding_cc"
+
+
+def roi_profile(out_dir: str, tag: str, ratio: bool,
+                drop: tuple[int, ...] = ()) -> tuple[list[int], np.ndarray]:
+    """visualrois.py convention: nc>0.1, (um+up)>1e-3, >=20 vox, per-ROI median.
+
+    `ratio` picks §2.2's statistic: True = normalised (the per-voxel ratio
+    index), False = raw (the difference). Both run on the nc-divided arrays.
+    """
     from src.analysis.encoding.stats import load_results
-    NC_MIN, labs = 0.1, [1, 2, 3, 4, 5, 6, 7]
+    res = load_results(out_dir, tag)
+    subs = [s for s in sorted(res) if s not in drop]
+    out = np.full((len(subs), 7), np.nan)
+    for i, s in enumerate(subs):
+        z = res[s]
+        roi, nc = z["roi_prf-visualrois"], z["noise_ceiling"]
+        um, up = z["unique_magno"], z["unique_parvo"]
+        for j, lab in enumerate([1, 2, 3, 4, 5, 6, 7]):
+            v = (roi == lab) & (nc > 0.1) & ((um + up) > 1e-3)
+            if v.sum() >= 20:
+                r = (um[v] - up[v]) / (um[v] + up[v]) if ratio else um[v] - up[v]
+                out[i, j] = np.median(r[np.isfinite(r)])
+    return subs, out
 
-    def profile(tag: str, ratio: bool) -> np.ndarray:
-        res = load_results("results/encoding", tag)
-        out = np.full((len(res), 7), np.nan)
-        for i, s in enumerate(sorted(res)):
-            z = res[s]
-            roi, nc = z["roi_prf-visualrois"], z["noise_ceiling"]
-            um, up = z["unique_magno"], z["unique_parvo"]
-            for j, lab in enumerate(labs):
-                v = (roi == lab) & (nc > NC_MIN) & ((um + up) > 1e-3)
-                if v.sum() >= 20:
-                    r = (um[v] - up[v]) / (um[v] + up[v]) if ratio else um[v] - up[v]
-                    out[i, j] = np.median(r[np.isfinite(r)])
-        return out
 
-    print("[production §2.2 statistic]")
-    for tag, ratio, want in [("dkl_bcs_seed0_trained", True, -0.834),
-                             ("dkl_bcs_seed0_trained", False, -0.166),
-                             ("dkl_base_seed0_trained", True, -0.079),
-                             ("dkl_base_seed0_trained", False, -0.027)]:
-        pr = profile(tag, ratio)
-        c = np.array([hv4_minus_v1(pr[i]) for i in range(pr.shape[0])])
-        chk(f"{tag.split('_seed')[0]} {'ratio' if ratio else 'diff '} contrast",
-            float(np.nanmean(c)), want, 0.001)
+def check_production_statistic() -> None:
+    """§2.2's twelve stated values, plus the n=7 subj01 sensitivity.
+
+    Locks BOTH the statistic (hV4 - V1) and the source directory. If either
+    drifts, this fails rather than silently reporting a different quantity --
+    which is exactly what went unnoticed in the superseded table.
+    """
+    print(f"[production §2.2 table, {ENCODING_DIR}]")
+    for (stat, seed), (wd, wn8, wn7) in TABLE_2_2.items():
+        ratio = stat == "normalised"
+        _, pd_ = roi_profile(ENCODING_DIR, f"dkl_bcs_seed{seed}_trained", ratio)
+        _, pn8 = roi_profile(ENCODING_DIR, f"dkl_base_seed{seed}_trained", ratio)
+        _, pn7 = roi_profile(ENCODING_DIR, f"dkl_base_seed{seed}_trained",
+                             ratio, drop=(1,))
+        cd = np.array([hv4_minus_v1(r) for r in pd_])
+        c8 = np.array([hv4_minus_v1(r) for r in pn8])
+        c7 = np.array([hv4_minus_v1(r) for r in pn7])
+        chk(f"{stat[:4]} seed{seed} diet", float(np.nanmean(cd)), wd, 0.001)
+        chk(f"{stat[:4]} seed{seed} nodiet n=8", float(np.nanmean(c8)), wn8, 0.001)
+        chk(f"{stat[:4]} seed{seed} nodiet n=7", float(np.nanmean(c7)), wn7, 0.001)
+        ok = np.isfinite(cd) & np.isfinite(c8)
+        p8 = wilcoxon(cd[ok] - c8[ok]).pvalue
+        sep = int((cd[ok] < c8[ok]).sum())
+        good = abs(p8 - 0.0078125) < 1e-6 and sep == ok.sum()
+        print(f"  {'OK ' if good else 'BAD'} {stat[:4]} seed{seed} p={p8:.4f} "
+              f"separation {sep}/{ok.sum()} (draft .0078, 8/8)")
+        if not good:
+            FAILS.append(f"{stat} seed{seed} p/sep")
+
+    # The floor-to-effect ratios §2.2 quotes as 16x and 1.5x.
+    _, pd_ = roi_profile(ENCODING_DIR, "dkl_bcs_seed0_trained", True)
+    _, pn_ = roi_profile(ENCODING_DIR, "dkl_base_seed0_trained", True)
+    diet = abs(float(np.nanmean([hv4_minus_v1(r) for r in pd_])))
+    nod = abs(float(np.nanmean([hv4_minus_v1(r) for r in pn_])))
+    chk("diet / floor (draft 16x)", diet / 0.0511, 16.3, 0.2)
+    chk("no-diet / floor (draft 1.5x)", nod / 0.0511, 1.54, 0.05)
+
+    # subj01 is outlying in the no-diet arm ONLY -- the asymmetry a
+    # wrong-front-end fit predicts and a subject peculiarity does not.
+    subs, pn_ = roi_profile(ENCODING_DIR, "dkl_base_seed0_trained", True)
+    c = {s: hv4_minus_v1(pn_[i]) for i, s in enumerate(subs)}
+    others = [v for k, v in c.items() if k != 1]
+    chk("subj01 no-diet outlier factor", c[1] / float(np.median(others)), 4.65, 0.05)
+    subs, pd2 = roi_profile(ENCODING_DIR, "dkl_bcs_seed0_trained", True)
+    cd2 = {s: hv4_minus_v1(pd2[i]) for i, s in enumerate(subs)}
+    od = [v for k, v in cd2.items() if k != 1]
+    chk("subj01 diet outlier factor", cd2[1] / float(np.median(od)), 1.23, 0.05)
 
 
 # (dvd_trans, diet mean, diet min, diet max, no-diet mean) as the draft states them

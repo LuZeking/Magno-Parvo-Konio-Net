@@ -208,6 +208,77 @@ the artefact depends on feature geometry, so it may differ. Code:
 `tmp_analysis/vp_recovery_realnc.py`, checked by
 `tmp_analysis/verify_new_claims.py`; results under `results/vp_recovery_realnc/`.
 
+**Two limits on the floor, both disclosed rather than resolved.** First, the
+floor is computed with a *different estimator* from the effect it bounds. §2.2
+takes the median over voxels of the per-voxel ratio (median-of-ratios); the
+recovery simulation stores only per-ROI medians of uₘ and uₚ, so its ratio is
+necessarily a ratio-of-medians. On real data those two differ at the contrast
+level by 0.017 (diet) and 0.009 (no diet) — about a third of the floor itself.
+The +0.051 floor therefore carries an estimator-mismatch uncertainty of that
+order, and fixing it properly means re-running condition B recording the
+per-voxel ratio median. Until that is done the floor is approximate, and the
+comparisons in §2.2 (16× for the diet arm, 1.5× for no-diet) should be read with
+that tolerance. Second, the ×1.26 and ×0.71 magnitude-fidelity figures are
+**ratios of the across-subject means** of the estimated and true contrasts
+(n = 8). An OLS slope of estimated on true, pooled over the 56 ROI × subject
+cells, gives 1.34 rather than 1.26 for the ratio index (r = +0.99); the two
+estimators agree on direction and disagree by 6%, so no magnitude claim is made
+from either, and neither is quoted without naming which it is. That ambiguity —
+a number reported without its estimator — is the same failure that produced this
+entire correction.
+
+### E2.2 — the provenance search behind §2.2's superseded table
+
+§2.2's table previously reported normalised −0.862 / −0.802 / −0.781 and raw
+−0.176 / −0.151 / −0.160. Those values do not regenerate. All twelve were more
+negative than every recomputation, by 0.006 to 0.036, and the previously
+reported dz of −11.70 is not attainable at all. The configurations searched:
+
+| degree of freedom | values tried |
+|---|---|
+| noise-ceiling threshold | 0.05, 0.1, 0.15, 0.2, 0.3 |
+| (uₘ+uₚ) > 1e-3 mask | on, off |
+| minimum voxels per ROI | 0, 20 |
+| voxel aggregation | median-of-ratios, ratio-of-medians |
+| negative unique variance | as-is, clipped at 0, absolute denominator, voxels dropped |
+| contrast definition | hV4−mean(V1v,V1d), hV4−mean(V1–V3), hV4 alone, V3−V1 |
+| V1 reference | mean(V1v,V1d), V1v only, V1d only, mean of six V1–V3 banks |
+| across-subject aggregation | mean, median |
+| output directory | `results/encoding/`, `results/encoding_cc/` |
+
+The closest joint match leaves the normalised values 0.014–0.021 off and reaches
+dz = −8.74 against the −11.70 reported. Two findings came out of the search and
+both are kept. `results/encoding_cc/` is the directory that holds all three
+seeds for both arms — `results/encoding/` has the diet arm at seed 0 only — and
+where the two overlap they are numerically identical, so `encoding_cc` is now
+the declared source for §2.2. And the contrast reading is confirmed: it is
+hV4 − V1 (`visualrois.py:72-75`), since no other definition reaches the right
+order of magnitude on all four seed-0 values.
+
+**The subj01 question, unresolved.** Per-subject no-diet contrasts at seed 0
+(normalised): −0.249, −0.070, −0.027, −0.053, −0.043, −0.084, −0.030, −0.073.
+Subject 01 is 4.65× the sibling median. It is *not* an outlier in the diet arm
+(1.23×), and the same asymmetry holds on the raw statistic (3.45× versus 1.11×).
+`results/encoding/quarantine/README.md` condemned a file with exactly this
+signature on 2026-09-01 and required a provenance-stamped replacement to be
+copied in rather than the original restored; the present file carries no
+provenance stamp, and the quarantine directory now holds only the README. We
+cannot tell which file this is. Sensitivity, both statistics, all three seeds:
+
+| statistic | seed | no diet, n=8 | no diet, n=7 | diet | p (n=8) | p (n=7) | separation |
+|---|---|---|---|---|---|---|---|
+| normalised | 0 | −0.079 | −0.054 | −0.834 | .0078 | .0156 | 8/8 |
+| normalised | 1 | −0.096 | −0.085 | −0.785 | .0078 | .0156 | 8/8 |
+| normalised | 2 | −0.049 | −0.031 | −0.745 | .0078 | .0156 | 8/8 |
+| raw | 0 | −0.027 | −0.021 | −0.166 | .0078 | .0156 | 8/8 |
+| raw | 1 | −0.031 | −0.030 | −0.145 | .0078 | .0156 | 8/8 |
+| raw | 2 | −0.023 | −0.021 | −0.153 | .0078 | .0156 | 8/8 |
+
+Every row keeps complete separation and the exact Wilcoxon floor for its sample
+size. The exclusion only shrinks the no-diet magnitude, which moves that arm
+*closer* to the artefact floor and therefore supports the reading §2.2 adopts.
+The claim does not depend on the answer; the number does, so both are given.
+
 
 ## E3 — §2.3, the readout sweep and the single-stream control
 
