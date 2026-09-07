@@ -1,0 +1,39 @@
+model                                    encoding  encoding_cc  quar
+--------------------------------------------------------------------
+dkl_base_seed0_trained                        n=8          n=8     -
+dkl_base_seed1_trained                        n=8          n=8     -
+dkl_base_seed2_trained                          -          n=8     -
+dkl_bcs_parvo_highsf_seed0_trained            n=8            -     -
+dkl_bcs_seed0_pca16                             -          n=8     -
+dkl_bcs_seed0_pca64                             -          n=8     -
+dkl_bcs_seed0_trained                         n=8          n=8     -
+dkl_bcs_seed1_trained                           -          n=8     -
+dkl_bcs_seed2_trained                           -          n=8     -
+dkl_bcs_swap_seed0_trained                    n=8            -     -
+gabor_blur_cs                                 n=8          n=8     -
+gabor_noblur                                  n=8            -     -
+thesis_dvd_trans                              n=8          n=8     -
+untrained_konio_matched                       n=8            -     -
+untrained_konio_raw                           n=8            -     -
+untrained_seed0                               n=8            -     -
+untrained_seed0_noblur                        n=8            -     -
+
+--- the six controls E2's table needs ---
+swap                   dkl_bcs_swap_seed0_trained         enc n=8  cc n=0  -> encoding ONLY
+parvo_highsf           dkl_bcs_parvo_highsf_seed0_trained enc n=8  cc n=0  -> encoding ONLY
+konio substitution     untrained_konio_matched            enc n=8  cc n=0  -> encoding ONLY
+konio substitution     untrained_konio_raw                enc n=8  cc n=0  -> encoding ONLY
+Gabor bank             gabor_blur_cs                      enc n=8  cc n=8  -> in encoding_cc
+Gabor bank             gabor_noblur                       enc n=8  cc n=0  -> encoding ONLY
+untrained-on-diet      NO FIT FOUND matching 'untrained_bcs'
+no-blur                gabor_noblur                       enc n=8  cc n=0  -> encoding ONLY
+no-blur                untrained_seed0_noblur             enc n=8  cc n=0  -> encoding ONLY
+
+7 model(s) exist in encoding/ but NOT encoding_cc/:
+  dkl_bcs_parvo_highsf_seed0_trained  (n=8)
+  dkl_bcs_swap_seed0_trained  (n=8)
+  gabor_noblur  (n=8)
+  untrained_konio_matched  (n=8)
+  untrained_konio_raw  (n=8)
+  untrained_seed0  (n=8)
+  untrained_seed0_noblur  (n=8)

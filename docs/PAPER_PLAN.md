@@ -9615,3 +9615,82 @@ uncertainty starts to matter for whether the no-diet effect is distinguishable
 from the instrument at all. So this conclusion is contingent on the diet-arm
 floor being of the same order, and should be re-checked when that lands rather
 than treated as settled independent of it.
+
+---
+
+## §91 Inventory of the two encoding directories: neither is a superset, and
+## the control table can only come from `encoding/`
+
+389bfb9 asked whether the six front-end controls are fitted under
+`encoding_cc`. Enumerated rather than eyeballed, because "looked to hold" is
+how §88 happened.
+
+| model | `encoding` | `encoding_cc` |
+|---|---|---|
+| dkl_base_seed0_trained | n=8 | n=8 |
+| dkl_base_seed1_trained | n=8 | n=8 |
+| **dkl_base_seed2_trained** | **–** | **n=8** |
+| dkl_bcs_seed0_trained | n=8 | n=8 |
+| **dkl_bcs_seed1_trained** | **–** | **n=8** |
+| **dkl_bcs_seed2_trained** | **–** | **n=8** |
+| dkl_bcs_seed0_pca16 / pca64 | – | n=8 each |
+| **dkl_bcs_parvo_highsf_seed0_trained** | **n=8** | **–** |
+| **dkl_bcs_swap_seed0_trained** | **n=8** | **–** |
+| gabor_blur_cs | n=8 | n=8 |
+| **gabor_noblur** | **n=8** | **–** |
+| **untrained_konio_matched / _raw** | **n=8 each** | **–** |
+| **untrained_seed0** | **n=8** | **–** |
+| **untrained_seed0_noblur** | **n=8** | **–** |
+| thesis_dvd_trans | n=8 | n=8 |
+
+### §91.1 The answer: yes, `encoding_cc` holds only one of the six controls
+
+Of the six controls, only **`gabor_blur_cs`** is in `encoding_cc`. Seven models
+exist in `encoding/` and nowhere else: `dkl_bcs_parvo_highsf_seed0_trained`,
+`dkl_bcs_swap_seed0_trained`, `gabor_noblur`, `untrained_konio_matched`,
+`untrained_konio_raw`, `untrained_seed0`, `untrained_seed0_noblur`.
+
+So the control table **cannot** be regenerated from the declared source. That
+is a genuine open item, and leaving it visibly flagged rather than
+half-rebuilt is the right call.
+
+### §91.2 NEW: neither directory is a superset of the other
+
+`dkl_base_seed2_trained`, `dkl_bcs_seed1_trained` and `dkl_bcs_seed2_trained`
+exist **only** in `encoding_cc`. The controls and the untrained baseline exist
+**only** in `encoding`. The two directories are *complementary*, not one a
+refit of the other.
+
+This matters for how the declared-source statement is phrased. "`encoding_cc`
+is authoritative" is correct and sufficient **for the twelve table values** —
+all six diet/no-diet seed fits are there. It cannot be a blanket rule, because:
+
+- the three-seed table needs `encoding_cc` (seeds 1–2 are not in `encoding`);
+- the control table and the untrained baseline need `encoding`.
+
+§87.7 noted this for `untrained_seed0` alone. It is seven models, not one, and
+the right form is a **per-table** source declaration rather than a global one.
+
+### §91.3 NEW: the untrained-on-diet control has no encoding fit at all
+
+Matching the six labels against filenames, five map to `encoding`-only fits and
+one to `encoding_cc`. For **untrained-on-diet** there is no encoding fit under
+any name: no `.npz` in either directory matches
+`untrained.*(bcs|dvd|diet)` or the reverse. The only place that model exists is
+`results/eeg_rsa/tsn_untrained_bcs_seed{0,1,2}` — an EEG-RSA analysis, a
+different measurement entirely.
+
+So either that row of E2's table maps to a fit under a different name, or its
+source is the EEG-RSA result rather than an encoding fit, or the row has no
+source. This needs identifying before the table is restated; it is not
+something to infer. (Note the label mapping here is mine, taken from 389bfb9's
+description, so the mismatch may be in my mapping rather than in the table.)
+
+### §91.4 Consequence
+
+The control table's diet and no-diet reference columns share the superseded
+provenance, and the controls themselves are only in `encoding`. Regenerating it
+means reading two directories with a stated reason for each, which is exactly
+the kind of thing that should be recorded in the artifact rather than in a
+shell history — the §89 stamp already records `src`, so a per-table
+regeneration would carry its own source declaration.
