@@ -7,7 +7,10 @@ denominator and checkpoint caveats, and the qualifications each result carries �
 remains available in full.
 
 **Nothing here was cut for being inconvenient.** Every block below is the
-original text, moved verbatim; the main text cites the section it went to. The
+original text, moved verbatim; the main text cites the section it went to.
+Where later work superseded a number or overturned a claim, the block carries a
+supersession banner or an inline correction — the original wording is preserved
+beneath it rather than silently rewritten, so what changed stays visible. The
 failures, the degenerate controls, the single-seed arms and the bounded nulls
 are all still reported — they are reported *here* rather than interleaved with
 the claims they qualify. Where the main text compresses a passage, the
@@ -39,6 +42,16 @@ weights -- the input is the only thing that can differentiate them. That is why
 
 
 ## E2 — §2.2, the cortical instrument
+
+> **SUPERSEDED VALUES — read §E2.2 first.** This block is the original §2.2
+> material, preserved as written. Its diet, no-diet, untrained and
+> cross-codebase figures (−0.862, −0.101, −0.176, −0.034, −0.471, −0.8618 /
+> −0.8593, p = .84) **are superseded**: the no-diet values were computed with a
+> fit later quarantined as defective and deleted, and none of the set
+> regenerates from the current code. The authoritative table is in §2.2 and the
+> account is in §E2.2. Numbers below are retained so the original reasoning can
+> be audited, not because they are current. Where a bullet made a *claim* on
+> those numbers rather than merely reporting them, the claim is corrected inline.
 
 Moved from §2.2: the full raw-statistic paragraph, the three-seed replication of the in-silico cue conflict, the five supporting points with the six-control table, the koniocellular substitution, the per-control seed coverage, and the RSA comparison in full.
 
@@ -84,11 +97,25 @@ Five points make this more than a single fitted number:
   diet does not create the gradient. It decides whether training amplifies or
   destroys the one the input hands it, which is the §2.5 mechanism appearing on a
   second, independent instrument.
+  > *Corrected.* On the authoritative fits the untrained baseline is −0.544 and
+  > the trained diet arm −0.834, so training *reduces* the magnitude rather than
+  > amplifying it by 1.8× — the "amplification" was an artefact of the
+  > superseded pair. The no-diet endpoint is not a smaller gradient but no
+  > resolvable gradient at all (−0.079, 1.5× the instrument floor), so the "79%
+  > reduction" framing is **withdrawn**: it compared two numbers as though both
+  > measured something. What survives is the direction — the diet arm keeps a
+  > large gradient and the no-diet arm does not — which is what §2.5's mechanism
+  > predicts and all that this bullet needs.
 - **It replicates across codebases.** Our standalone-trained model and the
   independent thesis checkpoint give −0.8618 and −0.8593 — two trainers, two
   augmentation pipelines, two seeds, agreeing to 0.0025 — and are statistically
   indistinguishable from one another on both statistics (p = .84), which is the
   behaviour a convergent replication should show (§17).
+  > *Corrected.* The authoritative values are −0.834 and −0.793, agreeing to
+  > 0.041 rather than 0.0025, at p = .20. The conclusion — a convergent
+  > replication across two codebases, not a significant difference — stands, but
+  > the agreement is an order of magnitude looser than stated and "agreeing to
+  > 0.0025" should not be quoted.
 - **It survives every front-end control, on both statistics.** Each control is
   compared against the diet arm, paired within subject, n=8:
 
