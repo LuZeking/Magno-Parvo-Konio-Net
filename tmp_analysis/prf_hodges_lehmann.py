@@ -67,7 +67,16 @@ def hl_ci(d, alpha):
             break
     lo = walsh[k] if 0 <= k < m else walsh[0]
     hi = walsh[m - 1 - k] if 0 <= k < m else walsh[-1]
-    return float(np.median(walsh)), float(lo), float(hi)
+    # Discreteness means the nominal level is not attained: at n=8 with
+    # alpha=.10 the largest admissible k is 5, P(W+ <= 5) = 10/256 = .0391,
+    # so ACTUAL coverage is 1 - 2(.0391) = 92.19%, not 90%. The construction
+    # rounds conservative -- the interval is WIDER than its nominal label -- so
+    # reporting it as "90%" understates it. Return the attained coverage and
+    # quote that, rather than a label the interval does not have. (The draft
+    # names the .0078 floor explicitly rather than rounding it; a nominal
+    # label here would be out of character in the same document.)
+    cover = 1.0 - 2.0 * float((null <= k).mean()) if 0 <= k < m else 1.0
+    return float(np.median(walsh)), float(lo), float(hi), cover
 
 
 def z(v):
@@ -115,7 +124,7 @@ rng = np.random.default_rng(0)
 for _ in range(300):
     d = rng.normal(rng.uniform(-1, 1), 1, 8)
     for alpha in (0.05, 0.10):
-        _, lo, hi = hl_ci(d, alpha)
+        _, lo, hi, _cov = hl_ci(d, alpha)
         p = sps.wilcoxon(d).pvalue
         assert (lo > 0 or hi < 0) == (p < alpha), (
             f"HL CI disagrees with Wilcoxon at alpha={alpha}: "
@@ -130,15 +139,15 @@ NULLS = [
     ("N2 trained no-diet - input null (noblur)",
      "dkl_base_seed0_trained", "gabor_noblur"),
 ]
-print(f"{'null':40s} {'stat':5s} {'HL':>8s} {'90% CI (exact)':>22s} "
-      f"{'Wilcoxon p':>11s} {'excl 0':>7s}")
+print(f"{'null':40s} {'stat':5s} {'HL':>8s} {'exact CI':>22s} "
+      f"{'cover':>7s} {'Wilcoxon p':>11s} {'excl 0':>7s}")
 for label, a, b in NULLS:
     for stat in ("raw", "norm"):
         d = paired(a, b, stat)
-        hl, lo, hi = hl_ci(d, 0.10)
+        hl, lo, hi, cover = hl_ci(d, 0.10)
         p = sps.wilcoxon(d).pvalue
         print(f"{label:40s} {stat:5s} {hl:+8.3f} "
-              f"{f'[{lo:+.3f}, {hi:+.3f}]':>22s} {p:11.4f} "
+              f"{f'[{lo:+.3f}, {hi:+.3f}]':>22s} {cover:7.2%} {p:11.4f} "
               f"{'YES' if (lo > 0 or hi < 0) else 'no':>7s}")
 
 print("\nIf these intervals contain zero, §102.3's two reversals were artefacts")

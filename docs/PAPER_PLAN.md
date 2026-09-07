@@ -11004,12 +11004,23 @@ after Wilcoxon returned n.s. Back-solved, all three affected cells straddle
 Hodges–Lehmann with the exact Walsh-average distribution-free CI — the interval
 Wilcoxon implies, exact at n = 8:
 
-| null | statistic | HL | 90% CI (exact) | Wilcoxon p | excludes 0 |
+| null | statistic | HL | exact CI (**92.19%**) | Wilcoxon p | excludes 0 |
 |---|---|---|---|---|---|
 | N1 diet: trained − own init | raw | −0.082 | [−0.148, +0.001] | .1094 | **no** |
 | N1 diet: trained − own init | norm | +0.036 | [−0.002, +0.085] | .1094 | **no** |
 | N2 no-diet − input null | raw | −0.176 | [−0.343, +0.001] | .1094 | **no** |
 | N2 no-diet − input null | norm | −0.029 | [−0.101, +0.046] | .4609 | **no** |
+
+**Not a 90% interval.** Discreteness at n=8 means the nominal level is not
+attainable: α = .10 admits k = 5, P(W⁺ ≤ 5) = 10/256 = .0391, so attained
+coverage is 1 − 2(.0391) = **92.19%**. (Checkable by hand — the subsets of
+{1..8} summing to ≤ 5 are {}, {1}, {2}, {3}, {1,2}, {4}, {1,3}, {5}, {1,4},
+{2,3}: ten of 256.) The construction rounds **conservative**, so the interval
+is *wider* than a 90% label implies and "all four contain zero" is a stronger
+statement than the label suggests — the withdrawals hold a fortiori. `hl_ci`
+now returns its attained coverage rather than carrying a nominal label, since
+the draft names the .0078 floor explicitly rather than rounding it and a
+nominal "90%" would be out of character in the same document.
 
 **All four contain zero.** §102.3's reversals are withdrawn.
 
@@ -11036,7 +11047,17 @@ interval must exclude zero **iff** the two-sided Wilcoxon p < α, checked on 300
 random samples at α ∈ {.05, .10}. That assertion is the only reason the bug did
 not survive into this section, and it is the §82 lesson again — an assertion
 that a quantity *equals* a separately-derived value cannot pass for the wrong
-reason.
+reason. The identity is exact at n=8 rather than approximate: the achievable
+two-sided ladder is .0078/.0156/.0234/.0391/.0547/.0781/.1094, so "p < .10"
+means "p ≤ .0781" means "W⁺ ≤ 5" means "the k=5 interval excludes zero".
+
+**The lesson from the convergence, which is the more useful half.** Two
+unrelated errors — a t-interval substituted for the declared test, then an
+off-by-one in the exact interval built to replace it — produced the *same*
+false reversal. When a result reappears after the thing that caused it has been
+fixed, that is evidence the analysis is **fragile at that point**, not evidence
+the result is robust. The natural reading is the opposite one, which is what
+makes it worth writing down.
 
 ### §103.4 A durable fix in the module
 
