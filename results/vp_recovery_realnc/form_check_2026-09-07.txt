@@ -1,0 +1,33 @@
+
+==================================================================
+no-diet
+==================================================================
+(a) per-ROI bias [0.0986, 0.0956, 0.1066, 0.1332, 0.1425, 0.1464, 0.1481]
+    rises +0.099 -> +0.148; constant? spread 0.0526
+(b) b(hV4) - b(V1) = +0.051055;  measured contrast floor = +0.051055;  diff +2.78e-17
+    mean per-ROI bias = +0.1244
+(c) pooled free fit: a = 1.338, intercept +0.0775
+    vs mean per-ROI bias +0.1244 -> 0.62x   <- 26bc5a3's reference
+    vs contrast floor    +0.0511 -> 1.52x   <- §94.4's reference
+(d) bias-removed: a = 1.281   residual free intercept -0.0428
+    recovered true contrast -0.1011
+    residual intercept as share of recovered contrast: 42%
+
+==================================================================
+diet
+==================================================================
+(a) per-ROI bias [0.132, 0.122, 0.1326, 0.1455, 0.1398, 0.1724, 0.1644]
+    rises +0.132 -> +0.164; constant? spread 0.0505
+(b) b(hV4) - b(V1) = +0.037457;  measured contrast floor = +0.037457;  diff +2.78e-17
+    mean per-ROI bias = +0.1441
+(c) pooled free fit: a = 1.242, intercept +0.1378
+    vs mean per-ROI bias +0.1441 -> 0.96x   <- 26bc5a3's reference
+    vs contrast floor    +0.0375 -> 3.68x   <- §94.4's reference
+(d) bias-removed: a = 1.210   residual free intercept -0.0016
+    recovered true contrast -0.7198
+    residual intercept as share of recovered contrast: 0%
+
+==================================================================
+26bc5a3 reports: mean-bias refs 0.96x diet / 0.62x no-diet;
+a = 1.281 / 1.210; true -0.1011 / -0.7198; 7.1x;
+residual intercepts -0.0428 / -0.0016

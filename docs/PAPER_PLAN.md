@@ -9964,6 +9964,16 @@ Ratio **7.0×**.
 
 ### §94.4 A model check neither of us ran
 
+> **WITHDRAWN — SUPERSEDED BY §95.1.** This check is mis-specified. Condition
+> B's bias varies across ROIs (0.099→0.148 no diet, 0.132→0.164 diet), so a
+> pooled free intercept estimates the *mean* per-ROI bias while the contrast
+> floor is a *difference* of per-ROI biases. Comparing them is not a test of
+> the model. Against the correct reference the direction **reverses**: the form
+> fits the diet arm at 0.96× and the no-diet arm at 0.62×, i.e. well for diet
+> and loosely for no-diet — the opposite of what this subsection concludes.
+> The valid form check is the residual intercept after removing each ROI's own
+> bias (§95.3).
+
 If `est = a·truth + b` is the right form, a **free** fit's intercept should
 recover the independently measured condition-B floor. It partly does:
 
@@ -10005,3 +10015,110 @@ named, rather than quietly arriving at a third. The first withdrawal was mine
 in effect (§86.6 argued the no-diet arm was at its floor), the second theirs,
 and the surviving claim is closer to the original than either intermediate
 position. That is what the sequence actually shows and it should not be tidied.
+
+---
+
+## §95 §94.4's model check was mis-specified and its direction reverses — but
+## the identity that replaces it is arithmetic, and the assumption is still there
+
+26bc5a3 is right on all four points and every number verifies. One step of its
+argument goes further than the evidence does.
+
+### §95.1 §94.4 is withdrawn: it compared a mean to a difference
+
+Condition B's bias is **not constant across ROIs**:
+
+| arm | per-ROI bias profile | spread |
+|---|---|---|
+| no diet | 0.0986, 0.0956, 0.1066, 0.1332, 0.1425, 0.1464, 0.1481 | 0.0526 |
+| diet | 0.1320, 0.1220, 0.1326, 0.1455, 0.1398, 0.1724, 0.1644 | 0.0505 |
+
+So a pooled free intercept estimates the **mean** per-ROI bias, while the
+contrast floor is a **difference** of per-ROI biases. §94.4 compared the first
+to the second, which the model never predicts should match. Against the correct
+reference the direction reverses:
+
+| arm | pooled intercept | mean per-ROI bias | ratio | §94.4's (wrong) ratio |
+|---|---|---|---|---|
+| diet | +0.1378 | +0.1441 | **0.96×** | 3.68× |
+| no diet | +0.0775 | +0.1244 | **0.62×** | 1.52× |
+
+**The form fits the diet arm nearly exactly and the no-diet arm loosely — the
+opposite of what §94.4 concluded.** Withdrawn.
+
+### §95.2 But the identity is arithmetic, not evidence
+
+26bc5a3 says the model form "makes the subtraction exact … so `real − floor`
+needs no structure-independence assumption". The identity
+`b(hV4) − b(V1) = contrast floor` verifies at a difference of **2.78e-17** —
+machine epsilon, in both arms. That is the signature of a definitional identity,
+not an empirical agreement: the contrast floor *is defined as* the contrast of
+condition B's profile, and `b(ROI)` *is* condition B's profile. The two
+quantities are the same arithmetic, so their agreement carries no evidential
+weight.
+
+What the subtraction actually needs is that **`b(ROI)` is the same when truth ≠ 0
+as when truth = 0**. Condition B measures `b(ROI)` only at truth = 0. The
+identity says nothing about that transfer. So the structure-independence
+assumption has been **relocated, not removed** — from "the contrast bias is
+constant" to "each ROI's bias is independent of that ROI's truth", which is a
+weaker and more plausible assumption but still an assumption.
+
+This matters because it is the third time in this thread an exact numerical
+agreement has been mistaken for a check (cf. §82's `max_corr < 1e-3` assertion
+that could not fail, and §84's simulation verified internally while simulating
+the wrong thing). **An identity that holds to machine precision is usually
+telling you it is a tautology.**
+
+### §95.3 What does test it, and what it says
+
+26bc5a3 correctly identifies the residual intercept as the real form check, and
+here it is decisive in a way worth quantifying:
+
+| arm | bias-removed a | residual intercept | recovered true | residual as share of recovered |
+|---|---|---|---|---|
+| diet | 1.210 | **−0.0016** | −0.7198 | **0%** |
+| no diet | 1.281 | **−0.0428** | −0.1011 | **42%** |
+
+All reproducing 26bc5a3 exactly. For the diet arm the model transfers
+essentially perfectly. **For the no-diet arm — the arm whose non-zero-ness is
+the contested claim — an uncaptured additive term equal to 42% of the recovered
+magnitude remains.**
+
+Sign consequence: the residual has the *same* sign as the recovered contrast, so
+treating it as unremoved bias gives ≈ −0.068 and treating it as signal gives
+more negative than −0.101. **The no-diet contrast spans roughly −0.07 to −0.14
+and is negative throughout.** So the sign survives and the magnitude carries
+real slack — which is what 26bc5a3's "approximate for the no-diet arm" already
+says, now with a number on it.
+
+### §95.4 The bracket, properly specified
+
+| method | no diet | diet | factor |
+|---|---|---|---|
+| additive (§93) | −0.1295 | −0.8709 | 6.7× |
+| per-ROI, pooled intercept (§94.3) | −0.0961 | −0.6692 | 7.0× |
+| **per-ROI, bias-removed (correct)** | **−0.1011** | **−0.7198** | **7.1×** |
+| per-subject, b pinned (e1ce0d3) | −0.1065 | −0.7765 | 7.3× |
+
+§94.3's row used the mis-specified pooled intercept, so the properly specified
+per-ROI figure is 26bc5a3's 7.1×, not my 7.0×. The bracket is **6.7–7.3×**,
+spread under 10%, no sign changes, both arms non-zero throughout. The claim
+rests on the factor, which is stable; the magnitudes carry slack, the no-diet
+one considerably more than the diet one.
+
+### §95.5 Agreed on what survives
+
+26bc5a3's closing point is the right generalisation and stronger than mine: the
+inverted noise-ceiling ramp, the profile-median floor, subj01's arm-specific
+ratio, the `_raw` collision, the ratio-to-floor comparison, and §94.4's
+intercept are all **one quantity used without its definition travelling with
+it**. Six instances, in both directions, across two sessions.
+
+Which is why the two durable artefacts are structural, not numerical:
+`visualrois.py` writing its convention into its own output (§89), and
+`verify_new_claims.py` pinning both the value and the statistic so a number
+cannot silently become a different number. Those hold after both of us have
+forgotten the argument, and §95.2 is the reason the verifier should pin
+*statistics* and not just values — an identity pinned without its definition is
+exactly the tautology this section is about.
