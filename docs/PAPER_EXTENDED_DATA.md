@@ -280,10 +280,39 @@ this analysis — describes the defective file as a **"six-fold outlier"**
 contributing **"57%"** of the reported no-diet effect size and being "the
 difference between significant and not on the raw statistic". The raw solve
 lands at 6.3× and 46%, and the repaired file does leave the raw no-diet contrast
-marginal (mean −0.027, p = .039, 6/8). Three independent quantities agree. The
+marginal (mean −0.027, p = .039, 6/8). Three independent quantities agree.
+
+The agreement carries more weight than a single reconstruction would, because
+the quantities were not all computed in pursuit of it. The README's three
+figures were written on 2026-09-01, before any of this analysis existed. Two of
+the three matching values — the untrained contrast of −0.5441 and the marginal
+raw p of .0391 — were computed here for unrelated reasons (checking downstream
+references, and testing which construction matched the published table) before
+the reconstruction was proposed. And the reconstruction itself was carried out
+twice independently, giving −0.1241 and −0.1275 for the required subject-01 raw
+value; the third-decimal disagreement traces to rounding off the published
+−0.034 and is the signature of separate arithmetic rather than a shared
+error. The
 published no-diet values were computed with the defective file in the set,
 before 2026-09-01, and transcribed on 2026-09-06 — five days after that file was
 excluded and deleted. The data behind them no longer exists.
+
+*The fix.* `visualrois.py` now takes `--model`, `--src` and `--out-dir` and
+writes a stamped artifact under `results/visualrois/` recording the git commit
+and dirty flag, the input files with sizes and mtimes, and the convention itself
+(nc_min, minimum voxels, the denominator mask, median-of-ratios, the SPI and V1
+definitions, the test) — the convention is in the artifact because inferring it
+from code is what the search above cost, and the sizes and mtimes are there
+because those are what settled the subject-01 question. Run with no arguments it
+still reproduces the untrained anchor byte-identically (−0.5441, p = .0078, 0/8),
+which is the one row with continuous provenance back to 2026-08-28. Two limits
+are worth knowing: the stamp records whether the tree was dirty but cannot make a
+dirty-tree artifact trustworthy, and it lists the input files without capturing
+the source directory's full contents, so a fit added between two runs of the same
+model would move the numbers while the recorded convention stayed identical. The
+verification script deliberately reimplements the convention rather than
+importing this script, since a verifier that imports what it verifies checks
+nothing.
 
 *The diet column is something else.* The same solve would require a subject-01
 diet value of −1.225. The most extreme of the 48 observed subject × model cells
