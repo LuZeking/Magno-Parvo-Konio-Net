@@ -10539,6 +10539,19 @@ filter.
 
 ### §99.3 The reconciliation: the draft's sentence is right
 
+> **WITHDRAWN — SUPERSEDED BY §100.1/§100.2.** The verdict ("line 1890 is
+> right, no correction needed") happens to be correct, but it was reached on
+> the wrong contrast. `blur_verdict.py:24` pins line 1890 as
+> `untrained_seed0` vs `untrained_seed0_noblur` — one **untrained** network,
+> diet front end against no-blur front end. This subsection compares **trained**
+> diet against **trained** no-diet across three seeds. Matching "difference
+> n.s." was a coincidence of outcome, not a reproduction, and the mechanism
+> story below ("the size confound was hiding the arm difference") cannot apply,
+> because line 1890 was never about arms. Run on its own contrast the partial
+> does **not** separate the two front ends (−0.068, p=.055, wrong direction),
+> so §99.4's proposed companion is retracted too. §99.1 and §99.2 stand as
+> claims about trained arms.
+
 The draft's live eccentricity sentence (line 1890) reports the arms as **not**
 differing: "raw slope +0.047 vs +0.041, 8/8 both, difference n.s." That is a
 **marginal** slope. §99.1 tests a **partial**. Running both on the same data:
@@ -10588,3 +10601,121 @@ angle are not independent there. An apparent angle effect at high eccentricity
 could be aperture geometry rather than retinotopy, so the angle control is
 informative **within** an eccentricity band, not pooled — pooled, a null could
 be masking two artefacts that cancel. Recorded for whoever runs it.
+
+---
+
+## §100 §99.3 was the wrong contrast. Running the right one, plus the input
+## null, reframes the result: the diet PRESERVES an architectural property
+
+### §100.1 §99.3 withdrawn
+
+§99.3 claimed my trained diet-vs-no-diet result "reproduced" the draft's
+line 1890 "difference n.s." exactly. It does not. `blur_verdict.py:24` pins
+that sentence's contrast:
+
+```python
+MAIN, CTRL = "untrained_seed0", "untrained_seed0_noblur"
+```
+
+One **untrained** network, diet front end against no-blur front end — an
+input-level control where the blur can actually be removed. The draft sentence
+sits inside "The foveal band's sign flips **when the blur is removed**", so
+"in both models" means both front ends, untrained, not both training arms.
+Same verdict, different quantity: matching n.s. was a coincidence of outcome.
+**§99.3's reconciliation is withdrawn**; §99.1's interaction and §99.2's
+robustness stand, as claims about trained arms only.
+
+### §100.2 Line 1890 gets no companion — the partial does not separate the front ends
+
+Running the §98 decomposition on the pair line 1890 actually names:
+
+| term | diet FE | no-blur FE | difference | subjects | p |
+|---|---|---|---|---|---|
+| ecc marginal (raw) | +0.286 | +0.292 | −0.006 | 3/8 | .9453 |
+| ecc\|size (raw) | +0.401 | +0.470 | **−0.068** | 2/8 | .0547 |
+| size\|ecc (raw) | −0.187 | −0.292 | +0.105 | 8/8 | .0078 |
+| ecc\|size (norm) | +0.083 | +0.089 | −0.006 | 4/8 | .9453 |
+
+Controlling pRF size does **not** separate the two front ends, and what
+movement there is runs the *wrong* way. So line 1890 stands alone, exactly as
+written, and §99.4's suggested companion is retracted.
+
+### §100.3 The finding underneath: this is architectural, not diet-created
+
+Both untrained models carry the dissociation strongly — ecc|size **+0.401** and
+**+0.470** raw, 8/8, larger than the trained diet arm's +0.325. It is present
+at initialisation regardless of front end.
+
+Against the §7.2-item-1 input null, all raw, paired within subject:
+
+| model | ecc\|size | size\|ecc |
+|---|---|---|
+| `gabor_blur_cs` (input null, diet FE) | +0.096, 7/8, p=.109 | +0.004, ns |
+| `gabor_noblur` (input null, no-blur FE) | +0.201, 8/8, p=.0078 | −0.137, 8/8 |
+| untrained, diet FE | +0.401, 8/8 | −0.187, 8/8 |
+| untrained, no-blur FE | +0.470, 8/8 | −0.292, 8/8 |
+| **trained diet** | **+0.325, 8/8** | **−0.356, 8/8** |
+| **trained no diet** | **+0.028, 5/8, ns** | **+0.163, 0/8 neg** |
+
+| contrast (ecc\|size, paired) | diff | subjects | p |
+|---|---|---|---|
+| untrained diet − input null | **+0.306** | 8/8 | .0078 |
+| trained diet − input null | **+0.229** | 7/8 | .0156 |
+| trained no-diet − input null | −0.068 | 2/8 | .2500 |
+| trained diet − untrained diet | −0.077 | 2/8 | .1094 |
+| **trained no-diet − untrained diet** | **−0.374** | **0/8** | **.0078** |
+
+Three things follow, and none of them is what §98 implied.
+
+1. **It survives the input null on the diet side.** The diet front end's *input*
+   carries +0.096 (ns); the network adds +0.306 over its own input. So this is
+   not a front-end validation — the control §7.2 item 1 was written to catch
+   does not catch it. (Asymmetry worth noting: `gabor_noblur`'s input *does*
+   carry +0.201 significantly, so the no-blur front end's input carries more of
+   the structure than the diet one's.)
+2. **Training does not create it.** Untrained diet (+0.401) already exceeds
+   trained diet (+0.325), and trained − untrained is −0.077, n.s.
+3. **Training without the diet destroys it.** Trained no-diet sits 0.374 below
+   untrained, 0/8 subjects, at the floor — and its `size|ecc` term **flips
+   positive** (+0.163), the only model of the six that does.
+
+### §100.4 The reframing for leg (c)
+
+Not "the diet produces an eccentricity organisation" but:
+
+> The eccentricity/pRF-size dissociation is present at initialisation and is
+> largely not inherited from the input. Training on an undieted diet destroys
+> it — the eccentricity term collapses to zero and the size term reverses sign.
+> Training with the developmental diet preserves it.
+
+That is a **better** claim than §98's. It is developmental in the right way: the
+diet protects a structure the architecture already has, rather than imposing
+one, which is what a critical-period account should predict. It also removes
+the awkwardness of asserting that a randomly-initialised network has no
+retinotopic organisation — it plainly does.
+
+It also means §98.4's claim (i) needs its scope corrected: the diet arm's
+dissociation is real, but "in the diet arm" was doing work that "at
+initialisation, and retained under the diet" does properly.
+
+### §100.5 Caveats
+
+- Trained models come from `results/encoding_cc`, untrained and Gabor from
+  `results/encoding` (§91: neither directory is a superset). §91 verified the
+  two agree where they overlap, but `untrained_*` and `gabor_*` have no cc
+  counterpart, so that check cannot be run for these specific fits.
+- The untrained-vs-trained comparison is across models with very different
+  overall R²; the betas are standardised within subject, which makes the
+  *direction* comparable but not the magnitudes.
+- Everything here is seed 0 for the trained arms. §98 showed all three seeds
+  agree on the within-arm terms; the untrained and Gabor arms have one seed
+  each by construction.
+
+### §100.6 Accepting the caution on the "three confounds" pattern
+
+`950c6df` asked me to hold the "three confounds hiding a difference" pattern
+loosely until this ran, on the grounds that two of them may be one phenomenon
+counted twice. That is right and the count should be **two**, not three: §98's
+suppression and §99's marginal-vs-partial gap are the same eccentricity/size
+structure seen at within-arm and between-arm level, not two independent
+instances. Recorded rather than quietly dropped.

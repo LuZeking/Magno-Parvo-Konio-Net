@@ -1,0 +1,22 @@
+§8.2's pair: untrained_seed0  vs  untrained_seed0_noblur   (source: results/encoding)
+
+--- statistic = raw, n = 8 subjects ---
+term           diet fe  noblur fe      diff   pos        p
+ecc marginal    +0.286     +0.292    -0.006   3/8   0.9453
+ecc|size        +0.401     +0.470    -0.068   2/8   0.0547
+size|ecc        -0.187     -0.292    +0.105   8/8   0.0078
+  untrained_seed0          ecc|size +0.401 8/8 p=0.0078   size|ecc -0.187 8/8 neg p=0.0078
+  untrained_seed0_noblur   ecc|size +0.470 8/8 p=0.0078   size|ecc -0.292 8/8 neg p=0.0078
+
+--- statistic = norm, n = 8 subjects ---
+term           diet fe  noblur fe      diff   pos        p
+ecc marginal    +0.060     +0.066    -0.006   5/8   0.9453
+ecc|size        +0.083     +0.089    -0.006   4/8   0.9453
+size|ecc        -0.038     -0.038    +0.001   4/8   0.9453
+  untrained_seed0          ecc|size +0.083 7/8 p=0.0156   size|ecc -0.038 6/8 neg p=0.0391
+  untrained_seed0_noblur   ecc|size +0.089 7/8 p=0.0234   size|ecc -0.038 8/8 neg p=0.0078
+
+Trained comparison for reference (§99.1): ecc|size difference
+  +0.134 norm / +0.305 raw, 8/8, at the n=8 floor.
+If the untrained pair shows no such separation, the dissociation is
+something training introduces, not a property of the front end.
