@@ -492,6 +492,63 @@ OOD_DRAFT = {
 }
 
 
+# The untrained baseline is the one §2.2 value that does NOT come from the
+# declared source directory: it exists only in results/encoding/. Two things
+# are locked below -- the anchor itself, and the cross-directory identity that
+# makes sourcing it from elsewhere harmless.
+UNTRAINED_DIR = "results/encoding"
+UNTRAINED = {"normalised": -0.544, "raw": -0.120}
+
+
+def check_untrained_anchor() -> None:
+    """§2.2's untrained control, and the directory-identity claim it rests on.
+
+    §E2.2 asserts that where results/encoding/ and results/encoding_cc/ overlap
+    they are numerically identical. That is not a coincidence: --cue-conflict
+    only applies the *already fitted* estimators to an extra design
+    (banded_ridge.fit_banded docstring) and prepare_band takes "all statistics
+    from the training split only", so the flag cannot move r2_*. Asserting it is
+    still weaker than checking it, and if anyone ever refits one directory
+    without the other the assertion would go quietly false -- so it is checked.
+    """
+    from src.analysis.encoding.stats import load_results
+    print(f"\n[§2.2 untrained anchor, {UNTRAINED_DIR}]")
+    for stat, want in UNTRAINED.items():
+        subs, prof = roi_profile(UNTRAINED_DIR, "untrained_seed0",
+                                 stat == "normalised")
+        c = np.array([hv4_minus_v1(r) for r in prof])
+        W, pv = wilcoxon(c)
+        chk(f"untrained hV4-V1 {stat}", float(c.mean()), want, 0.001)
+        # Both statistics must agree in sign for the claim this supports
+        # ("the input only supplies the starting point") to clear §4.7's
+        # two-statistics rule.
+        if not (c < 0).all():
+            FAILS.append(f"untrained {stat}: {(c < 0).sum()}/8 negative, want 8/8")
+        chk(f"untrained p {stat}", float(pv), 0.0078, 0.0002)
+        print(f"     n={len(subs)}  {(c < 0).sum()}/{len(c)} negative  "
+              f"W={W:.0f} p={pv:.4f}")
+
+    print("[cross-directory identity, encoding vs encoding_cc]")
+    both = sorted(set(
+        os.path.basename(f)[:-4] for f in glob.glob("results/encoding/*.npz")
+    ) & set(
+        os.path.basename(f)[:-4] for f in glob.glob("results/encoding_cc/*.npz")
+    ))
+    worst = 0.0
+    for name in both:
+        a = np.load(os.path.join("results/encoding", name + ".npz"))
+        b = np.load(os.path.join("results/encoding_cc", name + ".npz"))
+        for k in ("r2_joint", "r2_magno", "r2_parvo"):
+            if k in a.files and k in b.files and a[k].shape == b[k].shape:
+                worst = max(worst, float(np.nanmax(np.abs(a[k] - b[k]))))
+            else:
+                FAILS.append(f"{name}: {k} missing or shape-mismatched")
+    if worst != 0.0:
+        FAILS.append(f"directories diverge: max|r2 diff| = {worst:.3e}")
+    print(f"  {'OK' if worst == 0.0 else 'FAIL'}  {len(both)} shared files, "
+          f"max |r2 diff| = {worst:.3e}")
+
+
 def check_ood() -> None:
     d = "results/ood_bestep"
 
@@ -618,6 +675,7 @@ def check_perimage() -> None:
 def main() -> int:
     check_recovery()
     check_production_statistic()
+    check_untrained_anchor()
     check_ood()
     check_perimage()
     print("\nFAILURES:", FAILS if FAILS else "none")

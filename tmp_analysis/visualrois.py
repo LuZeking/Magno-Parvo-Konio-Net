@@ -17,10 +17,23 @@ because the fit they came from had been quarantined and deleted. The model is
 now an argument and every run writes a provenance-stamped artifact, so a
 published number always has a regenerable source.
 
-The DEFAULT is deliberately `untrained_seed0` on `results/encoding`, because
-that is the only row with continuous provenance back to 2026-08-28 and it is
-the audit anchor: running this script with no arguments must keep reproducing
+The DEFAULT is deliberately `untrained_seed0` on `results/encoding`, because it
+has the longest unbroken provenance of any row and is the audit anchor: running
+this script with no arguments must keep reproducing
 `SPI hV4 - V1  mean diff=-0.5441  p=0.0078  0/8 positive`.
+
+Scope of that provenance claim, corrected 2026-09-08. An earlier version of this
+docstring said "continuous provenance back to 2026-08-28", which holds for
+**six** of the eight subject fits, not all eight: `subj04` and `subj08` were
+written on 2026-09-04 by job 26423414, tasks 3 and 7. That job is the same
+script and the same argument as the original round (`sbatch
+slurm/encode_subjects.sh untrained_seed0`, so no checkpoint and no front-end
+flags, i.e. untrained weights on the diet front end), and its logs record
+`no provenance recorded in this cache file (missing 7 keys) -- recomputing
+features rather than trusting it`, so the two late fits recomputed features
+instead of trusting an unstamped cache — the same discipline as the subj01
+repair. The configuration therefore matches; the *dates* do not, and saying
+"all eight" overstated it.
 
 Usage (no PYTHONPATH needed, and works from any directory):
     python tmp_analysis/visualrois.py                  # the audit anchor

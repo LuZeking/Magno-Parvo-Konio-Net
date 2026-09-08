@@ -479,9 +479,8 @@ ran the nuisance backwards, and inverted the artefact's sign.
 Four properties make this more than a single fitted number, each set out with
 its numbers in Extended Data §E2. **Training decides the direction; the input
 only supplies the starting point** — an untrained network on the diet front end
-already sits at −0.544 (this control exists only in `results/encoding/`, not
-in the declared source directory — see Open Items), training with the diet
-takes it to −0.834, and training
+already sits at −0.544 normalised and −0.120 raw (8/8, p = .0078 on both),
+training with the diet takes it to −0.834, and training
 without it leaves nothing resolvable above the floor (−0.079 at n = 8, −0.054 at
 n = 7). **It replicates across codebases**, our standalone model and the
 independent thesis checkpoint giving −0.834 and −0.793, a difference that does
@@ -1382,6 +1381,28 @@ requires the within-seed subject test to hold in all three seeds independently.
 statistics agree; disagreements are reported as unresolved rather than resolved
 in the favourable direction.
 
+**Source directories, and the one exception.** Encoding sources are declared per
+table rather than globally, because neither directory is a superset of the other
+(§2.2, Extended Data §E2.2). §2.2's seed table comes from
+`results/encoding_cc/`; the front-end control table and the **untrained
+baseline** come from `results/encoding/`, which is the only directory holding
+those models. The untrained baseline is therefore the one value in §2.2 not
+drawn from that section's declared source, and we state it rather than repair it,
+for two reasons. First, it changes nothing: the two directories differ only by
+`run_encoding.py`'s `--cue-conflict` flag, which applies the *already fitted*
+estimators to an additional design and adds keys, while all band statistics are
+taken from the training split only — so the flag cannot move `r2_joint`,
+`r2_magno` or `r2_parvo`. Checked rather than assumed: across the 40 files
+present in both directories (5 models × 8 subjects) the maximum absolute
+difference in all three quantities is exactly zero, and `verify_new_claims.py`
+now locks both that invariant and the untrained anchor itself. Second, refitting
+it into `encoding_cc` would replace the row with the longest unbroken provenance
+in the analysis — six of its eight subject fits date from 2026-08-27/28 and
+predate the quarantine described in §E2.2 — with a new fit, which is a loss of
+audit value rather than a gain. Its regenerable source is the
+provenance-stamped artefact `results/visualrois/untrained_seed0_2026-09-07.json`,
+which records every input file with size and mtime.
+
 **Pre-registration.** The front-end 2×2 (§2.4), the inverted-front-end prediction
 (§2.5), the OOD families (§2.6.1) and the error-consistency hypothesis (§2.6.2) were
 each written down before the corresponding analysis was run. Two of the four
@@ -2136,24 +2157,58 @@ Methods in §4.5.
       the fourth time that exact error has bitten in this thread, and this time
       it was mine.** Now reported as a leave-one-out influence check (subj01
       carries ~31% of the no-diet contrast), n = 8 primary.
-- [ ] **`visualrois.py` should take its model as an argument and stamp its
-      output.** Line 23 hardcodes `untrained_seed0`, so producing any other
-      row means editing the line, running, and reverting — which is precisely
-      how §2.2's table became unauditable. The durable fix is a `--model`
-      argument plus a provenance-stamped write under `results/`, so a published
-      table always has a regenerable source. Same defect class as the hardcoded
-      `roi_nc` ramp that inverted the artefact's sign: a load-bearing value
-      whose provenance lives only in a shell history. Note
-      `verify_new_claims.py` reimplements the convention independently rather
-      than importing this script, so the twelve table values stay checked
-      either way.
-- [ ] **The untrained control is not in the declared source directory.**
-      §2.2 declares `results/encoding_cc/` authoritative, but
-      `untrained_seed0` exists only in `results/encoding/`, so the −0.544
-      untrained figure cannot be regenerated from the declared source. Either
-      fit the untrained model into `encoding_cc` or state the exception
-      explicitly in §4.7. `verify_new_claims.py` pins the twelve table values
-      to `encoding_cc` and does not currently check the untrained number.
+- [x] **`visualrois.py` argument + provenance stamp — ALREADY DONE 2026-09-07;
+      this item was stale.** The script takes `--model`, `--src`, `--out-dir`
+      and `--no-write`, and every run writes a stamped artefact under
+      `results/visualrois/` carrying the git commit and dirty flag, the exact
+      input files with byte size and mtime, the full convention (nc floor,
+      min-voxel count, denominator mask, median-of-ratios, V1 reference,
+      test), the per-ROI means and the per-subject contrast values. Three
+      artefacts are committed — `untrained_seed0`, `dkl_bcs_seed0_trained` and
+      `dkl_base_seed0_trained`, all dated 2026-09-07 — so each published row
+      has a regenerable source. `verify_new_claims.py` still reimplements the
+      convention independently rather than importing the script, so the values
+      stay checked from two directions.
+      **One correction went in with the close.** The docstring claimed the
+      default row has "continuous provenance back to 2026-08-28". That holds
+      for **six** of eight subject fits: `subj04` and `subj08` were written
+      2026-09-04 by job 26423414 tasks 3 and 7. Same script and same argument
+      as the original round (`encode_subjects.sh untrained_seed0` — no
+      checkpoint, no front-end flags, so untrained weights on the diet front
+      end), and the logs record that both **recomputed features rather than
+      trusting an unstamped cache**, the same discipline as the subj01 repair.
+      Configuration matches; the dates do not, and "all eight" overstated it.
+      The docstring now says so.
+- [x] **The untrained control's source directory — RESOLVED 2026-09-08 by
+      stating the exception, not by refitting.** §2.2 declares
+      `results/encoding_cc/` authoritative while `untrained_seed0` exists only
+      in `results/encoding/`. The item offered two routes; the evidence chose
+      the second, and against the recommendation this session started with.
+      **Why not refit.** (a) It would change nothing. The directories differ
+      only by `run_encoding.py`'s `--cue-conflict`, which applies the *already
+      fitted* estimators to an extra design (`banded_ridge.fit_banded`
+      docstring) while `prepare_band` takes "all statistics from the training
+      split only" — so the flag cannot move `r2_joint`, `r2_magno` or
+      `r2_parvo`. Checked, not assumed: over the **40 files present in both
+      directories** (5 models x 8 subjects) the maximum absolute difference in
+      all three is **exactly 0.000e+00**. (b) It would destroy audit value: the
+      untrained row has the longest unbroken provenance in the analysis, six of
+      eight fits predating the quarantine, and refitting replaces that with a
+      new fit. (c) It is over the memory cap. The `encoding_cc` fits measured
+      **77-128 GB** MaxRSS (job 26416428) and this family's script requests
+      160G — above the 64G ceiling, so a refit would need `--voxel-chunk`
+      footprint reduction or g017 before it could even be submitted. Spending
+      that to reproduce numbers already known to be identical fails the standing
+      rule against compute that cannot change a conclusion.
+      **What was done instead.** §4.7 now states the exception explicitly with
+      the mechanism and the check; §2.2 gives the control on **both** statistics
+      (−0.544 normalised and −0.120 raw, 8/8 and p = .0078 on each, so the claim
+      it supports clears the two-statistics rule — previously only the
+      normalised figure appeared); and `verify_new_claims.py` gained
+      `check_untrained_anchor()`, which locks the anchor on both statistics and
+      **also locks the cross-directory identity invariant**, so the §E2.2
+      assertion can no longer go quietly false if one directory is ever refit
+      without the other.
 - [x] **§2.2's table restated from `results/encoding_cc/` 2026-09-07.** The
       previously reported values (normalised −0.862 / −0.802 / −0.781; raw
       −0.176 / −0.151 / −0.160; dz −11.70; untrained −0.471; cross-codebase
