@@ -500,6 +500,35 @@ UNTRAINED_DIR = "results/encoding"
 UNTRAINED = {"normalised": -0.544, "raw": -0.120}
 
 
+# §2.2 quotes dz twice: -6.60 (diet) vs -1.09 (no diet) at seed 0 normalised,
+# and §4.7's multiplicity argument quotes the larger of the two as "our
+# largest". An earlier draft quoted dz = -11.70 there, which belonged to the
+# SUPERSEDED table and does not regenerate -- so the value is pinned.
+DZ_SEED0_NORM = {"dkl_bcs_seed0_trained": -6.60, "dkl_base_seed0_trained": -1.09}
+
+
+def check_effect_size() -> None:
+    """dz for §2.2's seed-0 normalised cells, and that -6.60 is the largest."""
+    print(f"\n[§2.2 effect sizes, {ENCODING_DIR}]")
+    biggest = 0.0
+    for tag, want in DZ_SEED0_NORM.items():
+        _, prof = roi_profile(ENCODING_DIR, tag, True)
+        c = np.array([hv4_minus_v1(r) for r in prof])
+        chk(f"dz {tag}", float(c.mean() / c.std(ddof=1)), want, 0.01)
+    # §4.7 calls -6.60 "our largest"; check nothing in the table beats it.
+    for stat in (True, False):
+        for seed in (0, 1, 2):
+            for arm in ("dkl_bcs", "dkl_base"):
+                _, prof = roi_profile(ENCODING_DIR, f"{arm}_seed{seed}_trained",
+                                      stat)
+                c = np.array([hv4_minus_v1(r) for r in prof])
+                biggest = max(biggest, abs(float(c.mean() / c.std(ddof=1))))
+    if abs(biggest - 6.60) > 0.01:
+        FAILS.append(f"largest |dz| in §2.2 is {biggest:.2f}, draft says 6.60")
+    print(f"  {'OK' if abs(biggest - 6.60) <= 0.01 else 'FAIL'}  "
+          f"largest |dz| over all 12 cells = {biggest:.3f} (draft 6.60)")
+
+
 def check_untrained_anchor() -> None:
     """§2.2's untrained control, and the directory-identity claim it rests on.
 
@@ -675,6 +704,7 @@ def check_perimage() -> None:
 def main() -> int:
     check_recovery()
     check_production_statistic()
+    check_effect_size()
     check_untrained_anchor()
     check_ood()
     check_perimage()

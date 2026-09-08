@@ -1449,7 +1449,7 @@ The honest statement about multiplicity here is a negative one. Nearly every
 inferential claim rests on the paired exact Wilcoxon signed-rank test at n = 8,
 whose **exact two-sided floor is p = 2/2⁸ = .0078125** — the value returned by a
 *perfect* 8/8 split, and unimprovable no matter how large the effect (our
-largest, dz = −11.70, returns exactly the same .0078125 as a marginal 8/8).
+largest, dz = −6.60, returns exactly the same .0078125 as a marginal 8/8).
 Holm–Bonferroni over a family of *m* tests requires the smallest p to clear
 .05/*m*. Since .0078125 > .05/*m* for every *m* > 6, **no family larger than six
 tests can have a single rejection at α = .05**, and for our 18-test
@@ -1507,12 +1507,21 @@ our control and was not a design factor. No analysis in this paper is
 disaggregated by sex, and none could be: the neuroimaging sample is eight
 participants and the behavioural reference ten observers, and at those sizes the
 paired tests used throughout already sit at their exact resolution floor on the
-*full* sample (§4.7), leaving no power for any subgroup contrast. Sex is
-recorded in the source releases for both datasets; we defer to them rather than
-restate values we have not verified against the released metadata, and the
-per-subject values will be tabulated in the Reporting Summary before submission.
-We therefore make no claim, in either direction, about sex differences in any
-quantity reported here.
+*full* sample (§4.7), leaving no power for any subgroup contrast. We also do not
+restate participant sex, and the reason is specific to each release rather than a
+blanket deferral. For the **behavioural** sample it is not available to us at
+all: the Geirhos per-observer files carry only trial-level fields (`subj`,
+`session`, `trial`, `rt`, `object_response`, `category`, `condition`,
+`imagename`) and no demographic column, so no per-observer sex exists in the data
+we analysed. For the **neuroimaging** sample the NSD release documents its
+participants, but the subject-information file is not part of the subset we
+mirrored, so we have not verified any value against the released metadata and do
+not reproduce one here; the Reporting Summary points to the NSD release for it
+rather than restating it. An earlier version of this paragraph said sex "is
+recorded in the source releases for both datasets" and promised a per-subject
+table; the first half is not true of the behavioural release and the second could
+not have been delivered for it. We therefore make no claim, in either direction,
+about sex differences in any quantity reported here.
 
 **Data availability.** The Natural Scenes Dataset is available at
 `naturalscenesdataset.org` under its own data-use agreement, which requires
@@ -1573,6 +1582,15 @@ environment. We do not list SciCrunch RRIDs for the individual Python packages,
 because we have not verified registry entries for each one and an unverified
 identifier is worse than none; any that the journal requires will be taken from
 the registry at submission rather than asserted here.
+
+**Reporting Summary.** The content for every item of the Nature Behavioural &
+Social Sciences Reporting Summary is drafted in `docs/REPORTING_SUMMARY.md`, so
+that completing the journal's form at submission is transcription rather than
+recall and each entry has a source in the repository. Two of its items cannot be
+completed from the data we hold and are marked as gaps in place rather than
+filled: participant age and sex (not present in the behavioural release, and not
+in the NSD subset we mirrored), and non-participation during the original
+collections.
 
 **Competing interests.** The authors declare no competing interests.
 
@@ -2422,6 +2440,31 @@ Methods in §4.5.
       pre-existing error had `Islam et al. (2021)` filed after both Jagadeesh
       entries. A throwaway order check over all 59 entries found both; the list
       now passes it.
+- [x] **Reporting Summary drafted 2026-09-08** —
+      `docs/REPORTING_SUMMARY.md`, all seven sections of the Behavioural &
+      Social Sciences form, every entry sourced to §4.1–§4.7 or measured from the
+      repository. It is the *content*, not the PDF; the journal supplies the
+      fillable form at submission.
+      **Two items are marked GAP rather than filled**, which is the point of
+      doing this early. (i) *Population characteristics* — participant age and
+      sex. The Geirhos per-observer files carry only trial-level fields and no
+      demographic column, so per-observer sex does not exist in the data we
+      analysed; NSD documents its participants but the subject-information file
+      is not in the subset mirrored here. (ii) *Non-participation* — drop-out
+      during the original collections is a property of the source releases;
+      entering "none" would misdescribe them, so the form will say exactly that.
+      Each gap names the action that would close it.
+      **This corrected an over-promise in the draft.** *Sex as a biological
+      variable* previously said sex "is recorded in the source releases for both
+      datasets" and that per-subject values "will be tabulated in the Reporting
+      Summary before submission". The first half is not true of the behavioural
+      release and the second could not have been delivered for it. That
+      paragraph now states the per-release position and why it differs.
+      One unverified detail was also caught and removed from the summary itself:
+      a first draft wrote NSD's sequence as "gradient-echo EPI", which nothing in
+      this repository sources. What is sourced is 7T (the dataset paper's title)
+      and the 1.8 mm functional resolution (the `func1pt8mm` paths the code
+      reads); sequence details are deferred to Allen et al. (2022).
 - [x] **Human benchmark is in the abstract** (2026-09-02), but as a *rate*
       comparison carrying its own qualification — the whole-model figure (0.692)
       is given alongside the stream figure (0.878), and the error-consistency
