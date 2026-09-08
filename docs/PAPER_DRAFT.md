@@ -1314,6 +1314,27 @@ image id, with per-voxel alphas and per-voxel band weights. Noise ceiling from
 NSD `ncsnr`; voxels below NC 0.1 are excluded, and any ROI cell with fewer than
 20 surviving voxels is reported as missing rather than estimated.
 
+*Is unique variance identifiable in these two bands?* Unique variance is a
+subtraction of cross-validated R² (§4.7), so it means something only if each band
+carries directions the other cannot predict. Measured on the fitted
+1,000-component feature spaces, the canonical-correlation spectrum between the
+magno and parvo bands runs from ≈0.000 to 0.925 (diet) and ≈0.000 to 0.954
+(no diet), with median 0.292 and 0.306 across the 8 subjects. Each band therefore
+retains directions essentially unpredictable from the other — the quantity is
+identifiable in these spaces — while the two bands also share a strongly
+correlated subspace, which is the regime `banded_ridge.py`'s own docstring warns
+makes unique components *understate* a band's contribution.
+
+Identifiable and correctly recovered are two claims with two different sources of
+evidence, and only the first is supported by the spectrum. The second is answered
+by the recovery simulation reported in §2.2: with each band's real feature
+geometry and a known across-ROI split imposed, the estimator returns the true
+ordering exactly (Spearman ρ = +1.000 against a true +1.000, in 8/8 subjects on
+both arms, per-ROI absolute error ≤ 0.137). Magnitude fidelity is a separate
+matter and is treated where it bears on the result (§2.2, the multiplicative term
+and its residual misfit); it is why §2.2 is reported as sign, ordering and
+monotonicity rather than as calibrated magnitude.
+
 Stream-wise variance partitioning gives the per-voxel shape-bias index (VSB) used
 in §2.2, computed by pushing the cue-conflict set through each fitted encoding
 model.
@@ -2398,37 +2419,67 @@ Methods in §4.5.
       renamed **`step_unresid`** with a comment recording why. Verified no
       consumer outside that file; its printed label ("hV4-V1 uncorrected") was
       already correct, so only the key was misleading.
-- [ ] **Recovery analysis: pilot in, production pending — DO NOT paste pilot
-      numbers into the text.** The parallel session's pilot (PLAN §82, commit
-      db09b1e; production array 26439650 queued, 8 subjects, `main`, no GPU)
-      returns what §2.2 needs: condition A recovers the true ordering exactly
-      (ρ = +1.000 against a true +1.000, errors ≤0.025), and condition B — every
-      ROI given an identical generative process, differing only in noise ceiling
-      — produces **no** gradient (ρ = −0.321, ns, wrong sign). The pipeline does
-      not manufacture a gradient from correlated bands plus varying SNR. Place
-      this in §2.2 or §4.5 **only on the production numbers** (1000 components,
-      200 voxels, 8 subjects vs the pilot's 60/20/1).
-      *Three things to carry when it lands.* (i) **A null bias toward magno**
-      where the true difference is near zero — direction trusted, magnitude not
-      until production. It does not touch the gradient (a large effect in the
-      accurate regime, with B ruling out the SNR mechanism directly) but it does
-      bear on the VO null, whose sign claim has already been withdrawn above on
-      independent grounds. A magno-directed bias makes a null *more*
-      conservative, so nothing about the VO null as a null is at risk; what it
-      forbids is reading its small positive value as real, which the draft no
-      longer does. (ii) A possible **discretisation artefact** — null estimates
-      clustering near two values rather than scattering — which if it survives
-      at production settings means neighbouring ROIs can differ by ~0.02 for
-      purely numerical reasons and needs a sentence. (iii) The **identifiability
-      sentence for §4.5**: smallest canonical correlation ≈0 and largest ≈0.81 at
-      pilot scale, i.e. unique variance *is* identifiable in these feature
-      spaces. Phrasing agreed: identifiable-in-these-spaces is what the spectrum
-      supports; recovered-correctly is what the recovery analysis supports — two
-      sentences, two claims, different evidence, the first placed before the
-      gradient.
-- [ ] **Two cortical-instrument analyses claimed by a parallel session**
-      (2026-09-06, from the NN referee sim). Do not duplicate; apply their
-      output when it lands. (a) **Uₘ/Uₚ recovery analysis** — simulate voxels
+- [x] **Recovery analysis CLOSED 2026-09-08 — production landed, and both
+      conditions were already in the text.** The item asked for the pilot to be
+      replaced by production numbers before anything was written. Production is
+      in (`results/vp_recovery_realnc/`, 16 files = 2 arms x 8 subjects, from the
+      jobs recorded in the two artefact-floor items above), and on re-reading,
+      §2.2 already carries **both** conditions at production scale: condition B
+      is the artefact floor (+0.051 / +0.038 normalised, the paired-displacement
+      table), and condition A is the multiplicative term *a* = 1.28 / 1.21 with
+      its residual-misfit analysis and the six-variant table. Nothing needed
+      pasting; the item outlived its own deliverable. Corrected production
+      condition A: Spearman rho = +1.000 against a true +1.000 in **8/8 subjects
+      on both arms**, per-ROI |est - true| median 0.070-0.074, max 0.137.
+      **A trap to leave marked.** `results/vp_recovery/` (array 26439650, 8/8
+      COMPLETED) is the *superseded* output: `vp_recovery.py:264-276` records
+      that its `roi_nc` is a hardcoded ramp which **ascends** with hierarchical
+      rank where the measured profile descends, and is ~2.5x too wide, so its
+      condition B rho (median **-0.804**, 8/8 negative) is a normalisation
+      artefact whose sign is set by the ramp direction. The file says in terms:
+      "Do not read condition B's sign out of THIS file." Read from
+      `vp_recovery_realnc/` only. Taken at face value that superseded rho would
+      have put a manufactured gradient of §2.2's *own sign* into the text — the
+      same class of error as the hardcoded `roi_nc` ramp that inverted the
+      artefact's sign in the first place, and the reason both the script warning
+      and this note exist.
+      *The three carry-items resolve as follows.* (i) The **null bias toward
+      magno** is unchanged and already handled: it makes a null more
+      conservative, and the VO sign claim it bore on was withdrawn on
+      independent grounds. (ii) The **discretisation artefact does not survive**
+      at production settings and needs no sentence: condition B's per-ROI
+      estimates take 54/56 (diet) and 52/56 (no diet) distinct values at 4 d.p.
+      with no gap above 0.01 in the sorted values — they scatter, they do not
+      cluster on two levels. What *does* repeat is the Spearman rho itself
+      (+0.071 three times), and that is only the discreteness of rho on n = 7
+      ROIs, where it is quantised in steps of 1/56 = 0.0179 — a property of the
+      statistic, not of the estimator. (iii) The **identifiability sentence is
+      now in §4.5**, on production numbers and in the two-claims form agreed:
+      the canonical-correlation spectrum between bands runs ~0.000 to 0.925
+      (diet) and ~0.000 to 0.954 (no diet), median 0.292 / 0.306, so unique
+      variance is *identifiable in these spaces*; that it is *recovered
+      correctly* is condition A's claim and is cited as such. Pilot scale had
+      reported the largest as ~0.81; production puts it at 0.925 / 0.954, so the
+      pilot figure is superseded and is not quoted.
+      *Also worth recording:* condition B's residual rho is a **null that is not
+      tightly bounded**. Diet median -0.214 (Wilcoxon p = .1094, 5/8 negative),
+      no diet median +0.054 (p = 1.000, 3/8) — the two arms disagree in sign and
+      neither reaches the n = 8 threshold of .0781, so no ordering artefact is
+      detected, but at n = 8 a modest one cannot be excluded. That is stated as
+      a non-detection, not as evidence of absence (§103). The argument §2.2
+      actually rests on is the *magnitude and sign* of the floor, which is
+      bounded: condition B's estimates are positive in every cell (min +0.019
+      diet, +0.006 no diet) and span only ~0.04 across the seven ROIs, against an
+      observed displacement of -0.871 — wrong sign, and more than 20x smaller.
+- [ ] **Cortical-instrument analyses from the NN referee sim — (a) DONE
+      2026-09-08, (b) still open.** Claimed by a parallel session 2026-09-06;
+      do not duplicate. **(a) is complete**: the Uₘ/Uₚ recovery analysis landed
+      as conditions A and B of `vp_recovery_realnc.py` and is written into §2.2
+      (floor and displacement tables, the multiplicative term) and §4.5
+      (identifiability) — see the closed recovery item above, including the
+      warning not to read the superseded `results/vp_recovery/`. **(b) is not
+      done.** Original text of both parts retained below.
+      (a) **Uₘ/Uₚ recovery analysis** — simulate voxels
       with a known unique-variance split at the measured SNR, ROI size and
       inter-band correlation and show `variance_partition` recovers both the
       split and the gradient rather than manufacturing one from correlated
