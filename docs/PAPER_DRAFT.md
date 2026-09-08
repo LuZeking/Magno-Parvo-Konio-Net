@@ -1518,19 +1518,35 @@ quantity reported here.
 `naturalscenesdataset.org` under its own data-use agreement, which requires
 registration; we used the `betas_fithrf_GLMdenoise_RR` (b3) preparation and the
 `nsdgeneral` mask. The Geirhos cue-conflict stimuli and human observer responses
-are distributed at `github.com/rgeirhos/texture-vs-shape` and
-`github.com/bethgelab/model-vs-human`. MiniEcoset is at `osf.io/msna2` (Thorat &
-Kietzmann, 2024). Derived results tables and the fitted encoding-model summaries
+are distributed at `github.com/rgeirhos/texture-vs-shape` under CC BY 4.0 (see
+*Materials*); we read the observer data from that repository's
+`raw-data/style-transfer-512-nomask-experiment/`. The same experiment is
+mirrored at `github.com/bethgelab/model-vs-human` under
+`raw-data/cue-conflict/`, and the two mirrors were parsed independently by two
+scripts that agree to four decimals on the human reference (mean 0.958, sd
+0.019, range 0.919–0.987), which is how that number was validated. MiniEcoset is
+at `osf.io/msna2` (Thorat & Kietzmann, 2024). Derived results tables and the fitted encoding-model summaries
 needed to reproduce every figure will be deposited with a DOI on acceptance.
 
 **Code availability.** Training, front-end, encoding, behavioural and analysis
 code will be released with a DOI and an environment manifest on acceptance. The
 modules that produce the numbers reported here are named by path in §4.1–§4.7.
 
-**Materials.** The cue-conflict stimulus set is the public Geirhos release, used
-unmodified apart from the 16-category and shape≠texture restrictions described
-in §4.3. **The licence of that release is being confirmed with the authors and
-will be stated before submission; we make no licence assertion here.**
+**Materials.** The cue-conflict stimulus set and the ten observers' trial-level
+responses are the public Geirhos release (Geirhos et al., 2019, data release),
+distributed under the **Creative Commons Attribution 4.0 International (CC BY
+4.0)** licence stated in that repository's `DATASET_LICENSE` file, which we
+verified against the file itself rather than inferring it from the repository
+page. We use the release under that licence, with attribution as given in the
+reference list. Our copy is the `raw-data/style-transfer-512-nomask-experiment/`
+directory (ten observers plus the three published CNN sessions). **Modifications,
+as CC BY 4.0 requires us to indicate:** we restricted the set to the 16
+categories and excluded the 80 trials whose shape and texture cue coincide, as
+described in §4.3, and we recomputed the observer summary statistics from the
+per-trial CSVs rather than using published aggregates; the stimulus images
+themselves are unmodified. Note the repository separately states that the
+ImageNet-derived *images* underlying the stylisation cannot be redistributed by
+its authors, which does not affect the observer response data we use.
 
 **Competing interests.** The authors declare no competing interests.
 
@@ -1608,6 +1624,12 @@ Geirhos, R., Rubisch, P., Michaelis, C., Bethge, M., Wichmann, F. A., & Brendel,
 W. (2018a). ImageNet-trained CNNs are biased towards texture; increasing shape
 bias improves accuracy and robustness. *International Conference on Learning
 Representations* (ICLR 2019). https://openreview.net/forum?id=Bygh9j09KX
+
+Geirhos, R., Rubisch, P., Michaelis, C., Bethge, M., Wichmann, F. A., & Brendel,
+W. (2019). *Data and code for "ImageNet-trained CNNs are biased towards
+texture"* [Data set]. GitHub. https://github.com/rgeirhos/texture-vs-shape
+(raw human observer data: `raw-data/style-transfer-512-nomask-experiment/`;
+licensed CC BY 4.0 per the repository's `DATASET_LICENSE`).
 
 Geirhos, R., Temme, C. R. M., Rauber, J., Schütt, H. H., Bethge, M., &
 Wichmann, F. A. (2018b). Generalisation in humans and deep neural networks.
@@ -2312,11 +2334,26 @@ Methods in §4.5.
       `tmp_analysis/geirhos_humans.py`, recorded in PLAN §52. Human mean 0.958;
       our CNN recomputation reproduces the published values. Every human
       reference stays directional; "human-like" stays out.
-- [ ] Cite the Geirhos **data release** as well as the ICLR paper. **Licence
-      not yet confirmed:** only the per-observer CSVs were fetched into
-      `/scratch/byrong/VST_data/geirhos_human_data/`, and no LICENSE or README
-      came with them, so the terms must be checked at the source repository
-      before submission. Do not assert a licence in the manuscript until then.
+- [x] **Geirhos data release cited and licence CONFIRMED 2026-09-08 — CC BY
+      4.0.** The terms were checked at the source rather than assumed: the
+      repository carries a `DATASET_LICENSE` file separate from any code
+      licence, and that file is the Creative Commons Attribution 4.0
+      International text. This matches what PLAN §52.4 had guessed, but §52.4
+      had flagged it as "confirm the licence file before submission" and the
+      guess is now replaced by the file. The manuscript states the licence in
+      *Materials*, names our exact source directory
+      (`raw-data/style-transfer-512-nomask-experiment/`), and — because CC BY
+      4.0 requires modifications to be indicated — lists ours: the 16-category
+      restriction, the exclusion of the 80 same-cue trials, and recomputation of
+      the observer summaries from per-trial CSVs, with the stimulus images
+      unmodified. A **data-release reference entry** is now in the reference
+      list alongside the four Geirhos paper entries, which is what §52.4
+      required and what the draft previously lacked.
+      One thing to keep straight: the repository README says the ImageNet-derived
+      *images* behind the stylisation cannot be redistributed by its authors.
+      That restriction is about those source images, not about the observer
+      response data this paper uses, and the two should not be conflated in any
+      later summary of the licence position.
 - [x] **Human benchmark is in the abstract** (2026-09-02), but as a *rate*
       comparison carrying its own qualification — the whole-model figure (0.692)
       is given alongside the stream figure (0.878), and the error-consistency
