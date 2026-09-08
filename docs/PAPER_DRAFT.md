@@ -1548,6 +1548,32 @@ themselves are unmodified. Note the repository separately states that the
 ImageNet-derived *images* underlying the stylisation cannot be redistributed by
 its authors, which does not affect the observer response data we use.
 
+**Software and code.** No software was used for data collection: both human
+datasets are existing public releases (see *Data availability*). Analysis ran
+under Python 3.11.15 with NumPy 2.4.6 (Harris et al., 2020), SciPy 1.17.1
+(Virtanen et al., 2020), PyTorch 2.13.0 (CUDA 13.0 build; Paszke et al.,
+2019), torchvision 0.28.0+cu130, himalaya 0.4.11 (Dupré la Tour et al., 2022)
+for the banded-ridge solver, scikit-learn 1.9.0 (Pedregosa et al., 2011),
+Matplotlib 3.11.1 (Hunter,
+2007), pandas 3.0.5, nibabel 5.4.2, h5py 3.16.0, Pillow 12.3.0, joblib 1.5.3 and
+tqdm 4.70.0. Every version above was read from the installed environment's
+package metadata rather than transcribed from memory. Jobs were scheduled with
+Slurm 25.11.8 on CPU nodes for all encoding, statistical and plotting work and
+GPU nodes for network training only. Cortical ROIs use the probabilistic atlas of
+Wang et al. (2015) as distributed with NSD (`prf-visualrois`, `prf-eccrois` and
+`streams`); the beta preparation is NSD's `betas_fithrf_GLMdenoise_RR` (b3). An
+environment manifest pinning these versions will be released with the code.
+
+*On RRIDs.* Nature-portfolio reporting asks for research-resource identifiers
+where a resource is registered. This study used no antibodies, cell lines,
+organisms or other wet-lab reagents, so those categories do not apply. For the
+software above we give name, exact version and, where one exists, the citation
+the authors ask for — which is what a reader needs to reconstruct the
+environment. We do not list SciCrunch RRIDs for the individual Python packages,
+because we have not verified registry entries for each one and an unverified
+identifier is worse than none; any that the journal requires will be taken from
+the registry at submission rather than asserted here.
+
 **Competing interests.** The authors declare no competing interests.
 
 ---
@@ -1649,6 +1675,10 @@ Goodale, M. A., & Milner, A. D. (1992). Separate visual pathways for perception
 and action. *Trends in Neurosciences*, 15(1), 20–25.
 https://doi.org/10.1016/0166-2236(92)90344-8
 
+Harris, C. R., Millman, K. J., van der Walt, S. J., Gommers, R., Virtanen, P.,
+Cournapeau, D., et al. (2020). Array programming with NumPy. *Nature*, 585,
+357–362. https://doi.org/10.1038/s41586-020-2649-2
+
 He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image
 recognition. *IEEE Conference on Computer Vision and Pattern Recognition*,
 770–778. https://doi.org/10.1109/CVPR.2016.90
@@ -1661,6 +1691,14 @@ Hubel, D. H., & Wiesel, T. N. (1968). Receptive fields and functional
 architecture of monkey striate cortex. *The Journal of Physiology*, 195(1),
 215–243. https://doi.org/10.1113/jphysiol.1968.sp008455
 
+Hunter, J. D. (2007). Matplotlib: A 2D graphics environment. *Computing in
+Science & Engineering*, 9(3), 90–95. https://doi.org/10.1109/MCSE.2007.55
+
+Islam, M. A., Kowal, M., Esser, P., Jia, S., Ommer, B., Derpanis, K. G., &
+Bruce, N. (2021). Shape or texture: Understanding discriminative features in
+CNNs. *International Conference on Learning Representations*.
+https://doi.org/10.48550/arXiv.2101.11604
+
 Jagadeesh, A. V., & Gardner, J. L. (2022). Texture-like representation of objects
 in human visual cortex. *Proceedings of the National Academy of Sciences*, 119,
 e2115302119. https://doi.org/10.1073/pnas.2115302119
@@ -1668,11 +1706,6 @@ e2115302119. https://doi.org/10.1073/pnas.2115302119
 Jagadeesh, A. V., & Livingstone, M. S. (2024). Texture bias in primate ventral
 visual cortex. *ICLR 2024 Workshop on Representational Alignment*.
 https://openreview.net/forum?id=D6YvyvZ7P7
-
-Islam, M. A., Kowal, M., Esser, P., Jia, S., Ommer, B., Derpanis, K. G., &
-Bruce, N. (2021). Shape or texture: Understanding discriminative features in
-CNNs. *International Conference on Learning Representations*.
-https://doi.org/10.48550/arXiv.2101.11604
 
 Jang, H., & Tong, F. (2021). Convolutional neural networks trained with a
 developmental sequence of blurry to clear images reveal core differences between
@@ -1754,6 +1787,10 @@ DeVito, Z., Raison, M., Tejani, A., Chilamkurthy, S., Steiner, B., Fang, L.,
 Bai, J., & Chintala, S. (2019). PyTorch: An imperative style, high-performance
 deep learning library. *arXiv*. https://doi.org/10.48550/arXiv.1912.01703
 
+Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O.,
+et al. (2011). Scikit-learn: Machine learning in Python. *Journal of Machine
+Learning Research*, 12, 2825–2830.
+
 Prince, J. S., Charest, I., Kurzawski, J. W., Pyles, J. A., Tarr, M. J., & Kay,
 K. N. (2022). Improving the accuracy of single-trial fMRI response estimates
 using GLMsingle. *eLife*, 11, e77599. https://doi.org/10.7554/eLife.77599
@@ -1782,6 +1819,11 @@ https://doi.org/10.1146/annurev.ne.19.030196.000545
 
 Thorat, S., & Kietzmann, T. C. (2024). MiniEcoset.
 https://doi.org/10.17605/OSF.IO/MSNA2
+
+Virtanen, P., Gommers, R., Oliphant, T. E., Haberland, M., Reddy, T.,
+Cournapeau, D., et al. (2020). SciPy 1.0: Fundamental algorithms for scientific
+computing in Python. *Nature Methods*, 17, 261–272.
+https://doi.org/10.1038/s41592-019-0686-2
 
 Wandell, B. A., Dumoulin, S. O., & Brewer, A. A. (2007). Visual field maps in
 human cortex. *Neuron*, 56(2), 366–383.
@@ -2354,6 +2396,32 @@ Methods in §4.5.
       That restriction is about those source images, not about the observer
       response data this paper uses, and the two should not be conflated in any
       later summary of the licence position.
+- [x] **Software, versions and the RRID question — DONE 2026-09-08.** A
+      *Software and code* statement now sits in the availability section with
+      every version **read from the installed environment's package metadata**
+      (`*.dist-info`) and independently cross-checked by importing each module
+      and printing `__version__`; the two agree on all fourteen. Python 3.11.15,
+      NumPy 2.4.6, SciPy 1.17.1, PyTorch 2.13.0+cu130, torchvision 0.28.0+cu130,
+      himalaya 0.4.11, scikit-learn 1.9.0, Matplotlib 3.11.1, pandas 3.0.5,
+      nibabel 5.4.2, h5py 3.16.0, Pillow 12.3.0, joblib 1.5.3, tqdm 4.70.0;
+      Slurm 25.11.8. The cross-check also established that **statsmodels and
+      scikit-image are not installed**, so neither can be behind any number here
+      — worth knowing, since both are easy to assume for statistical work.
+      Four software citations were missing and are now in the reference list
+      (NumPy: Harris et al. 2020; SciPy: Virtanen et al. 2020; scikit-learn:
+      Pedregosa et al. 2011; Matplotlib: Hunter 2007). PyTorch (Paszke) and
+      himalaya (Dupré la Tour) were already cited.
+      **RRIDs are deliberately not asserted.** No antibodies, cell lines or
+      organisms are involved, so those categories do not apply, and we have not
+      verified SciCrunch registry entries for the individual Python packages. An
+      unverified identifier is worse than none, so the statement says so plainly
+      and defers any journal-required RRIDs to submission. This is a disclosure,
+      not a gap to be closed by guessing.
+      *Also fixed while in the reference list:* it was not alphabetical. My four
+      insertions initially landed in one block before `Geirhos (2018a)`, and a
+      pre-existing error had `Islam et al. (2021)` filed after both Jagadeesh
+      entries. A throwaway order check over all 59 entries found both; the list
+      now passes it.
 - [x] **Human benchmark is in the abstract** (2026-09-02), but as a *rate*
       comparison carrying its own qualification — the whole-model figure (0.692)
       is given alongside the stream figure (0.878), and the error-consistency
