@@ -1411,7 +1411,7 @@ predictions failed and are reported as failures in the sections above.
 **What "pre-registered" means here, exactly.** These predictions were written
 into a version-controlled project plan (`docs/PAPER_PLAN.md`) and committed
 before the corresponding analysis was run, so the ordering is verifiable from
-the git history and the relevant commit hashes are given in the Supplementary.
+the git history and the relevant commit hashes are given in Supplementary Note S3.
 This is *internal pre-specification*, not registration with a public registry:
 there is no OSF or AsPredicted entry, no third party held the plan, and nothing
 prevented the plan itself from being revised. We use the term in that restricted
@@ -2212,6 +2212,50 @@ Methods in §4.5.
   and these fits are **untrained and single-seed** (Methods): they test the
   *input* as a model of colour cortex through the architecture prior — not a
   trained koniocellular stream, and no third stream was added.
+
+
+## Supplementary Note S3 — the pre-registration commit ledger
+
+§4.7 states that each pre-registered prediction was committed to
+`docs/PAPER_PLAN.md` before the corresponding analysis was run, and that the
+ordering is inspectable from the git history. This note gives the hashes, so the
+claim can be checked rather than taken on trust. All times are the commit's
+author time in `+0200`.
+
+| Draft section | Plan section | Declaring commit | Declared | Result available | Gap |
+|---|---|---|---|---|---|
+| §2.4 front-end 2×2 | §45 (ordering, and §45.5's read-only-after-all-32 rule) | `6bc04b8` | 2026-09-01 13:12:50 | job 26406434 first task ended 2026-09-01 15:03:23 | 1 h 50 m |
+| §2.5 inverted front end | §47.6 | `35d7af7` | 2026-09-01 19:01:33 | falsified in `9963cf3`, 2026-09-02 11:24:50 | 16 h 23 m |
+| §2.6.1 OOD families | §53 | `a45b8bb` | 2026-09-02 13:56:53 | first OOD result file 2026-09-02 15:46:49 | 1 h 50 m |
+| §2.6.2 error consistency | §57 | `b9c5296` | 2026-09-02 22:06:03 | κ sweep 2026-09-07 01:34:13 | 4 d 3 h |
+
+Three things this ledger does **not** establish, and we would rather name them
+than let the table imply them.
+
+*Git dates are author-controlled.* A commit's author and committer timestamps
+can both be set by the person making the commit. The ordering above is therefore
+an internal audit trail we are exposing, not a third-party attestation — exactly
+the restricted sense §4.7 defines. A referee who wants the ordering
+independently attested should treat it as unattested; nothing here can
+retroactively supply what a registry entry would have.
+
+*The plan came under version control after the project started.*
+`docs/PAPER_PLAN.md` was first committed on 2026-08-30, and the branch's first
+commit is 2026-08-25. Predictions made in the first five days of the project
+have no commit that predates their analysis, and none of the four listed above
+relies on that window — but the audit trail does not cover it, and we do not
+claim pre-specification for anything analysed before 2026-08-30.
+
+*Checking it requires the repository.* The hashes are only useful to a reader
+who can resolve them. The plan file and its history are therefore part of what
+the *Code availability* statement commits to depositing, not an artefact that
+stays private; a DOI deposit that ships the code without the plan would leave
+this table uncheckable.
+
+Two of the four predictions failed. §47.6's falsification is in the table above;
+both failures are reported as failures in the sections that carry them, which is
+the only reason the ledger is worth publishing at all — a pre-registration
+ledger that never records a loss is not evidence of anything.
 
 
 ## Open items before submission
