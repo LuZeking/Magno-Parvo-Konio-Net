@@ -100,8 +100,11 @@ taking RGB pixels as input.
 
 **(ii) That input is not stationary over development.** Infant acuity and
 contrast sensitivity are poor and improve over the first years; the visual
-system learns first from a low-passed world. A *developmental visual diet* (DVD)
-implements this as a transform on the achromatic channel.
+system learns first from a low-passed world. A *developmental visual diet* (DVD;
+Lu et al., 2026) implements this as a transform on the achromatic channel. The
+term and the construct are theirs; §4.1 states the parameterisation we use, which
+evaluates the age-dependent contrast-sensitivity cut at a fixed 48 months rather
+than scheduling it over training.
 
 **(iii) Shape bias is measured behaviourally and interpreted
 representationally.** The field's standard instrument is a behavioural rate on
