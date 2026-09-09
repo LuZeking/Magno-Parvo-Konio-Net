@@ -117,8 +117,7 @@ four simulations, and it is deliberate: see Consensus Strengths 1.
    `setup.cfg` `install_requires` carries no version pins at all (`torch`,
    `numpy`, `torchvision` unbounded); three dependencies are git URLs to lab
    repositories with no pinned commit (`lightning_kietzmannlab`, `neuroai`,
-   `nsd_visuo_semantics`); **the `DVD` package that implements the paper's core
-   front-end transform is commented out** of that list; `python_requires = >=3.8`
+   `nsd_visuo_semantics`); `python_requires = >=3.8`
    contradicts the manuscript's stated Python 3.11.15; `README.md` is unmodified
    cookiecutter boilerplate for an upstream package (`pip install two_stream_dvd`,
    with KietzmannLab PyPI/codecov badges) and contains no path from a command to a
@@ -162,9 +161,9 @@ four simulations, and it is deliberate: see Consensus Strengths 1.
 2. What does a permutation null over hierarchical-rank labels across the 20 Kastner
    ROIs return for the V1v→hV4 gradient? That is the one calibration that speaks
    to selection rather than confounding, and the exact-test floor cannot supply it.
-3. Will the code, a pinned environment manifest, and the `DVD` front-end
-   dependency at a fixed commit be available to referees at review rather than on
-   acceptance? If any part must be withheld, what is the specific reason?
+3. Will the code and a pinned environment manifest be available to referees at
+   review rather than on acceptance? If any part must be withheld, what is the
+   specific reason?
 4. Two residual provenance gaps in §2.2 are disclosed but unexplained — the diet
    column (whose solve requires a subject-01 value outside all 48 observed cells)
    and the untrained control, which moved in the opposite direction. Can the diet
@@ -197,7 +196,7 @@ and two in M sit just short of the "≥ 2 Fails in O or M" threshold.
   the third-party remote).
 - README adequate: **no** — upstream cookiecutter boilerplate.
 - Pinned dependencies: **no** — unpinned, plus three unpinned git URLs.
-- Core dependency present: **no** — `DVD` is commented out of `install_requires`.
+- Lab git dependencies actually required by the reported path: **none** — verified by grep; the `DVD` entry is correctly commented out because the front-end transform is implemented in-tree.
 - Seeds documented and used: **yes** — seeds 0/1/2 throughout, reported per cell.
 - Configs version-controlled: **yes** — 49 sbatch scripts, 249 Python modules,
   named by path in §4.1–§4.7.
@@ -214,7 +213,7 @@ and two in M sit just short of the "≥ 2 Fails in O or M" threshold.
 
 1. **Nonlinear-readout sweep** (§2.3). One MLP head over cached frozen features,
    3 seeds. Answers the highest-value objection. ≈ 1 day, no trunk retraining.
-2. **Pinned environment manifest + rewritten README + `DVD` at a fixed commit.**
+2. **Pinned environment manifest + rewritten README.**
    Turns a Major-revision trigger into a Pass. ≈ 1 day, no compute.
 3. **Permutation null over ROI rank labels** (§2.2b). Selection-aware calibration
    for the load-bearing cortical claim. ≈ 1 day CPU.
@@ -273,8 +272,7 @@ out-of-distribution robustness, and trial-by-trial agreement with human observer
    availability* statement defers release to acceptance. NMI's policy is that such
    code be available during review. Separately, the repository as it stands cannot
    be installed: `setup.cfg` pins nothing, three dependencies are unpinned git
-   URLs, the `DVD` package implementing your front end is commented out of
-   `install_requires`, `python_requires = >=3.8` contradicts the Python 3.11.15 in
+   URLs, `python_requires = >=3.8` contradicts the Python 3.11.15 in
    your *Software and code* statement, and `README.md` is unmodified template text
    for an upstream package. Your manuscript-level version reporting is unusually
    thorough; please make the repository match it, and add a path from one command
@@ -407,6 +405,31 @@ partitioning, cue-conflict methodology and reproducibility standards; less
 expert on the developmental-vision literature the front end implements. No
 conflicts.
 
+## Corrections to this review, and what was remediated
+
+*Correction (2026-09-09, after the review was written).* Weakness 3 and major
+comment 3 originally asserted that "the `DVD` package that implements the
+paper's core front-end transform is commented out of `install_requires`". That
+was wrong and has been struck above. `DVD` is imported nowhere in `src/` or
+`tmp_analysis/`; the developmental front-end transform is implemented in this
+repository at `src/analysis/encoding/dkl_frontend.py`, so the commented-out
+entry is correct rather than a defect. The check also showed something stronger
+than the original criticism allowed: **no module named in Methods §4.1–§4.7
+imports any of the four laboratory git dependencies** —
+`standalone_trainer.py`, `run_encoding.py`, `dkl_frontend.py`,
+`cue_conflict.py` and `stream_shape_texture.py` import none of them.
+
+*Remediated the same day, for the reproducibility axis:* `requirements.txt`
+added with exact pins read from installed package metadata (including kornia
+0.8.3, which the manuscript's software statement had omitted despite §4.2 using
+it); `README.md` rewritten from upstream cookiecutter boilerplate to a real
+reproduction path leading with a single no-data no-GPU verification command,
+with every path it names checked to exist and the encoding stage's ~160G
+footprint stated; `setup.cfg` `python_requires` corrected to `>=3.11` (was
+`>=3.8`) with classifiers updated to match. The remaining reproducibility gaps
+are the unpinned git URLs, the absent DOI, and code release still deferred to
+acceptance.
+
 ## Per-reviewer reviews (JSON)
 
 ```json
@@ -425,7 +448,7 @@ conflicts.
     "[§2.2(b)]: one surviving regional hypothesis of seven, selected post hoc; the four controls offered address confounding, not selection, as the section concedes.",
     "[§2.4]: the accuracy-matched control rests on a single training run (n=1), acknowledged, but it is the control that rules out the paper's most dangerous confound.",
     "[§2.5]: one cached checkpoint trajectory per arm, so the claim that the diet stabilises the side of parity rather than the control arm drifting late is explicitly not promoted; that leaves §2.5's mechanism under-determined.",
-    "[repository]: unpinned dependencies, three unpinned git URLs, DVD commented out of install_requires, python_requires>=3.8 vs stated 3.11.15, template README."
+    "[repository]: unpinned dependencies, three unpinned git URLs with no fixed commit, python_requires>=3.8 vs stated 3.11.15, template README that documents an unrelated upstream package."
   ],
   "Questions": [
     "Does the w-sweep's span and monotonicity survive a nonlinear fusion or head over the same frozen features?",

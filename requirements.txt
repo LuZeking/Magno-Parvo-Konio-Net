@@ -1,0 +1,61 @@
+# Pinned analysis environment for
+#   "Shape-biased behaviour does not require shape-biased representations"
+#
+# Every version below was read from the installed environment's package
+# metadata (importlib.metadata) on 2026-09-09, not transcribed from memory.
+# This is the environment that produced the numbers in docs/PAPER_DRAFT.md
+# and is the manifest its "Software and code" statement refers to.
+#
+#   python 3.11.15
+#
+# Install:  pip install -r requirements.txt
+
+numpy==2.4.6
+scipy==1.17.1
+torch==2.13.0                 # CUDA 13.0 build; GPU needed for training only
+torchvision==0.28.0
+kornia==0.8.3                 # DVD-B augmentation set, applied on GPU (Methods 4.2)
+himalaya==0.4.11              # banded-ridge solver (Methods 4.5)
+scikit-learn==1.9.0
+matplotlib==3.11.1
+pandas==3.0.5
+nibabel==5.4.2
+h5py==3.16.0
+pillow==12.3.0
+joblib==1.5.3
+tqdm==4.70.0
+
+# ---------------------------------------------------------------------------
+# Laboratory dependencies, and their actual status in this tree
+# ---------------------------------------------------------------------------
+# setup.cfg additionally lists four KietzmannLab git dependencies. Their real
+# role here is much narrower than that list implies, and the useful fact is
+# this: NONE of the modules Methods 4.1-4.7 names imports any of them.
+# Verified by grep over src/ and tmp_analysis/ on 2026-09-09 --
+# src/training/standalone_trainer.py (the trainer the Methods names),
+# src/analysis/encoding/{run_encoding,dkl_frontend}.py and
+# src/analysis/behavior/{cue_conflict,stream_shape_texture}.py import zero of
+# them; they need only the pinned packages above plus this repository.
+#
+#   neuroai (Neuro-vs-AI)      VENDORED in-tree at src/analysis/neuroai/, so
+#                              `from neuroai...` resolves to that copy rather
+#                              than to the git dependency. Observed upstream
+#                              commit of the local checkout: 5df1dd6.
+#   lightning_kietzmannlab     Imported by src/training/lightning_trainer.py,
+#                              src/models/lightning_two_stream_model.py,
+#                              src/analysis/two_stage_prediction.py and
+#                              src/analysis/metrics.py -- the alternative
+#                              PyTorch-Lightning training path. The manuscript's
+#                              models come from standalone_trainer.py, which
+#                              does not use it.
+#   nsd_visuo_semantics        Imported only by
+#                              src/analysis/lab_analyses/roi_utils.py, which is
+#                              not on the path to any reported number.
+#   DVD                        Commented out in setup.cfg, and correctly so:
+#                              the developmental front-end transform is
+#                              implemented in this repository at
+#                              src/analysis/encoding/dkl_frontend.py rather than
+#                              imported from the DVD package.
+#
+# So the verification entry point in README.md, and the whole analysis path,
+# run from the pinned list above with no laboratory git dependency at all.

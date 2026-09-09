@@ -839,6 +839,31 @@ within the diet arm's observed seed range and not an equivalence test; that
 single checkpoint is also a late one, and the diet arm is the one that degrades
 late, which makes the agreement conservative rather than flattering.
 
+**This differs from the source of the diet, and we state how rather than leave
+it to be noticed.** The developmental visual diet implemented here is Lu et
+al.'s (2026), whose title reports that adopting it *yields robust, shape-based
+AI vision*. We reproduce the shape-based half — their released benchmark
+summary gives their `resnet50-DVD-B` a mean cue-conflict shape bias of 0.822,
+and our diet-trained magno stream reaches 0.878 — and we do not reproduce the
+robust half. Three differences are declared in our Methods rather than
+discovered here, and any of them could carry the divergence. *(i)* Our front
+end is evaluated at a **fixed** 48 months rather than scheduled across training
+(§4.1) — and this is the one we can rule out, because the schedule-trained arm
+above behaves like the static diet, not like the no-diet control. *(ii)* Our
+diet is a front-end transform on the DKL luminance channel of a **two-stream**
+network whose second stream never receives it, not an augmentation applied to a
+single trunk's input. *(iii)* We train on MiniEcoset at 112 classes and score
+corruptions in that native label space, applied *before* the front end (§4.6),
+so each model meets the corruption through its own optics; the families and
+severities are our declaration. We cannot determine which difference matters
+from the public release, because the benchmark data accompanying it carries
+cue-conflict responses for those models and no corruption benchmarks, so their
+checkpoints cannot be scored through this battery from released data alone.
+What we claim is correspondingly bounded: **in this implementation, at this
+fixed age, in this architecture, shape bias and robustness came apart** — not
+that a developmental diet cannot deliver robustness in the setting its authors
+report.
+
 > **The claim.** Shape bias and OOD robustness are not intrinsically coupled.
 > This does not contradict Geirhos et al., who showed that *Stylized-ImageNet
 > training* produces models that are both shape-biased and robust. It shows the
@@ -1549,8 +1574,14 @@ at `osf.io/msna2` (Thorat & Kietzmann, 2024). Derived results tables and the fit
 needed to reproduce every figure will be deposited with a DOI on acceptance.
 
 **Code availability.** Training, front-end, encoding, behavioural and analysis
-code will be released with a DOI and an environment manifest on acceptance. The
-modules that produce the numbers reported here are named by path in §4.1–§4.7.
+code will be released with a DOI on acceptance; the pinned environment manifest
+(`requirements.txt`) and the reproduction path are already in the repository,
+whose `README.md` gives a single command that re-derives reported numbers from
+the committed result files without any dataset download or GPU. The
+modules that produce the numbers reported here are named by path in §4.1–§4.7,
+and none of them imports any of the four laboratory git dependencies
+`setup.cfg` also lists — the manifest's header records where each of those is
+actually used.
 
 **Materials.** The cue-conflict stimulus set and the ten observers' trial-level
 responses are the public Geirhos release (Geirhos et al., 2019, data release),
@@ -1576,13 +1607,15 @@ under Python 3.11.15 with NumPy 2.4.6 (Harris et al., 2020), SciPy 1.17.1
 for the banded-ridge solver, scikit-learn 1.9.0 (Pedregosa et al., 2011),
 Matplotlib 3.11.1 (Hunter,
 2007), pandas 3.0.5, nibabel 5.4.2, h5py 3.16.0, Pillow 12.3.0, joblib 1.5.3 and
-tqdm 4.70.0. Every version above was read from the installed environment's
+tqdm 4.70.0, and kornia 0.8.3 for the GPU augmentation set of §4.2. Every
+version above was read from the installed environment's
 package metadata rather than transcribed from memory. Jobs were scheduled with
 Slurm 25.11.8 on CPU nodes for all encoding, statistical and plotting work and
 GPU nodes for network training only. Cortical ROIs use the probabilistic atlas of
 Wang et al. (2015) as distributed with NSD (`prf-visualrois`, `prf-eccrois` and
 `streams`); the beta preparation is NSD's `betas_fithrf_GLMdenoise_RR` (b3). An
-environment manifest pinning these versions will be released with the code.
+environment manifest pinning these versions is in the repository as
+`requirements.txt`, generated from that same package metadata.
 
 *On RRIDs.* Nature-portfolio reporting asks for research-resource identifiers
 where a resource is registered. This study used no antibodies, cell lines,
