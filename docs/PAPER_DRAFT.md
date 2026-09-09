@@ -1583,10 +1583,16 @@ because we have not verified registry entries for each one and an unverified
 identifier is worse than none; any that the journal requires will be taken from
 the registry at submission rather than asserted here.
 
-**Reporting Summary.** The content for every item of the Nature Behavioural &
-Social Sciences Reporting Summary is drafted in `docs/REPORTING_SUMMARY.md`, so
+**Reporting Summary.** The content for every item of the Nature-portfolio
+Reporting Summary is drafted in `docs/REPORTING_SUMMARY.md`, so
 that completing the journal's form at submission is transcription rather than
-recall and each entry has a source in the repository. Two of its items cannot be
+recall and each entry has a source in the repository. The form itself is
+supplied by the journal at submission; the content was drafted against the
+Behavioural & Social Sciences variant, and the items it covers — statistics,
+software and code, data, human participants, and study design — are common to
+the Nature-portfolio variants. Machine-learning reporting items (data
+provenance and splits, leakage controls, optimisation, model and baselines,
+evaluation) are stated in §4.1–§4.7. Two of its items cannot be
 completed from the data we hold and are marked as gaps in place rather than
 filled: participant age and sex (not present in the behavioural release, and not
 in the NSD subset we mirrored), and non-participation during the original
@@ -2488,7 +2494,14 @@ ledger that never records a loss is not evidence of anything.
       `docs/REPORTING_SUMMARY.md`, all seven sections of the Behavioural &
       Social Sciences form, every entry sourced to §4.1–§4.7 or measured from the
       repository. It is the *content*, not the PDF; the journal supplies the
-      fillable form at submission.
+      fillable form at submission. **The 2026-09-09 move to NMI does not
+      invalidate it**: the sections it covers are common to the
+      Nature-portfolio variants and none was written to a venue-specific
+      prompt, so it transfers item for item. What NMI adds on top is
+      machine-learning reporting, which §4.1–§4.7 already state and which the
+      NMI simulation audits against DOME
+      (`docs/NMI_REVIEW_2026-09-09.md`) — no D or E failures, four Partials
+      across O and M.
       **Two items are marked GAP rather than filled**, which is the point of
       doing this early. (i) *Population characteristics* — participant age and
       sex. The Geirhos per-observer files carry only trial-level fields and no
@@ -2521,8 +2534,35 @@ ledger that never records a loss is not evidence of anything.
       `fig1_diet_gradient.{png,pdf}` → `fig2_ventral_gradient.{png,pdf}`,
       caption → `fig2_ventral_gradient_caption.md`. It is §2.2(b)'s evidence;
       Figure 1 is the four-panel convergence figure (PLAN §51.4).
-- [x] **Venue: NHB** (decided 2026-09-02, re-confirmed 2026-09-06 after the
-      reframe). NeurIPS/NMI dropped — there is no ML payoff to report, only
+- [x] **Venue: NMI** (changed 2026-09-09, at the author's direction). The
+      transferable result for a machine-intelligence readership is the
+      measurement one — a shape-bias rate is a property of the readout, does
+      not identify a representation (§2.3), and does not track human decision
+      structure (§2.6.2: never above 20.7% of the human–human κ ceiling across
+      189 readouts with `w` optimised post hoc per seed). NMI's scope covers
+      evaluation work of broad implication, and the paper's primary
+      interlocutor (Lu et al., 2026) published there. A referee simulation at
+      commit `911ba8a` (`docs/NMI_REVIEW_2026-09-09.md`) returns **Major
+      revision, 6.85/10**, above NHB v2's 6.4 and Nat Neurosci's 6.09 — but
+      **not a clean comparison**: NMI was scored against a materially later
+      draft, so part of that margin is draft improvement rather than venue fit,
+      and a like-for-like statement needs NHB and NN re-run at `911ba8a`. All
+      three personas send it out or discuss and none votes the significance
+      gate down. Six major comments, three of them cheap: a nonlinear-readout
+      sweep over cached features, a pinned environment manifest, and the
+      permutation null over ROI rank labels.
+      **The earlier reasoning for dropping NMI was too narrow, and is kept
+      below rather than deleted.** It read "no ML payoff" as requiring a
+      performance win; the payoff here is a negative result about a metric the
+      vision-model community uses constantly, which is inside NMI's remit. What
+      that reasoning got right survives as the simulation's major comment 6 —
+      the Discussion still disclaims any training recommendation and calls the
+      work's interest developmental, so the measurement result has to be
+      re-led, not assumed to carry.
+- [x] **Superseded venue record — NHB** (decided 2026-09-02, re-confirmed
+      2026-09-06 after the reframe; superseded 2026-09-09).
+      NeurIPS/NMI dropped at the time — there was judged to be no ML payoff to
+      report, only
       costs on accuracy, stability and robustness (PLAN §56.6). Under the
       *first* draft's framing the claim was about what makes a CNN
       shape-biased, and an internal referee simulation returned reject-with-
@@ -2610,7 +2650,24 @@ ledger that never records a loss is not evidence of anything.
       ventral texture finding is not about chromaticity. The concession exists
       only in Limitations while the title and abstract present the resolution
       without it (v2 referee sim, M2).
-- [~] **Length — editorial pass done; ~6,830 words.** Main text is **~6,830
+- [~] **Length — the 2026-09-07 pass has regressed; re-measured 2026-09-09.**
+      Main text is now **~10,560 body words** (11,578 raw, including table rows
+      and headings) against NMI's ≈3,000–5,000, with **14 display items** — 9
+      tables, only one of them numbered, plus Figures 1–5 — against a cap of
+      6–8. The ~6,830-word figure below dates from commit `b98736a`
+      (2026-09-07) and **18 draft commits have landed since**: the main text has
+      grown back past its own pre-cut figure of 10,002, almost entirely through
+      added disclosure prose in §2.2 and §2.6 — the withdrawn framings, the
+      provenance solve, the residual-misfit analysis and its six-variant
+      sensitivity table. None of that should be dropped on the merits; it is the
+      self-correction record and it is why the draft's soundness holds up. But
+      it belongs in Extended Data and Supplementary Note S1, not in Results,
+      where it currently stands between the reader and the surviving claim.
+      **This is now the largest single submission blocker**, and the NMI
+      simulation raises it as major comment 5
+      (`docs/NMI_REVIEW_2026-09-09.md`). The original pass is kept below for
+      what it moved and why.
+      *Superseded measurement (2026-09-07):* main text was **~6,830
       words** against NHB's ≈4,000–6,000 and NN's ≈3,000–5,000, down from
       **10,002** — a 32% cut — with **8 display items** (5 tables + 3 figures)
       against a cap of 8, down from 15. The cut was executed as a *move*, not a

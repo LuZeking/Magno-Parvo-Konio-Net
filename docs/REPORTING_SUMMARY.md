@@ -3,8 +3,18 @@
 **Purpose.** The Nature-portfolio Reporting Summary is a fillable PDF supplied by
 the journal at submission. This file holds the *content* for each of its items so
 that filling the form is transcription rather than recall, and so that every
-entry has a source in the repository. Venue is NHB (draft log, 2026-09-02,
-re-confirmed 2026-09-06), so the **Behavioural & Social Sciences** form applies.
+entry has a source in the repository. **Venue changed to NMI on 2026-09-09**
+(draft log; previously NHB, decided 2026-09-02 and re-confirmed 2026-09-06).
+
+The content below was drafted against the **Behavioural & Social Sciences**
+variant and transfers item for item: statistics, software and code, data, human
+participants and study design are common to the Nature-portfolio variants, and
+the form the journal supplies at submission governs which labels apply. Nothing
+below was written to a venue-specific prompt. What NMI adds is
+machine-learning reporting — data provenance, splits and leakage controls,
+optimisation, model and baselines, evaluation — which is stated in
+`PAPER_DRAFT.md` §4.1–§4.7 and audited item by item against DOME in
+`docs/NMI_REVIEW_2026-09-09.md`.
 
 **Status.** Every factual entry below is either read from the code and results
 files or cited to the section of `PAPER_DRAFT.md` that states it. Two items
