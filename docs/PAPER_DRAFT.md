@@ -1109,9 +1109,20 @@ than the network's own decision, and in the second the representation does not
 stay fixed. Here it does. The classifier is affine and the two fusion weights
 sum to one, so `clf(w*y1 + (1-w)*y2) = w*clf(y1) + (1-w)*clf(y2)` holds exactly
 (§2.3; maximum deviation 1.1 × 10⁻⁶). The shape-bias rate
-therefore sweeps 0.373 to 0.913 -- most of the attainable range, and across the
-human value -- while both representations stay bit-identical and the sweep is
-exact linear interpolation rather than an empirical trend. The rate is not
+therefore sweeps 0.373 to 0.913 -- most of the range the field's models occupy --
+while both representations stay bit-identical and the sweep is
+exact linear interpolation rather than an empirical trend. *The sweep does not
+reach the human value, and an earlier version of this sentence said it ran
+"across" it.* Its maximum over all 21 weights, 3 seeds and both checkpoint
+policies is **0.913** (seed 1, best checkpoint, w = 1), which sits below the
+**lowest individual observer** (0.919) and 0.045 below the human mean --
+the same bound §2.7 and Limitation 7 already state for the single best stream,
+which the earlier wording contradicted. That is a limit on the whole readout
+family rather than a caveat about one operating point, and it sharpens this
+section's claim instead of softening it: a single scalar moves the rate across
+most of the modelled range **without the family ever reaching a human
+observer**, so a rate near the human one would identify neither a
+representation nor a decision process. The rate is not
 merely an underestimate of the shape information present: within this family it
 is a free parameter of the readout, so a rate measured at one operating point
 constrains the representation no further than the family's range already does.
