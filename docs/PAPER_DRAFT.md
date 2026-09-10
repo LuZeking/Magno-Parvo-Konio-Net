@@ -664,8 +664,33 @@ readout weight was given every opportunity to succeed and did not, this is a
 before any interval was computed (PLAN §77.5, §78) exclude a kappa change
 larger than **0.037, 15.8% of the ceiling**, across the observed 0.706 span of
 shape bias. Spanning 5x in shape bias moves trial-level agreement with humans
-by at most a sixth of the ceiling. Per-`w` values and the full table: Extended
-Data §E6.3; method §4.3 and `tmp_analysis/sweep_error_consistency.py`.
+by at most a sixth of the ceiling. Per-`w` values and the full table: Extended Data §E6.3; method §4.3 and
+`tmp_analysis/sweep_error_consistency.py`.
+
+**The bound holds against a weight fitted to each observer individually, not
+only across a grid.** A grid leaves open whether some weight we did not try
+would match some particular person, so we fitted `w` per observer on a 0.001
+grid, bounding both selections — over weights and over observers — with a
+permutation null and cross-validating the fitted weight (PLAN §106,
+pre-registered). Neither estimator finds a human-like readout. **No observer's
+rate is reachable at all** (0 of 90 observer-runs; the closest approach misses
+subject-04, the lowest observer, by 0.027, and seven of ten observers are
+unreachable in every bootstrap replicate). And the fitted weight does not
+generalise: in-sample **+0.068** falls to **+0.026** held out against
+**+0.023** for an arbitrary weight, beating that floor in 45 of 90 — a coin
+flip. Ten observers viewing identical images give fitted weights spanning 0.231
+to 1.000.
+
+*Two complications travel with that, and neither is buried.* The **no-diet arm
+does exceed its permutation null** (p ≤ .004) where the diet arm never does (p
+= .18, .35) — but permutation destroys model–observer correspondence
+altogether, so clearing it shows only that *some* trial-level agreement exists,
+which this section already grants at 7–18% of ceiling, and for that arm's
+winning observer the agreement is present at any weight (held-out +0.102
+against a +0.071 no-fitting floor). And the diet arm's null is the *higher* of
+the two, because its family sweeps rate 0.37–0.91 against 0.31–0.46: **a wider
+readout family gives a permuted observer more chances to match.** Extended Data
+§E6.3.3.
 
 *The null is specific to the decision, not a property of the instrument.* Kappa
 scores one binary response per image, so a reader may reasonably ask whether a
@@ -854,10 +879,12 @@ of all.
 The readout account makes a prediction beyond this architecture: in any system
 whose behaviour is measured by a cue-conflict rate, that rate should be
 recoverable from a weighted combination of component biases, and moving the
-weighting should move the rate without moving any component. §2.3 tests it
-directly. What remains open is the *learned* version — a weighting fitted to
-data rather than swept, and whether any principled objective selects the human
-operating point. Nothing here selects it.
+weighting should move the rate without moving any component. §2.3 tests it directly, and the *learned* version is no longer open: fitted to
+each of the ten observers individually, `w` reaches **no observer's rate at
+all** (0/90 runs) and the fitted weight **does not survive cross-validation**
+(§2.6.2). Whether any *principled* objective selects the human operating point
+remains open, and nothing here selects it — fitting a scalar to imitate an
+observer is not such an objective.
 
 What does not generalise is any recommendation to use a developmental diet as a
 training method. It makes models less accurate (0.556 against 0.701 at the best
@@ -1586,9 +1613,14 @@ https://doi.org/10.1038/nn.4244
    stability across image samples, not to population inference. The encoding and
    behavioural results are not affected.
 7. **The human comparison is directional only.** The best stream (0.878) is
-   below the lowest individual human observer (0.919), and the integrated readout
-   (0.675) is far below. Human data is in hand and cited (§52); what is not
-   available is any basis for a matching claim.
+   below the lowest individual human observer (0.919), and the integrated
+   readout (0.675) is far below. The gap is now quantified rather than merely
+   directional: sweeping `w` on a 0.001 grid, the closest any readout of these
+   components comes to any individual observer's rate is **0.0273** [0.0051,
+   0.0473], against subject-04, the lowest of the ten. It is not a knife-edge —
+   that observer is inside the family in 10.8% of item-bootstrap replicates and
+   seven of the ten observers are reached in none. Human data is in hand and
+   cited (§52); what is not available is any basis for a matching claim.
 8. **Single-trainer accuracy discrepancy, unexplained.** The thesis checkpoint's
    *behavioural* number reproduces (§18.2) but its *accuracy* does not; the
    discrepancy is isolated to the classification evaluation path, not the
@@ -1626,10 +1658,14 @@ https://doi.org/10.1038/nn.4244
    frozen components, which is the readout account's central dependence measured
    rather than argued — but it cuts both ways: **the model's headline 0.675 is a
    consequence of an arbitrary hyperparameter**, not a property the system
-   arrived at. No w was fitted to human data and nothing here estimates the
-   weighting a human readout would use. The claim is that *a* mixing readout over
-   oppositely biased components yields shape-biased behaviour, not that this is
-   the human mixture.
+   arrived at. `w` has since been fitted to each of the ten observers, and no better choice
+   of the hyperparameter exists: no observer's rate is reachable at any weight
+   in any run (0/90), and the trial-fitted weight does not cross-validate
+   (§2.6.2, Extended Data §E6.3.2). So the headline 0.675 remains a consequence
+   of an arbitrary hyperparameter — but it is now known that the arbitrariness
+   cannot be repaired by a better choice within this family. The claim is that
+   *a* mixing readout over oppositely biased components yields shape-biased
+   behaviour, not that this is the human mixture.
 15. **The species scope of the motivating premise is mixed.** One human study
    (Jagadeesh & Gardner, 2022) and a macaque literature (Okazawa et al., 2015;
    Jagadeesh & Livingstone, 2024; Komatsu & Goda, 2018) motivate the paradox.

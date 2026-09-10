@@ -1206,6 +1206,85 @@ network rather than inferred across a model zoo. And the diet buys nothing here
 even with the readout optimised: the no-diet arm reaches the same ceiling
 fraction (17.3–18.0%) as the diet arm (7.6–20.7%).
 
+### E6.3.3 — fitting `w` to individual observers (§106)
+
+Pre-registered as PLAN §106 before any fit was computed, on a grid already on
+disk; §106.10 fixed the collapse condition and §106.12 declared in advance how
+a winner flip under per-observer normalisation should be read. One prediction
+(§106.7, a fitted-`w` kappa below 25% of ceiling) was **withdrawn rather than
+revised** when a smoke run returned 38.2%, and the two controls below were
+logged as post-hoc before the array ran. That 38.2% is now understood: it
+reproduces exactly on the coarse 21-weight grid, is the *smallest* of the nine
+runs (family 38.2–61.1%), and is a doubly-selected statistic not comparable to
+§2.6.2's mean-over-observers one
+(`tmp_analysis/perobserver_selection_check.py`).
+
+*Grid provenance.* The 0.001 grid and §2.6.2's published 0.05 grid agree to
+1.4–3.0 × 10⁻⁸ at every shared weight in all nine runs. They score different
+paths — direct against interpolated logits, differing by 3.6 × 10⁻⁵ — so
+agreement at 10⁻⁸ means no decision flips anywhere.
+
+**E1 — is any observer's rate reachable?** No, in any run, under either policy.
+
+| arm | attainable | family max rate | \|rate − closest reachable\| |
+|---|---|---|---|
+| diet, best saved | **0/30** | 0.9040 [0.8901, 0.9140] | 0.0536 [0.0051, 0.0965] |
+| diet, final | **0/30** | 0.8796 [0.8717, 0.8937] | 0.0780 [0.0254, 0.1149] |
+| no diet, final | **0/30** | 0.4377 [0.4141, 0.4614] | 0.5199 [0.4577, 0.5725] |
+
+The closest approach in the study is **subject-04**, the lowest of the ten
+observers at 0.9191, missed by **0.0273** [0.0051, 0.0473]. It is not a
+knife-edge: that observer falls inside the family in 10.8% of item-bootstrap
+replicates, subject-02 and subject-07 in 0.2% and 0.4%, and the remaining
+**seven of ten in none**.
+
+**E2 and Control A — the trial-fitted weight does not cross-validate.** Fitted
+`w` spans 0.231–1.000 across the ten observers (sd 0.24–0.29 by arm). The full
+held-out vector is reported, never its maximum, and a joint form puts the
+observer choice inside the fold.
+
+| arm | in-sample | held-out | no-fitting floor | held-out above floor |
+|---|---|---|---|---|
+| diet, best saved | +0.0776 | +0.0232 | +0.0208 | 17/30 |
+| diet, final | +0.0743 | +0.0220 | +0.0214 | 11/30 |
+| no diet, final | +0.0532 | +0.0333 | +0.0280 | 17/30 |
+| **all 90 observer-runs** | **+0.0684** | **+0.0262** | **+0.0234** | **45/90** |
+
+62% of in-sample agreement is fitting. What survives sits +0.0028 above what an
+arbitrary weight gives and beats it in half the runs.
+
+**Control B — joint permutation null, both selections bounded.** Each replicate
+permutes all ten observers, takes each observer's argmax over `w`, then the
+best of ten, so the null is of the same doubly-selected statistic as the
+observation. Figures are reported against the pooled ceiling and each
+observer's own.
+
+| arm | observed | null | p | winners (own-ceiling) | corr(null wins, 1/ceiling) |
+|---|---|---|---|---|---|
+| diet, best saved | +0.1148 | +0.1016 | .349 | subject-09 ×2, subject-02 | +0.736 |
+| diet, final | +0.1318 | +0.1002 | .185 | subject-05, -04, -02 | +0.611 |
+| no diet, final | +0.1152 | +0.0470 | **.002** | subject-02 ×3 | +0.106 |
+
+Three things to read from it. The diet arm never separates from its own null.
+The diet arm's null is nonetheless *higher* than the no-diet arm's (+0.10
+against +0.047) because its family sweeps rate 0.37–0.91 against 0.31–0.46 —
+**a wider readout family gives a permuted observer more chances to match**. And
+the **denominator channel predicted in §E6.3 fired**: under per-observer
+normalisation the winner flips from subject-03 (own ceiling 1.237× pooled) to
+subject-09 (0.483× pooled, the observer least predicted by other humans) in two
+of three diet/best seeds, null-win share correlates with 1/ceiling at +0.736 /
++0.611 / +0.106 under that normalisation and *negatively* under the pooled one,
+and subject-09 takes 15.6% of null wins against subject-03's 2.8%. §106.12
+declared in advance that such a flip argues against a positive rather than for
+one.
+
+*Not overcorrected.* Overlap with a null at these sample sizes is absence of
+evidence, not evidence of absence. The claim is that **this design cannot fit
+the readout weight to a human observer**, not that no readout of these
+components could track one. Per-run values: `results/fit_w_observers/`
+(`SUMMARY.txt`, plus a per-run `.npz` archiving the raw curves and null
+matrices).
+
 ### E6.3.1 — the per-image target: construction, reliability, and the two-code-path check
 
 Moved from §2.6.2, which states the correspondence result and cites this
