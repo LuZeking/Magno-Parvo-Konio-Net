@@ -56,15 +56,16 @@ human and machine object recognition, and closing it has become a standard
 target for biologically motivated models (Hermann et al., 2020; Jang & Tong,
 2021; Lu et al., 2026).
 
-A second body of evidence points the other way: along the ventral stream, object
-representations are well described by texture statistics. In humans,
+A second body of evidence points the other way: along the ventral stream,
+object representations are well described by texture statistics. In humans,
 category-selective cortex fails to discriminate natural images from
 feature-matched scrambles that destroy spatial arrangement while preserving
 texture statistics, yet still discriminates between categories (Jagadeesh &
 Gardner, 2022). In macaque, V4 responses to natural textures are predicted by
-their image statistics (Okazawa et al., 2015), and in IT texture is the more
-accurately decodable of the two (Jagadeesh & Livingstone, 2024); material and
-surface appearance recruit an extended ventral network (Komatsu & Goda, 2018).
+their image statistics (Okazawa et al., 2015), and in IT both shape and texture
+are represented, texture the more accurately decodable of the two (Jagadeesh &
+Livingstone, 2024); material and surface appearance recruit an extended ventral
+network (Komatsu & Goda, 2018).
 
 *We state the scope of this premise precisely, because the paper rests on it.*
 The human evidence is one study using one image-synthesis manipulation; the
