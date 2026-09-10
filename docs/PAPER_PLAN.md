@@ -11808,10 +11808,24 @@ grid**. §106 is therefore fitting the same models §2.6.2 reported.
 
 §106.7's prediction 1, confirmed as stated. The closest approach in the whole
 study is subject-04 — the lowest-rate observer at 0.9191 — missed by **0.0273
-[0.0051, 0.0473]**. Their rate falls inside the family in **10.8%** of item
-bootstrap replicates; for eight of the ten observers it is 0.000, and for
-subject-02 and subject-07 it is 0.002 and 0.004. So the family's failure to
-reach any human rate is not a knife-edge.
+[0.0051, 0.0473]**.
+
+*Corrected 2026-09-10, caught by the peer session before it reached the
+manuscript.* An earlier draft of this subsection said the bootstrap-attainable
+fraction is 0.000 for "eight of the ten" observers while naming three that are
+not — an arithmetic slip, and self-contradictory as written. The count is
+**seven**: subject-01, -03, -05, -06, -08, -09 and -10 are attainable in
+exactly zero of the 1,000 item bootstrap replicates, in every one of the nine
+runs. The three non-zero are subject-02 (0.0015), subject-07 (0.0035) and
+subject-04 (0.1085), means over the six diet runs.
+
+**And the mean understates subject-04's spread**, which the corrected check
+surfaced: their per-run values are 0.001, 0.004, 0.016, 0.032, 0.225 and
+**0.373**. So in one diet run the lowest observer's rate falls inside the
+family in over a third of bootstrap replicates. "Not a knife-edge" holds for
+the other nine observers and for the study as a whole — the point estimate is
+outside the family in 90/90 — but it is the wrong phrase for subject-04 in
+that run, and the range is reported rather than the mean alone from here on.
 
 This is what Limitation 14 asked for and it is stronger than the sweep's "does
 not reach": the maximum-likelihood estimate does not exist in the interior for
