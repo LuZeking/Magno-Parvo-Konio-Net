@@ -211,11 +211,9 @@ without** (n=8, p=.0078, 8/8 subjects).
 
 The raw statistic agrees: **+0.616 with the diet against −0.033 without**, and
 likewise in seeds 1 and 2 (p=.0078, 8/8 subjects throughout). **We draw no
-inference from the sign of the no-diet values.** They are sound — the cell has
-been re-derived independently from the stored per-band η² fields — but they sit
-near zero and no test addresses which side of zero they fall on; the claim this
-section makes is that the arms separate, and it does not need them to fall on
-any particular side (Extended Data §E2).
+inference from the sign of the no-diet values**, which sit near zero with no test
+addressing which side of it they fall on; the claim is that the arms separate
+(Extended Data §E2).
 
 The effect is carried entirely by the magno stream (+0.791 vs **−0.638** —
 without the diet the magno stream is *texture*-dominated), with the parvo streams
@@ -236,12 +234,9 @@ it** — early visual cortex is relatively more
 magno-explained and hV4 relatively more parvo-explained, the direction a
 luminance/low-SF versus chromatic split predicts. Contrast = hV4 − mean(V1v,V1d)
 of the per-ROI median, all three seeds and both statistics (§4.7). **The source
-is declared per table, not globally**: this table comes from
-`results/encoding_cc/`, which is the only directory holding all six diet and
-no-diet seed fits; the front-end control table and the untrained baseline come
-from `results/encoding/`, which is the only directory holding those seven
-models. Neither directory is a superset of the other, and where they overlap
-they are numerically identical (§E2.2):
+is declared per table, not globally**, because neither results directory is a
+superset of the other; where they overlap they are numerically identical
+(§E2.2):
 
 | statistic | seed | diet | no diet | p | separation |
 |---|---|---|---|---|---|
@@ -259,30 +254,13 @@ with the diet against −0.536 without) and the effect sizes differ by a factor 
 six (dz −6.60 vs −1.09).
 
 *These values supersede an earlier version of this table (normalised −0.862 /
-−0.802 / −0.781; raw −0.176 / −0.151 / −0.160), and the reason the earlier ones
-cannot be regenerated is now established: **the no-diet figures were computed
-from a fit that was subsequently quarantined as defective and deleted.** The
-`dkl_base_seed0_trained` subject-01 file excluded on 2026-09-01 (§E2.2) was
-still in the set when they were computed; the values were transcribed into this
-draft on 2026-09-06, five days after the exclusion. Solving for the subject-01
-value that the published n = 8 means require, against the seven siblings'
-actual values, gives −0.429 on the normalised statistic (8.0× the sibling
-median, 53% of the reported effect) and −0.124 on the raw (6.3×, 46%) — and the
-quarantine README, written independently and earlier, describes the defective
-file as a "six-fold outlier" contributing "57% of the reported no-diet effect
-size" and being "the difference between significant and not on the raw
-statistic". The repaired file does leave the raw no-diet contrast marginal
-(p = .039). No configuration search could have recovered these numbers, because
-the data behind them no longer exists. Two residual gaps are **not** explained
-this way and remain disclosed as provenance drift: the diet column (the same
-solve would need a subject-01 value of −1.225, outside all 48 observed
-subject × model cells) and the untrained control, which moved in the opposite
-direction. A contributing cause is structural: `visualrois.py` hardcodes its
-model at line 23, so the diet and no-diet rows required an uncommitted edit,
-run and reverted, leaving no record — the untrained row is the only one the
-committed script still reproduces, and it is the one that breaks the pattern.
-Extended Data
-§E2.2 records the dating and the solve.*
+−0.802 / −0.781; raw −0.176 / −0.151 / −0.160), which cannot be regenerated
+because the no-diet figures were computed from a subject-01 fit that was
+subsequently quarantined as defective and deleted. Extended Data §E2.2
+establishes the dating, solves for the missing value against its seven
+siblings, and records the two residual gaps — the diet column and the untrained
+control, which moved the opposite way — that this does not explain and that
+stay disclosed as provenance drift.*
 
 **The diet makes the gradient large; it does not make it exist.** Correcting
 each arm for its own measured instrument bias gives −0.720 with the diet and
@@ -290,42 +268,22 @@ each arm for its own measured instrument bias gives −0.720 with the diet and
 (p = .0078), so the diet's effect is a factor of **7.1** on a gradient that is
 already present. The comparative claim is the robust one — it holds across every
 treatment of the instrument we tried, including the one we reject below — and it
-is what §2.5's mechanism needs. Three earlier framings are withdrawn. The first — "nearly flat without it", with a 79%
-reduction — used numbers that do not regenerate (§E2.2), but its *structure* was
-right, and the honest correction is 85% rather than a withdrawal: our objection
-that it "compared two numbers as though both measured something" was wrong,
-because both do. The second, which replaced it, claimed no gradient was
-resolvable without the diet. That was an error of ours in the opposite
-direction: it compared the magnitude of the no-diet contrast to the magnitude of
-the floor, as though the floor were a noise level. The third, ours again, declined to claim the no-diet
-gradient in either direction on the strength of a residual correction that we
-have since identified as a simulation artefact (below). The claim above is the
-second framing's structure with the first framing's direction and numbers that
-regenerate. The floor is a **signed
-positive bias**, and a positive bias cannot manufacture a negative
-observation — it masks one. Treating a signed quantity as an unsigned tolerance
-is the same mistake that made subject 01's outlier look arm-specific, and it is
-the reason the paired displacement above, not a ratio, is the statistic we
-report.
+is what §2.5's mechanism needs. Three earlier framings of this comparison are withdrawn; Supplementary Note
+S1.6 records what each claimed and why it failed. The operative correction is
+that the floor is a **signed positive bias** rather than a noise level, and a
+positive bias cannot manufacture a negative observation — it masks one, which is
+why the statistic reported above is the paired displacement and not a ratio.
 
 *One subject carries a third of the no-diet effect, and that is a property of
-the subject.* Subject 01's hV4−V1 is the steepest in the no-diet arm (−0.249
-against a sibling median of −0.054). We initially read this as a provenance
-failure, because `results/encoding/quarantine/README.md` had excluded a file of
-that name on 2026-09-01 for a wrong-front-end fit, citing an outlying hV4−V1 as
-one of its diagnostics. That reading was wrong on both legs. The fit is correct:
-the job log for the repair round records the front end explicitly
-(`task=16 model=dkl_base_seed0_trained subject=1 frontend='--no-lum-blur
---no-lum-cs'`), which are precisely the flags the defective run omitted, and it
-recomputed features rather than trusting an unstamped cache; the file's mtime and
-size separate it from its siblings, and it is byte-identical to the copy in the
-declared source directory. And the apparent confinement of the anomaly to the
-no-diet arm was an artefact of expressing it as a ratio: subject 01 is displaced
-from the sibling median by **−0.195 in the no-diet arm and −0.189 in the diet
-arm** — the same shift to within 0.006 — and the ratio only looked arm-specific
-because the two baselines differ fifteen-fold. Across all six fits the
-displacement is stable (−0.091 to −0.205) while the ratio ranges from 1.15× to
-5.73×. Subject 01 simply has a steeper ventral gradient than the others.
+the subject, not of the fit.* Subject 01's hV4−V1 is the steepest in the no-diet
+arm (−0.249 against a sibling median of −0.054). We first read this as a
+provenance failure and were wrong on both legs: the repair round's job log
+records the front end explicitly, and the anomaly is not arm-specific — subject
+01 is displaced from the sibling median by **−0.195 in the no-diet arm and
+−0.189 in the diet arm**, the same shift to within 0.006, the ratio looking
+arm-specific only because the two baselines differ fifteen-fold. Extended Data
+§E2.2 gives the job log, the file identification and the six-fit displacement
+table.
 
 That leaves a real influence result rather than a provenance one, and we report
 it as such. Subject 01 alone accounts for about **31%** of the no-diet contrast:
@@ -353,47 +311,31 @@ eccentricity instead); and a parvo preference in colour-biased cortex (+0.0045,
 p = .46, bounded by equivalence to within ±0.017). The V1v→hV4 gradient is the
 seventh, and the one that survived.
 
-**The controls below address confounding, not selection.** Blur removal,
-monotonicity, the cross-codebase replication and the global-preference contrast
-each rule out a way the gradient could be an artefact; none of them speaks to the
-fact that it was chosen after six siblings failed. Readers should weigh it as
-what it is — one surviving regional result out of seven, with the failures
-visible — and the strongest thing we can say for it is not a p-value but that it
-is the only one of the seven that survives removal of the very front-end
-manipulation that produces the apparent regional structure in the first place
-(see the closing paragraph of *Claims deliberately not made*, where that
-diagnosis is set out for the six).
+**The controls below address confounding, not selection.** They rule out ways
+the gradient could be an artefact; none speaks to its having been chosen after
+six siblings failed. It should be weighed as what it is — one surviving regional
+result out of seven, with the failures visible — and the strongest thing we can
+say for it is not a p-value but that it is the only one of the seven that
+survives removal of the very front-end manipulation that produces the apparent
+regional structure in the first place (*Claims deliberately not made*).
 
-**The estimator cannot manufacture this gradient; it works against it.** Unique
-variance is a subtraction of cross-validated R² (§4.7), and measurement noise is
-not constant across the seven ROIs — the mean noise ceiling *declines* from V1v
-to hV4 (0.408 → 0.322, ρ = −0.893, p = .007, n = 8). A declining nuisance along
-the same axis as a declining effect is exactly the confound a reader should
-suspect, so we simulated it: synthetic voxels built from the fitted feature
-spaces with the measured per-ROI noise ceilings imposed and the true
-magno−parvo unique-variance difference solved to zero in every ROI, then scored
-through the identical hV4 − V1 contrast. Because the artefact depends on feature
-geometry, this was run separately on both arms' fitted features.
+**The estimator cannot manufacture this gradient; it works against it.** The
+mean noise ceiling *declines* from V1v to hV4 (0.408 → 0.322, ρ = −0.893), a
+nuisance falling along the same axis as the effect, so we simulated it:
+synthetic voxels from the fitted feature spaces with the measured per-ROI noise
+ceilings imposed and the true magno−parvo difference solved to zero everywhere,
+scored through the identical contrast and run separately on both arms'
+geometries. The resulting floor is **positive and rising** with hierarchical
+rank (+0.051 no-diet, +0.038 diet, both 8/8 at p = .0078) where the observed
+effect is negative and falling — wrong sign twice over, so it opposes the result
+rather than producing it — and it is indistinguishable from zero on the raw
+statistic. The two geometries do not differ detectably (Mann–Whitney p = .33),
+so the floor belongs to the instrument, not to the model being fitted (Extended
+Data §E2.1).
 
-| geometry | normalised floor | raw floor | monotonicity ρ |
-|---|---|---|---|
-| no-diet features | **+0.051** (8/8, p = .0078) | +0.0009 (4/8, p = .84) | +0.68 |
-| diet features | **+0.038** (8/8, p = .0078) | −0.0021 (2/8, p = .15) | +0.80 |
-
-Three things follow. The artefact is **positive and rising** with hierarchical
-rank on both geometries, where the observed effect is negative and falling
-(−0.834, ρ = −0.964): wrong sign twice over, so it cannot produce this result —
-it opposes it. On the raw statistic it is indistinguishable from zero in both
-geometries, so that statistic shows no artefact at all. And the two geometries
-agree: 0.038 against 0.051 is a 27% difference in point estimate but not a
-detectable one (Mann–Whitney p = .33, 8 versus 8), so the floor is a property of
-the instrument rather than of the model being fitted.
-
-Because the floor is a *signed* bias rather than a noise level, the right
-comparison is not a ratio of magnitudes but a paired displacement: is each
-subject's real contrast displaced from what that same subject's own instrument
-returns when the truth is exactly zero? The instrument returns approximately
-truth plus bias, so real − floor estimates the true contrast.
+Because the floor is a *signed* bias, the right comparison is a paired
+displacement rather than a ratio of magnitudes: the instrument returns
+approximately truth plus bias, so real − floor estimates the true contrast.
 
 | arm | real | own floor | displacement | sign | p |
 |---|---|---|---|---|---|
@@ -404,96 +346,37 @@ truth plus bias, so real − floor estimates the true contrast.
 Both arms carry a gradient that is non-zero in **every subject** at the exact
 Wilcoxon floor for its sample size, and the diet arm's is **6.7× larger**.
 
-*What the subtraction assumes.* The simulated bias is not constant across ROIs —
-it rises from +0.099 at V1v to +0.148 at hV4 (no diet) and +0.132 to +0.164
-(diet) — so the model is estimate(ROI) = *a* · truth(ROI) + *b*(ROI). An earlier
-version of this section claimed that this made the subtraction assumption-free,
-on the grounds that the contrast's bias then equals *b*(hV4) − *b*(V1)
-"verified numerically exact". That check was a **tautology**: the contrast floor
-*is* the contrast of condition B's profile, and *b*(ROI) *is* that profile, so
-both sides are the same arithmetic and agree to machine precision (2.8 × 10⁻¹⁷).
-It carried no evidential weight. What the subtraction actually requires is that
-*b*(ROI) is the same when the truth is non-zero as when it is zero, and
-condition B measures it only at zero. The assumption is relocated from the
-contrast to the individual ROI — weaker and more plausible, but not removed.
+*What the subtraction assumes, and the limitation that leaves.* The simulated
+bias rises across ROIs, so the subtraction relocates its assumption from the
+contrast to the individual ROI — weaker and more plausible, but not removed. A
+residual misfit remains, and we do **not** correct for it, because it tracks the
+simulation's own construction schedule rather than the truth it should be
+missing and because the correction is under-specified: six variants of it swing
+the no-diet arm between 4/8 and 6/8 and between p = .055 and p = 1.00, while the
+minimal treatment is identical under both pairings and **the diet arm is
+non-zero in all eight subjects at p = .0078 in all six**. The honest consequence
+is that the no-diet arm rests on the floor correction alone with real-data
+misfit unquantified — weaker footing than the diet arm's. Nor is the simulation
+magnitude-faithful: it errs in opposite directions on the two statistics, so we
+read −0.834 as a sign-and-ordering result and not a calibrated effect size.
+Extended Data §E2.1 gives the residual profiles, the six-variant table, the
+tautological check we withdrew and an earlier version of the simulation that ran
+the nuisance backwards.
 
-*The multiplicative term is estimable; the model's misfit is not negligible.*
-Fitting the slope after removing each ROI's own bias gives *a* = 1.28 (no diet)
-and 1.21 (diet), and recovered true contrasts of −0.101 and −0.720. But the
-residuals of that fit are not flat across ROIs — they run from −0.199 to +0.108
-(no diet) and −0.167 to +0.158 (diet) — and a contrast is precisely the
-operation that exposes ROI-structured residuals rather than cancelling them. The
-residual *contrast* is −0.086 and −0.113, which is **67% of the no-diet
-bias-removed contrast and 13% of the diet one**. (A pooled intercept, which
-averages over ROIs, reports 42% and 0% and so understates this for the arm where
-it matters.)
-
-*The misfit is a property of the simulation, not of the estimator.* Removing
-that residual as well would leave the no-diet arm at −0.034 and the diet arm at
-−0.626. We do **not** apply it, for two measured reasons. First, condition A
-builds its sources on a fixed schedule (a = 0.30 + 0.10·i, b = 0.90 − 0.10·i, so
-total source power is U-shaped across ROI index at 0.90, 0.80, 0.74, 0.72, 0.74,
-0.80, 0.90), and the residual tracks *that* rather than the truth it is supposed
-to be missing: correlation **−0.85** with total source power against **+0.08**
-with the true contrast, and the two arms' residual profiles correlate at
-**+0.989** despite their real effects differing tenfold. The real data has no
-such schedule, so subtracting this residual imports a construction artefact
-instead of removing a bias. Second, the correction is under-specified, and the
-minimal treatment is the only one that is not. Crossing the two arbitrary
-choices — group versus per-subject noise floor, residual removed before or after
-rescaling — gives six variants:
-
-| floor | treatment | no diet | sign | p |
-|---|---|---|---|---|
-| group | minimal | −0.101 | 8/8 | **.0078** |
-| per-subject | minimal | −0.101 | 8/8 | **.0078** |
-| group | + residual, before scaling | −0.034 | 6/8 | .055 |
-| per-subject | + residual, before scaling | −0.034 | 5/8 | .31 |
-| group | + residual, after scaling | −0.015 | 4/8 | 1.00 |
-| per-subject | + residual, after scaling | −0.015 | 5/8 | .84 |
-
-**The minimal treatment is identical under both pairings**; every
-residual-corrected variant swings between 4/8 and 6/8 and between p = .055 and
-p = 1.00 on a choice that carries no scientific content. A statistic that moves
-that much on an implementation detail is not measuring the data. The diet arm,
-by contrast, is non-zero in all eight subjects at p = .0078 in **all six**
-variants.
-
-*The honest limitation.* Showing that condition A's residual is
-non-transferable does not show the estimator is free of misfit on real data;
-it shows only that this simulation cannot measure it. The no-diet arm's
-gradient therefore rests on the floor correction alone with real-data misfit
-unquantified, which is weaker footing than the diet arm's — that one survives
-every treatment we have tried, including the one we reject.
-
-What the simulation does *not* license is a claim about the effect's exact
-magnitude. The companion recovery condition, given a true gradient, returns the
-ROI ordering perfectly (ρ = +1.000 in 8/8 on both geometries) but is not
-magnitude-faithful, and it errs in **opposite directions on the two statistics** —
-inflating the normalised contrast (×1.26 no-diet, ×1.15 diet) while compressing
-the raw one (×0.71, ×0.69). We therefore read −0.834 as a sign-and-ordering
-result, not a calibrated effect size. Extended Data §E2.1 records an earlier
-version of this simulation that used a hardcoded *ascending* noise-ceiling ramp,
-ran the nuisance backwards, and inverted the artefact's sign.
-
-Four properties make this more than a single fitted number, each set out with
-its numbers in Extended Data §E2. **Training decides the direction; the input
-only supplies the starting point** — an untrained network on the diet front end
-already sits at −0.544 normalised and −0.120 raw (8/8, p = .0078 on both),
-training with the diet takes it to −0.834, and training
-without it leaves nothing resolvable above the floor (−0.079 at n = 8, −0.054 at
-n = 7). **It replicates across codebases**, our standalone model and the
-independent thesis checkpoint giving −0.834 and −0.793, a difference that does
-not reach significance (p = .20). *These four values also supersede earlier ones
-(−0.471, −0.862, −0.101, and p = .84) on the same provenance grounds as the
-table above; note that the untrained figure moved in the opposite direction to
-the rest, so the discrepancy is not a single uniform offset.* **It survives all
-six front-end controls on both statistics**, each at p=.0078 in 8/8 subjects —
-with the qualification §2.7 places on two of them. And **it is not a global
-stream preference**: the diet-trained and no-diet models sit on opposite sides
-of the global stream-bias axis (−0.495 against +0.849), and the strong regional
-gradient belongs to the model whose global preference points the *other* way. A
-model that simply preferred magno everywhere could not produce this.
+Four properties make this more than a single fitted number, each with its
+numbers in Extended Data §E2. **Training decides the direction; the input only
+supplies the starting point** — an untrained network on the diet front end
+already sits at −0.544 (8/8, p = .0078), the diet takes it to −0.834, and
+training without it leaves nothing resolvable above the floor. **It replicates
+across codebases** (−0.834 against an independent thesis checkpoint's −0.793,
+p = .20). **It survives all six front-end controls on both statistics**, each at
+p = .0078 in 8/8 subjects, with the qualification §2.7 places on two of them.
+And **it is not a global stream preference**: the two models sit on opposite
+sides of the global stream-bias axis (−0.495 against +0.849), and the strong
+regional gradient belongs to the model whose global preference points the
+*other* way — a model that simply preferred magno everywhere could not produce
+this. *These values supersede earlier ones on the provenance grounds above
+(§E2.2).*
 
 **This is the step the paradox needs, and it is the step a correlational
 analysis cannot take.** Asked the same question with representational similarity
@@ -792,12 +675,7 @@ The standard reading of Geirhos et al. is that shape bias buys out-of-
 distribution robustness. We pre-registered that prediction and tested it:
 corruptions applied to the image *before* the front end, scored in the models'
 own 112-way label space, **3 seeds per condition** on all four cells of §2.4's
-2×2.
-
-Corruptions were applied to the image *before* the front end and scored in the
-models' own 112-way label space, 3 seeds per condition, on all four cells of
-§2.4's 2×2, at each seed's best saved checkpoint (full table: Extended Data
-§E6.2).
+2×2, at each seed's best saved checkpoint (full table: Extended Data §E6.2).
 
 **The diet-trained model is less robust on four of the five corruptions it was
 not trained on** (**Figure 4**), with complete seed separation on all four and the same
@@ -821,23 +699,17 @@ cut, so "trained-in" does not automatically confer robustness either.
 developmental age (48 months, §4.1), whereas the developmental proposal it
 implements is about the *order* in which acuity and contrast sensitivity are
 relaxed. A reader may reasonably object that the nulls above test a static
-approximation and not the developmental trajectory. We therefore ran the same
-battery on an independently trained arm that does carry the progressive age
-transition (`thesis_dvd_trans`, thesis codebase). It behaves like the static
-diet, not like the no-diet control: its relative-accuracy AUC falls **inside the
-static diet arm's three-seed range on five of the seven corruptions** (uniform
-noise 0.640 in [0.619, 0.647]; high-pass 0.680 in [0.647, 0.696]; rotation 0.572
-in [0.567, 0.582]; low-pass 0.436 in [0.434, 0.464]; contrast 0.489 in [0.460,
-0.493]) and is closer to the diet arm than to the no-diet arm on six of seven.
-On the two corruptions where it sits outside that range — false colour 0.839 and
-phase-scrambling 0.362 — it is *below* the diet arm, i.e. further from the
-no-diet control (0.938, 0.373), not nearer. Clean accuracy behaves the same way:
-0.568, against 0.553 for the static diet and 0.695 without a diet, so the
-schedule recovers neither the robustness nor the accuracy. This arm has **one
-seed and one saved checkpoint** (epoch 147, the last), so we claim containment
-within the diet arm's observed seed range and not an equivalence test; that
-single checkpoint is also a late one, and the diet arm is the one that degrades
-late, which makes the agreement conservative rather than flattering.
+approximation and not the developmental trajectory. We therefore ran the same battery on an
+independently trained arm that does carry the progressive age transition
+(`thesis_dvd_trans`, thesis codebase). **It behaves like the static diet, not
+like the no-diet control**: its relative-accuracy AUC falls inside the static
+diet arm's three-seed range on five of the seven corruptions, is closer to the
+diet arm on six of seven, and on the two exceptions sits *further* from the
+no-diet control rather than nearer; clean accuracy likewise (0.568 against 0.553
+static-diet and 0.695 no-diet), so the schedule recovers neither the robustness
+nor the accuracy. This arm has one seed and one saved checkpoint, so the claim
+is containment within the diet arm's observed range, not an equivalence test
+(per-corruption values: Extended Data §E6.2).
 
 **This differs from the source of the diet, and we state how rather than leave
 it to be noticed.** The developmental visual diet implemented here is Lu et
@@ -964,16 +836,14 @@ therefore repeated the comparison with a better-estimated target and a
 continuous model statistic, on the same 1200 cue-conflict images (1280 stimuli
 less the 80 same-cue pairs Geirhos also excluded) and the same ten observers,
 who each viewed every image once. Averaged over all ten, the per-image profile
-is reliable: split-half reliability across all 126 exhaustive half-splits,
-Spearman–Brown corrected, is **r = .658** [.602, .706] for the shape rate and
-**r = .794** [.777, .809] for whether either cue was resolved at all. Both
-survive removal of shape-category *and* texture-category main effects (**.624**
-and **.728**), so the reliable structure is image-specific and not a restatement
-of which of the 16 categories are easier. Two facts about the observers follow
-directly, and the aggregate rate hides both: only **80.3%** of human responses
-were the shape or the texture category at all, and **240 of the 1200 images**
-drew at least one texture response. Human cue-conflict behaviour is not
-homogeneous across images.
+is reliable (split-half **r = .658** for the shape rate and **.794** for whether
+either cue resolved at all, both surviving removal of shape- and
+texture-category main effects), so the reliable structure is image-specific
+rather than a restatement of which categories are easier. Two facts the
+aggregate rate hides: only **80.3%** of human responses were the shape or the
+texture category at all, and **240 of the 1200 images** drew at least one
+texture response. Human cue-conflict behaviour is not homogeneous across images
+(Extended Data §E6.3).
 
 Against that target the model statistic becomes the continuous
 shape-minus-texture logit margin rather than a binary choice, and — because the
@@ -999,17 +869,11 @@ measure demonstrably recovers roughly three times as much structure from a
 neighbouring aspect of the same human responses. A measure that finds nothing
 anywhere is uninformative about the decision; this one does not.
 
-Two further observations. First, this analysis reproduces the diet arm's rate
-range above **exactly** (0.373–0.913) through an independent code path; the
-no-diet range comes out 0.309–0.461 against the 0.312–0.459 quoted, because that
-sweep steps `w` at 0.05 and this one at 0.005 and the no-diet extremes fall at
-interior `w` rather than at the endpoints both grids contain. Second, the two
-streams rank images almost independently (residualised r = −0.030 to +0.072), so
-`w` moves the aggregate rate across a span of 0.433–0.517 per diet run while
-barely reordering *which* images are hard. Within this family the rate and
-item-level difficulty are separately addressable, which is consistent with the
-second point above: if the streams ordered images alike, matching the rate would
-also come close to matching the ordering, and it does not.
+The two streams rank images almost independently (residualised
+r = −0.030 to +0.072), so `w` moves the aggregate rate while barely reordering
+*which* images are hard: within this family the rate and item-level difficulty
+are separately addressable. An independent code path reproduces the diet arm's
+rate range exactly (Extended Data §E6.3).
 
 *What we do not conclude from it* (**Figure 5c**)*.* The diet arm's difficulty correspondence
 (24.1%) exceeds the no-diet arm's (9.2%) with no overlap across seeds, at both
@@ -1021,15 +885,13 @@ test-time input as well as in learned weights. Completing the 2×2 as in §2.4 �
 diet weights without the front end, no-diet weights with it — yields a
 train/test *matching* pattern rather than a weights effect: both matched cells
 are positive (24.1%, 9.2%) and both crossed cells are not (−0.6%, −3.7%), and
-with the front end held off the ordering reverses. The crossed cells are in any
-case too degraded to arbitrate, resolving to neither cue on 70–85% of images at
-the balanced readout against 49–63% for the matched cells. The honest conclusion
-is that this design cannot separate the learned representation from the input
-transform, because separating them breaks the model. A control that verifies the
-front end leaves the chromatic stream untouched — the parvo-stream logits are
-bit-identical across the front-end manipulation (max deviation 0.00e+00) while
-the magno-stream logits differ by 49–80 — confirms the 2×2 itself is clean, so
-the failure is one of attribution, not of implementation.
+with the front end held off the ordering reverses. The crossed cells are in any case too degraded to
+arbitrate, resolving to neither cue on 70–85% of images against 49–63% for the
+matched cells. The honest conclusion is that this design cannot separate the
+learned representation from the input transform, because separating them breaks
+the model. The 2×2 itself is clean — the parvo-stream logits are bit-identical
+across the front-end manipulation while the magno-stream logits differ — so the
+failure is one of attribution, not of implementation.
 
 Method: `tmp_analysis/human_perimage.py`, `tmp_analysis/perimage_logits.py`,
 `tmp_analysis/perimage_correspondence.py`, `tmp_analysis/perimage_frontend_2x2.py`;
@@ -1116,62 +978,46 @@ claim about a model's representations.
 
 **This dissociation has precedent, and the precedent sharpens the claim rather
 than pre-empting it.** Hermann et al. (2020) report that ImageNet-trained
-networks "make texture-based classification decisions a majority of the time,
-even if shape information is decodable from their hidden representations", and
-that the largest lever on the behavioural rate is data augmentation rather than
-architecture or objective. Islam et al. (2021) find shape information encoded
-more widely than the behavioural rate implies, concentrated in the last few
-layers and acquired within the first few epochs of training. Both establish that
-a representation can hold more shape than its behaviour reveals. We are not the
-first to report that the two come apart, and any reading of our title that
-claims otherwise is wrong.
+networks decide on texture a majority of the time even where shape is decodable
+from their hidden representations; Islam et al. (2021) find shape encoded more
+widely than the behavioural rate implies. Both establish that a representation
+can hold more shape than its behaviour reveals, and any reading of our title
+that claims priority over them is wrong.
 
 What is new here is the *form* of the dissociation. In both prior
-demonstrations the evidence is that a separately trained decoder recovers shape
-the classifier does not use, or that a different training run yields a different
-rate; in the first case the representation is interrogated by something other
-than the network's own decision, and in the second the representation does not
-stay fixed. Here it does. The classifier is affine and the two fusion weights
-sum to one, so `clf(w*y1 + (1-w)*y2) = w*clf(y1) + (1-w)*clf(y2)` holds exactly
-(§2.3; maximum deviation 1.1 × 10⁻⁶). The shape-bias rate
-therefore sweeps 0.373 to 0.913 -- most of the range the field's models occupy --
-while both representations stay bit-identical and the sweep is
-exact linear interpolation rather than an empirical trend. *The sweep does not
-reach the human value, and an earlier version of this sentence said it ran
-"across" it.* Its maximum over all 21 weights, 3 seeds and both checkpoint
-policies is **0.913** (seed 1, best checkpoint, w = 1), which sits below the
-**lowest individual observer** (0.919) and 0.045 below the human mean --
-the same bound §2.7 and Limitation 7 already state for the single best stream,
-which the earlier wording contradicted. That is a limit on the whole readout
-family rather than a caveat about one operating point, and it sharpens this
-section's claim instead of softening it: a single scalar moves the rate across
-most of the modelled range **without the family ever reaching a human
-observer**, so a rate near the human one would identify neither a
-representation nor a decision process. The rate is not
-merely an underestimate of the shape information present: within this family it
-is a free parameter of the readout, so a rate measured at one operating point
-constrains the representation no further than the family's range already does.
-That is the strong form of this section's title, and it is what licenses the
-methodological consequence above.
+demonstrations a separately trained decoder recovers shape the classifier does
+not use, or a different training run yields a different rate — so the
+representation is either interrogated by something other than the network's own
+decision, or not held fixed. Here it is held fixed. The classifier is affine and
+the fusion weights sum to one, so `clf(w*y1 + (1-w)*y2) = w*clf(y1) +
+(1-w)*clf(y2)` holds exactly (§2.3; maximum deviation 1.1 × 10⁻⁶), and the
+shape-bias rate sweeps 0.373 to 0.913 — most of the range the field's models
+occupy — while both representations stay bit-identical and the sweep is exact
+linear interpolation rather than an empirical trend. **The sweep does not reach
+the human value.** Its maximum over all 21 weights, 3 seeds and both checkpoint
+policies is 0.913, below the *lowest individual observer* (0.919) and 0.045
+below the human mean — the bound §2.7 and Limitation 7 already state. That
+sharpens the claim rather than softening it: a single scalar moves the rate
+across most of the modelled range **without the family ever reaching a human
+observer**, so within this family the rate is a free parameter of the readout,
+and a rate measured at one operating point constrains the representation no
+further than the family's range already does.
 
-Two further differences are worth stating plainly, because they mark the limits
-of the comparison as much as its scope. Neither prior study reports brain data,
-so the ventral-stream gradient of §2.2 has no counterpart in them. And neither
-asks whether any readout of a fixed pair of representations reaches human
-decision structure; §2.6.2 bounds that directly, and the answer is no.
+Two further differences mark the limits of the comparison. Neither prior study
+reports brain data, so §2.2's ventral gradient has no counterpart in them; and
+neither asks whether any readout of a fixed pair of representations reaches
+human decision structure. §2.6.2 bounds that directly, and the answer is no.
 
 The two-condition literature invites the reading that the magnocellular channel
-*is* the shape pathway. §2.4 and Extended Data §E6.1 jointly rule that out. Shape bias
-requires a carrier x transform conjunction: an achromatic carrier alone does not
-produce it, the transform alone does not produce it, and only their combination
-crosses the boundary -- by +0.936 with no seed overlap. Effective dimensionality,
-meanwhile, needs only bandwidth, and reverses when the carrier moves.
-
-Both properties are relational -- facts about what a stream receives, not about
-what it is called. This matters beyond our architecture, because "magno-like"
-and "parvo-like" are routinely used as if they named intrinsic computational
-roles. In our model the streams are bit-identical at initialisation, so the
-labels can name nothing but the input.
+*is* the shape pathway. §2.4 and Extended Data §E6.1 rule that out: shape bias
+requires a carrier × transform conjunction — neither the achromatic carrier nor
+the transform produces it alone, and only their combination crosses the boundary
+(+0.936, no seed overlap) — while effective dimensionality needs only bandwidth
+and reverses when the carrier moves. Both properties are relational, facts about
+what a stream receives rather than about what it is called. That matters beyond
+our architecture, because "magno-like" and "parvo-like" are routinely used as if
+they named intrinsic computational roles; here the streams are bit-identical at
+initialisation, so the labels can name nothing but the input.
 
 ### What a developmental constraint does, and what comes apart
 
@@ -1202,16 +1048,14 @@ human-likeness are routinely discussed as a package. Over identical inputs, this
 paper separates them three times, and a readout account says why they should
 separate: none of the three is a property of a readout.
 
-Dimensionality comes apart in the direction opposite to intuition — the
-`parvo_highsf` cell is more dimensional *and* more texture-biased (Extended
-Data §E6.1). Robustness
-comes apart in a way sharpened by its own control: the diet-trained network is
-less robust than every comparison on four of the five corruption families it was
-not trained on, and more robust on exactly the one family the diet installs.
-Geirhos et al.'s stylisation route yields shape bias together with robustness;
-our developmental route yields comparable shape bias in rate and none of it, so
-the coupling belongs to the route rather than to shape bias. And human agreement
-comes apart most cleanly of all.
+Dimensionality comes apart opposite to intuition — the `parvo_highsf` cell is
+more dimensional *and* more texture-biased (Extended Data §E6.1). Robustness
+comes apart in a way its own control sharpens: the diet-trained network is less
+robust on four of the five corruption families it was not trained on, and more
+robust on exactly the one the diet installs. Geirhos et al.'s stylisation route
+yields shape bias together with robustness; our developmental route yields
+comparable shape bias in rate and none of it, so the coupling belongs to the
+route. And human agreement comes apart most cleanly of all.
 
 ### What generalises, and what does not
 
@@ -1230,13 +1074,13 @@ training method. It makes models less accurate (0.556 vs 0.701 at the best saved
 checkpoint), less stable late in training, and less robust on four of the five
 corruptions it was not trained on. Its interest is as a model of development.
 
-The cortical result (§2.2) is the load-bearing one and rests on eight subjects
-from a single dataset. The `parvo_highsf` condition varies architecture
-alongside the front end. Our diet is a fixed 48-month front end rather than a
-trajectory. Human comparisons are against published observers rather than an
-experiment of our own, and are comparisons of aggregate rate. The correspondence
-between our chromatic stream and texture-selective ventral cortex is by
-explanatory role, not by content. See *Limitations* for the full accounting.
+The load-bearing cortical result (§2.2) rests on eight subjects from a single
+dataset; the `parvo_highsf` condition varies architecture alongside the front
+end; our diet is a fixed 48-month front end rather than a trajectory; human
+comparisons are against published observers and of aggregate rate; and the
+correspondence between our chromatic stream and texture-selective ventral cortex
+is by explanatory role, not by content. See *Limitations* for the full
+accounting.
 
 ---
 
@@ -2223,6 +2067,31 @@ accurate. The §2.4 probe cell is likewise insensitive to the choice: magno
 seeds on the predicted side and the magno−parvo seed range *tightening* from
 0.081 to 0.034. Degradation does not produce the effect reported in §2.4; if
 anything it dilutes it (PLAN §67, §68, §71).
+
+
+### S1.6 — the three withdrawn framings of the no-diet gradient (§2.2)
+
+§2.2 reports that the diet multiplies an already-present gradient by 7.1, and
+states that three earlier framings of that comparison are withdrawn. What each
+claimed, and why it failed, is recorded here.
+
+Three earlier framings are withdrawn. The first — "nearly flat without it", with a 79%
+reduction — used numbers that do not regenerate (§E2.2), but its *structure* was
+right, and the honest correction is 85% rather than a withdrawal: our objection
+that it "compared two numbers as though both measured something" was wrong,
+because both do. The second, which replaced it, claimed no gradient was
+resolvable without the diet. That was an error of ours in the opposite
+direction: it compared the magnitude of the no-diet contrast to the magnitude of
+the floor, as though the floor were a noise level. The third, ours again, declined to claim the no-diet
+gradient in either direction on the strength of a residual correction that we
+have since identified as a simulation artefact (below). The claim above is the
+second framing's structure with the first framing's direction and numbers that
+regenerate. The floor is a **signed
+positive bias**, and a positive bias cannot manufacture a negative
+observation — it masks one. Treating a signed quantity as an unsigned tolerance
+is the same mistake that made subject 01's outlier look arm-specific, and it is
+the reason the paired displacement above, not a ratio, is the statistic we
+report.
 
 
 ---

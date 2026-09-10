@@ -295,6 +295,66 @@ from either, and neither is quoted without naming which it is. That ambiguity �
 a number reported without its estimator — is the same failure that produced this
 entire correction.
 
+### E2.1.1 — what the floor subtraction assumes, and the residual misfit
+
+Moved here from §2.2, which now states the conclusion and the six-variant
+result and cites this subsection.
+
+*What the subtraction assumes.* The simulated bias is not constant across ROIs —
+it rises from +0.099 at V1v to +0.148 at hV4 (no diet) and +0.132 to +0.164
+(diet) — so the model is estimate(ROI) = *a* · truth(ROI) + *b*(ROI). An earlier
+version of this section claimed that this made the subtraction assumption-free,
+on the grounds that the contrast's bias then equals *b*(hV4) − *b*(V1)
+"verified numerically exact". That check was a **tautology**: the contrast floor
+*is* the contrast of condition B's profile, and *b*(ROI) *is* that profile, so
+both sides are the same arithmetic and agree to machine precision (2.8 × 10⁻¹⁷).
+It carried no evidential weight. What the subtraction actually requires is that
+*b*(ROI) is the same when the truth is non-zero as when it is zero, and
+condition B measures it only at zero. The assumption is relocated from the
+contrast to the individual ROI — weaker and more plausible, but not removed.
+
+*The multiplicative term is estimable; the model's misfit is not negligible.*
+Fitting the slope after removing each ROI's own bias gives *a* = 1.28 (no diet)
+and 1.21 (diet), and recovered true contrasts of −0.101 and −0.720. But the
+residuals of that fit are not flat across ROIs — they run from −0.199 to +0.108
+(no diet) and −0.167 to +0.158 (diet) — and a contrast is precisely the
+operation that exposes ROI-structured residuals rather than cancelling them. The
+residual *contrast* is −0.086 and −0.113, which is **67% of the no-diet
+bias-removed contrast and 13% of the diet one**. (A pooled intercept, which
+averages over ROIs, reports 42% and 0% and so understates this for the arm where
+it matters.)
+
+*The misfit is a property of the simulation, not of the estimator.* Removing
+that residual as well would leave the no-diet arm at −0.034 and the diet arm at
+−0.626. We do **not** apply it, for two measured reasons. First, condition A
+builds its sources on a fixed schedule (a = 0.30 + 0.10·i, b = 0.90 − 0.10·i, so
+total source power is U-shaped across ROI index at 0.90, 0.80, 0.74, 0.72, 0.74,
+0.80, 0.90), and the residual tracks *that* rather than the truth it is supposed
+to be missing: correlation **−0.85** with total source power against **+0.08**
+with the true contrast, and the two arms' residual profiles correlate at
+**+0.989** despite their real effects differing tenfold. The real data has no
+such schedule, so subtracting this residual imports a construction artefact
+instead of removing a bias. Second, the correction is under-specified, and the
+minimal treatment is the only one that is not. Crossing the two arbitrary
+choices — group versus per-subject noise floor, residual removed before or after
+rescaling — gives six variants:
+
+| floor | treatment | no diet | sign | p |
+|---|---|---|---|---|
+| group | minimal | −0.101 | 8/8 | **.0078** |
+| per-subject | minimal | −0.101 | 8/8 | **.0078** |
+| group | + residual, before scaling | −0.034 | 6/8 | .055 |
+| per-subject | + residual, before scaling | −0.034 | 5/8 | .31 |
+| group | + residual, after scaling | −0.015 | 4/8 | 1.00 |
+| per-subject | + residual, after scaling | −0.015 | 5/8 | .84 |
+
+**The minimal treatment is identical under both pairings**; every
+residual-corrected variant swings between 4/8 and 6/8 and between p = .055 and
+p = 1.00 on a choice that carries no scientific content. A statistic that moves
+that much on an implementation detail is not measuring the data. The diet arm,
+by contrast, is non-zero in all eight subjects at p = .0078 in **all six**
+variants.
+
 ### E2.2 — the provenance search behind §2.2's superseded table
 
 §2.2's table previously reported normalised −0.862 / −0.802 / −0.781 and raw
@@ -839,6 +899,28 @@ This is the paper's second dissociation of properties the field treats as
 coupled: §E6.1 separates shape bias from representational dimensionality over
 identical inputs, and the present section separates it from robustness.
 
+### E6.2.1 — the progressive-transition arm, per corruption
+
+Moved from §2.6.1, which states the containment result and cites this table.
+
+We therefore ran the same
+battery on an independently trained arm that does carry the progressive age
+transition (`thesis_dvd_trans`, thesis codebase). It behaves like the static
+diet, not like the no-diet control: its relative-accuracy AUC falls **inside the
+static diet arm's three-seed range on five of the seven corruptions** (uniform
+noise 0.640 in [0.619, 0.647]; high-pass 0.680 in [0.647, 0.696]; rotation 0.572
+in [0.567, 0.582]; low-pass 0.436 in [0.434, 0.464]; contrast 0.489 in [0.460,
+0.493]) and is closer to the diet arm than to the no-diet arm on six of seven.
+On the two corruptions where it sits outside that range — false colour 0.839 and
+phase-scrambling 0.362 — it is *below* the diet arm, i.e. further from the
+no-diet control (0.938, 0.373), not nearer. Clean accuracy behaves the same way:
+0.568, against 0.553 for the static diet and 0.695 without a diet, so the
+schedule recovers neither the robustness nor the accuracy. This arm has **one
+seed and one saved checkpoint** (epoch 147, the last), so we claim containment
+within the diet arm's observed seed range and not an equivalence test; that
+single checkpoint is also a late one, and the diet arm is the one that degrades
+late, which makes the agreement conservative rather than flattering.
+
 ## E6.3 — §2.6.2, error consistency
 
 Moved from §2.6.2: the seven-model kappa table, the full pre-registration result with its self-correction, the equivalence bound in full, the pipeline validation run before the result was read, the marginal-compression caveat, and the consequences drawn for this paper's own wording.
@@ -892,3 +974,30 @@ title. §2.4's comparison against human observers is a comparison of aggregate
 **rates**, and additionally compares a single stream to a whole observer; both
 qualifications are now stated wherever that comparison appears.
 
+### E6.3.1 — per-image reliability, and the two-code-path check
+
+Moved from §2.6.2, which states both results and cites this subsection.
+
+Averaged over all ten, the per-image profile
+is reliable: split-half reliability across all 126 exhaustive half-splits,
+Spearman–Brown corrected, is **r = .658** [.602, .706] for the shape rate and
+**r = .794** [.777, .809] for whether either cue was resolved at all. Both
+survive removal of shape-category *and* texture-category main effects (**.624**
+and **.728**), so the reliable structure is image-specific and not a restatement
+of which of the 16 categories are easier. Two facts about the observers follow
+directly, and the aggregate rate hides both: only **80.3%** of human responses
+were the shape or the texture category at all, and **240 of the 1200 images**
+drew at least one texture response. Human cue-conflict behaviour is not
+homogeneous across images.
+
+Two further observations. First, this analysis reproduces the diet arm's rate
+range above **exactly** (0.373–0.913) through an independent code path; the
+no-diet range comes out 0.309–0.461 against the 0.312–0.459 quoted, because that
+sweep steps `w` at 0.05 and this one at 0.005 and the no-diet extremes fall at
+interior `w` rather than at the endpoints both grids contain. Second, the two
+streams rank images almost independently (residualised r = −0.030 to +0.072), so
+`w` moves the aggregate rate across a span of 0.433–0.517 per diet run while
+barely reordering *which* images are hard. Within this family the rate and
+item-level difficulty are separately addressable, which is consistent with the
+second point above: if the streams ordered images alike, matching the rate would
+also come close to matching the ordering, and it does not.
