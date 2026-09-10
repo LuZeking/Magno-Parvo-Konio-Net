@@ -11541,3 +11541,70 @@ statement about this family's ability to imitate an observer, not about human
 visual cortex. Limitation 14's replacement text must say that. It also inherits
 every scope limit already on the human comparison (Limitation 15, and the
 ten-observer sample).
+
+### §106.10 AMENDMENT — §106.7's prediction 3 FAILED on the smoke run. Two
+### controls added, and they are POST-HOC.
+
+*Written after seeing one run (dkl_bcs_seed0, best-saved checkpoint) at the
+coarse 0.05 grid. This is not a pre-registration and must not be read as one.
+It is recorded here, before the nine-run array is submitted, so that the
+sequence — prediction, falsification, added control — is on the record in the
+order it happened.*
+
+**What happened.** The smoke run passed every assertion: human anchors 0.9576
+and 0.2335, the vectorised statistics agree with the validated scalar ones to
+0.00e+00 at all 21 coarse points, the affine identity holds at 3.6e-05.
+Predictions 1 and 2 came out as declared — E1 unattainable for 10/10 observers,
+E2 interior for 6/10 and spread from w = 0.30 to w = 1.00 across observers.
+**Prediction 3 did not.** It declared kappa at the fitted w would stay below 25%
+of the human–human ceiling for every observer. The best observer (subject-03)
+reached **+0.0893 = 38.2%**, and three others exceeded 23%.
+
+**Why this is not yet a contradiction of §2.6.2.** The published "never exceeds
+18% of the ceiling" is the *mean over the ten observers* at each w. 38.2% is a
+*per-observer maximum over 1001 weights*, then the largest of ten such maxima.
+Those are different statistics and the second is selected twice over. My
+prediction was simply wrong to compare them as if they were the same quantity;
+that error is mine and is why the number came in high.
+
+**But it cannot be waved away either**, because §106.8 pre-declared that a
+fitted w approaching the ceiling is a positive finding that must be led with.
+38.2% is not "approaching" — it is still 62% short, and the human–human pairs
+average 0.234 with sd 0.095 while the best model–observer pair reaches 0.0893.
+The honest position is that the number is inflated by selection by an unknown
+amount, and an unknown amount is not a result. Two controls settle it.
+
+**Control A — split-half cross-validation of the fitted weight.** The direct
+test of whether a per-observer fitted w is real or is fitting 1,200 trials of
+noise. Items are split at random in half; w is fitted by argmax kappa on half A
+and kappa is evaluated at that w on held-out half B. **R = 200 random splits**,
+reporting the mean held-out kappa against two references: the in-sample kappa at
+the all-data fitted w (the inflated number), and the mean kappa over all w with
+no fitting at all (the no-selection floor). If held-out kappa collapses to the
+no-fitting floor, the 38.2% is selection and the family contains no
+observer-specific readout.
+
+**Control B — permutation null for the selected maximum.** Each observer's
+trial vector is shuffled across items **P = 1000** times, and the whole
+best-over-1001-weights statistic is recomputed each time. This gives the
+distribution of the selected maximum under no model–observer correspondence,
+and the observed maximum is reported as a position in it. This measures exactly
+the inflation that argmax-over-w buys for free.
+
+Both are cheap: kappa's four sufficient statistics are matmuls of the model's
+fixed decision matrix against the observer vectors, so P permutations or R
+splits are one matmul each, not a loop.
+
+**Declared now, before the controls run:** if held-out kappa (Control A) stays
+near the in-sample value and the observed maximum sits outside the permutation
+null (Control B), then the fitted readout weight carries real observer-specific
+structure and §2.6.2's "rate-matching is not decision-matching" needs
+qualifying — some readout of these components *does* track an individual
+observer, which would be a positive and would be led with per §106.8. If
+held-out kappa collapses toward the no-fitting floor, the bound stands and
+strengthens: not only does the family fail to reach any observer's rate, its
+apparent trial-level agreement does not survive cross-validation either.
+
+**Prediction 3 is withdrawn, not revised.** It compared two different
+statistics and its replacement would be a number chosen after seeing the data.
+Controls A and B are decision rules, not predictions, and that is deliberate.
