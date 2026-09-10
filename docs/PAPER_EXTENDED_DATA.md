@@ -613,7 +613,7 @@ would be a substitution, not an answer.
 
 ## E3 — §2.3, the readout sweep and the single-stream control
 
-Moved from §2.3: the tabulated sweep (now Figure 3a), the endpoint and decided-image caveats, the single-stream control table with its seed-level separation, and the two limits on that control.
+Moved from §2.3: the tabulated sweep (now Figure 3a), the endpoint and decided-image caveats, the single-stream control table with its seed-level separation, and the limits on that control. The control now has two arms — a half-capacity ResNet-18 single stream and the pre-registered parameter-matched ResNet-34 arm — and they do not agree; §2.3 reports the withdrawal that follows.
 
 | `w` (weight on the magno stream) | 0.00 | 0.25 | 0.50 | 0.75 | 1.00 |
 |---|---|---|---|---|---|
@@ -633,26 +633,57 @@ Second, the decided-image count varies across `w` (0.24–0.45 of the 1,200), so
 the extreme-`w` cells carry the denominator caveat of §2.4; the monotone trend
 holds across the well-decided middle of the range regardless.
 
-| | single stream | two-stream `dkl_bcs` | Δ |
+Three arms, 3 seeds each, mean [range over seeds]. All were scored by the same
+script over the same 1,200 stimuli; the comparator columns reproduce the values
+published elsewhere in this paper (0.5672 / 0.6547 shape bias, 0.5990 / 0.5562
+accuracy) before the matched arm was added, so the new arm is compared against
+the paper's own baselines rather than a re-derivation.
+
+| | single r18 | single r34 (matched) | two-stream `dkl_bcs` |
 |---|---|---|---|
-| cue-conflict shape bias, best saved ckpt | 0.567 | **0.655** | **−0.088** |
-| cue-conflict shape bias, final ckpt | 0.557 | **0.675** | **−0.118** |
-| top-1 accuracy, best saved ckpt | **0.599** | 0.556 | +0.043 |
-| trainable parameters | 11,230,832 | 22,397,936 | 0.501× |
+| cue-conflict shape bias, best saved ckpt | 0.567 [0.541, 0.590] | 0.626 [0.604, 0.652] | **0.655** [0.594, 0.718] |
+| cue-conflict shape bias, final ckpt | 0.557 [0.515, 0.587] | 0.626 [0.604, 0.652] | **0.675** [0.646, 0.692] |
+| top-1 accuracy, best saved ckpt | 0.599 [0.589, 0.608] | **0.623** [0.616, 0.634] | 0.556 [0.552, 0.564] |
+| sd(val top-1) over last 20 epochs | 0.041 [0.028, 0.065] | **0.030** [0.015, 0.041] | 0.057 [0.043, 0.073] |
+| decided images of 1,200, best saved | 501.0 [491, 517] | 536.7 [515, 556] | 502.0 [483, 520] |
+| trainable parameters | 11,230,832 | 21,338,992 | 22,397,936 |
 
-Seed-level separation is **complete under both checkpoint policies** (single
-0.541/0.590/0.570 against two-stream 0.594/0.718/0.652 at the best saved
-checkpoint), and the decision rates match to within 0.003, so this is not the
-denominator artefact of §2.4. **The split buys shape bias and pays for it in
-accuracy.** The ordering that matters for this section is
+*Shape bias: the separation does not survive matching.* Against the r18 control
+seed-level separation is **complete under both checkpoint policies** (0.541 /
+0.590 / 0.570 against 0.594 / 0.718 / 0.652 at the best saved checkpoint) and
+the decision rates match to within 0.003, so that comparison is not the
+denominator artefact of §2.4. Against the matched arm the ranges **overlap**
+under both policies. §64.6 fixed the decision rule before either arm was
+scored — complete separation of three seed ranges a side, raw ranges rather
+than a p-value at a 3v3 floor of .10 — so the matched comparison licenses no
+claim, and §2.3 withdraws the attribution accordingly. The two single-stream
+arms differ from one another by **capacity alone** and do separate completely
+(0.567 against 0.626), which shows the confound is real and not merely
+possible. Overlap at n = 3 is an absence of separation, not evidence of
+equality; we do not claim the split buys nothing.
 
-*Two limits.* This tests the split for the **diet-on-luminance arm only** and
-must not be generalised to `swap` or `parvo_highsf`. And the capacity confound
-is retired for the accuracy comparison (the smaller model wins) but **not** for
-the shape-bias comparison: a parameter-matched single stream (`resnet34`,
-~21.3M) might close the 0.088 gap. That arm was pre-registered and has not been
-run; it is 3 seeds × ~26 h of GPU and its absence is a decision, not an
-oversight (PLAN §72.6).
+*Accuracy and stability: both survive matching and strengthen.* All three arms
+separate completely on best-saved top-1, with the matched single stream ahead of
+the r18 control and both ahead of the two-stream model, so the accuracy cost of
+the split is not a capacity artefact and is larger at matched parameters than
+the 0.043 the r18 control reports. Late-training stability separates completely
+between the matched arm and the two-stream model. For all three r34 seeds the
+best saved checkpoint **is** epoch 149, so both checkpoint policies score
+identical weights and §S1.5's policy concern does not arise for this arm.
+
+*A denominator caveat specific to the matched arm.* Its decided-image count,
+536.7/1,200, exceeds both comparators by roughly 35 images — about ten times the
+0.003 rate agreement that holds between the r18 control and the two-stream
+model. The matched arm's shape bias is therefore computed over a partly
+different and larger subset, which is disclosed rather than resolved and is a
+second reason not to read its 0.029 shortfall as a measured quantity.
+
+*Two scope limits.* This tests the split for the **diet-on-luminance arm only**
+and must not be generalised to `swap` or `parvo_highsf`. And the matched arm
+changes capacity, which changes the learned representation as well as the
+readout over it; it is therefore not a frozen-component result in the sense of
+the `w` sweep, and the capacity→shape-bias effect it exhibits is reported as an
+observation, not as an isolated factor.
 
 ### E3.1 — the nonlinear readout sweep (§104)
 

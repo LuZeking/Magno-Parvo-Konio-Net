@@ -454,25 +454,53 @@ decided-image count are in Extended Data §E3. **Nothing here fits `w` to
 humans** — no weighting was estimated from human data, and the sweep does not
 identify which mixture a human readout uses.
 
-**The split is doing the work: without it the behaviour is worse.** The
-immediate objection to a two-component account is that the components may be
+**A parameter-matched control withdraws the causal claim we had attached to the
+split.** The objection to a two-component account is that the components may be
 decorative -- that one trunk carrying both channels, with the identical diet,
-would behave the same. We trained that control: `dkl_bcs_single`, 3 seeds, one
-ResNet-18 trunk taking both DKL channels stacked, same diet, same schedule. It
-reaches **0.567** against the two-stream **0.655**
-at the best saved checkpoint, with seed-level separation complete under both
-checkpoint policies and decision rates matching to within 0.003. **The split
-buys shape bias and pays for it in accuracy** (0.599 against 0.556) at half the
-parameters. Table and limits: Extended Data §E3.
+would behave the same. We ran that control twice. Against a half-capacity
+single stream (`dkl_bcs_single`, one ResNet-18 trunk taking both DKL channels
+stacked, 11.2M parameters) the two-stream model separates completely at both
+checkpoint policies, **0.655** against **0.567**. Against the pre-registered
+parameter-matched arm (`dkl_bcs_single34`, one ResNet-34 trunk, 21.3M against
+22.4M, same diet and schedule) it does not: **0.655** against **0.626**, with
+seed ranges overlapping under both policies. Under the rule fixed before either
+arm was scored -- complete separation of three seed ranges a side, and raw
+ranges rather than a p-value at a 3v3 floor of .10 -- that is no separation,
+and **we therefore do not claim that the split causes the shape-bias advantage
+over one stream.**
 
-> magno stream alone **0.903**  >  two-stream integrated **0.655**  >  single
-> stream **0.567**,
+The confound is directly visible rather than merely possible. The two
+single-stream arms differ from one another by capacity alone -- same input,
+same diet, same schedule, one trunk in both -- and they separate completely at
+both policies, 0.567 against 0.626. Capacity moves shape bias by about what the
+split had been credited with. We do not read the overlap the other way either:
+three seeds a side cannot establish that the split buys nothing, so what we
+withdraw is the attribution, not the difference.
 
-which locates the cost precisely: integration costs 0.248 relative to the best
-single component, but having two components to integrate is still worth 0.088
-over having one. So integration is not what destroys the shape bias — a single
-stream carrying the same information does worse than the integrated pair. The
-remedy for the integration cost is not to drop the split.
+**The accuracy half of the trade survives the matched control and grows under
+it.** At matched parameters the single stream's advantage widens to **0.623**
+against the two-stream **0.556**, with all three arms completely separated, and
+late-training stability moves the same way (sd of validation top-1 over the
+last 20 epochs: 0.015--0.041 matched, against 0.043--0.073 two-stream). The
+split pays for itself in accuracy, and that half is not a capacity artefact.
+One complication travels with the matched arm and is disclosed rather than
+resolved: its decision count is 536.7/1200 [515, 556] against 502.0 [483, 520]
+two-stream, so the rates that match to within 0.003 for the ResNet-18 control
+diverge by roughly ten times that for the matched one, and its shape bias is
+computed over a partly different, larger subset. Seed-level ranges, the full
+table and the two scope limits: Extended Data §E3.
+
+> magno stream alone **0.903**  >  two-stream integrated **0.655**  >
+> parameter-matched single stream **0.626**  >  half-capacity single stream
+> **0.567**,
+
+which still locates the integration cost precisely -- 0.248 relative to the
+best single component -- while the spacing among the lower three rungs is
+within what capacity alone produces. The ladder carries a claim about the cost
+of integration, not about a benefit of the split. It is also, read the other
+way, a third instance of this section's thesis: shape bias moved here under a
+change of trunk capacity, a manipulation no more about shape than the readout
+weight was.
 
 This is the mechanism we propose for the paradox: **shape-biased behaviour does
 not require shape-biased representations**, because a behavioural rate is a
@@ -1814,15 +1842,30 @@ https://doi.org/10.1038/nn.4244
    human, and our model is not a model of macaque; but the premise is not
    carried by human data alone, and §1 states this rather than leaving it to be
    discovered.
-16. **The single-stream control is not parameter-matched.** It has half the
-   parameters of the two-stream model (§2.3). The confound runs against the
-   accuracy result and in favour of the shape-bias result; the pre-registered
-   `resnet34` matched arm has not been run (PLAN §72.6).
+16. **A control removed a claim: the shape-bias advantage over one stream is
+   not attributable to the split.** This limitation previously recorded that the
+   single-stream control was not parameter-matched and that the confound ran
+   *in favour of* the shape-bias result. It fired. The pre-registered `resnet34`
+   matched arm was run and does not separate from the two-stream model (0.626
+   against 0.655, overlapping ranges under both checkpoint policies), while the
+   half-capacity control does (0.567); capacity alone accounts for a difference
+   of the same size. The accuracy half moved the other way and strengthened
+   (§2.3, Extended Data §E3). This is no longer a missing control but a
+   withdrawn attribution.
 
 
 ## Claims deliberately not made
 
 Recorded so the omissions are visible rather than silent.
+
+- **That the two-stream split causes the shape-bias advantage over a single
+  stream.** The pre-registered parameter-matched control was run and does not
+  separate from the two-stream model; the half-capacity control does, but a
+  capacity change alone moves shape bias by about the same amount (§2.3,
+  Extended Data §E3). The comparison therefore cannot carry a causal claim
+  about the split. We equally do not claim the converse -- that the split buys
+  nothing for shape bias -- which three seeds a side cannot establish. The
+  accuracy side of the trade is claimed, and is stronger at matched parameters.
 
 - **Where in visual cortex the diet's shape-bias effect lands.** We tested
   whether the per-voxel predicted shape-bias profile carries a diet-specific
