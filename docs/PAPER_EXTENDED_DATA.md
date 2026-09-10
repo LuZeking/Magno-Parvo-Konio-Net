@@ -569,6 +569,48 @@ is primary; n = 7 is a leave-one-subject-out check, not the removal of a bad
 fit.
 
 
+### E2.3 — the exact permutation null on hierarchical-rank monotonicity
+
+§2.2(b) reports that the observed diet-arm gradient is the most extreme
+labelling of the seven retinotopic ROIs that exists. The test is exact rather
+than sampled: the hierarchical-rank vector [1, 1, 2, 2, 3, 3, 4] has ties, so
+the seven labels admit 7!/(2!x2!x2!x1!) = **630** distinct assignments, and all
+630 are enumerated. The same permuted labelling is applied to every subject,
+because ROI labels are shared across subjects -- the question is whether the
+true labelling is special, not whether one subject's profile is. One-sided in
+the pre-stated direction (a decline with hierarchical rank), so the smallest
+attainable p is 1/630 = .0016.
+
+| arm | seed | statistic | observed rho | p (exact) | most extreme of 630? | null mean | null 2.5th pct |
+|---|---|---|---|---|---|---|---|
+| diet | 0 | norm | **-0.9637** | **.0016** | **yes** | -0.000 | -0.754 |
+| diet | 0 | raw | **-0.9637** | **.0016** | **yes** | +0.000 | -0.743 |
+| diet | 1 | norm | **-0.9728** | **.0016** | **yes** | +0.000 | -0.750 |
+| diet | 1 | raw | **-0.9728** | **.0016** | **yes** | +0.000 | -0.743 |
+| diet | 2 | norm | **-0.9660** | **.0016** | **yes** | +0.000 | -0.748 |
+| diet | 2 | raw | **-0.9660** | **.0016** | **yes** | +0.000 | -0.756 |
+| no diet | 0 | norm | **-0.5025** | 0.0286 | no | +0.000 | -0.502 |
+| no diet | 0 | raw | **-0.5713** | 0.0206 | no | +0.000 | -0.559 |
+| no diet | 1 | norm | **-0.6057** | 0.0190 | no | +0.000 | -0.546 |
+| no diet | 1 | raw | **-0.6608** | 0.0190 | no | +0.000 | -0.594 |
+| no diet | 2 | norm | **-0.5805** | 0.0365 | no | +0.000 | -0.616 |
+| no diet | 2 | raw | **-0.4635** | 0.0921 | no | +0.000 | -0.594 |
+
+Six of six diet cells sit at the exact floor and are the most extreme of all
+630. The no-diet arm does not: its p ranges from .019 to .092, and seed 2's two
+statistics disagree across .05 (.037 `norm` against .092 `raw`), so §8's
+two-statistics rule refuses a claim there. Profiles are built by the identical
+construction as `tmp_analysis/effect_sizes.py` (nc > 0.1, >= 20 voxels per ROI),
+sourced from `results/encoding_cc/`. Code:
+`tmp_analysis/hierarchy_permutation_null.py`; output
+`results/hierarchy_permutation_null.json`.
+
+**What this does not do.** It calibrates the gradient against arbitrary
+labelling of the same ROIs. It does not address the gradient's selection from
+seven regional hypotheses -- that is a different threat, and §2.2's family-size
+disclosure is the response to it. Reporting the null instead of the disclosure
+would be a substitution, not an answer.
+
 ## E3 — §2.3, the readout sweep and the single-stream control
 
 Moved from §2.3: the tabulated sweep (now Figure 3a), the endpoint and decided-image caveats, the single-stream control table with its seed-level separation, and the two limits on that control.

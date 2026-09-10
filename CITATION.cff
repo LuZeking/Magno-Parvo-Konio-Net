@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite it as below."
+title: "Shape-biased behaviour does not require shape-biased representations"
+abstract: >-
+  Code and analysis for a two-stream network receiving approximations of the
+  magnocellular and parvocellular signals reaching cortex, with the encoding,
+  behavioural and statistical analyses built on it.
+type: software
+license: BSD-3-Clause
+repository-code: "https://github.com/REPLACE-ME"
+# TODO before submission, and only the authors can supply these:
+#   - confirm the author list, order, and ORCIDs
+#   - replace repository-code with the public URL
+#   - add the Zenodo DOI once the release is archived, as:
+#       identifiers:
+#         - type: doi
+#           value: 10.5281/zenodo.XXXXXXX
+authors:
+  - name: "See LICENSE; author list to be confirmed before release"
