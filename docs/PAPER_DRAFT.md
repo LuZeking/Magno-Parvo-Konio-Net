@@ -2529,9 +2529,9 @@ ledger that never records a loss is not evidence of anything.
 
       What moved: §E2.1.1 (the floor subtraction's assumption, the
       residual-misfit analysis, the six-variant sensitivity table), §E6.2.1 (the
-      progressive-transition arm per corruption), §E6.3.1 and §E6.3.2 (per-image
-      reliability, the two-code-path check, and the per-image target's
-      construction), §S1.6 (the three withdrawn framings of the no-diet
+      progressive-transition arm per corruption), §E6.3.1 (the per-image target's
+      construction, its reliability controls and the two-code-path check),
+      §S1.6 (the three withdrawn framings of the no-diet
       gradient) and §S1.7 (the readout sweep presented as a measurement). What
       was removed as duplication: §2.2's supersession paragraph, its subject-01
       provenance archaeology and its artefact-floor table, all three already
