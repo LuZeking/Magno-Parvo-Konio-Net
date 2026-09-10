@@ -24,6 +24,46 @@ import numpy as np
 SRC = "results/sweep_error_consistency/*.json"
 
 
+def per_observer_ceilings():
+    """Each observer's own ceiling = mean kappa with the other nine.
+
+    The pooled ceiling (mean over all 45 pairs) is the right denominator for
+    §2.6.2's statistic, whose numerator is also pooled. It is the WRONG
+    denominator for a per-observer numerator, and because the individual
+    ceilings span 2.68x, a maximum taken over per-observer-normalised values
+    is biased toward low-ceiling observers by the denominator alone.
+    """
+    import itertools
+    import os
+
+    import sweep_error_consistency as S
+    from src.analysis.behavior.cue_conflict import list_cue_conflict_images
+
+    items = list_cue_conflict_images()
+    shapes = [i[1] for i in items]
+    textures = [i[2] for i in items]
+    stems = [os.path.splitext(os.path.basename(i[0]))[0] for i in items]
+    H = S.load_humans(stems, shapes, textures)
+
+    per, allk = {}, []
+    for a, b in itertools.combinations(sorted(H), 2):
+        k = S.kappa(H[a], H[b])
+        allk.append(k)
+        per.setdefault(a, []).append(k)
+        per.setdefault(b, []).append(k)
+    pooled = float(np.nanmean(allk))
+    own = {a: float(np.nanmean(v)) for a, v in per.items()}
+
+    print(f"\npooled ceiling {pooled:.4f} over {np.isfinite(allk).sum()} pairs "
+          f"(sd {np.nanstd(allk, ddof=1):.4f})")
+    print("per-observer ceiling (mean kappa with the other nine):")
+    for a in sorted(own, key=own.get):
+        print(f"  {a}  {own[a]:.4f}  {own[a] / pooled:5.3f}x pooled")
+    lo, hi = min(own.values()), max(own.values())
+    print(f"  range {lo:.4f}-{hi:.4f} = {hi / lo:.2f}x")
+    return pooled, own
+
+
 def per_run(path):
     d = json.load(open(path))
     ceil = d["human_human_ceiling"]
@@ -60,6 +100,10 @@ def main():
     print("\nA permutation null for the second statistic must reproduce BOTH\n"
           "selection steps -- recompute every w, take the per-observer argmax,\n"
           "then the best of n -- or it bounds neither.")
+    try:
+        per_observer_ceilings()
+    except Exception as exc:                      # human CSVs not reachable
+        print(f"\n(per-observer ceilings unavailable: {exc})")
 
 
 if __name__ == "__main__":

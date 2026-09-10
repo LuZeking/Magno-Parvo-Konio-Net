@@ -1150,6 +1150,22 @@ for identical raters, −0.043 for independent raters at a matched rate, and
 −0.036 for a simulated model matching a human's rate but choosing independently.
 The pipeline was checked against published values before it was trusted.
 
+*The ceiling is pooled, and the per-observer ceilings are not uniform.* Every
+percentage in §2.6.2 is expressed against the pooled human–human kappa of
+**0.2335** (45 pairs, sd 0.0962), and both its numerator — kappa averaged over
+the ten observers — and its denominator are pooled, so the statistic is
+internally consistent. The observers' individual ceilings, each one's mean
+agreement with the other nine, nevertheless span **0.1128 (subject-09) to
+0.3021 (subject-08)**, a factor of **2.68**. This changes no number we report,
+because we never divide a single observer's kappa by the pooled ceiling. It
+does mean two things for anyone extending this analysis. A *per-observer*
+statistic must use that observer's own ceiling. And a maximum taken **over**
+observers on per-observer-normalised values is biased toward the low-ceiling
+observers by the denominator alone — subject-09's ceiling is 0.483× pooled, so
+an identical kappa scores roughly twice the percentage there — so selecting an
+observer requires a null built on the same normalisation and carrying the same
+selection. Code: `tmp_analysis/perobserver_selection_check.py`.
+
 *The caveat that does not rescue it.* Kappa compresses when marginals are skewed,
 and humans are at 0.958 — which is why the human–human ceiling is 0.234 and not
 something near 1. This is handled by reporting every model as a percentage of
