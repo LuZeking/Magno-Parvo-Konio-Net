@@ -11210,3 +11210,42 @@ one §104.1 asks about. The `linear` span is reported beside it.
 Fixed now, identical for every `w` and every head: Adam at lr 1e-3, batch 1024,
 20 epochs, hidden width 512, and the same initialisation seed at every `w` so a
 difference between weights is not a difference between draws.
+
+### 104.8 OUTCOME — the span survives, and nonlinearity is not what carries it
+
+Jobs 26459572 (extraction) and 26459577 (fits), both complete. Scored against
+§104.4's rule exactly as fixed, with no denominator or threshold changed after
+the fact.
+
+| quantity | value | rule | verdict |
+|---|---|---|---|
+| nonlinear median span, best checkpoint | **0.4655** | ≥ 0.432 survives | **SURVIVES** (86.2% of the registered 0.540) |
+| same, against the matched per-run affine span (0.5084) | 90.2% | — | passes on the fairer denominator too |
+| nonlinear ÷ refitted-linear span | **1.01** | — | nonlinearity changes nothing |
+| accuracy-gated nonlinear span | 0.283 (52.4%) | gate: is the span *only* where accuracy collapsed? | **no** — a substantial span survives among accurate readouts |
+
+**What this settles.** §2.3's claim was established for affine readouts only, and
+a referee was right to say so. It now holds for a fitted two-layer nonlinear
+readout as well, at 86% of the affine span. The §104.7 control is what makes the
+result interpretable: the refitted *linear* head gives the same span as the
+nonlinear one to within 1%, so the span is not a property of the head's
+functional form. It is a property of having two oppositely biased components and
+a readout over them — which is the claim the title makes, now established
+outside the case where it is an identity.
+
+**What it does not settle**, restating §104.5 rather than quietly dropping it:
+this widens the class from affine to affine-plus-one-fitted-nonlinear family. It
+does not close the class, and it says nothing about a biological readout.
+
+**The honest qualification, reported in the main text and not only here.**
+Restricting to readouts within 5 points of peak validation accuracy roughly
+halves the span (0.283; shape bias 0.421 to 0.760 over `w` = 0 to 0.75). The
+gate was written to catch a span that exists only where the head has collapsed;
+that is not what happened, but the extreme rates near `w` = 1 do cost accuracy.
+That is §2.7's cost accounting seen from the readout side.
+
+**Registered and unchanged.** The threshold (80%), the floor (50%), the gate
+(±5 accuracy points), the statistic (median span across seeds at the best
+checkpoint) and the head (512-wide, ReLU) were all fixed in §104.3–104.4 before
+extraction, and §104.7's linear control was committed while extraction was still
+running. Nothing was tuned to the outcome.

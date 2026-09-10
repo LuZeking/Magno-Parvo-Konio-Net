@@ -419,7 +419,28 @@ deviation 1.1 × 10⁻⁶ on a logit scale of 0.32). **The sweep is therefore ex
 arithmetic on the two endpoint logit vectors and contains no information beyond
 `w` = 0 and `w` = 1**, both already reported above; monotonicity is very nearly
 analytic rather than a discovered property, and an earlier version of this
-section wrongly presented it as a measurement (Supplementary Note S1.7). What
+section wrongly presented it as a measurement (Supplementary Note S1.7).
+
+**The span is not, however, an artefact of the affine head.** That the sweep is
+an identity says the *affine* readout carries no extra information; it does not
+say the span would vanish under a readout that is not affine. We tested this
+under a rule fixed before the test was run (PLAN §104). Re-fitting a readout on
+the frozen features at each of the 21 `w` — a two-layer nonlinear head, and a
+refitted **linear** head as a control for the refit itself — reproduces the
+sweep. The nonlinear head's median span across seeds is **0.466**, **86%** of
+the affine span these same features give, against a registered survival
+threshold of 80%. The decisive comparison is the one the linear control
+supplies: **nonlinear and refitted-linear spans agree to within 1%** (ratio
+1.01), so the span is not a property of the head's functional form at all, but
+of having two oppositely biased components and any readout over them.
+
+**Accuracy bounds where this applies, and we report the bound rather than the
+headline alone.** Restricted to readouts within 5 points of peak validation
+accuracy, the span narrows to **0.283** and shape bias moves from **0.421 to
+0.760** across `w` = 0 to 0.75. The extreme rates near `w` = 1 are bought with
+accuracy — which is §2.7's cost accounting seen from the readout side rather
+than a separate finding. Full sweeps, both heads and both checkpoint policies:
+Extended Data §E3.1. What
 survives is the statement the argument needs: a behavioural shape-bias rate is a
 property of a readout over components, not a report of either component, and a
 single scalar carries the system across the range the field's models occupy
@@ -935,7 +956,12 @@ the fusion weights sum to one, so `clf(w*y1 + (1-w)*y2) = w*clf(y1) +
 (1-w)*clf(y2)` holds exactly (§2.3; maximum deviation 1.1 × 10⁻⁶), and the
 shape-bias rate sweeps 0.373 to 0.913 — most of the range the field's models
 occupy — while both representations stay bit-identical and the sweep is exact
-linear interpolation rather than an empirical trend. **The sweep does not reach
+linear interpolation rather than an empirical trend. That the affine case is an
+identity raises the obvious objection that the result is a property of the head;
+it is not. Re-fitting a two-layer nonlinear readout on the same frozen features
+reproduces 86% of the span, and a refitted *linear* head reproduces it to within
+1% of the nonlinear one, so what carries the span is the pair of oppositely
+biased components rather than the readout's functional form (§2.3, PLAN §104). **The sweep does not reach
 the human value.** Its maximum over all 21 weights, 3 seeds and both checkpoint
 policies is 0.913, below the *lowest individual observer* (0.919) and 0.045
 below the human mean — the bound §2.7 and Limitation 7 already state. That

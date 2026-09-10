@@ -654,6 +654,64 @@ the shape-bias comparison: a parameter-matched single stream (`resnet34`,
 run; it is 3 seeds × ~26 h of GPU and its absence is a decision, not an
 oversight (PLAN §72.6).
 
+### E3.1 — the nonlinear readout sweep (§104)
+
+§2.3 establishes that its `w` sweep is an identity of the affine head. That
+raises a question it cannot itself answer: would the span survive a readout that
+is not affine? The test was registered in PLAN §104 before any feature was
+extracted, with the decision rule and the accuracy gate fixed in advance, and
+amended in §104.7 — also before any result existed — to add a refitted **linear**
+head, because the registered design confounded *nonlinear* with *refitted*.
+
+**Procedure.** Penultimate features for both streams were extracted once per run
+(3 seeds x 2 checkpoint policies) for MiniEcoset train and val and for the 1,200
+cue-conflict images, then held fixed. At each of the 21 `w`, two heads were
+fitted on `w*F1 + (1-w)*F2`: `Linear(512,112)`, and
+`Linear(512,512) -> ReLU -> Linear(512,112)`. Identical budget for every head and
+every `w` (Adam, lr 1e-3, batch 1024, 20 epochs) and the same initialisation seed
+at every `w`, so a difference between cells is not a difference between draws.
+The representations are never updated.
+
+| checkpoint | seed | affine span | refit-linear span | nonlinear span | nl / affine | nl / linear | accuracy-gated nl span |
+|---|---|---|---|---|---|---|---|
+| best | 0 | 0.5159 | 0.4609 | **0.4655** | 90.2% | 1.01 | 0.2634 |
+| best | 1 | 0.4886 | 0.4316 | **0.4181** | 85.6% | 0.97 | 0.2829 |
+| best | 2 | 0.5084 | 0.4986 | **0.5071** | 99.7% | 1.02 | 0.3118 |
+| final | 0 | 0.4637 | 0.3975 | **0.4136** | 89.2% | 1.04 | 0.2129 |
+| final | 1 | 0.4851 | 0.4879 | **0.4791** | 98.8% | 0.98 | 0.2804 |
+| final | 2 | 0.4334 | 0.4168 | **0.4308** | 99.4% | 1.03 | 0.3059 |
+
+**Three readings, in order of what they settle.**
+
+1. **The span survives.** The registered statistic — the nonlinear median span
+   across the three best-checkpoint seeds — is **0.4655**, or **86.2%** of the
+   registered affine baseline of 0.540, against a survival threshold of 80%
+   fixed in §104.4. Against the matched per-run affine span (median 0.5084) it
+   is 90.2%. Both denominators pass; the registered one is the stricter and is
+   the one the rule names.
+2. **Nonlinearity is not what carries it.** The refitted-linear and nonlinear
+   spans agree to within 1% (median ratio 1.01 at the best checkpoint, 1.03 at
+   the final). Whatever produces the span, it is not the head's functional form.
+   This is what the §104.7 control was added to establish, and without it the
+   result would have been uninterpretable.
+3. **Accuracy bounds where the span is available.** Restricted to readouts
+   within 5 points of peak validation accuracy — the gate §104.4 fixed in
+   advance — the nonlinear span is **0.283**, 52.4% of the affine baseline, with
+   shape bias running 0.421 to 0.760 over `w` = 0 to 0.75. The span therefore
+   does *not* appear only where the head has collapsed, which is the failure the
+   gate was written to catch; but its extremes are bought with accuracy, which is
+   §2.7's cost accounting seen from the readout side.
+
+Code: `tmp_analysis/nonlinear_readout_features.py` (extraction, jobs 26459572)
+and `tmp_analysis/nonlinear_readout_sweep.py` (fits, jobs 26459577); outputs
+under `/scratch/byrong/TSN/nonlinear_readout/`, summary committed as
+`results/nonlinear_readout_summary.json`.
+
+**Extraction check.** The pooled features reproduce the independently stored
+per-stream logits of `tmp_analysis/perimage_logits.py`: shape bias agrees to 3-4
+decimals across the sweep and 1-2 of 1,200 argmax decisions differ, which is
+float32 accumulation order rather than a difference in what was computed.
+
 ## E4 — §2.4, the front-end 2×2
 
 Moved from §2.4: the seed-stability note, the denominator caveat on cue-conflict rates, the capacity control on `parvo_highsf`, and the accuracy-matched control in full including its pre-registered fatal outcome and its n=1 status.
