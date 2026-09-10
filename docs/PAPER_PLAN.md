@@ -11418,3 +11418,126 @@ cannot yield 0 missing and 0 unexpected keys — and it confirmed 122 tensors /
 11,230,832 params for r18 and 218 / 21,338,992 for r34, the latter matching the
 count the training log stamped at startup by a different route.
 
+
+---
+
+## §106 PRE-REGISTERED — fit `w` to the ten Geirhos observers. Written BEFORE
+## any fit is computed, because the grid it would run on is already on disk.
+
+*Authorised by the user 2026-09-10. This section is timestamped by its commit;
+the fit is not run until it is committed.*
+
+### §106.1 Why this is worth running, given what §2.3 and §2.6.2 already have
+
+The draft already reports (a) the rate sweep, max **0.913** over 21 weights × 3
+seeds × 2 policies, below the lowest individual observer (0.919) and 0.045 below
+the human mean; and (b) error consistency recomputed at all 21 weights for 9
+runs against the same 10 observers, never exceeding 18% of the human–human
+ceiling. Neither is a fit. Limitation 14 says so in as many words:
+
+> "No w was fitted to human data and nothing here estimates the weighting a
+> human readout would use."
+
+That is the gap. A sweep reports a *range*; a fit reports an **estimate**, and
+an estimate can be pinned at a boundary, which is a qualitatively different and
+stronger statement than "the range does not reach". This section converts
+Limitation 14 from an admission into a measurement, and Limitation 7's
+"directional only" into a bound with an interval.
+
+**This is a bound, not a new lead.** It sharpens §2.6.2 and rewrites two
+limitations. It does not get a section of its own and must not be written up as
+a negative result (Research Output Standard: no negative/audit papers).
+
+### §106.2 The estimand
+
+For observer *i*, the readout weight that best reproduces that observer:
+
+    E1 (rate fit)   w_i^rate  = argmin_w | sb(w) - rate_i |
+    E2 (trial fit)  w_i^trial = argmax_w  kappa( model_w , observer_i )
+
+Both are reported for all ten observers, per run. **§8's two-statistics rule
+applies: a claim is made only where E1 and E2 agree.** They answer different
+questions on purpose — E1 asks what weighting reproduces a person's *rate*, E2
+what weighting best predicts their *trials* — and the contrast between them is
+the point, not a nuisance.
+
+kappa is the instrument already used in §2.6.2 and validated in this codebase
+against the published human reference (0.958) and the human–human ceiling
+(0.234); both assertions are kept in the new script. It is not swapped for a
+likelihood, because the model's decision at fixed w is deterministic and a
+likelihood would require inventing a noise model that nothing here constrains.
+That limitation is stated rather than papered over.
+
+### §106.3 Boundary handling, declared in advance
+
+If argmin/argmax lands at w = 0 or w = 1, the fit is **pinned at the boundary**
+and is reported as *"no interior estimate exists"* — NOT as an estimate of 1.0.
+A boundary-pinned fit means the observer lies outside the family, which is a
+result about the family, and writing it as a number would disguise that.
+
+### §106.4 Resolution, and why the fit costs almost nothing
+
+The classifier is affine and the weights sum to one, so
+
+    clf(w*F1 + (1-w)*F2) = w*clf(F1) + (1-w)*clf(F2)
+
+**exactly** (§2.3 measures the deviation at 1.1e-6). So the two endpoint logit
+matrices (1200 x 112 each, ~0.5 MB) determine every w. The new script caches
+those once per run and evaluates a grid of step **0.001** — 1001 points against
+the cached grid's 21 — at no meaningful cost. No GPU, no retraining.
+
+Uncertainty on w^trial: **item bootstrap over the 1,200 cue-conflict images,
+B = 1000**, matching the bootstrap already used by
+`src.analysis.behavior.cue_conflict`. Reported as a percentile interval on the
+fitted w, and separately as the fraction of bootstrap replicates whose argmax is
+at a boundary.
+
+### §106.5 Arms and aggregation
+
+Nine runs, as §2.6.2: diet arm 3 seeds × 2 checkpoint policies, no-diet arm 3
+seeds (whose best saved checkpoint IS epoch 150). Per-observer fits are reported
+per run with the **range across seeds**, and complete separation rather than a
+p-value, per §64.6. No stream statistics.
+
+### §106.6 The decision-denominator complication, carried forward from §105.5
+
+The model does not decide every image, and the observers do not either. kappa
+already masks to images where both decided. The **rate** comparison does not:
+sb(w) is over the model's decided subset and rate_i over the observer's. Both
+counts are reported alongside every fit, as counts over a named subset, exactly
+as §64.6 required and §105.5 had to invoke.
+
+### §106.7 Predictions, recorded so they cannot be fitted afterwards
+
+1. **E1 is boundary-pinned for 10/10 observers on the diet arm.** The family's
+   maximum rate is 0.913 and the lowest observer is 0.919, so no interior
+   solution can exist unless the finer grid pushes the maximum above 0.919 —
+   which the 0.05 grid cannot rule out and the 0.001 grid will settle.
+2. **E2 is interior, and w^trial != w^rate.** If both hold, the sharper
+   statement is available: *the weighting you would infer from a person's rate
+   is not the weighting that best predicts their choices* — a second form of
+   §2.6.2's dissociation, obtained within one network rather than across a model
+   zoo.
+3. **kappa at w^trial stays below 25% of the human–human ceiling for every
+   observer.** The existing sweep never exceeds 18%; the finer grid may improve
+   on that slightly and should not improve on it much.
+
+### §106.8 What would count as a POSITIVE result, declared now
+
+If any observer's fitted w yields kappa approaching the human–human ceiling,
+the readout family contains a human-like decision-maker and that is a positive
+finding which **must be led with**, not buried — it would materially change
+§2.6.2's conclusion and the Discussion's "shape bias is a readout property"
+framing. Similarly, if E1 returns an interior estimate for any observer, the
+family does reach that person's rate and Limitation 7's "below the lowest
+individual observer" needs restating. Recorded here so the analysis is not
+rigged toward the bound I expect.
+
+### §106.9 What this cannot do
+
+It cannot estimate "the" human readout weight: it fits a scalar in OUR
+architecture over OUR two components to a human's choices, so a fitted w is a
+statement about this family's ability to imitate an observer, not about human
+visual cortex. Limitation 14's replacement text must say that. It also inherits
+every scope limit already on the human comparison (Limitation 15, and the
+ten-observer sample).
