@@ -19,33 +19,38 @@ deliberately not made*.
 
 ## Abstract
 
-Shown an object whose shape and texture disagree, humans name the shape;
-convolutional networks name the texture (Geirhos et al., 2018a). Set against
-this is evidence pointing the other way: representations along the ventral
-stream, the pathway most identified with object recognition, are well described
-by texture statistics (Jagadeesh & Gardner, 2022; Okazawa et al., 2015). We show
-the two facts are compatible, and give a mechanism.
+Shape bias — how often a model names an object's shape rather than its texture
+when the two disagree — is the most-cited measure of human alignment for vision
+models, and a model that matches the human rate is routinely described as
+having human-like representations. We show that the rate is a free parameter of
+the readout. In a two-stream network, reweighting a single scalar over frozen
+components moves shape bias from 0.40 to 0.90 — the range the field's models
+occupy — while neither representation changes. Because the head is affine this
+is exact interpolation between two measured endpoints rather than an empirical
+trend, and a nonlinear head refit on the same frozen features preserves 86% of
+the span, agreeing with a refitted linear head to within 1%.
 
-In a two-stream network receiving approximations of the magnocellular and
-parvocellular signals reaching cortex, the streams end training with opposite
-shape–texture biases, reached by different routes: the luminance stream's shape
-bias is supplied by its input statistics, while the chromatic stream's texture
-bias is built by learning. Fitted to eight subjects of the Natural Scenes
-Dataset, it is the *texture-biased* stream whose unique variance carries the
-ventral end of the hierarchy. Behaviour reads out from both, and the mixture is
-shape-biased. Reweighting that readout over frozen representations moves shape
-bias from 0.40 to 0.90, spanning the range the field's models occupy without
-either component changing. Because the head is affine, that sweep is exact
-interpolation between two measured endpoints rather than an empirical trend —
-which is precisely what makes the rate a free parameter of the readout rather
-than a property of either representation.
+What the metric then fails to track is measurable. Across 189 readouts with the
+mixing weight optimised post hoc, trial-by-trial agreement with ten human
+observers never reaches 21% of the human–human ceiling, and the weight that
+maximises agreement is neither stable across runs nor the one that matches the
+human rate. Shape bias likewise comes apart from effective dimensionality and
+from out-of-distribution robustness.
 
-Shape-biased behaviour therefore need not imply shape-biased representations: a
-behavioural rate is a property of a readout over components, not a report of any
-one of them. Consistent with this, three properties the field treats as
-travelling with shape bias — representational dimensionality, out-of-distribution
-robustness, and trial-by-trial agreement with human observers — do not. The
-correspondence we draw to cortex is one of explanatory role, not of content.
+The same mechanism dissolves a standing tension. Humans name shape, yet
+representations along the ventral stream — the pathway most identified with
+object recognition — are well described by texture statistics (Jagadeesh &
+Gardner, 2022; Okazawa et al., 2015). In a network receiving approximations of
+the magnocellular and parvocellular signals reaching cortex, the streams end
+training with opposite shape–texture biases by different routes: the luminance
+stream's shape bias is supplied by its input statistics, the chromatic stream's
+texture bias is built by learning. Fitted to eight subjects of the Natural
+Scenes Dataset, it is the *texture-biased* stream whose unique variance carries
+the ventral end of the hierarchy, while behaviour, reading out from both, is
+shape-biased. Shape-biased behaviour therefore need not imply shape-biased
+representations: a behavioural rate is a property of a readout over components,
+not a report of any one of them. The correspondence we draw to cortex is one of
+explanatory role, not of content.
 
 ---
 
@@ -59,8 +64,24 @@ human and machine object recognition, and closing it has become a standard
 target for biologically motivated models (Hermann et al., 2020; Jang & Tong,
 2021; Lu et al., 2026).
 
-A second body of evidence points the other way: along the ventral stream,
-object representations are well described by texture statistics. In humans,
+In the process the measurement has acquired a second life. **Shape bias is
+measured behaviourally and interpreted representationally**: a model whose rate
+approaches the human one is routinely described as having more human-like
+representations, and the rate has become the field's most-cited single number
+for human alignment in vision. Whether a behavioural rate licenses a
+representational description is exactly what is at stake here, and this paper's
+answer is that it does not. The rate is a free parameter of the readout. In a
+system holding a shape-biased and a texture-biased component, one scalar over
+frozen representations moves it across the whole range the field's models
+occupy (§2.3); the readout that best matches human trial-by-trial behaviour is
+neither the one that matches the human rate nor stable across runs (§2.6.2);
+and the rate travels with neither effective dimensionality nor
+out-of-distribution robustness (§2.6).
+
+That conclusion is reached through a standing tension in the literature, which
+the same mechanism resolves. A second body of evidence points the other way
+from the behavioural gap: along the ventral stream, object representations are
+well described by texture statistics. In humans,
 category-selective cortex fails to discriminate natural images from
 feature-matched scrambles that destroy spatial arrangement while preserving
 texture statistics, yet still discriminates between categories (Jagadeesh &
@@ -87,7 +108,7 @@ wherever the texture-biased component dominates — and in a model of the
 subcortical split, the component that dominates the ventral end is the
 texture-biased one.
 
-Three facts about the visual system motivate the model we use.
+Two facts about the visual system motivate the model we use.
 
 **(i) The primate visual system does not receive one image.** It receives a
 luminance-dominated, temporally fast, spatially coarse magnocellular signal and
@@ -103,11 +124,7 @@ term and the construct are theirs; §4.1 states the parameterisation we use, whi
 evaluates the age-dependent contrast-sensitivity cut at a fixed 48 months rather
 than scheduling it over training.
 
-**(iii) Shape bias is measured behaviourally and interpreted
-representationally.** The field's standard instrument is a behavioural rate on
-cue-conflict images, and a model that matches the human rate is routinely
-described as having human-like representations. Whether a behavioural rate
-licenses a representational description is exactly what is at stake here.
+
 
 We build such a system and show it does both at once. Its two streams end
 training with opposite shape–texture biases by different routes, in an
