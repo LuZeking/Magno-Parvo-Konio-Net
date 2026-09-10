@@ -11816,8 +11816,10 @@ fraction is 0.000 for "eight of the ten" observers while naming three that are
 not — an arithmetic slip, and self-contradictory as written. The count is
 **seven**: subject-01, -03, -05, -06, -08, -09 and -10 are attainable in
 exactly zero of the 1,000 item bootstrap replicates, in every one of the nine
-runs. The three non-zero are subject-02 (0.0015), subject-07 (0.0035) and
-subject-04 (0.1085), means over the six diet runs.
+runs. The three non-zero are subject-02, subject-07 and subject-04 — and they
+are stated here as **maxima over the six diet runs**, not means, because the
+means flatten all three: subject-02 peaks at **0.007** (mean 0.0015),
+subject-07 at **0.016** (mean 0.0035), subject-04 at **0.373** (mean 0.1085).
 
 **And the mean understates subject-04's spread**, which the corrected check
 surfaced: their per-run values are 0.001, 0.004, 0.016, 0.032, 0.225 and
@@ -11826,6 +11828,21 @@ family in over a third of bootstrap replicates. "Not a knife-edge" holds for
 the other nine observers and for the study as a whole — the point estimate is
 outside the family in 90/90 — but it is the wrong phrase for subject-04 in
 that run, and the range is reported rather than the mean alone from here on.
+
+*Second correction, same subsection, from the peer's follow-up:* the same
+flattening applies to subject-02 and subject-07, whose single-run peaks (0.007
+and 0.016) are four to five times their means. All three non-zero observers are
+now reported as maxima. The manuscript cut the "not a knife-edge" framing from
+both places it appeared rather than qualifying it (peer commit 0c37384), which
+is the right call and the option I preferred: the phrase was true of the study
+and of nine observers and false of the closest observer in one run, and a
+phrase that holds in aggregate but fails in exactly the case a sceptical reader
+checks is worse than no phrase.
+
+**The study-level claim is unaffected and is what the limitations rest on:** no
+point estimate attains any observer's rate in any of the 90 observer-runs. The
+item bootstrap is secondary, and it separates the observers rather than
+supporting a single summary — which is why it is now reported per observer.
 
 This is what Limitation 14 asked for and it is stronger than the sweep's "does
 not reach": the maximum-likelihood estimate does not exist in the interior for
