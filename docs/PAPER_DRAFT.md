@@ -401,45 +401,40 @@ decided-image count are in Extended Data §E3. **Nothing here fits `w` to
 humans** — no weighting was estimated from human data, and the sweep does not
 identify which mixture a human readout uses.
 
-**A parameter-matched control withdraws the causal claim we had attached to the
-split.** The objection to a two-component account is that the components may be
-decorative -- that one trunk carrying both channels, with the identical diet,
-would behave the same. We ran that control twice. A half-capacity single stream
-(`dkl_bcs_single`, one ResNet-18 trunk, 11.2M parameters) separates completely
-from the two-stream model at both checkpoint policies, **0.655** against
-**0.567**; the pre-registered parameter-matched arm (`dkl_bcs_single34`, one
-ResNet-34 trunk, 21.3M against 22.4M, same diet and schedule) does not,
-**0.655** against **0.626** with seed ranges overlapping under both. Under the
-rule fixed before either arm was scored -- complete separation of three seed
-ranges a side, raw ranges rather than a p-value at a 3v3 floor of .10 -- that
-is no separation, so **we do not claim that the split causes the shape-bias
-advantage over one stream.** The confound is visible rather than merely
-possible: the two single-stream arms differ by capacity alone and do separate
-completely (0.567 against 0.626). Nor do we read the overlap the other way --
-three seeds a side cannot establish that the split buys nothing -- so what we
-withdraw is the attribution, not the difference.
+**The split pays for itself in accuracy, and matching capacity makes that
+larger.** The objection to a two-component account is that the components may
+be decorative — that one trunk carrying both channels, with the identical diet,
+would behave the same. We ran that control at two capacities. Against the
+pre-registered parameter-matched single stream (`dkl_bcs_single34`, one
+ResNet-34 trunk, 21.3M against the two-stream 22.4M, same diet and schedule)
+the accuracy cost of the split **widens** to 0.623 against **0.556**, with all
+three arms completely separated and late-training stability moving the same way
+(sd of validation top-1 over the last 20 epochs, 0.015–0.041 matched against
+0.043–0.073 two-stream). That half of the trade is not a capacity artefact.
 
-**The accuracy half of the trade survives the matched control and grows under
-it.** At matched parameters the single stream's advantage widens to **0.623**
-against **0.556**, all three arms completely separated, and late-training
-stability moves the same way; that half is not a capacity artefact. One
-complication is disclosed rather than resolved: the matched arm decides
-536.7/1200 against 502.0 two-stream, so the rates that agree to within 0.003
-for the ResNet-18 control diverge by about ten times that here, and its shape
-bias is computed over a partly different, larger subset. Seed-level ranges, the
-three-arm table and the scope limits: Extended Data §E3.
+**Trunk capacity moves shape bias, and that is a third manipulation of the rate
+that is not about shape.** The two single-stream arms separate completely from
+each other under both checkpoint policies — **0.567** at 11.2M parameters
+against **0.626** at 21.3M — at fixed input, fixed diet and fixed schedule,
+with one trunk in both. It is the cleanest of this section's three
+demonstrations to state, because only one thing changed. It also fixes the
+scale on which the two-stream model's **0.655** should be read: its margin over
+the matched single stream is 0.029, inside what capacity alone produces, so the
+shape-bias ordering among these three models is attributable to capacity rather
+than to the split, while the accuracy ordering is the split's. (Two
+qualifications, both in Extended Data §E3: the matched arm decides 536.7/1200
+images against 502.0, so its rate is computed over a partly different subset,
+and changing capacity changes the learned representation as well as the readout
+over it, so unlike the `w` sweep this is not a frozen-component result.)
 
 > magno stream alone **0.903**  >  two-stream integrated **0.655**  >
 > parameter-matched single stream **0.626**  >  half-capacity single stream
 > **0.567**,
 
-which still locates the integration cost precisely -- 0.248 relative to the
-best single component -- while the spacing among the lower three rungs is
-within what capacity alone produces. The ladder carries a claim about the cost
-of integration, not about a benefit of the split. It is also, read the other
-way, a third instance of this section's thesis: shape bias moved here under a
-change of trunk capacity, a manipulation no more about shape than the readout
-weight was.
+which locates the integration cost precisely: **0.248** relative to the best
+single component. That is the large number on this ladder, and it is the one
+§2.7 accounts for; the spacing among the lower three rungs is the capacity
+effect above.
 
 This is the mechanism we propose for the paradox: **shape-biased behaviour does
 not require shape-biased representations**, because a behavioural rate is a
@@ -681,16 +676,16 @@ generalise: in-sample **+0.068** falls to **+0.026** held out against
 flip. Ten observers viewing identical images give fitted weights spanning 0.231
 to 1.000.
 
-*Two complications travel with that, and neither is buried.* The **no-diet arm
-does exceed its permutation null** (p ≤ .004) where the diet arm never does (p
-= .18, .35) — but permutation destroys model–observer correspondence
-altogether, so clearing it shows only that *some* trial-level agreement exists,
-which this section already grants at 7–18% of ceiling, and for that arm's
-winning observer the agreement is present at any weight (held-out +0.102
-against a +0.071 no-fitting floor). And the diet arm's null is the *higher* of
-the two, because its family sweeps rate 0.37–0.91 against 0.31–0.46: **a wider
-readout family gives a permuted observer more chances to match.** Extended Data
-§E6.3.3.
+*Two notes on the nulls.* The diet arm's null is the *higher* of the two (+0.10
+against +0.047) because its family sweeps rate 0.37–0.91 against 0.31–0.46: **a
+wider readout family gives a permuted observer more chances to match**, which
+anyone building a selection null over a readout family needs to account for.
+The no-diet arm does exceed its own null (p ≤ .004) where the diet arm never
+does; this is not evidence for a human-like readout, because permutation
+destroys model–observer correspondence altogether, so clearing it re-detects
+the 7–18% agreement already reported above, and for that arm's winning observer
+the agreement is present at any weight (held-out +0.102 against a +0.071
+no-fitting floor). Extended Data §E6.3.3.
 
 *The null is specific to the decision, not a property of the instrument.* Kappa
 scores one binary response per image, so a reader may reasonably ask whether a
@@ -1677,16 +1672,15 @@ https://doi.org/10.1038/nn.4244
    human, and our model is not a model of macaque; but the premise is not
    carried by human data alone, and §1 states this rather than leaving it to be
    discovered.
-16. **A control removed a claim: the shape-bias advantage over one stream is
-   not attributable to the split.** This limitation previously recorded that the
-   single-stream control was not parameter-matched and that the confound ran
-   *in favour of* the shape-bias result. It fired. The pre-registered `resnet34`
-   matched arm was run and does not separate from the two-stream model (0.626
-   against 0.655, overlapping ranges under both checkpoint policies), while the
-   half-capacity control does (0.567); capacity alone accounts for a difference
-   of the same size. The accuracy half moved the other way and strengthened
-   (§2.3, Extended Data §E3). This is no longer a missing control but a
-   withdrawn attribution.
+16. **Trunk capacity contributes to the shape-bias ordering across these
+   models.** This limitation previously flagged that the single-stream control
+   was not parameter-matched. The `resnet34` matched arm has since been run: it
+   does not separate from the two-stream model on shape bias (0.626 against
+   0.655, overlapping at n = 3), while the two single-stream arms separate
+   completely from one another on capacity alone (0.567 against 0.626). The
+   shape-bias ordering is therefore read as a capacity effect rather than as
+   evidence for the split; the accuracy ordering is the split's and is larger
+   at matched parameters (§2.3, Extended Data §E3).
 
 
 ## Claims deliberately not made
@@ -1694,13 +1688,10 @@ https://doi.org/10.1038/nn.4244
 Recorded so the omissions are visible rather than silent.
 
 - **That the two-stream split causes the shape-bias advantage over a single
-  stream.** The pre-registered parameter-matched control was run and does not
-  separate from the two-stream model; the half-capacity control does, but a
-  capacity change alone moves shape bias by about the same amount (§2.3,
-  Extended Data §E3). The comparison therefore cannot carry a causal claim
-  about the split. We equally do not claim the converse -- that the split buys
-  nothing for shape bias -- which three seeds a side cannot establish. The
-  accuracy side of the trade is claimed, and is stronger at matched parameters.
+  stream.** At matched capacity the two do not separate at n = 3, and capacity
+  alone moves shape bias by a comparable amount (§2.3). We make no claim either
+  way on this comparison. The accuracy side of the trade *is* claimed, and is
+  larger at matched parameters.
 
 - **Where in visual cortex the diet's shape-bias effect lands.** We tested
   whether the per-voxel predicted shape-bias profile carries a diet-specific
