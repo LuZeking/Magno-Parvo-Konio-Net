@@ -357,6 +357,21 @@ variants.
 
 ### E2.2 — the provenance search behind §2.2's superseded table
 
+*The per-seed gradient table, moved from §2.2.* Contrast = hV4 −
+mean(V1v,V1d) of the per-ROI median (§4.7). The source is declared per row
+because neither results directory is a superset of the other, and where they
+overlap they are numerically identical.
+
+| statistic | seed | diet | no diet | p | separation |
+|---|---|---|---|---|---|
+| normalised | 0 | **−0.834** | −0.079 | .0078 | 8/8 |
+| normalised | 1 | **−0.785** | −0.096 | .0078 | 8/8 |
+| normalised | 2 | **−0.745** | −0.049 | .0078 | 8/8 |
+| raw | 0 | **−0.166** | −0.027 | .0078 | 8/8 |
+| raw | 1 | **−0.145** | −0.031 | .0078 | 8/8 |
+| raw | 2 | **−0.153** | −0.023 | .0078 | 8/8 |
+
+
 §2.2's table previously reported normalised −0.862 / −0.802 / −0.781 and raw
 −0.176 / −0.151 / −0.160. Those values do not regenerate. All twelve were more
 negative than every recomputation, by 0.006 to 0.036, and the previously
@@ -747,6 +762,22 @@ float32 accumulation order rather than a difference in what was computed.
 
 Moved from §2.4: the seed-stability note, the denominator caveat on cue-conflict rates, the capacity control on `parvo_highsf`, and the accuracy-matched control in full including its pre-registered fatal outcome and its n=1 status.
 
+*Which cell is read out on which stream.* Cells are read out on stream 2 in
+three of four cases and on the diet's magno in the fourth, so the input factors
+vary while the stream role is held fixed (PLAN §25.1): chromatic/no-transform is
+the no-diet parvo, achromatic/no-transform is `parvo_highsf`'s stream 2, and
+chromatic/transform is `swap`'s parvo.
+
+*The behavioural row in full.* Cue-conflict shape bias on the same four cells,
+means of 3 seeds with seed range in brackets: 0.364 [0.080] (chromatic, no
+transform) / 0.495 [0.038] (chromatic, transform) / 0.396 [0.012] (achromatic,
+no transform) / **0.878** [0.022] (the conjunction). `parvo_highsf` seed 0 is
+excluded from the behavioural row only — it decided 139/150 images when the
+convergence guard ran, so its denominator is not comparable; the probe
+classifies every image and keeps all three seeds. On this row the
+chromatic-transform cell straddles 0.5 across seeds (0.478–0.516), which is the
+denominator caveat below rather than a texture preference.
+
 *A note on which instruments are seed-stable.* The conjunction cell's probe bias
 varies by **0.014** across seeds — the tightest number in this paper — against
 **0.120** for §2.5's magno/parvo dimensionality ratio on the same three
@@ -791,6 +822,11 @@ on the texture side of the sign flip, with every no-diet seed. Its behavioural
 value sits 0.021 above the no-diet seed maximum, a shift smaller than that arm's
 own seed spread (0.036).
 
+| | diet (0.556) | no diet (0.70) | **accuracy-matched no diet (0.548)** |
+|---|---|---|---|
+| probe, magno bias | **+0.806** | −0.226 | **−0.148** |
+| cue-conflict, magno-only | **0.903** | 0.421 | **0.455** |
+
 Lowering a no-diet network's accuracy to the diet's does move it slightly toward
 shape, and we report that residual rather than round it to zero — but it moves
 about a fourteenth of the way. **The conjunction effect is not an accuracy
@@ -798,6 +834,16 @@ effect.** This control currently rests on **one** matched training run; two
 further seeds are training, and until they land it should be read as n=1.
 
 ## E5 — §2.5, side of parity
+
+*The level, which we do not claim.* The trained magno/parvo dimensionality
+ratio settles near **~1.62** on luminance and **2.23** on red−green, so the
+level is set by which channel the diet is applied to rather than by the input
+asymmetry or the schedule alone. We report the side rather than the level
+because the within-arm seed range (0.79) exceeds the gap between the two
+diet-on-luminance arm means (0.075). The `swap` arm's per-subject values run
+**2.09–2.38**; it is the best-controlled of the four — provenance-exact
+reference, and unlike `parvo_highsf` architecture-matched — so it cannot be set
+aside.
 
 Moved from §2.5: the front-end/trained ratio table and its estimator note, the three-seed replication table, the checkpoint-policy and checkpoint-invariance analyses, the within-training trajectory, the static-versus-progressive-diet check, and the provenance of the two decisive untrained references.
 
@@ -1073,7 +1119,9 @@ baseline: **our most shape-biased model has the lowest error consistency of all
 seven**. The diet-trained magno stream carries shape bias 0.878 — 5× VGG-16's
 0.172 — and returns a mean kappa of **0.0089**, 3.8% of the human–human ceiling,
 against VGG-16's 0.0170 (7.3%). Moving a model 5× up the field's most-cited
-human-alignment metric moved it *down* on trial-level agreement with humans.
+human-alignment metric moved it *down* on trial-level agreement with humans. Across all seven models the
+shape-bias rate spans 0.17 to 0.89 — a 5× range — while trial-level agreement
+with humans never exceeds **18%** of the human–human ceiling for any of them.
 *(An earlier version of this paragraph said "no model of ours exceeds AlexNet".
 That is false by the table three lines above it — the no-diet magno stream
 reaches 0.036–0.041 against AlexNet's 0.032 — and is corrected here;
@@ -1104,6 +1152,35 @@ no-diet control.
 title. §2.4's comparison against human observers is a comparison of aggregate
 **rates**, and additionally compares a single stream to a whole observer; both
 qualifications are now stated wherever that comparison appears.
+
+### E6.3.2 — the readout family: error consistency at all 21 weights
+
+Moved from §2.6.2, which keeps the bound and the three conclusions drawn from
+it. Error consistency recomputed at all 21 values of `w`, for 3 seeds × 2
+checkpoint policies of the diet arm and 3 seeds of the no-diet arm — 9 runs,
+189 readouts — against the same 10 observers (**Figure 5a**). Ranges are over
+the 9 runs.
+
+| | diet arm | no-diet arm |
+|---|---|---|
+| shape-bias rate spanned | 0.373 – 0.913 | 0.312 – 0.459 |
+| **best kappa over all `w`** | 0.0178 – 0.0483 | 0.0404 – 0.0421 |
+| best kappa, % of ceiling | **7.6 – 20.7%** | **17.3 – 18.0%** |
+| `w` achieving it | 0.35 – 1.00 | 0.35 – 1.00 |
+| kappa at the `w` closest to the human rate, % of ceiling | −6.1 – 15.5% | 10.0 – 17.6% |
+
+Three things follow, and §2.6.2 states them. The best `w` — chosen post hoc,
+per seed, to maximise agreement — never exceeds 20.7% of the ceiling in any of
+the nine runs, which is the bounded form of the null and is stronger than a
+two-model comparison because the readout weight was given every opportunity to
+succeed and did not. The `w` that maximises agreement is neither the `w` that
+matches the human rate nor stable across runs (0.35 to 1.00), and at the
+rate-matching `w` agreement is sometimes negative (−6.1%), so tuning a model
+until its rate approaches the human one selects an operating point with no
+claim on human trial-level behaviour — demonstrated within a single frozen
+network rather than inferred across a model zoo. And the diet buys nothing here
+even with the readout optimised: the no-diet arm reaches the same ceiling
+fraction (17.3–18.0%) as the diet arm (7.6–20.7%).
 
 ### E6.3.1 — the per-image target: construction, reliability, and the two-code-path check
 
