@@ -379,6 +379,7 @@ def main():
     # ---- per observer ------------------------------------------------------
     out_obs = {}
     kA_all, kB_all, nullmax_all, obs_max_all = [], [], [], []
+    kcurve_all, heldout_all = [], []
     for j, h in enumerate(names):
         hs, ht, hd = obs_indicators(H[j])
         k_curve = md.kappa_against(hs, ht, hd)
@@ -426,6 +427,7 @@ def main():
                                           - np.nanmean(floor)),
         }
         kA_all.append(kA); kB_all.append(kB)
+        kcurve_all.append(k_curve); heldout_all.append(held_out)
 
         # --- Control B, per-observer form -----------------------------------
         perm = np.empty((n_items, args.n_perm), dtype=np.int8)
@@ -476,20 +478,50 @@ def main():
     OM = np.array(obs_max_all)                     # (10,)
     joint = {}
     for lab, denom in (("raw", np.ones(len(names))), ("own_ceiling", own_ceil)):
-        null_joint = np.max(NM / denom[:, None], axis=0)
+        scaled_null = NM / denom[:, None]
+        null_joint = np.max(scaled_null, axis=0)
+        null_winner = np.argmax(scaled_null, axis=0)
         obs_joint = float(np.max(OM / denom))
+        obs_winner = int(np.argmax(OM / denom))
+        # WHO wins matters, not only by how much (§106.12). Per-observer
+        # normalisation divides by a ceiling spanning 2.68x, so the argmax over
+        # observers is partly an argmax over 1/ceiling: an identical kappa
+        # scores about twice as high on the lowest-ceiling observer. The joint
+        # null already absorbs that, because its replicates are normalised the
+        # same way -- but only the winner tally says whether the channel is
+        # actually biting. Null winners piling onto the low-ceiling observers
+        # means the statistic is denominator-driven and can be reported as
+        # such; roughly uniform winners mean the observation's winner carries
+        # information.
+        wc = {names[o]: int((null_winner == o).sum()) for o in range(len(names))}
         joint[lab] = {
             "observed_best_of_ten": obs_joint,
+            "observed_winner": names[obs_winner],
+            "observed_winner_own_ceiling": float(own_ceil[obs_winner]),
             "null_mean": float(np.mean(null_joint)),
             "null_p95": float(np.percentile(null_joint, 95)),
             "null_max": float(np.max(null_joint)),
             "p_perm": perm_p(null_joint, obs_joint),
             "excess_over_null_mean": float(obs_joint - np.mean(null_joint)),
+            "null_winner_counts": wc,
+            # Correlation between an observer's share of null wins and
+            # 1/own_ceiling: a positive value IS the denominator channel,
+            # measured rather than asserted.
+            "null_wins_vs_inv_ceiling_r": float(np.corrcoef(
+                np.array([wc[h] for h in names], dtype=float),
+                1.0 / own_ceil)[0, 1]),
         }
+        top = sorted(wc.items(), key=lambda kv: -kv[1])[:3]
         print(f"\nJOINT permutation null [{lab}]: observed best-of-ten "
-              f"{obs_joint:+.4f}, null mean {np.mean(null_joint):+.4f}, "
+              f"{obs_joint:+.4f} won by {names[obs_winner]} "
+              f"(own ceiling {own_ceil[obs_winner]:.4f}), "
+              f"null mean {np.mean(null_joint):+.4f}, "
               f"p95 {np.percentile(null_joint, 95):+.4f}, "
               f"p = {joint[lab]['p_perm']:.4f}", flush=True)
+        print("    null winners concentrate on: "
+              + ", ".join(f"{h} {c}/{args.n_perm}" for h, c in top)
+              + "   corr(null wins, 1/ceiling) = "
+                f"{joint[lab]['null_wins_vs_inv_ceiling_r']:+.3f}", flush=True)
 
     # Joint CV: the observer choice moves INSIDE the fold.
     KA = np.stack(kA_all)                          # (10, n_w, R)
@@ -546,6 +578,19 @@ def main():
         "joint_permutation_null": joint,
         "joint_cross_validation": joint_cv,
     }
+    # Everything a later question could need, so a different normalisation, a
+    # different joint statistic or a further selection audit is answerable from
+    # disk instead of from another array. ~90 KB per run.
+    np.savez_compressed(
+        os.path.join(args.out_dir, f"{args.model_name}_wfit_curves.npz"),
+        grid=grid, observers=np.array(names), own_ceiling=own_ceil,
+        pooled_ceiling=np.array([CEIL]), sb_curve=sb_curve,
+        decided_count=dec_count,
+        kappa_curves=np.stack(kcurve_all).astype(np.float32),
+        null_max_per_observer=NM.astype(np.float32),
+        observed_max_per_observer=OM.astype(np.float32),
+        cv_held_out=np.stack(heldout_all).astype(np.float32))
+
     path = os.path.join(args.out_dir, f"{args.model_name}_wfit.json")
     with open(path, "w") as fh:
         json.dump(out, fh, indent=2)

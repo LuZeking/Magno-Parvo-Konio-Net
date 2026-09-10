@@ -11717,3 +11717,65 @@ patching results afterwards. Nothing from the cancelled array is reported.
 are corrected, and they are corrected in the direction that makes a positive
 *harder* to obtain, not easier — which is the right direction for a correction
 made after seeing a number I did not predict.
+
+### §106.12 AMENDMENT 3 — per-observer normalisation opens a selection channel
+### of its own. The null absorbs it; recording the WINNER is what lets us read it.
+
+*Raised by the same peer session after §106.11 landed, and it is correct. Also
+noted: the peer independently recomputed the ceilings from the human CSVs
+through `sweep_error_consistency`'s own loader and kappa — pooled 0.2335 over
+45 pairs (sd 0.0962), per-observer 0.1128 to 0.3021 — and every figure matches
+what §106.11 reports.*
+
+**The channel.** §106.11's fix — divide each observer's kappa by that
+observer's own ceiling — is the right repair for an incoherent statistic, and
+it creates a new reason for an observer to win that has nothing to do with the
+model tracking them. The statistic
+
+    max over i of  kappa(model_w, obs_i) / ceiling_i
+
+rewards a **small** `ceiling_i` directly. subject-09's ceiling is 0.483× the
+pooled value, so an identical kappa scores roughly twice the percentage there.
+The denominator alone spans 2.68×, wider than any plausible between-observer
+difference in real signal. Under per-observer normalisation the argmax over
+observers is therefore partly an argmax over 1/ceiling.
+
+**The null already absorbs this** — §106.11's joint null normalises its
+replicates per observer exactly as the observation is normalised, so the
+p-value remains valid. What the null does not do on its own is tell us how to
+*read* a positive, and that gap was real: nothing in the implementation
+recorded which observer won.
+
+**Fix, both halves cheap and both from quantities already computed:**
+
+1. **Record the winner** — in the observation and in every null replicate. If
+   null winners pile onto the low-ceiling observers (subject-09, subject-01,
+   subject-06), the statistic is denominator-driven and that can be stated
+   quantitatively instead of hedged. If null winners are roughly uniform, the
+   channel is not biting and the observation's winner carries information. The
+   correlation between an observer's share of null wins and 1/ceiling is
+   reported as a single number, so the channel is measured rather than argued.
+2. **Read a low-ceiling winner with suspicion.** A low own-ceiling means that
+   observer is the one *least predicted by other humans*. "A readout tracks
+   subject-09 at 45% of subject-09's ceiling" is a much weaker claim than the
+   same sentence about subject-08, because a ceiling of 0.1128 is partly
+   telling us their responses are noisy. **If the winner flips to a
+   low-ceiling observer when the denominator changes, that flip is itself the
+   finding, and it argues against §106.8's positive rather than for it.**
+
+**One point already in hand, and it is mildly favourable:** under pooled
+normalisation the observed winner was subject-03, whose own ceiling is 1.237×
+pooled — i.e. subject-03 won *despite* an unfavourable denominator. Whether it
+stays subject-03 under per-observer normalisation is reported either way.
+
+**Also fixed while the array was down:** each run now archives its raw curves
+and null matrices (`*_wfit_curves.npz`, ~90 KB) — the per-observer kappa curve
+over the whole grid, the per-observer null maxima, the observed maxima, the
+held-out CV vectors, the rate curve and both sets of ceilings. Three
+resubmissions in one afternoon happened because each new question needed a
+quantity the previous run had not kept. A different normalisation, a different
+joint statistic or a further selection audit can now be answered from disk.
+
+Array 26462248 was cancelled with 7 of 9 tasks complete; nothing from it is
+reported. Tasks run in ~2:20 each, so the rerun costs about five minutes.
+Measured MaxRSS was 3.87 GB against the 8G request — the request stands.
