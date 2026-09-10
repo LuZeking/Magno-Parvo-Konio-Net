@@ -2550,9 +2550,17 @@ ledger that never records a loss is not evidence of anything.
       would argue against cutting), §2.5's trajectory result, and §2.6.2's
       per-image correspondence, whose headline would stay while the analysis
       moved wholesale to §E6.3. Those are the author's calls and are left open.
-      The NMI simulation raises the length as major comment 5
-      (`docs/NMI_REVIEW_2026-09-09.md`). The 2026-09-07 pass is kept below for
-      what it moved and why.
+            The NMI simulation raised the length as major comment 5
+      (`docs/NMI_REVIEW_2026-09-09.md`). **Re-run 2026-09-10 after the cut**
+      (`docs/NMI_REVIEW_2026-09-10.md`): 7.15/10, up from 6.85, still Major
+      revision. Only two axes moved — Reproducibility 2→3 and Clarity 2→3 —
+      which are exactly the two the intervening work targeted. The re-run also
+      corrects an earlier projection of ours: packaging plus the length cut plus
+      a re-lead was estimated to reach ~7.53 and cross into Minor revision, but
+      measured, that whole editorial bundle tops out at **7.43**. The only
+      remaining item that crosses the band by itself is the **nonlinear readout
+      sweep over the cached features** (~+0.5, roughly a day, no meaningful
+      compute). The 2026-09-07 pass is kept below for what it moved and why.
       *Superseded measurement (2026-09-07):* main text was **~6,830
       words** against NHB's ≈4,000–6,000 and NN's ≈3,000–5,000, down from
       **10,002** — a 32% cut — with **8 display items** (5 tables + 3 figures)
