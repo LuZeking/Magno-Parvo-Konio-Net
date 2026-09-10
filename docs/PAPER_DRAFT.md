@@ -1617,10 +1617,14 @@ https://doi.org/10.1038/nn.4244
    readout (0.675) is far below. The gap is now quantified rather than merely
    directional: sweeping `w` on a 0.001 grid, the closest any readout of these
    components comes to any individual observer's rate is **0.0273** [0.0051,
-   0.0473], against subject-04, the lowest of the ten. It is not a knife-edge —
-   that observer is inside the family in 10.8% of item-bootstrap replicates and
-   seven of the ten observers are reached in none. Human data is in hand and
-   cited (§52); what is not available is any basis for a matching claim.
+   0.0473], against subject-04, the lowest of the ten. No point estimate
+   attains any observer's rate in any of the 90 observer-runs. The item
+   bootstrap separates the observers sharply: seven of the ten are attained in
+   exactly zero of 1,000 replicates in every run, while subject-04, the
+   closest, is attained in 0.1% to 37% of replicates depending on the run — so
+   the study-level statement is secure while the margin against that single
+   observer is run-dependent. Human data is in hand and cited (§52); what is
+   not available is any basis for a matching claim.
 8. **Single-trainer accuracy discrepancy, unexplained.** The thesis checkpoint's
    *behavioural* number reproduces (§18.2) but its *accuracy* does not; the
    discrepancy is isolated to the classification evaluation path, not the

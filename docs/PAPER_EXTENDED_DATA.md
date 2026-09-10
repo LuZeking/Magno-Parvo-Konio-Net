@@ -1233,10 +1233,18 @@ agreement at 10⁻⁸ means no decision flips anywhere.
 | no diet, final | **0/30** | 0.4377 [0.4141, 0.4614] | 0.5199 [0.4577, 0.5725] |
 
 The closest approach in the study is **subject-04**, the lowest of the ten
-observers at 0.9191, missed by **0.0273** [0.0051, 0.0473]. It is not a
-knife-edge: that observer falls inside the family in 10.8% of item-bootstrap
-replicates, subject-02 and subject-07 in 0.2% and 0.4%, and the remaining
-**seven of ten in none**.
+observers at 0.9191, missed by **0.0273** [0.0051, 0.0473]. The point estimate never attains any observer's rate, in any of the 90
+observer-runs, and that is what E1 and Limitations 7 and 14 rest on. The item
+bootstrap is a secondary robustness figure and its mean hides a spread worth
+stating. **Seven of the ten observers are attained in exactly zero of 1,000
+replicates in every run** (subject-01, -03, -05, -06, -08, -09, -10, checked at
+full precision rather than off a 3-dp display). subject-02 and subject-07 reach
+at most 0.7% and 1.6% of replicates in any single run. subject-04 — the closest
+observer — reaches 0.1%, 0.4%, 1.6%, 3.2%, 22.5% and 37.3% across the six diet
+runs, so in one run the lowest observer's rate falls inside the family in over
+a third of replicates. The study-level claim is therefore secure, while the
+margin against that one observer is run-dependent and in one run is not large.
+Counts and per-run spread: `tmp_analysis/check_attainable_counts.py`.
 
 **E2 and Control A — the trial-fitted weight does not cross-validate.** Fitted
 `w` spans 0.231–1.000 across the ten observers (sd 0.24–0.29 by arm). The full
