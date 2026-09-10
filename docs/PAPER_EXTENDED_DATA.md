@@ -1001,3 +1001,32 @@ barely reordering *which* images are hard. Within this family the rate and
 item-level difficulty are separately addressable, which is consistent with the
 second point above: if the streams ordered images alike, matching the rate would
 also come close to matching the ordering, and it does not.
+
+### E6.3.2 — the per-image target: construction and reliability
+
+Moved from §2.6.2, which states the correspondence result and cites this
+subsection.
+
+*The null is specific to the decision, not a property of the instrument.* Kappa
+scores one observer's single binary response per image, so a reader may
+reasonably ask whether a flat result reflects the models or the measure. We
+therefore repeated the comparison with a better-estimated target and a
+continuous model statistic, on the same 1200 cue-conflict images (1280 stimuli
+less the 80 same-cue pairs Geirhos also excluded) and the same ten observers,
+who each viewed every image once. Averaged over all ten, the per-image profile
+is reliable (split-half **r = .658** for the shape rate and **.794** for whether
+either cue resolved at all, both surviving removal of shape- and
+texture-category main effects), so the reliable structure is image-specific
+rather than a restatement of which categories are easier. Two facts the
+aggregate rate hides: only **80.3%** of human responses were the shape or the
+texture category at all, and **240 of the 1200 images** drew at least one
+texture response. Human cue-conflict behaviour is not homogeneous across images
+(Extended Data §E6.3).
+
+Against that target the model statistic becomes the continuous
+shape-minus-texture logit margin rather than a binary choice, and — because the
+classifier is affine and the mixture weights sum to one (§2.3) — the entire
+readout sweep is exact arithmetic on two stored per-stream logit vectors.
+Choosing `w` on half the images and scoring it on the held-out half, as a
+percentage of the ceilings just quoted, with category effects removed
+(**Figure 5b**):
