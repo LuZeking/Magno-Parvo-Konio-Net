@@ -11779,3 +11779,154 @@ joint statistic or a further selection audit can now be answered from disk.
 Array 26462248 was cancelled with 7 of 9 tasks complete; nothing from it is
 reported. Tasks run in ~2:20 each, so the rerun costs about five minutes.
 Measured MaxRSS was 3.87 GB against the 8G request — the request stands.
+
+### §106.13 RESULT — no observer's rate is reachable (0/90), and the
+### trial-fitted weight does not survive cross-validation. The bound stands.
+
+*Array 26462325, 9 tasks, all COMPLETED. Analysed under §106.10's verdict rule,
+fixed before any of this ran and not renegotiated: held-out kappa collapsing
+toward the no-fitting floor means the bound stands; held-out near the in-sample
+value AND an observation outside the permutation null would have been a
+positive to lead with.*
+
+#### §106.13.1 Provenance
+
+The fine grid and the published 0.05 grid agree to **3e-8** at every one of the
+21 shared weights, in all nine runs. The two score different paths — the
+published sweep used direct logits `clf(w·F1+(1−w)·F2)`, the fine grid uses
+interpolated `w·clf(F1)+(1−w)·clf(F2)`, which differ by up to 3.6e-05 — so
+agreement at 3e-8 in shape bias means **no decision flips anywhere on the
+grid**. §106 is therefore fitting the same models §2.6.2 reported.
+
+#### §106.13.2 E1: not one observer's rate is reachable — 0 / 90
+
+| arm | family max rate | attainable |
+|---|---|---|
+| diet / best saved | 0.9040 [0.8901, 0.9140] | **0/30** |
+| diet / final | 0.8796 [0.8717, 0.8937] | **0/30** |
+| no diet / final | 0.4377 [0.4141, 0.4614] | **0/30** |
+
+§106.7's prediction 1, confirmed as stated. The closest approach in the whole
+study is subject-04 — the lowest-rate observer at 0.9191 — missed by **0.0273
+[0.0051, 0.0473]**. Their rate falls inside the family in **10.8%** of item
+bootstrap replicates; for eight of the ten observers it is 0.000, and for
+subject-02 and subject-07 it is 0.002 and 0.004. So the family's failure to
+reach any human rate is not a knife-edge.
+
+This is what Limitation 14 asked for and it is stronger than the sweep's "does
+not reach": the maximum-likelihood estimate does not exist in the interior for
+any observer, in any run, under either checkpoint policy.
+
+#### §106.13.3 E2: the fitted weights do not agree with each other
+
+Fitted `w` spans **0.231–1.000** (diet/best), 0.088–0.984 (diet/final),
+0.000–0.999 (no diet), with sd across observers 0.24–0.29. Ten observers
+viewing identical images give ten different best weights covering nearly the
+whole interval. Before any control, that already says the fit is not recovering
+a shared human operating point.
+
+#### §106.13.4 Control A — the fit does not survive cross-validation. DECISIVE.
+
+Over all 90 observer-runs:
+
+| quantity | value |
+|---|---|
+| in-sample kappa at the fitted w | **+0.0683** |
+| held-out kappa at that same w | **+0.0262** |
+| no-fitting floor (mean over all w, held-out half) | **+0.0234** |
+| generalisation gap | **+0.0422** |
+| **held-out above floor** | **+0.0028** |
+
+**62% of the in-sample agreement evaporates on held-out items, and what
+survives sits 0.0028 above what an arbitrary weight would have given.** The
+fitted weight beats the no-fitting floor in **45 of 90** observer-runs — 17/30,
+11/30, 17/30 by arm, which is a coin flip.
+
+Under §106.10's rule this is the collapse condition, and it settles the
+section: **the apparent per-observer fit was selection.**
+
+#### §106.13.5 Control B — and the one place a positive did appear
+
+Joint permutation null, both selections bounded:
+
+| arm | observed best-of-ten | joint null | p |
+|---|---|---|---|
+| diet / best saved | +0.1148 [+0.0893, +0.1443] | +0.1016 | 0.349 [0.081, 0.617] |
+| diet / final | +0.1318 [+0.1103, +0.1466] | +0.1002 | 0.185 [0.064, 0.402] |
+| no diet / final | +0.1152 [+0.1014, +0.1268] | **+0.0470** | **0.002 [0.001, 0.004]** |
+
+**The diet arm — the paper's model — never separates from its own null.** Note
+why its null is twice the no-diet arm's: the diet family sweeps rate 0.37–0.91
+against the no-diet family's 0.31–0.46, so its decisions vary far more across
+`w`, and a wider family gives a permuted observer more chances to match. **A
+wider readout family generates a higher selection null**, and this one does not
+clear it.
+
+**The no-diet arm does clear its null, p ≤ 0.004 in 3/3 seeds, and that must be
+reported rather than buried.** It is not §106.8's positive, for a reason
+Control A makes concrete. The permutation destroys *all* model–observer
+correspondence, so p < .05 says only that genuine trial-level agreement exists
+somewhere — which §2.6.2 already grants, its kappas being positive at 7–18% of
+ceiling. It does not say the *fitted weight* produces it. For the arm's own
+winner, subject-02: held-out **+0.1017** against subject-02's own no-fitting
+floor of **+0.0709**. Agreement of 0.071 is there at *any* weight; fitting adds
+0.031. The joint CV's larger-looking margin (+0.0864 against +0.0279) is mostly
+the *observer* choice, since the joint floor averages over ten observers most
+of whom agree weakly — the like-for-like comparison is the per-observer one.
+
+The single largest held-out value anywhere is +0.1106, 47.4% of the pooled
+ceiling and 47.1% of subject-02's own. It is the maximum over 90 observer-runs
+and 30% of it is that observer's floor. Reported because it is the closest
+thing to a positive in the study, and it is not one.
+
+#### §106.13.6 The denominator channel fired exactly as §106.12 predicted
+
+Under pooled normalisation the observed winner was subject-03 (own ceiling
+1.237× pooled). Under per-observer normalisation it **flips to subject-09** in
+2 of 3 diet/best seeds — the observer with the *lowest* ceiling, 0.1128, i.e.
+the one least predicted by other humans.
+
+The null winner tallies measure the channel rather than asserting it:
+correlation between an observer's share of null wins and 1/ceiling is
+**+0.736** (diet/best), **+0.611** (diet/final), +0.106 (no diet) under
+per-observer normalisation, and negative (−0.41 to −0.55) under raw. Over all
+nine runs subject-09 takes 15.6% of null wins against subject-03's 2.8%.
+
+§106.12 declared in advance that such a flip "is itself the finding, and it
+argues against §106.8's positive rather than for it." It flipped.
+
+#### §106.13.7 Verdict
+
+**§106.8's positive condition is not met and the bound stands, strengthened on
+both estimators.** Nothing here is led with as a result; it rewrites two
+limitations and adds a clause.
+
+1. **Limitation 14** — from "no w was fitted to human data and nothing here
+   estimates the weighting a human readout would use" to: w *was* fitted, per
+   observer, two ways. No observer's rate is reachable at all (0/90), and the
+   weight fitted to an observer's trials does not survive cross-validation
+   (+0.0028 over a no-fitting floor, better than it in 45/90). The headline
+   0.675 remains a consequence of an arbitrary hyperparameter — and it is now
+   known that no *better* choice of that hyperparameter exists.
+2. **Limitation 7** — "directional only" gains a number: the closest approach
+   to any individual observer's rate is 0.0273, to the lowest observer of ten.
+3. **Discussion**, the sentence the peer flagged: "a weighting fitted to data
+   rather than swept" is now done, so that half must change. "**Nothing here
+   selects it**" survives untouched and should be kept — this fitted a scalar
+   to imitate an observer, which is not a principled objective, and §106.9 said
+   so before the numbers existed.
+4. **§2.6.2** gains one clause: the bound holds not only across 21 weights but
+   against a weight *fitted to each observer individually*, with both
+   selections bounded.
+5. **A disclosure that belongs wherever the no-diet arm's kappa appears**: that
+   arm's best-of-ten does exceed its permutation null, and the reason it is not
+   evidence for a human-like readout is that the agreement is present at every
+   weight.
+
+#### §106.13.8 What this does not show
+
+Overlap with a null at these sample sizes is absence of evidence for
+observer-specific structure, not evidence of its absence — §99's fallacy points
+both ways here as it did in §105.3. The honest claim is that **this design
+cannot fit the readout weight to a human observer**, not that no readout of
+these components could ever track one.

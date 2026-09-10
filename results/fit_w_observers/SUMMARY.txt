@@ -1,0 +1,173 @@
+loaded 9 runs
+
+pooled ceiling 0.2335 (sd 0.0962); own ceilings 0.1128-0.3021 (2.68x)
+human shape bias 0.9576
+grid step 0.001, bootstrap 1000, splits 200, permutations 1000
+
+==============================================================================
+PROVENANCE  fine grid against the published 0.05 grid (§2.6.2's data)
+==============================================================================
+  dkl_base_seed0_final     rate 0.3079-0.4376 (coarse 0.3119-0.4376)  best kappa fine +0.1173 vs coarse +0.1173  path drift at shared w 1.4e-08
+  dkl_base_seed1_final     rate 0.3813-0.4614 (coarse 0.3891-0.4593)  best kappa fine +0.1268 vs coarse +0.1233  path drift at shared w 1.4e-08
+  dkl_base_seed2_final     rate 0.3754-0.4141 (coarse 0.3786-0.4101)  best kappa fine +0.1014 vs coarse +0.1004  path drift at shared w 1.5e-08
+  dkl_bcs_seed0_best       rate 0.3733-0.8901 (coarse 0.3733-0.8901)  best kappa fine +0.0893 vs coarse +0.0893  path drift at shared w 2.9e-08
+  dkl_bcs_seed0_final      rate 0.4066-0.8734 (coarse 0.4097-0.8721)  best kappa fine +0.1384 vs coarse +0.1351  path drift at shared w 3.0e-08
+  dkl_bcs_seed1_best       rate 0.4235-0.9140 (coarse 0.4247-0.9133)  best kappa fine +0.1108 vs coarse +0.1027  path drift at shared w 2.8e-08
+  dkl_bcs_seed1_final      rate 0.4048-0.8937 (coarse 0.4083-0.8937)  best kappa fine +0.1103 vs coarse +0.1046  path drift at shared w 2.9e-08
+  dkl_bcs_seed2_best       rate 0.3978-0.9080 (coarse 0.3978-0.9079)  best kappa fine +0.1443 vs coarse +0.1410  path drift at shared w 2.8e-08
+  dkl_bcs_seed2_final      rate 0.4381-0.8717 (coarse 0.4381-0.8715)  best kappa fine +0.1466 vs coarse +0.1426  path drift at shared w 3.0e-08
+
+==============================================================================
+E1  RATE FIT   is any observer's shape-bias rate reachable at all?
+==============================================================================
+  diet / best saved  attainable 0/30 observer-runs   family max rate 0.9040 [0.8901, 0.9140]   |residual| 0.0536 [0.0051, 0.0965]
+  diet / final       attainable 0/30 observer-runs   family max rate 0.8796 [0.8717, 0.8937]   |residual| 0.0780 [0.0254, 0.1149]
+  no diet / final    attainable 0/30 observer-runs   family max rate 0.4377 [0.4141, 0.4614]   |residual| 0.5199 [0.4577, 0.5725]
+
+  per observer over the diet arm, |rate - closest reachable|:
+    subject-01  rate=0.9617  |resid| 0.0699 [0.0478, 0.0900]  attainable 0/6 runs  bootstrap-attainable 0.000
+    subject-02  rate=0.9438  |resid| 0.0520 [0.0299, 0.0721]  attainable 0/6 runs  bootstrap-attainable 0.002
+    subject-03  rate=0.9673  |resid| 0.0755 [0.0533, 0.0956]  attainable 0/6 runs  bootstrap-attainable 0.000
+    subject-04  rate=0.9191  |resid| 0.0273 [0.0051, 0.0473]  attainable 0/6 runs  bootstrap-attainable 0.108
+    subject-05  rate=0.9640  |resid| 0.0722 [0.0500, 0.0922]  attainable 0/6 runs  bootstrap-attainable 0.000
+    subject-06  rate=0.9760  |resid| 0.0842 [0.0620, 0.1043]  attainable 0/6 runs  bootstrap-attainable 0.000
+    subject-07  rate=0.9408  |resid| 0.0490 [0.0269, 0.0691]  attainable 0/6 runs  bootstrap-attainable 0.004
+    subject-08  rate=0.9577  |resid| 0.0659 [0.0437, 0.0859]  attainable 0/6 runs  bootstrap-attainable 0.000
+    subject-09  rate=0.9866  |resid| 0.0948 [0.0726, 0.1149]  attainable 0/6 runs  bootstrap-attainable 0.000
+    subject-10  rate=0.9589  |resid| 0.0670 [0.0449, 0.0871]  attainable 0/6 runs  bootstrap-attainable 0.000
+
+==============================================================================
+E2  TRIAL FIT  the weight that best predicts each observer's choices
+==============================================================================
+
+  diet / best saved
+    subject-01  w 0.838 [0.661, 0.931]  kappa +0.0761 [+0.0581, +0.1025]   38.0% own /  32.6% pooled  boundary 0/3
+    subject-02  w 0.518 [0.316, 0.672]  kappa +0.0963 [+0.0682, +0.1443]   41.0% own /  41.2% pooled  boundary 0/3
+    subject-03  w 0.752 [0.336, 1.000]  kappa +0.0682 [+0.0504, +0.0893]   23.6% own /  29.2% pooled  boundary 1/3
+    subject-04  w 0.322 [0.231, 0.420]  kappa +0.0872 [+0.0472, +0.1108]   34.1% own /  37.3% pooled  boundary 0/3
+    subject-05  w 0.970 [0.911, 1.000]  kappa +0.0427 [+0.0274, +0.0689]   17.3% own /  18.3% pooled  boundary 1/3
+    subject-06  w 0.643 [0.412, 0.855]  kappa +0.0608 [+0.0362, +0.0956]   30.1% own /  26.0% pooled  boundary 0/3
+    subject-07  w 0.481 [0.348, 0.677]  kappa +0.0404 [+0.0150, +0.0607]   15.1% own /  17.3% pooled  boundary 0/3
+    subject-08  w 0.925 [0.871, 0.998]  kappa +0.0770 [+0.0320, +0.1034]   25.5% own /  33.0% pooled  boundary 0/3
+    subject-09  w 0.888 [0.820, 0.969]  kappa +0.0590 [+0.0564, +0.0619]   52.3% own /  25.3% pooled  boundary 0/3
+    subject-10  w 0.732 [0.298, 1.000]  kappa +0.0451 [+0.0340, +0.0612]   20.1% own /  19.3% pooled  boundary 1/3
+    ---- fitted w spans 0.231-1.000 across observers and seeds (sd 0.269)
+
+  diet / final
+    subject-01  w 0.581 [0.088, 0.896]  kappa +0.0437 [-0.0102, +0.0848]   21.8% own /  18.7% pooled  boundary 0/3
+    subject-02  w 0.495 [0.404, 0.572]  kappa +0.0986 [+0.0709, +0.1466]   42.0% own /  42.2% pooled  boundary 0/3
+    subject-03  w 0.701 [0.438, 0.899]  kappa +0.0394 [+0.0246, +0.0687]   13.7% own /  16.9% pooled  boundary 0/3
+    subject-04  w 0.634 [0.428, 0.899]  kappa +0.0960 [+0.0680, +0.1103]   37.6% own /  41.1% pooled  boundary 0/3
+    subject-05  w 0.820 [0.738, 0.975]  kappa +0.0871 [+0.0281, +0.1384]   35.2% own /  37.3% pooled  boundary 0/3
+    subject-06  w 0.697 [0.319, 0.981]  kappa +0.0375 [+0.0186, +0.0711]   18.6% own /  16.0% pooled  boundary 0/3
+    subject-07  w 0.574 [0.416, 0.847]  kappa +0.0650 [+0.0613, +0.0707]   24.3% own /  27.8% pooled  boundary 0/3
+    subject-08  w 0.596 [0.268, 0.879]  kappa +0.0372 [-0.0059, +0.0796]   12.3% own /  15.9% pooled  boundary 0/3
+    subject-09  w 0.822 [0.585, 0.984]  kappa +0.0279 [+0.0000, +0.0581]   24.7% own /  12.0% pooled  boundary 0/3
+    subject-10  w 0.886 [0.790, 0.960]  kappa +0.0630 [+0.0487, +0.0868]   28.1% own /  27.0% pooled  boundary 0/3
+    ---- fitted w spans 0.088-0.984 across observers and seeds (sd 0.244)
+
+  no diet / final
+    subject-01  w 0.679 [0.492, 0.868]  kappa +0.0229 [+0.0123, +0.0354]   11.4% own /   9.8% pooled  boundary 0/3
+    subject-02  w 0.715 [0.376, 0.999]  kappa +0.1137 [+0.1014, +0.1224]   48.5% own /  48.7% pooled  boundary 0/3
+    subject-03  w 0.558 [0.311, 0.696]  kappa +0.0335 [+0.0245, +0.0484]   11.6% own /  14.3% pooled  boundary 0/3
+    subject-04  w 0.660 [0.336, 0.920]  kappa +0.1001 [+0.0847, +0.1268]   39.2% own /  42.9% pooled  boundary 0/3
+    subject-05  w 0.819 [0.705, 0.903]  kappa +0.0318 [+0.0213, +0.0448]   12.9% own /  13.6% pooled  boundary 0/3
+    subject-06  w 0.695 [0.228, 0.999]  kappa +0.0339 [+0.0289, +0.0370]   16.8% own /  14.5% pooled  boundary 0/3
+    subject-07  w 0.620 [0.157, 0.999]  kappa +0.0540 [+0.0499, +0.0615]   20.2% own /  23.1% pooled  boundary 0/3
+    subject-08  w 0.547 [0.344, 0.705]  kappa +0.0462 [+0.0415, +0.0538]   15.3% own /  19.8% pooled  boundary 0/3
+    subject-09  w 0.376 [0.163, 0.773]  kappa +0.0124 [+0.0045, +0.0176]   11.0% own /   5.3% pooled  boundary 0/3
+    subject-10  w 0.391 [0.000, 0.866]  kappa +0.0338 [+0.0207, +0.0573]   15.1% own /  14.5% pooled  boundary 1/3
+    ---- fitted w spans 0.000-0.999 across observers and seeds (sd 0.293)
+
+==============================================================================
+CONTROL A  cross-validation. FULL held-out vector, never its max
+==============================================================================
+
+  diet / best saved
+    subject-01  in-sample +0.0885 -> held-out +0.0289  floor +0.0174  above floor +0.0114
+    subject-02  in-sample +0.1123 -> held-out +0.0520  floor +0.0524  above floor -0.0004
+    subject-03  in-sample +0.0748 -> held-out +0.0316  floor +0.0196  above floor +0.0120
+    subject-04  in-sample +0.0976 -> held-out +0.0394  floor +0.0380  above floor +0.0014
+    subject-05  in-sample +0.0578 -> held-out +0.0005  floor -0.0004  above floor +0.0009
+    subject-06  in-sample +0.0684 -> held-out +0.0258  floor +0.0242  above floor +0.0016
+    subject-07  in-sample +0.0535 -> held-out +0.0009  floor +0.0072  above floor -0.0063
+    subject-08  in-sample +0.0913 -> held-out +0.0263  floor +0.0221  above floor +0.0042
+    subject-09  in-sample +0.0686 -> held-out +0.0223  floor +0.0129  above floor +0.0095
+    subject-10  in-sample +0.0630 -> held-out +0.0045  floor +0.0148  above floor -0.0103
+    ---- held-out above floor in 17/30 observer-runs
+    JOINT [raw        ] in-sample +0.1537 -> held-out +0.0194  floor +0.0208
+    JOINT [own_ceiling] in-sample +0.7611 -> held-out +0.0938  floor +0.0925
+
+  diet / final
+    subject-01  in-sample +0.0571 -> held-out +0.0063  floor +0.0140  above floor -0.0077
+    subject-02  in-sample +0.1238 -> held-out +0.0477  floor +0.0571  above floor -0.0094
+    subject-03  in-sample +0.0538 -> held-out +0.0088  floor +0.0106  above floor -0.0018
+    subject-04  in-sample +0.1125 -> held-out +0.0489  floor +0.0447  above floor +0.0042
+    subject-05  in-sample +0.1030 -> held-out +0.0436  floor +0.0296  above floor +0.0140
+    subject-06  in-sample +0.0507 -> held-out +0.0126  floor +0.0132  above floor -0.0006
+    subject-07  in-sample +0.0741 -> held-out +0.0290  floor +0.0078  above floor +0.0211
+    subject-08  in-sample +0.0605 -> held-out -0.0029  floor +0.0108  above floor -0.0137
+    subject-09  in-sample +0.0304 -> held-out +0.0076  floor +0.0040  above floor +0.0036
+    subject-10  in-sample +0.0775 -> held-out +0.0184  floor +0.0223  above floor -0.0039
+    ---- held-out above floor in 11/30 observer-runs
+    JOINT [raw        ] in-sample +0.1670 -> held-out +0.0432  floor +0.0214
+    JOINT [own_ceiling] in-sample +0.7236 -> held-out +0.1552  floor +0.0910
+
+  no diet / final
+    subject-01  in-sample +0.0282 -> held-out +0.0077  floor +0.0108  above floor -0.0031
+    subject-02  in-sample +0.1174 -> held-out +0.1017  floor +0.0709  above floor +0.0309
+    subject-03  in-sample +0.0384 -> held-out +0.0221  floor +0.0209  above floor +0.0012
+    subject-04  in-sample +0.1065 -> held-out +0.0802  floor +0.0639  above floor +0.0164
+    subject-05  in-sample +0.0362 -> held-out +0.0169  floor +0.0140  above floor +0.0029
+    subject-06  in-sample +0.0368 -> held-out +0.0243  floor +0.0199  above floor +0.0044
+    subject-07  in-sample +0.0589 -> held-out +0.0355  floor +0.0289  above floor +0.0066
+    subject-08  in-sample +0.0510 -> held-out +0.0300  floor +0.0283  above floor +0.0018
+    subject-09  in-sample +0.0154 -> held-out +0.0021  floor +0.0032  above floor -0.0011
+    subject-10  in-sample +0.0428 -> held-out +0.0120  floor +0.0188  above floor -0.0067
+    ---- held-out above floor in 17/30 observer-runs
+    JOINT [raw        ] in-sample +0.1250 -> held-out +0.0864  floor +0.0279
+    JOINT [own_ceiling] in-sample +0.5190 -> held-out +0.3792  floor +0.1146
+
+==============================================================================
+CONTROL B  joint permutation null (both selections bounded)
+==============================================================================
+
+  diet / best saved
+    [raw        ] observed +0.1148 [+0.0893, +0.1443]  null +0.1016 [+0.1008, +0.1032]  p95 +0.1570
+                  p = 0.3490 [0.0809, 0.6174]   winners ['subject-03', 'subject-04', 'subject-02']   corr(null wins, 1/ceiling) -0.548
+    [own_ceiling] observed +0.5546 [+0.5001, +0.6152]  null +0.4591 [+0.4486, +0.4695]  p95 +0.7605
+                  p = 0.2344 [0.1359, 0.3057]   winners ['subject-09', 'subject-09', 'subject-02']   corr(null wins, 1/ceiling) +0.736
+
+  diet / final
+    [raw        ] observed +0.1318 [+0.1103, +0.1466]  null +0.1002 [+0.0973, +0.1051]  p95 +0.1548
+                  p = 0.1845 [0.0639, 0.4016]   winners ['subject-05', 'subject-04', 'subject-02']   corr(null wins, 1/ceiling) -0.550
+    [own_ceiling] observed +0.5389 [+0.4317, +0.6251]  null +0.4456 [+0.4314, +0.4720]  p95 +0.7169
+                  p = 0.2614 [0.0889, 0.5465]   winners ['subject-05', 'subject-04', 'subject-02']   corr(null wins, 1/ceiling) +0.611
+
+  no diet / final
+    [raw        ] observed +0.1152 [+0.1014, +0.1268]  null +0.0470 [+0.0442, +0.0491]  p95 +0.0714
+                  p = 0.0020 [0.0010, 0.0040]   winners ['subject-02', 'subject-04', 'subject-02']   corr(null wins, 1/ceiling) -0.411
+    [own_ceiling] observed +0.4847 [+0.4322, +0.5217]  null +0.1968 [+0.1842, +0.2055]  p95 +0.2905
+                  p = 0.0013 [0.0010, 0.0020]   winners ['subject-02', 'subject-02', 'subject-02']   corr(null wins, 1/ceiling) +0.106
+
+  null-winner tally over all runs (own_ceiling normalisation):
+    subject-04    1723 / 9000  ( 19.1%)  own ceiling 0.2556
+    subject-01    1412 / 9000  ( 15.7%)  own ceiling 0.2002
+    subject-09    1405 / 9000  ( 15.6%)  own ceiling 0.1128
+    subject-02    1099 / 9000  ( 12.2%)  own ceiling 0.2346
+    subject-10     947 / 9000  ( 10.5%)  own ceiling 0.2244
+    subject-07     819 / 9000  (  9.1%)  own ceiling 0.2678
+    subject-06     566 / 9000  (  6.3%)  own ceiling 0.2019
+    subject-05     474 / 9000  (  5.3%)  own ceiling 0.2471
+    subject-08     307 / 9000  (  3.4%)  own ceiling 0.3021
+    subject-03     248 / 9000  (  2.8%)  own ceiling 0.2888
+
+==============================================================================
+VERDICT under the rule fixed in §106.10 BEFORE any of this ran
+==============================================================================
+  E1 attainable in 0/90 observer-runs
+  Control A over all 90 observer-runs: in-sample +0.0683 -> held-out +0.0262, floor +0.0234
+    generalisation gap +0.0422; held-out above floor by +0.0028
+    highest held-out of any observer-run +0.1106 = 47.4% of pooled ceiling
+  Control B [raw        ]: joint p < .05 in 3/9 runs, p range [0.0010, 0.6174]
+  Control B [own_ceiling]: joint p < .05 in 3/9 runs, p range [0.0010, 0.5465]
