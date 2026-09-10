@@ -1,0 +1,5 @@
+# Extended Data Figure 1 — caption
+
+**Out-of-distribution degradation curves behind Figure 5a.**
+
+Accuracy relative to each seed's own clean accuracy as a function of corruption severity, for seven corruption families (a–g) and the four front-end conditions, three seeds each (thin lines) with the seed mean (thick). Corruptions are applied to the RGB image before the front end, so each model meets the corruption through its own optics, and are scored in the models' native 112-class label space at each seed's best saved checkpoint. Five families were declared untrained-on before the run (uniform noise, high-pass, false colour, phase scrambling, rotation) and two as trained-in positive controls (contrast, low-pass), since the developmental transform is itself a low-pass and contrast-sensitivity manipulation. The diet-trained model degrades faster on uniform noise, high-pass, false colour and rotation, is indistinguishable from the control on phase scrambling, and is more robust only on low-pass. The two conditions that carry no shape bias (swap, `parvo_highsf`) track the no-diet control.

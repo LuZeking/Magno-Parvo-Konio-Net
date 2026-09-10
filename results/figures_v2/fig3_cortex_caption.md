@@ -1,0 +1,15 @@
+# Figure 3 — caption
+
+**In human visual cortex the texture-biased stream carries the ventral end of the hierarchy, and the diet decides whether learning builds that gradient or erodes it.**
+
+Voxel-wise banded-ridge encoding models were fitted on the Natural Scenes Dataset (8 subjects, `nsdgeneral` mask) with one feature band per stream, and every voxel's cross-validated explained variance was partitioned into the part only the magno band accounts for (U_m) and the part only the parvo band does (U_p). Stream preference per ROI is the median over reliable voxels of the per-voxel index (U_m − U_p)/(U_m + U_p) (noise ceiling > 0.1, U_m + U_p > 10⁻³, at least 20 voxels); the raw statistic uses the per-voxel difference U_m − U_p.
+
+**(a)** Stream-preference profile across the retinotopic hierarchy V1v → hV4 (Wang et al. 2015 atlas). Lines are means over the 8 subjects, shading ± SEM; the trained diet and no-diet arms average three training seeds per subject, the untrained network and the channel-swap control are single models. The two trained arms sit on opposite sides of the global stream-preference axis (no-diet magno-explained everywhere, diet parvo-explained), and only the diet arm descends steeply from V1 to hV4. The swap control leaves the parvo stream contributing almost no unique variance anywhere (median U_p = 0.006), so its flat profile reflects a degenerate decomposition rather than an absent gradient.
+
+**(b)** The gradient hV4 − mean(V1v, V1d) per subject, from each arm's own untrained front end to the trained network (seed-mean per subject). The two untrained front ends start close together (−0.54 with the diet front end, −0.48 without); training with the diet steepens the gradient to −0.79, training without it erodes it to −0.07 (three seeds each: −0.834/−0.785/−0.745 against −0.079/−0.096/−0.049). The diet arm is steeper in 8/8 subjects (exact Wilcoxon p = .0078), and the same ordering holds on the raw statistic median(U_m − U_p).
+
+**(c)** Monotonicity: Spearman ρ between hierarchical rank (V1 < V2 < V3 < hV4) and stream preference, per subject. The shaded region is the interior of the exact permutation null over all 630 distinct labellings of the seven ROIs; the dashed rule is its 2.5th percentile. The diet arm's observed ρ is the single most extreme of all 630 labellings in every seed (p = 1/630 = .0016); the no-diet arm does not reach that floor (p = .019 to .092).
+
+**(d)** In-silico cue conflict. The 1,200 cue-conflict images pushed through the fitted encoding models yield a per-voxel predicted shape-bias index; plotted is the magno − parvo difference, median over reliable voxels, paired within subject. The effect is carried by the magno stream (+0.79 with the diet against −0.64 without); the parvo streams are indistinguishable (−0.74 against −0.75).
+
+**(e)** What the diet costs in prediction: median r² normalised by the noise ceiling over reliable voxels. The no-diet model predicts BOLD better in 8/8 subjects (0.464 against 0.405, a 13% cost). Panels (d) and (e) use seed 0 of each arm.

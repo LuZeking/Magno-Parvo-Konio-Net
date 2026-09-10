@@ -1,0 +1,9 @@
+# Figure 1 — caption
+
+**A two-stream network fed magnocellular- and parvocellular-like inputs under a developmental visual diet.**
+
+**(a)** The model. Each RGB image is converted to the DKL cone-opponent space and split once, before any convolution: stream 1 (“magno”) receives the luminance channel, stream 2 (“parvo”) the L−M chromatic channel. Under the developmental visual diet the luminance channel additionally passes through a Gaussian blur (σ = 4 px) and the scale-free contrast-sensitivity cut of Lu et al. (2026), evaluated at a fixed age of 48 months. The two ResNet-18 trunks are initialised bit-identically, so any difference between the trained streams is attributable to their inputs. A linear classifier reads out the weighted sum w·y₁ + (1−w)·y₂ of the two streams' penultimate features, with w fixed at 0.5 during training. The table lists the four front-end conditions used throughout: the diet, the no-diet control, the channel-swap control (the identical transform moved onto L−M) and the `parvo_highsf` control (stream 2 additionally receives untransformed luminance).
+
+**(b)** What each stream sees, for one NSD image (id 15504, the most chromatic of a fixed candidate grid), rendered with the exact training front end. Top: the RGB image and its luminance and L−M channels; bottom: the two channels after the developmental transform. The L−M channel is contrast-stretched for display only.
+
+**(c)** Validation top-1 accuracy over 150 epochs of training on MiniEcoset (112 classes), three seeds per condition. Thin lines are individual seeds, thick lines the seed mean; vertical rules mark the epochs at which weights were saved. The diet costs accuracy — 0.556 against 0.701 at the best saved checkpoint — and, uniquely among the four conditions, degrades after its per-epoch peak (final-epoch mean 0.445, range 0.347–0.527). Every behavioural and cortical result in this paper states which checkpoint policy it uses.
