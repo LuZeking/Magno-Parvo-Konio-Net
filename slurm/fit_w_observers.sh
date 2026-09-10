@@ -13,14 +13,18 @@
 # anything, so the two cannot silently diverge.
 #
 # CPU only -- `main`, no --gres, per the project Slurm rules. One array, not a
-# loop of sbatch calls. 32G is the proven request for this exact pipeline; the
-# fine grid adds a (1001 x 1200 x 16) float32 buffer (~77 MB) and a
-# (1200 x 1000) bootstrap multiplicity matrix (~5 MB) on top of it.
+# loop of sbatch calls. 8G is sized from MEASUREMENT, not from the 32G the
+# sweep script asks for: the cancelled run 26462173 peaked at 919 MB MaxRSS on
+# this exact pipeline. The grid and controls add a (1001 x 1200 x 16) float64
+# decision buffer (~154 MB), the per-observer split and permutation matrices
+# (~30 MB each), and the stacked (10 x 1001 x R) CV arrays (~32 MB) -- all of
+# which fit inside 8G several times over. Asking 32G here would strand memory
+# on a node for no reason.
 #SBATCH --job-name=mpk_wfit
 #SBATCH --partition=main
 #SBATCH --qos=standard
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
+#SBATCH --mem=8G
 #SBATCH --time=03:00:00
 #SBATCH --array=0-8%5
 #SBATCH --output=slurm/logs/wfit_%A_%a.out

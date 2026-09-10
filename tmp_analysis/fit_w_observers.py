@@ -16,17 +16,26 @@ They answer different questions on purpose. E1 asks what weighting reproduces a
 person's marginal shape-bias rate; E2 asks what weighting best predicts their
 individual choices. Whether they agree IS the result, not a nuisance.
 
-TWO CONTROLS ON E2, added POST-HOC after a smoke run falsified §106.7's third
-prediction (see §106.10 -- the sequence is on the record in the order it
-happened). E2 is an argmax over 1001 weights, then reported as the best of ten
-such maxima, so it is selected twice and some of it is free:
+E2 IS SELECTED TWICE and its controls must bound both selections (§106.10 as
+corrected by §106.11). An argmax over 1001 weights, then the best of ten
+observers, is a statistic that returns a large number from nothing:
 
-    Control A  split-half cross-validation -- fit w on half the items, score
-               kappa on the held-out half. R random splits. The direct test of
-               whether a fitted w is real or is fitting 1,200 trials of noise.
-    Control B  permutation null -- shuffle the observer's trials across items P
-               times and recompute the whole best-over-w statistic, giving the
-               distribution of the selected maximum under no correspondence.
+    Control A  split-half cross-validation. Two forms -- per observer, whose
+               FULL ten-value vector is reported and never its maximum; and a
+               joint form that puts the observer choice INSIDE the fold, by
+               selecting the best (observer, w) pair on half A and scoring
+               that same pair on held-out half B.
+    Control B  permutation null. Two forms -- per observer, and a JOINT null in
+               which every replicate permutes all ten observers, takes each
+               one's argmax over w, and then the best of ten, so the null is
+               of the same doubly-selected statistic as the observation.
+
+BOTH NORMALISATIONS ARE CARRIED THROUGHOUT. §2.6.2's published statistic
+divides a mean over observers by the pooled ceiling over all 45 pairs, which is
+coherent. A per-observer numerator over that same pooled scalar is not: the
+observers' own ceilings run 0.113 to 0.302 against a pooled 0.234 (§106.11). So
+every figure is reported against the observer's OWN ceiling and against the
+pooled one, observation and null alike, and the two are never mixed.
 
 WHY A 0.001 GRID IS FREE. The classifier is affine and the fusion weights sum
 to one, so
@@ -37,7 +46,8 @@ holds EXACTLY -- the two endpoint logit matrices determine every w. The forward
 pass therefore runs once and every one of the 1001 grid points is an
 interpolation. §2.3 measured the deviation of this identity at 1.1e-6; this
 script re-measures it rather than trusting it, because the entire cost argument
-rests on it.
+rests on it. (It buys accuracy of the estimate, not the headline: §106.11
+confirmed the coarse 21-point grid returns the identical best-of-ten value.)
 
 WHY THE CONTROLS ARE ALSO FREE. Cohen's kappa needs only four counts, and each
 is a dot product between a fixed model indicator and an observer indicator:
@@ -54,7 +64,7 @@ NOTHING VALIDATED IS REIMPLEMENTED. The human loader, the scalar kappa and the
 shape-bias scorer are imported from the modules that already produced the
 published numbers, and the matmul forms below are asserted against them at
 every point of the coarse 0.05 grid before any fit is read. The published
-anchors (human shape bias 0.958, human-human ceiling 0.234) are asserted too.
+anchors (human shape bias 0.958, pooled ceiling 0.234) are asserted too.
 
 Usage: PYTHONPATH=.:tmp_analysis python tmp_analysis/fit_w_observers.py \
            --checkpoint ... --model-name ...
@@ -169,6 +179,16 @@ def nanargmax_cols(a):
     return np.argmax(np.where(np.isfinite(a), a, -np.inf), axis=0)
 
 
+def nanmax_cols(a):
+    """Per-column max that tolerates all-NaN columns (returns -inf there)."""
+    return np.max(np.where(np.isfinite(a), a, -np.inf), axis=0)
+
+
+def perm_p(null, observed):
+    """Exact one-sided permutation p, never zero: (#>= obs + 1) / (P + 1)."""
+    return float((np.sum(np.asarray(null) >= observed) + 1) / (len(null) + 1))
+
+
 def summarise_fit(grid, curve, target, mode):
     """One observer's fit, with attainability decided BEFORE the argmax is read.
 
@@ -240,7 +260,7 @@ def main():
     tx_a = np.asarray(textures, dtype=object)
     n_items = len(stems)
 
-    # ---- humans, and the two anchors that say the loading is right ---------
+    # ---- humans, and the anchors that say the loading is right ------------
     humans = load_humans(stems, shapes, textures)
     names = sorted(humans)
     H = np.stack([code_choices(humans[h]) for h in names])          # (10, n)
@@ -248,16 +268,28 @@ def main():
                                                 + (H[i] == TEXTURE).sum())
                        for i in range(len(names))])
     h_decided = np.array([int((H[i] != NEITHER).sum()) for i in range(len(names))])
-    hh = np.array([kappa(humans[a], humans[b])
-                   for a, b in itertools.combinations(names, 2)], dtype=float)
+
+    # Pooled ceiling (all 45 pairs) AND each observer's own ceiling (the mean
+    # of the 9 pairs involving them). §106.11: these are not interchangeable --
+    # they run 0.113 to 0.302 against a pooled 0.234 -- so a per-observer
+    # numerator gets a per-observer denominator.
+    pair_k = {h: [] for h in names}
+    hh = []
+    for a, b in itertools.combinations(names, 2):
+        k = kappa(humans[a], humans[b])
+        hh.append(k)
+        pair_k[a].append(k)
+        pair_k[b].append(k)
+    hh = np.array(hh, dtype=float)
     CEIL = float(np.nanmean(hh))
+    own_ceil = np.array([float(np.nanmean(pair_k[h])) for h in names])
     print(f"humans: n={len(names)}  shape bias {h_rate.mean():.4f} "
           f"(range {h_rate.min():.3f}-{h_rate.max():.3f})", flush=True)
-    print(f"human-human ceiling: kappa = {CEIL:.4f} "
-          f"({np.isfinite(hh).sum()} pairs, sd {np.nanstd(hh, ddof=1):.4f})",
-          flush=True)
+    print(f"pooled ceiling: kappa = {CEIL:.4f} ({np.isfinite(hh).sum()} pairs, "
+          f"sd {np.nanstd(hh, ddof=1):.4f})", flush=True)
+    print(f"own ceilings: {own_ceil.min():.4f} - {own_ceil.max():.4f}", flush=True)
     assert abs(h_rate.mean() - 0.958) < 0.002, f"human shape bias {h_rate.mean()}"
-    assert abs(CEIL - 0.234) < 0.005, f"human-human ceiling {CEIL}"
+    assert abs(CEIL - 0.234) < 0.005, f"pooled ceiling {CEIL}"
 
     # ---- model: ONE forward pass, then pure interpolation ------------------
     ch_min, ch_max = dkl_frontend.compute_dkl_channel_minmax()
@@ -307,9 +339,6 @@ def main():
     sb_curve, dec_count = md.rate()
 
     # ---- assert the matmul forms against the validated scalar ones ---------
-    # Every point of the published 0.05 grid, both statistics, before any fit
-    # is read. A disagreement here means the fine grid is measuring something
-    # other than what §2.3 and §2.6.2 measured.
     coarse = [i for i, w in enumerate(grid)
               if abs(w * 20 - round(w * 20)) < 1e-9]
     max_sb_err = max_k_err = 0.0
@@ -334,27 +363,30 @@ def main():
     # ---- resampling designs, all drawn from one seeded generator -----------
     rng = np.random.default_rng(args.boot_seed)
     boot_w = rng.multinomial(n_items, np.full(n_items, 1.0 / n_items),
-                             size=args.n_boot).T.astype(np.float32)   # (n, B)
+                             size=args.n_boot).T.astype(np.float32)
     sb_boot, _ = md.rate(boot_w)
 
-    # Control A: R random half-splits, as 0/1 masks over items.
     half = n_items // 2
     SA = np.zeros((n_items, args.n_splits), dtype=np.float32)
     for r in range(args.n_splits):
         SA[rng.choice(n_items, half, replace=False), r] = 1.0
     SB = 1.0 - SA
+    r_ix = np.arange(args.n_splits)
 
     print(f"\nfamily rate range over the {len(grid)}-point grid: "
           f"{np.nanmin(sb_curve):.4f} - {np.nanmax(sb_curve):.4f}", flush=True)
 
+    # ---- per observer ------------------------------------------------------
     out_obs = {}
+    kA_all, kB_all, nullmax_all, obs_max_all = [], [], [], []
     for j, h in enumerate(names):
         hs, ht, hd = obs_indicators(H[j])
         k_curve = md.kappa_against(hs, ht, hd)
 
         e1 = summarise_fit(grid, sb_curve, h_rate[j], mode="rate")
         e2 = summarise_fit(grid, k_curve, None, mode="trial")
-        e2["pct_of_ceiling"] = 100.0 * e2["value_at_w_hat"] / CEIL
+        e2["pct_of_pooled_ceiling"] = 100.0 * e2["value_at_w_hat"] / CEIL
+        e2["pct_of_own_ceiling"] = 100.0 * e2["value_at_w_hat"] / own_ceil[j]
 
         # --- item bootstrap on both fitted weights (§106.4) -----------------
         k_boot = md.kappa_against(*obs_indicators(H[j], boot_w))
@@ -371,15 +403,12 @@ def main():
         e2["boot_frac_at_boundary"] = float(
             ((w_e2_b <= grid[0] + 1e-9) | (w_e2_b >= grid[-1] - 1e-9)).mean())
 
-        # --- Control A: split-half cross-validation (§106.10) ---------------
+        # --- Control A, per-observer form (§106.10, §106.11) ----------------
         kA = md.kappa_against(*obs_indicators(H[j], SA))     # (n_w, R)
         kB = md.kappa_against(*obs_indicators(H[j], SB))
         idx = nanargmax_cols(kA)
-        r_ix = np.arange(args.n_splits)
-        in_sample = kA[idx, r_ix]                 # fitted and scored on A
-        held_out = kB[idx, r_ix]                  # fitted on A, scored on B
-        # The no-selection floor: kappa on the held-out half at a w chosen
-        # without reference to the data at all, averaged over the grid.
+        in_sample = kA[idx, r_ix]
+        held_out = kB[idx, r_ix]
         floor = np.nanmean(kB, axis=0)
         cv = {
             "n_splits": args.n_splits,
@@ -387,38 +416,42 @@ def main():
             "held_out_mean": float(np.nanmean(held_out)),
             "held_out_sd": float(np.nanstd(held_out, ddof=1)),
             "no_fitting_floor_mean": float(np.nanmean(floor)),
-            "held_out_pct_of_ceiling": float(100 * np.nanmean(held_out) / CEIL),
-            "floor_pct_of_ceiling": float(100 * np.nanmean(floor) / CEIL),
+            "held_out_pct_of_own_ceiling": float(
+                100 * np.nanmean(held_out) / own_ceil[j]),
+            "floor_pct_of_own_ceiling": float(
+                100 * np.nanmean(floor) / own_ceil[j]),
             "generalisation_gap": float(np.nanmean(in_sample)
                                         - np.nanmean(held_out)),
             "held_out_above_floor": float(np.nanmean(held_out)
                                           - np.nanmean(floor)),
         }
+        kA_all.append(kA); kB_all.append(kB)
 
-        # --- Control B: permutation null for the selected maximum -----------
+        # --- Control B, per-observer form -----------------------------------
         perm = np.empty((n_items, args.n_perm), dtype=np.int8)
         for q in range(args.n_perm):
             perm[:, q] = H[j][rng.permutation(n_items)]
         k_perm = md.kappa_against((perm == SHAPE).astype(np.float32),
                                   (perm == TEXTURE).astype(np.float32),
                                   (perm != NEITHER).astype(np.float32))
-        null_max = np.nanmax(np.where(np.isfinite(k_perm), k_perm, -np.inf),
-                             axis=0)
+        null_max = nanmax_cols(k_perm)          # (P,) argmax-over-w bounded
         obs_max = e2["value_at_w_hat"]
+        nullmax_all.append(null_max)
+        obs_max_all.append(obs_max)
         nullctl = {
             "n_perm": args.n_perm,
             "null_max_mean": float(np.mean(null_max)),
             "null_max_p95": float(np.percentile(null_max, 95)),
             "null_max_max": float(np.max(null_max)),
             "observed_max": float(obs_max),
-            # (#null >= observed + 1) / (P + 1): the exact one-sided p, never 0.
-            "p_perm": float((np.sum(null_max >= obs_max) + 1) / (args.n_perm + 1)),
+            "p_perm": perm_p(null_max, obs_max),
             "excess_over_null_mean": float(obs_max - np.mean(null_max)),
         }
 
         out_obs[h] = {
             "observer_rate": float(h_rate[j]),
             "observer_decided": int(h_decided[j]),
+            "own_ceiling": float(own_ceil[j]),
             "rate_fit": e1,
             "trial_fit": e2,
             "cross_validation": cv,
@@ -426,26 +459,72 @@ def main():
             "model_decided_at_w_trial": int(round(dec_count[e2["w_index"]])),
         }
         tag = "ATTAINED" if e1["attainable"] else "UNATTAINABLE"
-        print(f"  {h}  rate={h_rate[j]:.4f}  E1 {tag:12s} "
-              f"w={e1['w_hat']:.3f} resid={e1['residual']:+.4f}  |  "
+        print(f"  {h}  rate={h_rate[j]:.4f} ceil={own_ceil[j]:.4f}  "
+              f"E1 {tag:12s} w={e1['w_hat']:.3f} resid={e1['residual']:+.4f}  |  "
               f"E2 w={e2['w_hat']:.3f} k={obs_max:+.4f} "
-              f"({e2['pct_of_ceiling']:.1f}% ceil)  "
+              f"({e2['pct_of_own_ceiling']:.1f}% own)  "
               f"CV held-out {cv['held_out_mean']:+.4f} "
               f"(floor {cv['no_fitting_floor_mean']:+.4f})  "
               f"perm p={nullctl['p_perm']:.3f} "
-              f"null-max {nullctl['null_max_mean']:+.4f}", flush=True)
+              f"null {nullctl['null_max_mean']:+.4f}", flush=True)
+
+    # ---- JOINT controls: both selections bounded (§106.11) -----------------
+    # Replicate q permutes ALL ten observers; each contributes its argmax over
+    # w; the statistic is then the best of ten. Same pipeline as the
+    # observation, so the null is of the same doubly-selected quantity.
+    NM = np.stack(nullmax_all)                     # (10, P)
+    OM = np.array(obs_max_all)                     # (10,)
+    joint = {}
+    for lab, denom in (("raw", np.ones(len(names))), ("own_ceiling", own_ceil)):
+        null_joint = np.max(NM / denom[:, None], axis=0)
+        obs_joint = float(np.max(OM / denom))
+        joint[lab] = {
+            "observed_best_of_ten": obs_joint,
+            "null_mean": float(np.mean(null_joint)),
+            "null_p95": float(np.percentile(null_joint, 95)),
+            "null_max": float(np.max(null_joint)),
+            "p_perm": perm_p(null_joint, obs_joint),
+            "excess_over_null_mean": float(obs_joint - np.mean(null_joint)),
+        }
+        print(f"\nJOINT permutation null [{lab}]: observed best-of-ten "
+              f"{obs_joint:+.4f}, null mean {np.mean(null_joint):+.4f}, "
+              f"p95 {np.percentile(null_joint, 95):+.4f}, "
+              f"p = {joint[lab]['p_perm']:.4f}", flush=True)
+
+    # Joint CV: the observer choice moves INSIDE the fold.
+    KA = np.stack(kA_all)                          # (10, n_w, R)
+    KB = np.stack(kB_all)
+    joint_cv = {}
+    for lab, denom in (("raw", np.ones(len(names))), ("own_ceiling", own_ceil)):
+        sel = KA / denom[:, None, None]
+        flat = sel.reshape(-1, args.n_splits)
+        best = nanargmax_cols(flat)
+        oj, wi = np.unravel_index(best, (len(names), len(grid)))
+        held = (KB / denom[:, None, None])[oj, wi, r_ix]
+        ins = flat[best, r_ix]
+        floor = np.nanmean(KB / denom[:, None, None], axis=(0, 1))
+        joint_cv[lab] = {
+            "in_sample_mean": float(np.nanmean(ins)),
+            "held_out_mean": float(np.nanmean(held)),
+            "held_out_sd": float(np.nanstd(held, ddof=1)),
+            "no_fitting_floor_mean": float(np.nanmean(floor)),
+            "generalisation_gap": float(np.nanmean(ins) - np.nanmean(held)),
+            "held_out_above_floor": float(np.nanmean(held) - np.nanmean(floor)),
+            "observer_chosen_counts": {names[o]: int((oj == o).sum())
+                                       for o in range(len(names))},
+        }
+        print(f"JOINT cross-validation [{lab}]: in-sample "
+              f"{np.nanmean(ins):+.4f} -> held-out {np.nanmean(held):+.4f}, "
+              f"no-fitting floor {np.nanmean(floor):+.4f}", flush=True)
 
     n_att = sum(o["rate_fit"]["attainable"] for o in out_obs.values())
-    best = max(out_obs.values(), key=lambda o: o["trial_fit"]["pct_of_ceiling"])
     print(f"\nE1 attainable for {n_att}/{len(names)} observers")
-    print(f"E2 best over all observers and all w: "
-          f"{best['trial_fit']['value_at_w_hat']:+.4f} = "
-          f"{best['trial_fit']['pct_of_ceiling']:.1f}% of the human-human ceiling")
-    print(f"  its cross-validated held-out kappa: "
-          f"{best['cross_validation']['held_out_mean']:+.4f} "
-          f"({best['cross_validation']['held_out_pct_of_ceiling']:.1f}% of ceiling), "
-          f"no-fitting floor {best['cross_validation']['no_fitting_floor_mean']:+.4f}")
-    print(f"  its permutation p: {best['permutation_null']['p_perm']:.4f}")
+    print("Control A per observer, FULL held-out vector (not its maximum):")
+    for h in names:
+        c = out_obs[h]["cross_validation"]
+        print(f"    {h}  held-out {c['held_out_mean']:+.4f}  "
+              f"floor {c['no_fitting_floor_mean']:+.4f}  "
+              f"above floor {c['held_out_above_floor']:+.4f}")
 
     out = {
         "model_name": args.model_name,
@@ -458,11 +537,14 @@ def main():
         "human_shape_bias": float(h_rate.mean()),
         "human_human_ceiling": CEIL,
         "human_human_sd": float(np.nanstd(hh, ddof=1)),
+        "own_ceilings": {names[j]: float(own_ceil[j]) for j in range(len(names))},
         "affine_identity_max_dev": dev,
         "family_rate_min": float(np.nanmin(sb_curve)),
         "family_rate_max": float(np.nanmax(sb_curve)),
         "n_rate_attainable": int(n_att),
         "observers": out_obs,
+        "joint_permutation_null": joint,
+        "joint_cross_validation": joint_cv,
     }
     path = os.path.join(args.out_dir, f"{args.model_name}_wfit.json")
     with open(path, "w") as fh:

@@ -11608,3 +11608,112 @@ apparent trial-level agreement does not survive cross-validation either.
 **Prediction 3 is withdrawn, not revised.** It compared two different
 statistics and its replacement would be a number chosen after seeing the data.
 Controls A and B are decision rules, not predictions, and that is deliberate.
+
+### §106.11 AMENDMENT 2 — a peer session found two real defects in §106.10's
+### controls. Both confirmed from disk, both fixed, array cancelled and rerun.
+
+*The peer session that owns PAPER_DRAFT.md raised three points on the §106.10
+design. I verified all three independently from
+`results/sweep_error_consistency/*.json` before acting on any of them; the
+verification is reproduced here because two of the three change the
+implementation.*
+
+**Verified claim 1 — the 38.2% owes nothing to the fine grid.** Recomputing my
+doubly-selected statistic on the PUBLISHED 21-point grid gives 38.2% for
+subject-03 in `dkl_bcs_seed0_best` — the identical value the 1001-point smoke
+run produced. The finer grid bought exactly nothing, which quantifies the
+diagnosis in §106.10: the gap between §2.6.2's 18% and my 38% is selection, not
+resolution.
+
+**Verified claim 2 — 38.2% is the FLOOR of the family, not a peak.** The same
+statistic across the nine runs:
+
+| run | published (mean over observers) | best-of-ten | argmax observer |
+|---|---|---|---|
+| dkl_base_seed0_final | 17.3% | 50.2% | subject-02 |
+| dkl_base_seed1_final | 18.0% | 52.8% | subject-04 |
+| dkl_base_seed2_final | 17.6% | 43.0% | subject-02 |
+| dkl_bcs_seed0_best | 7.6% | **38.2%** | subject-03 |
+| dkl_bcs_seed0_final | 17.3% | 57.9% | subject-05 |
+| dkl_bcs_seed1_best | 18.2% | 44.0% | subject-04 |
+| dkl_bcs_seed1_final | 18.7% | 44.8% | subject-04 |
+| dkl_bcs_seed2_best | 20.7% | 60.4% | subject-02 |
+| dkl_bcs_seed2_final | 17.3% | 61.1% | subject-02 |
+
+I happened to smoke-test the run producing the smallest value in the family. A
+number at the bottom of the range its own selection procedure generates is
+close to the definition of free.
+
+**Verified claim 3 — the statistic is not a stable property of the model.**
+Three runs share a published 17.3% and their best-of-ten spans 50.2–61.1%,
+**10.8 points of ceiling** while the model-level statistic is identical. What
+moves is which observer happened to fall closest, not the model.
+
+None of this substitutes for the permutation null; it predicts what a correctly
+built null should return, which is roughly the 40–60% band the table spans.
+
+#### The two defects, and the fixes
+
+**Defect 1 — the null bounded only ONE of the two selections.** As written,
+§106.10's Control B permutes one observer, takes the max over 1001 weights, and
+compares that observer's observed maximum against it. That bounds the
+argmax-over-w. It does **not** bound the best-of-ten-observers step, and the
+headline number is selected on both. A null that bounds one selection and is
+compared against a doubly-selected observation will make 38.2% look significant
+when the table above says it is not.
+
+*Fix:* the null now reproduces the whole pipeline per replicate. Each of the P
+replicates permutes **all ten** observers, recomputes every weight, takes each
+observer's argmax over w, and then takes the best of ten — so the null
+distribution is of the same doubly-selected statistic as the observation. The
+per-observer null is kept as well, because the per-observer claim is still
+worth bounding; the two are reported separately and never mixed.
+
+**Defect 2 — the numerator and denominator did not match.** §2.6.2's published
+statistic is coherent: a mean over observers divided by the pooled ceiling over
+all 45 pairs. Mine put a per-observer numerator over that same pooled scalar.
+The per-observer ceilings are not interchangeable with it — computed as the
+mean of each observer's own 9 pairs, they run:
+
+| observer | own ceiling | ratio to pooled 0.2335 |
+|---|---|---|
+| subject-01 | 0.2002 | 0.857 |
+| subject-02 | 0.2346 | 1.005 |
+| subject-03 | 0.2888 | 1.237 |
+| subject-04 | 0.2556 | 1.094 |
+| subject-05 | 0.2471 | 1.058 |
+| subject-06 | 0.2019 | 0.864 |
+| subject-07 | 0.2678 | 1.147 |
+| subject-08 | 0.3021 | 1.294 |
+| subject-09 | 0.1128 | **0.483** |
+| subject-10 | 0.2244 | 0.961 |
+
+A spread of 0.113 to 0.302 on a pooled 0.234, with subject-09 at less than half
+the pooled value. Against its own ceiling subject-03's 38.2% is **30.9%**, and
+which observer "wins" changes.
+
+*Fix:* every per-observer figure is reported against that observer's own
+ceiling, with the pooled version retained alongside it for comparability with
+§2.6.2. Both the observed statistic and its null are computed under both
+normalisations, so the comparison is never mixed.
+
+**Defect 3 (raised, and it is a real one) — observer selection re-entering
+after cross-validation.** Split-half CV on subject-03 is clean *for
+subject-03*, but a headline that is the best of ten held-out values has let the
+observer selection back in downstream of the fold.
+
+*Fix:* Control A now runs in two forms. The per-observer form is unchanged and
+the **whole ten-value vector is reported, never its maximum**. A second form
+puts both selections inside the fold: on half A the best (observer, w) *pair*
+is chosen, and that same pair is scored on held-out half B.
+
+#### Status
+
+Array 26462173 was cancelled about five minutes in — the amended script
+computes a strict superset, so nothing is lost by rerunning rather than
+patching results afterwards. Nothing from the cancelled array is reported.
+
+**§106.10's verdict rule is unchanged and still binds.** Only the instruments
+are corrected, and they are corrected in the direction that makes a positive
+*harder* to obtain, not easier — which is the right direction for a correction
+made after seeing a number I did not predict.
