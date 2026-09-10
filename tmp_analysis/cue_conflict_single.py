@@ -33,11 +33,31 @@ from src.training.standalone_trainer import patch_stream_input_channels
 
 def build_single(checkpoint: str, num_classes: int = 112, seed: int = 0,
                  device: str = "cpu") -> TwoStreamNetwork:
-    """The trainer's own single-stream build, then a strict load."""
+    """The trainer's own single-stream build, then a strict load.
+
+    The architecture is READ FROM THE CHECKPOINT, not hardcoded and not passed
+    in. `standalone_trainer` saves `{**cfg, "in_channels": [c1, c2]}`, and §97
+    bound `like_resnet` to the CONDITION rather than to the CLI flag, so every
+    checkpoint of an arm that pins an architecture carries it: the
+    `dkl_bcs_single34` blobs record `like_resnet: 'resnet34'` and the
+    `dkl_bcs_single` blobs record no key at all. Defaulting to resnet18 on the
+    absent key therefore reproduces every existing §64 number bit-identically
+    while letting the §97 parameter-matched arm score through the SAME scorer.
+
+    Taking it from the weights file rather than a flag is the point: a flag
+    could disagree with the checkpoint, and this is the failure class §87 and
+    §97 both lost work to. Here it cannot -- and the strict load below is an
+    independent check on the answer, since a wrong architecture cannot produce
+    zero missing and zero unexpected keys.
+    """
+    blob = torch.load(checkpoint, map_location="cpu", weights_only=False)
+    cfg = blob.get("config", {}) if isinstance(blob, dict) else {}
+    arch = cfg.get("like_resnet", "resnet18")
+
     torch.manual_seed(seed)
     model = TwoStreamNetwork(
         num_classes=num_classes,
-        like_resnet="resnet18",
+        like_resnet=arch,
         seperate_from_layer=0,
         baseline=True,        # one trunk; stream2_block1 is None
         combined_color=True,  # 2-channel stem
@@ -48,10 +68,8 @@ def build_single(checkpoint: str, num_classes: int = 112, seed: int = 0,
     )
     patch_stream_input_channels(model, 2, 0)
 
-    blob = torch.load(checkpoint, map_location="cpu", weights_only=False)
     # standalone_trainer saves the CONDITION config flattened, plus
     # in_channels: {'input_mode','blur','cs','single_stream','in_channels'}.
-    cfg = blob.get("config", {}) if isinstance(blob, dict) else {}
     if cfg:
         if not cfg.get("single_stream", False):
             raise SystemExit(
@@ -65,7 +83,8 @@ def build_single(checkpoint: str, num_classes: int = 112, seed: int = 0,
             )
         # The diet must match what the front end below will apply.
         print(f"[single] checkpoint config: input_mode={cfg.get('input_mode')} "
-              f"blur={cfg.get('blur')} cs={cfg.get('cs')}", flush=True)
+              f"blur={cfg.get('blur')} cs={cfg.get('cs')} arch={arch}",
+              flush=True)
 
     state = blob.get("state_dict", blob.get("model", blob))
     if any(k.startswith("network.") for k in state):
@@ -82,8 +101,9 @@ def build_single(checkpoint: str, num_classes: int = 112, seed: int = 0,
             f"{len(missing)} missing {missing[:4]}, "
             f"{len(unexpected)} unexpected {unexpected[:4]}"
         )
+    n_par = sum(p.numel() for p in model.parameters())
     print(f"[single] strict load OK: {len(state)} tensors, "
-          f"0 missing, 0 unexpected", flush=True)
+          f"0 missing, 0 unexpected, arch={arch} params={n_par:,}", flush=True)
     return model.eval().to(device)
 
 
