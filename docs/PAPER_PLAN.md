@@ -11183,3 +11183,30 @@ and six failed regional hypotheses in the main text already; this one is
 registered under the same terms. A result that qualifies the title is not a
 reason to leave the test unrun — it is the reason to run it before a referee
 does.
+
+### 104.7 Amendment, recorded before any result exists
+
+Added while the feature extraction was still running (job 26459572), and
+committed before the first sweep was fitted, so the ordering is checkable in the
+history rather than asserted.
+
+**A refitted *linear* head is fitted at every `w` alongside the nonlinear one.**
+§104.3 registered design A as "re-fit a small nonlinear head". That confounds two
+manipulations: the head becomes nonlinear *and* it becomes refitted. If the span
+changed, design A as registered could not say which did it. Three heads are now
+scored at each `w`:
+
+| head | what it is | isolates |
+|---|---|---|
+| `affine` | the trained classifier's own Linear, unchanged | §2.3's published baseline |
+| `linear` | `Linear(512,112)` refitted at this `w` | the effect of **refitting** |
+| `mlp` | `Linear(512,512) → ReLU → Linear(512,112)` refitted at this `w` | the effect of **nonlinearity**, given the linear control |
+
+This is strictly an addition: it removes an interpretation the registered design
+would have left open, and it cannot make the test easier to pass. The decision
+rule of §104.4 is unchanged and is applied to the **`mlp`** span, which is the
+one §104.1 asks about. The `linear` span is reported beside it.
+
+Fixed now, identical for every `w` and every head: Adam at lr 1e-3, batch 1024,
+20 epochs, hidden width 512, and the same initialisation seed at every `w` so a
+difference between weights is not a difference between draws.
