@@ -66,6 +66,14 @@ Moved from §2.2: the full raw-statistic paragraph, the three-seed replication o
 
 The raw statistic agrees: **+0.616 with the diet against −0.033 without** (and
 +0.658 / −0.039, +0.632 / −0.053 in seeds 1 and 2, p=.0078 and 8/8 throughout).
+*Which stream carries the in-silico cue-conflict effect (moved from §2.2a).*
+The magno−parvo difference in the per-voxel predicted shape-bias index is
++1.534 with the diet and +0.110 without, and the raw statistic agrees (+0.616
+against −0.033), likewise in seeds 1 and 2. The effect is carried **entirely by
+the magno stream** (+0.791 with the diet vs **−0.638** without — so without the
+diet the magno stream is *texture*-dominated), the parvo streams being
+indistinguishable from one another (−0.743 vs −0.748).
+
 **We draw no inference from the sign of the no-diet values.** An earlier version
 described the raw statistic as separating the arms "by sign rather than by
 degree" and read the no-diet arm as marginally texture-organised; both are

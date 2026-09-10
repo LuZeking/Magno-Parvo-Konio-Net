@@ -644,3 +644,29 @@ changed by the move — the content below is verbatim.
       `swap` and `parvo_highsf` cortical fits are seed 0 only, and §2.4's
       accuracy-matched control is one training run. Both are labelled as n=1
       where they appear (§2.2, §2.4, Extended Data §E2, §E4) (PLAN §66).
+
+
+---
+
+## Draft status and positioning (moved out of PAPER_DRAFT.md, 2026-09-10)
+
+Removed from the manuscript head because it is internal metadata of the same
+not-for-submission class as the checklist below it — the referee's manuscript-
+hygiene comment applies to it just as much. Kept verbatim.
+
+**Status: SECOND DRAFT, 2026-09-06.** Reframed from the first draft
+(2026-09-02), which led with the carrier x transform conjunction. Structure and
+argument are settled; prose is second-pass. Every number is tagged with its
+`PAPER_PLAN.md` section so it can be traced to the run that produced it.
+Nothing here is written from memory.
+
+**Positioning (revised 2026-09-06; superseded in part by T3.1, 2026-09-10).**
+The paper led with the question the originating thesis posed and could not
+answer: why human behaviour is shape-biased when ventral-stream representations
+are texture-like. T3.1 has since re-led the abstract and Introduction with the
+measurement claim, and the paradox is now the third paragraph rather than the
+first. The mechanistic results that previously led (the front-end 2x2, the
+side-of-parity result) are retained as the answer to *how the shape-biased
+component arises and survives training*, not as the paper's claim, and are now
+merged into a single §2.4–2.5. Claims the earlier framing invited and this one
+does not make are listed under *Claims deliberately not made*.
