@@ -244,16 +244,16 @@ residual gaps disclosed as provenance drift.*
 
 **The diet makes the gradient large; it does not make it exist.** Correcting
 each arm for its own measured instrument bias gives −0.720 with the diet and
-−0.101 without, each non-zero in every subject at the exact Wilcoxon floor
-(p = .0078), so the diet's effect is a factor of **7.1** on a gradient that is
-already present. The comparative claim is the robust one — it holds across every
-treatment of the instrument we tried, including the one we reject below — and it
-is what §2.5's mechanism needs. Three earlier framings of this comparison are
-withdrawn; Supplementary Note S1.6 records what each claimed and why it failed.
-The operative correction is that the floor is a **signed positive bias** rather
-than a noise level, and a
-positive bias cannot manufacture a negative observation — it masks one, which is
-why the statistic reported above is the paired displacement and not a ratio.
+−0.101 without, each non-zero in every subject at the exact Wilcoxon floor (p =
+.0078), so the diet's effect is a factor of **7.1** on a gradient that is
+already present. The comparative claim is the robust one — it holds across
+every treatment of the instrument we tried, including the one we reject below —
+and it is what §2.5's mechanism needs. Three earlier framings of this
+comparison are withdrawn; Supplementary Note S1.6 records what each claimed and
+why it failed. The operative correction is that the floor is a **signed
+positive bias** rather than a noise level, and a positive bias cannot
+manufacture a negative observation — it masks one, which is why the statistic
+reported above is the paired displacement and not a ratio.
 
 *One subject carries a third of the no-diet effect, and that is a property of
 the subject, not of the fit.* We first read subject 01's steep no-diet gradient
