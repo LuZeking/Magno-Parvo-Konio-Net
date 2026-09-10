@@ -11249,3 +11249,172 @@ That is §2.7's cost accounting seen from the readout side.
 checkpoint) and the head (512-wide, ReLU) were all fixed in §104.3–104.4 before
 extraction, and §104.7's linear control was committed while extraction was still
 running. Nothing was tuned to the outcome.
+
+---
+
+## §105 The parameter-matched control LANDED and it KILLS §2.3's "the split is
+## doing the work". Capacity, not the split, accounts for the shape-bias gap.
+
+*Jobs 26444916 (training, 3 seeds, COMPLETED 1-00:44 to 1-02:05) and 26459565
+(cue-conflict, 6 tasks, COMPLETED ~4.5 min each). Analysis protocol fixed in
+§64.6 before the runs existed and not renegotiated after seeing them.*
+
+### §105.1 The comparator side reproduces the published numbers exactly
+
+Before reading the new arm: the same collection script, run over the two arms
+already in the paper, returns the draft's own figures.
+
+| quantity | draft | recomputed |
+|---|---|---|
+| single-stream shape bias, best saved | 0.567 | 0.5672 |
+| two-stream shape bias, best saved | 0.655 | 0.6547 |
+| single-stream accuracy | 0.599 | 0.5990 |
+| two-stream accuracy | 0.556 | 0.5562 |
+
+So the matched arm is being compared against the published baselines, not
+against a re-derivation of them.
+
+### §105.2 Shape bias: the separation that carried the claim does not survive
+
+Three seeds per arm, both checkpoint policies, ranges rather than p-values
+(§64.6: 3v3 floors at .10, so complete separation is the declared rule).
+
+**Best saved checkpoint**
+
+| arm | params | mean | range | vs two-stream |
+|---|---|---|---|---|
+| two-stream `dkl_bcs` | ~22.4M | 0.6547 | [0.5942, 0.7177] | — |
+| 1-stream `single` r18 | 11.2M | 0.5672 | [0.5414, 0.5899] | **COMPLETE separation** |
+| 1-stream `single34` r34 | 21.3M | 0.6255 | [0.6043, 0.6524] | **overlap** |
+
+**Final checkpoint**
+
+| arm | params | mean | range | vs two-stream |
+|---|---|---|---|---|
+| two-stream `dkl_bcs` | ~22.4M | 0.6749 | [0.6464, 0.6922] | — |
+| 1-stream `single` r18 | 11.2M | 0.5571 | [0.5146, 0.5865] | **COMPLETE separation** |
+| 1-stream `single34` r34 | 21.3M | 0.6255 | [0.6043, 0.6524] | **overlap** |
+
+The gap §2.3 quotes as **0.088** (0.655 − 0.567) falls to **0.029** at the best
+saved checkpoint and **0.049** at the final one, with overlapping seed ranges
+at both. Under the rule declared in advance, that is **no separation and
+therefore no claim**.
+
+And the mechanism of the confound is directly visible rather than merely
+hypothesised: **r18 single vs r34 single is COMPLETE separation at both
+policies** ([0.5414, 0.5899] vs [0.6043, 0.6524]). Identical input, identical
+diet, identical schedule, one trunk in both cases — capacity alone raises
+shape bias by roughly the amount the split was credited with.
+
+### §105.3 What dies
+
+§2.3's paragraph headed **"The split is doing the work: without it the
+behaviour is worse."** Specifically:
+
+- "seed-level separation complete under both checkpoint policies" — true of the
+  r18 control, **false** of the parameter-matched one.
+- "The split buys shape bias" — not supported at matched capacity.
+- The ladder sentence "having two components to integrate is still worth 0.088
+  over having one" — the 0.088 is a capacity difference as much as a split
+  difference, and shrinks to 0.029 when capacity is held.
+
+This is Limitation 16's own hedge firing. It read: *"The confound runs against
+the accuracy result and in favour of the shape-bias result."* Both halves are
+now settled, and the shape-bias half is fatal.
+
+**Do not overcorrect into the opposite claim.** The matched arm does not show
+the split buys *nothing*. Overlapping ranges at n=3 are an absence of
+separation, not evidence of equality, and reading them as "no effect" would be
+the §99 significant/not-significant fallacy in its other direction. The honest
+statement is that this design cannot attribute the shape-bias difference to the
+split.
+
+### §105.4 What strengthens
+
+The accuracy half moves the other way, and in the paper's favour:
+
+| arm | best-saved val_top1 | range |
+|---|---|---|
+| two-stream | 0.5562 | [0.5516, 0.5639] |
+| 1-stream r18 | 0.5990 | [0.5889, 0.6075] |
+| 1-stream r34 | 0.6232 | [0.6157, 0.6338] |
+
+All three completely separated. At matched parameters the single stream's
+accuracy advantage **widens** (0.6232 vs 0.5562), so "the split pays for it in
+accuracy" is not a capacity artefact — it is real and larger than the draft
+reports. §2.3 can keep that half and should strengthen it.
+
+Late-training stability also favours the matched arm: sd(val_top1) over the
+last 20 epochs is [0.0152, 0.0406] for r34 single against [0.0428, 0.0727] for
+two-stream, complete separation. For all three r34 seeds the best saved
+checkpoint IS epoch 149, so §71.4's checkpoint-policy concern is moot for this
+arm and both policies score identical weights.
+
+### §105.5 A complication that must travel with the numbers
+
+§64.6 required the decision rate as a **count over a named subset** precisely
+because its denominator moves. It moved:
+
+| arm | decided / 1200, best saved |
+|---|---|
+| two-stream | 502.0 [483, 520] |
+| 1-stream r18 | 501.0 [491, 517] |
+| 1-stream r34 | 536.7 [515, 556] |
+
+§2.3's claim that decision rates match "to within 0.003" holds for the r18
+control (501.0 vs 502.0) and **fails for the matched one**: 536.7 vs 502.0 is
+0.029 of 1200, ten times larger. The r34 arm resolves more images to a cue, so
+its shape bias is computed over a partly different and larger subset. This
+weakens the comparison in an undetermined direction and must be disclosed
+alongside it; it does not rescue the claim.
+
+### §105.6 What is untouched
+
+The paper's central claim never rested on this comparison. "Shape-biased
+behaviour does not require shape-biased representations" is an existence proof
+about a readout over oppositely-biased components:
+
+- §2.1's opposite stream biases — untouched.
+- §2.2's ventral gradient — untouched.
+- §2.3's w-sweep spanning 0.40–0.90 over **frozen** components — untouched, and
+  it is the section's real load-bearing result.
+- §2.6's three properties that do not travel with shape bias — untouched.
+
+What is lost is a subsidiary causal claim about the architecture, in a section
+whose thesis is that the *readout* rather than the components sets the
+behavioural rate. Losing it costs the paper an argument it did not need.
+
+### §105.7 A candidate reframing, flagged not asserted
+
+The r18→r34 result is that shape bias rises with trunk capacity at fixed input
+and fixed diet. That is another instance of the section's actual thesis —
+shape bias moving under a manipulation that is not about shape. It is *not* as
+clean as the w-sweep, because capacity changes the representation as well as
+the readout, so it cannot be presented as a frozen-component result. Whether it
+belongs in §2.3 as a second demonstration or in Extended Data as a control is a
+judgement for whoever owns the section; recorded here so the option is visible.
+
+### §105.8 Consequences for the draft (peer-owned; not edited by me)
+
+1. §2.3's "The split is doing the work" paragraph needs rewriting, not patching.
+2. The ladder quote (magno 0.903 > two-stream 0.655 > single 0.567) needs the
+   matched arm inserted at 0.626 and the 0.088 sentence removed.
+3. Limitation 16 must change from "has not been run" to the outcome, and it is
+   no longer a limitation about a missing control but a disclosure that a
+   control removed a claim.
+4. "Claims deliberately not made" gains an entry: *that the two-stream split
+   causes the shape-bias advantage over one stream*.
+5. §105.5's decision-count divergence needs a line wherever the matched arm's
+   figure appears.
+
+### §105.9 Method note
+
+`tmp_analysis/cue_conflict_single.py` now reads `like_resnet` from the
+checkpoint rather than hardcoding it (c44aae4). §97 bound the architecture to
+the CONDITION, so it rides inside every checkpoint's saved config; the r18
+blobs carry no key and default correctly, which is why §105.1 reproduces. The
+file's pre-existing strict load is an independent check — a wrong architecture
+cannot yield 0 missing and 0 unexpected keys — and it confirmed 122 tensors /
+11,230,832 params for r18 and 218 / 21,338,992 for r34, the latter matching the
+count the training log stamped at startup by a different route.
+
