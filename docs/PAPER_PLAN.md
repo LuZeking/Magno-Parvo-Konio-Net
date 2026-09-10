@@ -11088,3 +11088,98 @@ dissociation. Every reduction came from applying standards the project had
 already written down — §8.1's both-statistics rule, §77.5's bound-fixing rule,
 §4.7's declared test — and none from new data. Three of the four retractions
 were of claims I had already committed.
+
+
+## §104 PRE-REGISTERED — does the readout span survive a nonlinear head?
+
+Written and committed **before** any feature is extracted or any head is fitted.
+Prompted by the NMI referee simulation (`docs/NMI_REVIEW_2026-09-10.md`, major
+comment 2) and scheduled as T1 of `docs/REVISION_PLAN_2026-09-10.md`. It is the
+only open item that crosses the Minor-revision band on its own, and it is the
+one that can take the title away.
+
+### 104.1 The question, and why the current answer is not enough
+
+§2.3 sweeps the fusion weight `w` over frozen representations and moves the
+cue-conflict shape bias from 0.373 to 0.913. §2.3 also establishes, correctly,
+that this is an **identity**: the classifier is affine and the mixture weights
+sum to one, so `clf(w·y₁+(1−w)·y₂) = w·clf(y₁)+(1−w)·clf(y₂)` to 1.1 × 10⁻⁶,
+and the sweep contains no information beyond `w` = 0 and `w` = 1.
+
+The paper's title — *shape-biased behaviour does not require shape-biased
+representations* — is a claim about readouts. If the free-parameter status of
+the rate follows from affineness, the claim is established for **affine**
+readouts and for no others, which covers neither a nonlinear network head nor
+any plausible biological readout. That is the gap.
+
+### 104.2 What is and is not blind
+
+**Blind:** every number this test produces. No nonlinear head has been fitted;
+no penultimate features have been extracted for this purpose. The features do
+not currently exist on disk — `tmp_analysis/perimage_logits.py` computes `F1`
+and `F2` internally and saves only the logits — so there is no cached artefact
+anyone could have peeked at.
+
+**Not blind:** the affine span (0.373–0.913) is published in §2.3 and I have
+read it. It is the *baseline* this test is measured against, not an outcome of
+it, and the thresholds below are fractions of it fixed now.
+
+### 104.3 Design
+
+Three candidates were considered; the one registered here is **A**.
+
+- **A (registered).** Re-fit a small nonlinear head — `Linear(512→h) → ReLU →
+  Linear(h→112)` — on `w·y₁ + (1−w)·y₂` at each of the same 21 values of `w`,
+  independently per seed, on MiniEcoset training features. Score cue-conflict
+  shape bias on the 1,200-image set at each `w`.
+- B (fallback, only if A's fits prove unstable). One head trained on `[y₁,y₂]`,
+  gate swept at test time. Weaker: the head is not matched to each `w`.
+- C (rejected). Frozen classifier with an inserted nonlinearity. Ad hoc; it
+  tests the nonlinearity, not the readout.
+
+Fixed now: `h = 512`; the same optimiser family and epoch budget for every `w`
+so no cell gets a larger search than another (the tuning-fairness item the DOME
+audit has marked Partial twice); 3 seeds; both checkpoint policies; features
+extracted once and reused across all `w`, so every cell sees identical inputs.
+
+**The representations stay frozen.** Only the head is re-fitted. This preserves
+the property that makes §2.3's demonstration cleaner than a probe-decoder
+design, and it is the difference between B and A that matters.
+
+### 104.4 The decision rule
+
+Let **S_nl** be the span of cue-conflict shape bias over the 21 `w`, taken as
+the median span across seeds, and **S_aff = 0.913 − 0.373 = 0.540**.
+
+| outcome | rule | what the paper then says |
+|---|---|---|
+| **survives** | S_nl ≥ 0.80 · S_aff (≥ 0.432) | The claim is not an artefact of affineness. §2.3 and the title stand, strengthened; state that a nonlinear fitted readout reproduces the span. |
+| **partial** | 0.50 · S_aff ≤ S_nl < 0.80 · S_aff | Report the measured span and claim the weaker, quantified version. No re-running to taste, no third design. |
+| **does not survive** | S_nl < 0.50 · S_aff (< 0.270) | **The title takes a qualifier** — "in affine readouts of these components" or equivalent — and §2.3 states the boundary as a result, not a caveat. |
+
+**Accuracy is a gate, not a footnote.** Report MiniEcoset validation accuracy at
+every `w` alongside the shape bias. If a span appears *only* where head accuracy
+has collapsed, it is not a readout result and must not be counted as one: the
+registered treatment is to report the span restricted to `w` whose accuracy is
+within 5 points of the best cell, and to report the unrestricted span beside it.
+
+### 104.5 What this cannot do, stated now
+
+- It cannot establish that a *biological* readout behaves this way. It widens
+  the claim from affine to affine-plus-one-nonlinear family; it does not close
+  the class.
+- A re-fitted head means the readout is *learned* while the representation is
+  frozen. That is a different — and, if it survives, stronger — claim than
+  §2.3's, and it must be described as such rather than folded into the existing
+  sentence.
+- It does not address selection (§2.2(b)) or capacity (Limitation 16). Those are
+  separate items with separate owners in the revision plan.
+
+### 104.6 The commitment
+
+The outcome is reported whichever way it lands, in the main text, with the span
+and the accuracy profile. This project has reported two failed pre-registrations
+and six failed regional hypotheses in the main text already; this one is
+registered under the same terms. A result that qualifies the title is not a
+reason to leave the test unrun — it is the reason to run it before a referee
+does.
