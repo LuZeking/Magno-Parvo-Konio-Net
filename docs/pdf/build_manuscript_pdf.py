@@ -53,7 +53,8 @@ PROFILES = {
                  ("4", "fig4_readout", "Figure 4"),
                  ("5", "fig5_dissociations", "Figure 5")],
         extended=[("E1", "figE1_ood_curves", "Extended Data Figure 1"),
-                  ("E2", "figE2_dimensionality", "Extended Data Figure 2")],
+                  ("E2", "figE2_dimensionality", "Extended Data Figure 2"),
+                  ("E3", "figE3_cortex_controls", "Extended Data Figure 3")],
     ),
 }
 DRAFT = PROFILES["draft"]["draft"]
