@@ -35,6 +35,7 @@ import time
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 from src.analysis.encoding import banded_ridge, dkl_frontend, features, nsd_data
 
@@ -76,8 +77,12 @@ def stream_outputs(model, rgb_uint8, ch_min, ch_max, args, device):
                 y1, y2 = model._mix_streams(y1, y2)
                 y1 = model.stream1_block2(y1)
                 y2 = model.stream2_block2(y2)
-            y1s.append(y1.flatten(1).float().cpu().numpy())
-            y2s.append(y2.flatten(1).float().cpu().numpy())
+            # For these checkpoints the stream blocks end at layer4 (512 x 8 x 8)
+            # and the classifier is [avgpool, flatten, linear]. Pooling is
+            # linear, so avgpool(w*y1 + (1-w)*y2) = w*avgpool(y1) + (1-w)*avgpool(y2):
+            # the pooled 512-d vectors are exactly what the classifier mixes.
+            y1s.append(F.adaptive_avg_pool2d(y1, 1).flatten(1).float().cpu().numpy())
+            y2s.append(F.adaptive_avg_pool2d(y2, 1).flatten(1).float().cpu().numpy())
     return np.concatenate(y1s), np.concatenate(y2s)
 
 
@@ -99,6 +104,8 @@ def get_outputs(args, image_ids, device):
         y1s.append(a); y2s.append(b)
         print(f"  outputs {min(start + 2048, len(image_ids))}/{len(image_ids)}", flush=True)
     y1, y2 = np.concatenate(y1s), np.concatenate(y2s)
+    if y1.shape[1] != 512 or y2.shape[1] != 512:
+        raise RuntimeError(f"expected pooled 512-d stream outputs, got {y1.shape} {y2.shape}")
     np.savez(cache, image_ids=image_ids, y1=y1, y2=y2)
     return y1, y2
 
