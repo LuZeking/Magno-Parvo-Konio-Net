@@ -17,7 +17,7 @@
 #SBATCH --partition=main
 #SBATCH --qos=standard
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
+#SBATCH --mem=48G
 #SBATCH --time=06:00:00
 #SBATCH --array=0-47%12
 #SBATCH --output=slurm/logs/readout_w_%A_%a.out

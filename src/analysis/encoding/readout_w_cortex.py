@@ -47,6 +47,8 @@ def parse_args():
     p.add_argument("--model-name", type=str, required=True)
     p.add_argument("--out-dir", type=str, required=True)
     p.add_argument("--feature-dir", type=str, default="/scratch/byrong/mpk/readout_w/features")
+    p.add_argument("--beta-cache", type=str, default="/scratch/byrong/mpk/readout_w/betas",
+                   help="directory for per-subject cached betas ('' disables)")
     p.add_argument("--no-lum-blur", action="store_true")
     p.add_argument("--no-lum-cs", action="store_true")
     p.add_argument("--age-months", type=int, default=48)
@@ -118,9 +120,13 @@ def fit_r2(X_img, tr_rows, te_rows, Y_train, Y_test, splits, alphas):
     Xte = X_img[te_rows].astype(np.float64)
     mu, sd = Xtr.mean(0, keepdims=True), Xtr.std(0, keepdims=True)
     sd[sd == 0] = 1.0
-    Xtr = (Xtr - mu) / sd
-    Xte = (Xte - mu) / sd
-    ridge = RidgeCV(alphas=alphas, cv=splits, solver_params=dict(n_targets_batch=4000))
+    # float32 throughout and small target batches: with 21 alphas the
+    # validation predictions alone are n_alphas x n_val x n_targets_batch,
+    # which at 4000 targets in float64 was ~7 GB and pushed the job past 32G.
+    Xtr = ((Xtr - mu) / sd).astype(np.float32)
+    Xte = ((Xte - mu) / sd).astype(np.float32)
+    ridge = RidgeCV(alphas=alphas, cv=splits,
+                    solver_params=dict(n_targets_batch=500, n_alphas_batch=7, n_targets_batch_refit=500))
     ridge.fit(Xtr, Y_train)
     pred = banded_ridge._as_numpy(ridge.predict(Xte), backend)
     return banded_ridge.r2_per_target(Y_test, pred).astype(np.float32)
@@ -141,10 +147,23 @@ def main():
     if args.quick:
         sessions = sessions[:2]
     mask = nsd_data.load_mask(s, "nsdgeneral")
-    betas = nsd_data.load_betas(s, mask, sessions=sessions)
     nc = nsd_data.load_noise_ceiling(s, mask)
+    # Reading a subject's ~30 HDF5 sessions takes ~25 min; six models per
+    # subject share it through an uncompressed cache (atomic write).
+    bcache = os.path.join(args.beta_cache, f"subj{s:02d}{'_quick' if args.quick else ''}.npz") if args.beta_cache else None
+    if bcache and os.path.exists(bcache):
+        zb = np.load(bcache)
+        betas = zb["betas"]
+        print(f"[+{time.time()-t0:6.0f}s] betas {betas.shape} (cache)", flush=True)
+    else:
+        betas = nsd_data.load_betas(s, mask, sessions=sessions)
+        print(f"[+{time.time()-t0:6.0f}s] betas {betas.shape}", flush=True)
+        if bcache:
+            os.makedirs(args.beta_cache, exist_ok=True)
+            tmp = bcache[:-4] + f".tmp{os.getpid()}.npz"
+            np.savez(tmp, betas=betas, sessions=np.array(sessions))
+            os.replace(tmp, bcache)
     n_trials = betas.shape[0]
-    print(f"[+{time.time()-t0:6.0f}s] betas {betas.shape}", flush=True)
 
     if args.quick:
         # restrict the split to the loaded trials
