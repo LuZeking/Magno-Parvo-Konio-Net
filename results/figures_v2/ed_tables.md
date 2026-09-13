@@ -149,3 +149,40 @@
 | untrained, diet front end, magno alone | 0.513 | 154 | 0.510 | 1 |
 | untrained, no-diet front end, magno alone | 0.568 | 169 | 0.508 | 1 |
 
+**Extended Data Table 11 | Stream preference beyond hV4, on every NSD atlas.** Median over reliable voxels of the per-voxel index (Um − Up)/(Um + Up) (noise ceiling > 0.1, Um + Up > 10⁻³, ≥ 20 voxels per ROI per subject), mean over the eight subjects (n = subjects with enough voxels); trained arms are the mean over training seeds per subject. Positive = magno band, negative = parvo band. Atlases: Wang et al. (2015) Kastner2015 ROIs beyond hV4 (the V1–hV4 rows are Extended Data Table 1 and Fig. 3), NSD's `streams` atlas, and the fLoc category-selective ROIs. Regional contrasts and the exact tests are in Extended Data Fig. 4c and `results/figures_v2/ext_gradient.md`. Source: the stored voxelwise fits in `results/encoding_cc/` and `results/encoding/`, relabelled; no refitting.
+
+| atlas | ROI | untrained (diet front end) | no diet (3 seeds) | diet (3 seeds) | swap | parvo + high-SF | thesis ckpt | voxels (median, diet) |
+|---|---|---|---|---|---|---|---|---|
+| Kastner2015 | VO1 | +0.00 (n=8) | +0.92 (n=8) | −0.87 (n=8) | +0.98 (n=8) | −0.99 (n=8) | −0.94 (n=8) | 196 |
+| Kastner2015 | VO2 | +0.12 (n=8) | +0.97 (n=8) | −0.90 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 220 |
+| Kastner2015 | PHC1 | +0.41 (n=8) | +0.98 (n=8) | −0.89 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 148 |
+| Kastner2015 | PHC2 | +0.46 (n=8) | +0.99 (n=8) | −0.87 (n=8) | +1.00 (n=8) | −0.99 (n=8) | −0.93 (n=8) | 150 |
+| Kastner2015 | LO1 | +0.13 (n=8) | +0.92 (n=8) | −0.83 (n=8) | +0.99 (n=8) | −0.98 (n=8) | −0.90 (n=8) | 230 |
+| Kastner2015 | LO2 | −0.14 (n=8) | +0.92 (n=8) | −0.90 (n=8) | +0.99 (n=8) | −0.99 (n=8) | −0.94 (n=8) | 166 |
+| Kastner2015 | TO1 | +0.25 (n=8) | +0.96 (n=8) | −0.86 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.91 (n=8) | 280 |
+| Kastner2015 | TO2 | +0.20 (n=8) | +0.96 (n=8) | −0.89 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.90 (n=8) | 36 |
+| Kastner2015 | V3A | +0.39 (n=8) | +0.91 (n=8) | −0.81 (n=8) | +0.99 (n=8) | −0.98 (n=8) | −0.84 (n=8) | 278 |
+| Kastner2015 | V3B | +0.24 (n=8) | +0.96 (n=8) | −0.87 (n=8) | +1.00 (n=8) | −0.99 (n=8) | −0.94 (n=8) | 254 |
+| Kastner2015 | IPS0 | +0.15 (n=8) | +0.98 (n=8) | −0.87 (n=8) | +1.01 (n=8) | −1.00 (n=8) | −0.92 (n=8) | 317 |
+| Kastner2015 | IPS1 | −0.06 (n=8) | +0.98 (n=8) | −0.86 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.92 (n=8) | 239 |
+| Kastner2015 | IPS2 | +0.02 (n=8) | +1.00 (n=8) | −0.92 (n=8) | +1.01 (n=8) | −1.01 (n=8) | −0.94 (n=8) | 47 |
+| streams | early | +0.27 (n=8) | +0.86 (n=8) | −0.42 (n=8) | +0.96 (n=8) | −0.92 (n=8) | −0.45 (n=8) | 3133 |
+| streams | midventral | −0.15 (n=8) | +0.87 (n=8) | −0.84 (n=8) | +0.97 (n=8) | −0.98 (n=8) | −0.86 (n=8) | 708 |
+| streams | midlateral | −0.04 (n=8) | +0.91 (n=8) | −0.86 (n=8) | +0.98 (n=8) | −0.99 (n=8) | −0.90 (n=8) | 571 |
+| streams | midparietal | +0.32 (n=8) | +0.94 (n=8) | −0.84 (n=8) | +1.00 (n=8) | −0.99 (n=8) | −0.91 (n=8) | 512 |
+| streams | ventral | +0.08 (n=8) | +0.96 (n=8) | −0.91 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.95 (n=8) | 2724 |
+| streams | lateral | +0.25 (n=8) | +0.97 (n=8) | −0.87 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.91 (n=8) | 1842 |
+| streams | parietal | +0.12 (n=8) | +0.99 (n=8) | −0.87 (n=8) | +1.01 (n=8) | −1.00 (n=8) | −0.93 (n=8) | 1082 |
+| floc-faces | OFA | −0.07 (n=8) | +0.90 (n=8) | −0.89 (n=8) | +0.98 (n=8) | −1.00 (n=8) | −0.92 (n=8) | 367 |
+| floc-faces | FFA-1 | +0.01 (n=8) | +0.95 (n=8) | −0.91 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 399 |
+| floc-faces | FFA-2 | +0.22 (n=7) | +0.98 (n=7) | −0.92 (n=7) | +0.99 (n=7) | −1.00 (n=7) | −0.95 (n=7) | 260 |
+| floc-places | OPA | +0.34 (n=8) | +0.98 (n=8) | −0.86 (n=8) | +1.01 (n=8) | −1.00 (n=8) | −0.93 (n=8) | 1070 |
+| floc-places | PPA | +0.44 (n=8) | +0.99 (n=8) | −0.88 (n=8) | +1.00 (n=8) | −0.99 (n=8) | −0.94 (n=8) | 620 |
+| floc-bodies | EBA | +0.17 (n=8) | +0.97 (n=8) | −0.88 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.92 (n=8) | 2174 |
+| floc-bodies | FBA-1 | −0.07 (n=6) | +0.96 (n=6) | −0.91 (n=6) | +1.00 (n=6) | −1.00 (n=6) | −0.95 (n=6) | 314 |
+| floc-bodies | FBA-2 | +0.13 (n=8) | +0.98 (n=8) | −0.92 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 252 |
+| floc-words | OWFA | −0.29 (n=8) | +0.88 (n=8) | −0.85 (n=8) | +0.98 (n=8) | −0.99 (n=8) | −0.88 (n=8) | 392 |
+| floc-words | VWFA-1 | −0.16 (n=8) | +0.96 (n=8) | −0.91 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.96 (n=8) | 454 |
+| floc-words | VWFA-2 | −0.02 (n=5) | +0.95 (n=6) | −0.94 (n=6) | +0.99 (n=6) | −1.00 (n=6) | −0.96 (n=6) | 150 |
+| floc-words | mfs-words | −0.08 (n=8) | +0.97 (n=8) | −0.93 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.96 (n=8) | 121 |
+
