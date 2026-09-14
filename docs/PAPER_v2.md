@@ -379,7 +379,7 @@ The authors declare no competing interests.
 | network | units | trained rate | w = 0 | w = 1 | span (held-out) [range] | ρ(w, rate) | forced-estimator span | shape-leaning units | w within 5 pts of trained top-1 | refit span linear / two-layer | seeds |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | two-stream, diet, streams concatenated (validation) | 1024 | 0.675 | 0.420 | 0.879 | 0.461 [0.39, 0.57] | 1.00 | 0.307 | 0.49 (S from stream 1: 0.99) | — | — | 3 |
-| single ResNet-34, diet | 512 | 0.625 | 0.565 | 0.688 | 0.136 [0.03, 0.24] | 0.71 | 0.102 | 0.17 | 0.20–0.78 (top-1 0.628) | 0.06 / 0.05 | 3 |
+| single ResNet-34, diet | 512 | 0.625 | 0.565 | 0.688 | 0.136 [0.03, 0.24] | 0.71 | 0.102 | 0.17 | 0.20–0.78 (top-1 0.626) | 0.06 / 0.05 | 3 |
 | single ResNet-18, diet | 512 | 0.557 | 0.467 | 0.652 | 0.194 [0.11, 0.31] | 0.97 | 0.131 | 0.09 | 0.28–0.72 (top-1 0.547) | 0.09 / 0.06 | 3 |
 | single ResNet-18, no diet (`rgb_tsn`) | 512 | 0.445 | 0.374 | 0.566 | 0.195 [0.11, 0.39] | 0.96 | 0.164 | 0.05 | 0.27–0.75 (top-1 0.678) | 0.10 / 0.09 | 3 |
 | ImageNet ViT-B/16 | 768 | 0.399 | 0.371 | 0.455 | 0.086 [0.07, 0.11] | 0.98 | 0.138 | 0.01 | 0.00–1.00 (top-1 0.815) | — | 1 |
