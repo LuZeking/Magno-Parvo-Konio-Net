@@ -10,6 +10,6 @@ Every network here ends in logits = W·y + b for some penultimate feature vector
 
 **(c)** Which half carries cortex. For the single trunks the two halves are the two bands of a banded ridge model of every NSD voxel (eight subjects, Methods 4.5); the index (U_S − U_T)/(U_S + U_T) is the median over reliable voxels per region, mean ± s.e.m. over subjects (seeds averaged per subject). The two-stream diet model's magno − parvo profile (Fig. 3, Extended Data Fig. 4) is drawn on the same axis. [CORTEX RESULT SENTENCE]
 
-**(d)** The mixture each region prefers. The lossy sum z(w) = w·y_S + (1 − w)·y_T (halves paired by rank) is the design of a ridge model at 21 values of w, as in Extended Data Fig. 5; points are subjects, bars medians. [CORTEX W RESULT SENTENCE]
+**(d)** The mixture each region prefers. The lossy sum z(w) = w·y_S + (1 − w)·y_T (halves paired by rank) is the design of a ridge model at 11 values of w (0, 0.1, …, 1), following Extended Data Fig. 5; points are subjects, bars medians. [CORTEX W RESULT SENTENCE]
 
 Pre-specification and predictions P1–P5: `docs/PLAN_GENERALITY_2026-09-14.md`; per-network values: Extended Data Tables 13 and 14.
