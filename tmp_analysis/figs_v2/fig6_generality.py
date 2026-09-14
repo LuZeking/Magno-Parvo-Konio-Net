@@ -159,7 +159,7 @@ def main():
                 ax_d.plot(np.full(len(v), i + off[j]), v, mk, color=col, ms=2.8, alpha=0.55, mec="none", zorder=3)
                 ax_d.plot([i + off[j] - 0.1, i + off[j] + 0.1], [np.median(v)] * 2, "-", color=col, lw=2.0, zorder=5)
             ax_d.plot([], [], mk, color=col, label=label)
-        ax_d.legend(loc="upper right", fontsize=6.2, handlelength=1.2)
+        ax_d.legend(loc="upper right", fontsize=6.2, handlelength=1.2, markerscale=0.6)
     else:
         S.note(ax_d, "cortex results pending", x=0.5, y=0.5, ha="center", va="center")
     ax_d.set_xticks(x); ax_d.set_xticklabels([REG_LABEL[r] for r in regions]); ax_d.set_xlim(-0.5, 6.5)
