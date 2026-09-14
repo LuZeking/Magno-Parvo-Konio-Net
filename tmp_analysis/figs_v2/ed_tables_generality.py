@@ -101,10 +101,11 @@ def table14(ctx):
 
 
 def upsert(md, title_prefix, block):
-    pat = re.compile(r"\*\*" + re.escape(title_prefix) + r".*?(?=\n\*\*Extended Data Table|\n<!-- ED_TABLES_END -->)", re.S)
+    """Replace the table whose caption starts with title_prefix (up to the next table or EOF), else append."""
+    pat = re.compile(r"\*\*" + re.escape(title_prefix) + r".*?(?=\n\*\*Extended Data Table|\Z)", re.S)
     if pat.search(md):
         return pat.sub(lambda m: block + "\n", md, count=1)
-    return md.replace("<!-- ED_TABLES_END -->", block + "\n\n<!-- ED_TABLES_END -->")
+    return md.rstrip("\n") + "\n\n" + block + "\n"
 
 
 def main():

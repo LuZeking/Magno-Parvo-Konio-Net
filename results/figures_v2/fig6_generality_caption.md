@@ -1,0 +1,15 @@
+# Figure 6 — caption
+
+**The readout account beyond the two-stream architecture.**
+
+Every network here ends in logits = W·y + b for some penultimate feature vector y. Each unit of y is scored on the 1,200 cue-conflict images by the fraction of its variance lying between the 16 shape categories minus the fraction lying between the 16 texture categories (one-way η²); the median split gives a shape-leaning half S and a texture-leaning half T. Nothing is retrained.
+
+**(a)** One gain on a network's own shape-leaning units moves its rate. logits(w) = W·(g(w) ⊙ y) + b with g = 2w on S and 2(1 − w) on T, the trained head untouched; w = 0.5 is the trained network (dot). Thin bars: the rate reachable as w runs from 0 to 1, split defined on one stratified half of the images and scored on the other (10 random splits, both directions, mean). Thick segments: the part of the sweep within 5 points of the trained top-1 on held-out natural images (MiniEcoset validation for our networks, a stratified 10-per-class ILSVRC-2012 validation subset for the ImageNet networks). Our networks by the paper's primary estimator, the ImageNet networks by the Geirhos 16-class rule (Methods 4.3). The number at right is the span. In the two-stream network the factorisation recovers the streams — 99% of the shape-leaning half is stream 1 — and the sweep reproduces Fig. 4a (0.42 → 0.88). In the nine networks with no split the rate still rises monotonically with w in every case (Spearman ρ ≥ 0.71 in every seed and network) but by 0.09–0.21, a third to half of the two-stream span; only 0–17% of a single trunk's units are shape-leaning at all, most in the diet-trained trunks. The sweep is nearly free in accuracy: for ViT-B/16, the two ConvNeXts and VGG-16 top-1 stays within 1 point of the trained value over the whole sweep, and for ResNet-50 and ResNet-152 within 5 points for w between 0.15 and 0.90. Grey band, the ten human observers (0.92–0.99).
+
+**(b)** The same curves for the six ImageNet networks. Dots are the trained rates; the field's ranking is not invariant to the readout: ResNet-50 at w = 1 (0.35) passes ResNet-152's trained rate (0.29), ResNet-152 at w = 1 (0.44) passes ViT-B/16's (0.40), and ConvNeXt-S passes ConvNeXt-B.
+
+**(c)** Which half carries cortex. For the single trunks the two halves are the two bands of a banded ridge model of every NSD voxel (eight subjects, Methods 4.5); the index (U_S − U_T)/(U_S + U_T) is the median over reliable voxels per region, mean ± s.e.m. over subjects (seeds averaged per subject). The two-stream diet model's magno − parvo profile (Fig. 3, Extended Data Fig. 4) is drawn on the same axis. [CORTEX RESULT SENTENCE]
+
+**(d)** The mixture each region prefers. The lossy sum z(w) = w·y_S + (1 − w)·y_T (halves paired by rank) is the design of a ridge model at 21 values of w, as in Extended Data Fig. 5; points are subjects, bars medians. [CORTEX W RESULT SENTENCE]
+
+Pre-specification and predictions P1–P5: `docs/PLAN_GENERALITY_2026-09-14.md`; per-network values: Extended Data Tables 13 and 14.
