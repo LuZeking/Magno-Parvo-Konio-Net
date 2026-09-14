@@ -186,3 +186,23 @@
 | floc-words | VWFA-2 | −0.02 (n=5) | +0.95 (n=6) | −0.94 (n=6) | +0.99 (n=6) | −1.00 (n=6) | −0.96 (n=6) | 150 |
 | floc-words | mfs-words | −0.08 (n=8) | +0.97 (n=8) | −0.93 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.96 (n=8) | 121 |
 
+**Extended Data Table 12 | The readout weight cortex prefers against the one behaviour prefers.** For each mixing weight w the classifier's own input z(w) = w·y₁ + (1 − w)·y₂ (y₁ magno stream output, y₂ parvo stream output, 512-d each) is the design of a ridge encoding model of every nsdgeneral voxel (same split, folds and alpha grid as the banded model; Methods 4.5). w*_cortex is the w that maximises the median test R² over reliable voxels of the ROI (mean over seeds per subject; median [range] over 8 subjects). "R² at w = 0.5 / max" is the median R² at the paper's readout weight relative to the best w; "concat" is the median R² of the 1,024-d concatenation, the ceiling for any mixture. "Voxels magno / parvo" is the fraction of the ROI's voxels whose own best w is ≥ 0.75 / ≤ 0.25. The behaviour-optimal weight (trial fit to each of 10 human observers' cue-conflict choices, diet final checkpoints, 3 seeds) is given in the last row for comparison, with the cue-conflict shape-bias rate the diet network produces at each weight.
+
+| arm | ROI | w*_cortex median [range] | R² at w = 0.5 / max | max R² (median) | concat R² | voxels best w ≥ 0.75 | voxels best w ≤ 0.25 | rate at w*_cortex | n |
+|---|---|---|---|---|---|---|---|---|---|
+| diet | V1 | 0.58 [0.50, 0.70] | 0.994 | 0.1313 | 0.1402 | 0.19 | 0.11 | 0.72 | 8 |
+| diet | V2 | 0.50 [0.45, 0.55] | 0.999 | 0.1024 | 0.1066 | 0.12 | 0.20 | 0.67 | 8 |
+| diet | V3 | 0.40 [0.30, 0.50] | 0.987 | 0.0847 | 0.0864 | 0.08 | 0.29 | 0.61 | 8 |
+| diet | hV4 | 0.35 [0.20, 0.50] | 0.976 | 0.0945 | 0.0948 | 0.05 | 0.41 | 0.57 | 8 |
+| diet | ventral (VO, PHC) | 0.33 [0.25, 0.35] | 0.971 | 0.1339 | 0.1325 | 0.02 | 0.46 | 0.56 | 8 |
+| diet | lateral (LO, TO) | 0.33 [0.25, 0.45] | 0.974 | 0.1067 | 0.1060 | 0.03 | 0.40 | 0.56 | 8 |
+| diet | dorsal (V3A/B, IPS0–2) | 0.35 [0.25, 0.45] | 0.982 | 0.0683 | 0.0673 | 0.05 | 0.39 | 0.57 | 8 |
+| no diet | V1 | 0.65 [0.55, 0.80] | 0.987 | 0.1221 | 0.1259 | 0.43 | 0.09 | nan | 8 |
+| no diet | V2 | 0.58 [0.40, 0.95] | 0.995 | 0.0968 | 0.1022 | 0.36 | 0.13 | nan | 8 |
+| no diet | V3 | 0.58 [0.50, 1.00] | 0.991 | 0.0845 | 0.0890 | 0.40 | 0.13 | nan | 8 |
+| no diet | hV4 | 0.62 [0.40, 0.70] | 0.988 | 0.0965 | 0.1014 | 0.40 | 0.09 | nan | 8 |
+| no diet | ventral (VO, PHC) | 0.75 [0.65, 1.00] | 0.975 | 0.1557 | 0.1535 | 0.59 | 0.02 | nan | 8 |
+| no diet | lateral (LO, TO) | 0.88 [0.60, 1.00] | 0.949 | 0.1190 | 0.1214 | 0.59 | 0.03 | nan | 8 |
+| no diet | dorsal (V3A/B, IPS0–2) | 1.00 [0.75, 1.00] | 0.944 | 0.0805 | 0.0792 | 0.61 | 0.04 | nan | 8 |
+| behaviour (diet) | 10 human observers, trial fit | 0.67 [0.49, 0.89] | — | — | — | — | — | 0.78 | 10 |
+

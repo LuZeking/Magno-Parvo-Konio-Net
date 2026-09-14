@@ -135,6 +135,35 @@ def main():
     bw = np.array(list(beh_w.values()))
     lines.append(f"| behaviour (diet) | 10 human observers, trial fit | {np.median(bw):.2f} [{bw.min():.2f}, {bw.max():.2f}] | — | — | — | — | — | {rate_at(np.median(bw)):.2f} | 10 |")
     lines.append("")
+    # ---------- paired statistics over subjects ----------
+    stats = {}
+    for arm in arms:
+        A = agg[arm]
+        if not all(k in A for k in ("V1", "hV4", "ventral (VO, PHC)", "lateral (LO, TO)", "dorsal (V3A/B, IPS0–2)")):
+            continue
+        by_s = lambda roi: {r["subject"]: r for r in A[roi]}
+        subs_ok = sorted(set.intersection(*[set(by_s(k)) for k in ROI_ORDER if k in A]))
+        v1 = np.array([by_s("V1")[s]["w_star"] for s in subs_ok])
+        ext = np.array([np.mean([by_s(k)[s]["w_star"] for k in ("ventral (VO, PHC)", "lateral (LO, TO)", "dorsal (V3A/B, IPS0–2)")]) for s in subs_ok])
+        hv4 = np.array([by_s("hV4")[s]["w_star"] for s in subs_ok])
+        rank = np.array([1, 2, 3, 4]); rho = []
+        for s_ in subs_ok:
+            ws_ = [by_s(k)[s_]["w_star"] for k in ("V1", "V2", "V3", "hV4")]
+            rho.append(sps.spearmanr(rank, ws_)[0] if len(set(ws_)) > 1 else 0.0)
+        d = ext - v1
+        p_d = float(sps.wilcoxon(d, method="exact").pvalue) if np.any(d != 0) else 1.0
+        stats[arm] = dict(subjects=subs_ok, w_v1=v1.tolist(), w_hv4=hv4.tolist(), w_extrastriate=ext.tolist(),
+                          delta_ext_minus_v1=d.tolist(), delta_mean=float(d.mean()), delta_n_neg=int((d < 0).sum()),
+                          p_exact=p_d, rho_v1_to_hv4=[float(x) for x in rho], rho_mean=float(np.mean(rho)))
+        print(f"{arm}: w*(V1) {v1.mean():.3f}  w*(extrastriate) {ext.mean():.3f}  Δ {d.mean():+.3f} ({(d<0).sum()}/{len(d)} neg) exact p={p_d:.4f}; ρ(rank, w*) V1→hV4 mean {np.mean(rho):+.2f}, per subject {np.round(rho,2).tolist()}")
+    bw = np.array(list(beh_w.values()))
+    if "diet" in stats:
+        ext = np.array(stats["diet"]["w_extrastriate"])
+        stats["cortex_vs_behaviour"] = dict(extrastriate_range=[float(ext.min()), float(ext.max())], behaviour_range=[float(bw.min()), float(bw.max())],
+                                            mannwhitney_p=float(sps.mannwhitneyu(ext, bw, alternative="two-sided").pvalue),
+                                            rate_at_cortex_w=rate_at(float(np.median(ext))), rate_at_behaviour_w=rate_at(float(np.median(bw))))
+        print("cortex (extrastriate, diet) vs behaviour w*:", stats["cortex_vs_behaviour"])
+    out["stats"] = stats
     json.dump(out, open("results/figures_v2/readout_w_cortex.json", "w"), indent=1)
     md = open("results/figures_v2/ed_tables.md", encoding="utf8").read()
     if "Extended Data Table 12" in md:
@@ -160,7 +189,7 @@ def main():
     ax_a.set_xlabel("readout weight w (0 = parvo only, 1 = magno only)"); ax_a.set_ylabel("median R² / best over w")
     ax_a.set_xlim(0, 1); ax_a.set_ylim(0, 1.05)
     ax_a.legend(loc="lower left", ncol=1)
-    S.letter(ax_a, "a", title="diet arm: cortex prefers a parvo-heavy readout")
+    S.letter(ax_a, "a", title="diet: R² against w, by region")
     # (b) w* per ROI per subject, both arms
     y = 0
     yt, yl = [], []
@@ -182,8 +211,8 @@ def main():
     ax_b.set_yticks(yt); ax_b.set_yticklabels(yl, fontsize=6.6)
     ax_b.set_xlim(-0.03, 1.03); ax_b.set_xlabel("optimal readout weight w*")
     ax_b.plot([], [], "o", color=S.NODIET, ms=3, label="no diet"); ax_b.plot([], [], "o", color=S.DIET, ms=3, label="diet")
-    ax_b.legend(loc="upper center", bbox_to_anchor=(0.5, 1.0), ncol=2, handletextpad=0.3)
-    S.letter(ax_b, "b", title="the two optima sit at opposite ends")
+    ax_b.legend(loc="upper left", ncol=1, handletextpad=0.3, borderaxespad=0.2)
+    S.letter(ax_b, "b", title="optimum by region")
     # (c) rate curve with both optima
     ax_c.plot(sw_w, sw_rate, "-", color=S.DIET, lw=1.8, label="diet, shape-bias rate")
     if sweeps_nd:
@@ -191,18 +220,18 @@ def main():
     S.refline(ax_c, y=0.5)
     ext = [r["w_star"] for roi in KAST for r in agg["diet"].get(roi, [])]
     early = [r["w_star"] for roi in ("V1",) for r in agg["diet"].get(roi, [])]
-    for vals, c, lab, yy in [(ext, S.DIET, "cortex-optimal w*\n(extrastriate, diet)", 0.30), (early, "#B0B0B0", "cortex-optimal w*\n(V1, diet)", 0.20), (list(beh_w.values()), S.HUMAN, "behaviour-optimal w*\n(10 observers)", 0.10)]:
+    for vals, c, lab, yy, side in [(ext, S.DIET, "cortex w* (extrastriate)", 0.30, "right"), (early, "#B0B0B0", "cortex w* (V1)", 0.21, "right"), (list(beh_w.values()), S.HUMAN, "behaviour w* (10 observers)", 0.12, "left")]:
         if not vals:
             continue
         m = float(np.median(vals))
         ax_c.plot(vals, np.full(len(vals), yy), "|", color=c, ms=7, mew=1.1, zorder=4)
         ax_c.plot([m], [rate_at(m)], "o", color=c, ms=5, mec="white", mew=0.7, zorder=6)
         ax_c.plot([m, m], [yy, rate_at(m)], ":", color=c, lw=0.8, zorder=3)
-        ax_c.text(min(m + 0.03, 0.72), yy, lab, fontsize=6.2, color=c, va="center", ha="left")
+        ax_c.plot([], [], "|", color=c, ms=7, mew=1.1, label=lab)
     ax_c.set_xlim(0, 1); ax_c.set_ylim(0.05, 1.0)
     ax_c.set_xlabel("readout weight w"); ax_c.set_ylabel("cue-conflict shape bias")
-    ax_c.legend(loc="upper left", ncol=1)
-    S.letter(ax_c, "c", title="same axis: what cortex wants, what behaviour wants")
+    ax_c.legend(loc="upper left", ncol=1, handletextpad=0.4, borderaxespad=0.2)
+    S.letter(ax_c, "c", title="one axis: what cortex and behaviour want")
     S.save(fig, "figE5_readout_w")
 
 
