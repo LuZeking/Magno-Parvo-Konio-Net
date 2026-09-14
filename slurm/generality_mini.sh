@@ -36,6 +36,8 @@ cd "$SLURM_SUBMIT_DIR"
 if [[ ! -f "$FEAT/${TAG}_miniecoset.npz" ]]; then
     $PY -m src.analysis.generality.extract --model "$MODEL" --set miniecoset --out-dir "$FEAT"
 fi
+$PY -m src.analysis.generality.gain_accuracy --factor "$BEH/${TAG}_unit_factor.npz" \
+    --val "$FEAT/${TAG}_miniecoset.npz" --out-dir "$BEH"
 $PY -m src.analysis.generality.refit_sum --cc "$FEAT/${TAG}_cue_conflict.npz" \
     --mini "$FEAT/${TAG}_miniecoset.npz" --out-dir "$BEH"
 echo "[gen_mini] done $MODEL"

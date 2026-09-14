@@ -29,7 +29,8 @@ from src.analysis.generality.scoring import Scorer
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--model", required=True, help="run:<name>[:ckpt] | concat:<name>[:ckpt] | tv:<arch>")
-    p.add_argument("--set", required=True, choices=("cue_conflict", "miniecoset", "nsd"))
+    p.add_argument("--set", required=True, choices=("cue_conflict", "miniecoset", "nsd", "imagenet_val"))
+    p.add_argument("--per-class", type=int, default=10, help="imagenet_val: images per class (stratified, seed 0)")
     p.add_argument("--out-dir", required=True)
     p.add_argument("--subjects", default="1,2,3,4,5,6,7,8")
     p.add_argument("--limit", type=int, default=None, help="smoke test: first N images per split")
@@ -86,6 +87,35 @@ def main():
             out[f"{split}_features"] = np.concatenate(feats).astype(np.float16)
             out[f"{split}_y"] = lab[:n].astype(np.int64)
             print(f"[extract] {split}: {out[f'{split}_features'].shape}", flush=True)
+
+    elif args.set == "imagenet_val":
+        # accuracy gate for the ImageNet networks: a stratified subset of the ILSVRC-2012
+        # validation set (per-class count fixed, seed 0), labels in torchvision index order
+        from PIL import Image
+        if net.scorer != "imagenet16":
+            raise SystemExit("imagenet_val is for the torchvision networks")
+        lab = np.load(os.path.join(os.path.dirname(__file__), "imagenet_val_labels.npz"), allow_pickle=True)
+        names, labels = lab["names"], lab["labels"].astype(np.int64)
+        rng = np.random.default_rng(0)
+        pick = np.concatenate([rng.permutation(np.flatnonzero(labels == c))[:args.per_class] for c in range(1000)])
+        pick.sort()
+        if args.limit:
+            pick = pick[:args.limit]
+        root = os.environ.get("IMAGENET_VAL", "/scratch/byrong/imagenet/val")
+        feats = []
+        for s in range(0, len(pick), 64):
+            imgs = []
+            for k in pick[s:s + 64]:
+                im = Image.open(os.path.join(root, str(names[k]))).convert("RGB")
+                im = im.resize((256, 256), Image.BILINEAR)  # square resize; the net's own prep crops 224
+                imgs.append(np.asarray(im, dtype=np.uint8))
+            feats.append(net.features_from_rgb(np.stack(imgs)))
+            if (s // 64) % 25 == 0:
+                print(f"  imagenet_val {s}/{len(pick)}  {time.time() - t0:.0f}s", flush=True)
+        y = np.concatenate(feats)
+        acc = float((np.argmax(y @ net.W.T + net.b, 1) == labels[pick]).mean())
+        print(f"[extract] trained top-1 on the subset: {acc:.4f}", flush=True)
+        out.update(features=y.astype(np.float16), labels=labels[pick], names=names[pick], trained_top1=acc)
 
     else:  # nsd
         from src.analysis.encoding import dkl_frontend, nsd_data
