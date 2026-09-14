@@ -8,7 +8,8 @@
 # Same pipeline as slurm/encode_cue_conflict.sh (results/encoding seed-0 cells),
 # feature caches already written by job 26413641, no cue-conflict pass. The
 # single-band ridge fits are batched (--ridge-batched) so the job fits under
-# the 64G cap: the unbatched 2026-08 jobs peaked at 120-128 GB, almost all of it
+# the 64G cap: the unbatched 2026-08 jobs peaked at 120-128 GB; batched but unchunked
+# the probe (26484409) still exceeded 48G in the banded fit, so voxels are chunked (3 chunks).
 # the n_alphas x n_val x n_targets validation predictions held at once.
 #SBATCH --job-name=mpk_cc_ctrl
 #SBATCH --partition=main
@@ -48,5 +49,6 @@ cd "$REPO"
 $PY -m src.analysis.encoding.run_encoding \
     --subject "$SUBJECT" --model-name "$MODEL_NAME" --out-dir "$OUT" \
     --feature-cache "$CACHE" --checkpoint "$CKPT" --ridge-batched \
+    --voxel-chunk "${VOXEL_CHUNK:-5300}" \
     $FRONTEND
 echo "[ccctrl] done $MODEL_NAME subj$SUBJECT"

@@ -34,7 +34,7 @@ FEAT=/scratch/byrong/mpk/generality/features/$RUNID
 BEH=/scratch/byrong/mpk/generality/behaviour/$RUNID
 OUT=/scratch/byrong/mpk/generality/cortex/$RUNID
 MODE=${GEN_MODE:-vp}
-if [[ "$MODE" == "w" ]]; then FLAG="--only-w-sweep"; else FLAG="--skip-w-sweep"; fi
+if [[ "$MODE" == "w" ]]; then FLAG="--only-w-sweep --n-w ${GEN_NW:-21}"; else FLAG="--skip-w-sweep"; fi
 
 echo "[gen_ctx] task=$TASK model=$MODEL subj=$SUBJECT mode=$MODE"
 cd "$SLURM_SUBMIT_DIR"
