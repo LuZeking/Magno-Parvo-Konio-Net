@@ -80,6 +80,11 @@ def parse_args():
     p.add_argument("--n-splits", type=int, default=3,
                    help="CV folds for alpha/gamma selection; cost is linear "
                         "in this")
+    p.add_argument("--ridge-batched", action="store_true",
+                   help="batch the single-band RidgeCV fits (n_targets_batch=500, "
+                        "n_alphas_batch=7) and the banded fit at 1000 targets; "
+                        "identical estimates, peak memory ~1/3 of the unbatched "
+                        "call (see banded_ridge.fit_banded)")
     p.add_argument("--voxel-chunk", type=int, default=0,
                    help="fit this many voxels at a time; 0 = all at once. "
                         "himalaya already bounds memory via n_targets_batch, "
@@ -393,6 +398,9 @@ def main():
             [Xm_te, Xp_te], Y_test[:, start:stop],
             splits, backend=args.backend, seed=args.seed,
             X_bands_extra=X_extra,
+            single_solver_params=(dict(n_targets_batch=500, n_alphas_batch=7, n_targets_batch_refit=500)
+                                  if args.ridge_batched else None),
+            banded_targets_batch=1000 if args.ridge_batched else 2000,
         )
         for k, v in part_res.items():
             res_chunks.setdefault(k, []).append(v)

@@ -119,8 +119,17 @@ def fit_banded(
     alphas=np.logspace(-2, 8, 21),
     seed: int = 0,
     X_bands_extra: list[np.ndarray] | None = None,
+    single_solver_params: dict | None = None,
+    banded_targets_batch: int = 2000,
 ) -> dict[str, np.ndarray]:
     """Joint banded ridge + per-band single ridge fits; test R2 per voxel.
+
+    ``single_solver_params`` (e.g. ``dict(n_targets_batch=500, n_alphas_batch=7,
+    n_targets_batch_refit=500)``) bounds the memory of the single-band RidgeCV
+    fits, which otherwise hold n_alphas x n_val x n_targets validation
+    predictions at once (~24 GB float64 for 15.7k voxels) and drove the
+    2026-08 encoding jobs to a 120-128 GB peak. Batching does not change the
+    estimates; the default None keeps the original call for provenance.
 
     ``X_bands_extra`` is an optional design of further stimuli, in the same
     band order. When given, the *fitted* magno-only, parvo-only and joint
@@ -156,7 +165,8 @@ def fit_banded(
 
     # ---- single-band ridge fits ----
     for name, Xb_tr, Xb_te, Xb_ex in zip(("magno", "parvo"), Xtr, Xte, Xex):
-        ridge = RidgeCV(alphas=alphas, cv=splits)
+        ridge = (RidgeCV(alphas=alphas, cv=splits, solver_params=single_solver_params)
+                 if single_solver_params else RidgeCV(alphas=alphas, cv=splits))
         ridge.fit(Xb_tr.astype(np.float64), Y_train)
         pred = ridge.predict(Xb_te.astype(np.float64))
         results[f"r2_{name}"] = r2_per_target(
@@ -186,7 +196,7 @@ def fit_banded(
         solver_params=dict(
             n_iter=n_iter,
             alphas=alphas,
-            n_targets_batch=2000,
+            n_targets_batch=banded_targets_batch,
             n_targets_batch_refit=500,
         ),
         random_state=seed,
