@@ -16,11 +16,13 @@
 # which changes no estimate; the equivalence probe (slurm/encode_equiv_probe.sh, job
 # 26492385) reproduces the stored diet seed-0 fit and sizes --mem below. No voxel
 # chunking: it multiplies the search cost by the number of chunks for nothing.
+# Measured on the probe (chunk=all, alpha-batched): MaxRSS 26.7 GB through the single-band
+# and banded stages, ~8 h per element -> --mem=34G (+25%), 14 h.
 #SBATCH --job-name=mpk_cc_ctrl
 #SBATCH --partition=main
 #SBATCH --qos=standard
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=48G
+#SBATCH --mem=34G
 #SBATCH --time=14:00:00
 #SBATCH --array=0-31%8
 #SBATCH --output=slurm/logs/ccctrl_%A_%a.out
