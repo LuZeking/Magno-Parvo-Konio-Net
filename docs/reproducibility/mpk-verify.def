@@ -1,0 +1,43 @@
+# Apptainer definition: a CPU-only container that verifies every number the manuscript
+# states directly from the committed result files (README, "Verify the reported numbers").
+#
+#   apptainer build --fakeroot mpk-verify.sif docs/reproducibility/mpk-verify.def
+#   apptainer run --bind "$PWD":/opt/mpk mpk-verify.sif          # -> "FAILURES: none"
+#
+# The image pins the interpreter (Python 3.11) and the exact package versions of
+# requirements.txt; torch and torchvision come from the CPU wheel index (the CUDA build
+# of requirements.txt is needed for training only). numpy/scipy ship their own OpenBLAS
+# (scipy-openblas 0.3.31 in the environment that produced the reported numbers,
+# environment.lock.yml); the verification re-derives numbers from stored results and
+# does not depend on the BLAS.
+#
+# To run the referee script (notebooks/readout_gain_torchvision.py) inside the container:
+#   apptainer exec --bind "$PWD":/opt/mpk mpk-verify.sif \
+#       bash -c 'cd /opt/mpk && PYTHONPATH=. python notebooks/readout_gain_torchvision.py'
+
+Bootstrap: docker
+From: python:3.11-slim
+
+%files
+    requirements.txt /opt/requirements.txt
+
+%post
+    set -e
+    apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm -rf /var/lib/apt/lists/*
+    python -m pip install --no-cache-dir --upgrade pip
+    python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.13.0 torchvision==0.28.0
+    grep -E '^(numpy|scipy|himalaya|scikit-learn|matplotlib|pandas|nibabel|h5py|pillow|joblib|tqdm|kornia)==' /opt/requirements.txt > /opt/req-cpu.txt
+    python -m pip install --no-cache-dir -r /opt/req-cpu.txt
+    mkdir -p /opt/mpk /tmp/mpl
+
+%environment
+    export PYTHONPATH=/opt/mpk:/opt/mpk/tmp_analysis
+    export MPLCONFIGDIR=/tmp/mpl
+    export OMP_NUM_THREADS=4
+
+%runscript
+    cd /opt/mpk && exec python tmp_analysis/verify_new_claims.py "$@"
+
+%labels
+    Project Magno-Parvo-Konio-Net
+    Purpose verify_new_claims.py in a pinned CPU environment
