@@ -162,5 +162,16 @@ is reported, and the unit-split results are not revised.
   4–16% (S) and 20–34% (T) of feature variance; sequential-order sensitivity spans
   0.21–0.39, same ordering.
 
-### Refit (D3) and cortex (D4)
-(appended when jobs 26491726, 26491689 and 26491690 complete)
+### Refit (D3), appended 2026-09-15 after job 26491726
+- **P-A′ — met in one family of three.** Two-layer-head spans of the block-form lossy
+  sum: rgb_tsn 0.15 (seeds 0.14–0.16), single ResNet-18 0.10 (0.07–0.13), single
+  ResNet-34 0.10 (0.07–0.11), against the 0.15 threshold; ρ 0.92–0.97 (threshold 0.90,
+  met); linear and two-layer spans agree within 0.02 (threshold 0.05, met); validation
+  accuracy stays within 0.011 of the unmixed ceiling at every w in every seed (threshold
+  5 points, met) — the residual carries the accuracy, as designed. The refit-robust span
+  is therefore 0.10–0.15 without a stream split, against 0.05–0.10 under the unit split
+  and 0.47 with the two streams: a refitted head recovers shape information from the
+  residual that the fixed head does not use.
+
+### Cortex (D4)
+(appended when jobs 26491689 and 26491690 complete)
