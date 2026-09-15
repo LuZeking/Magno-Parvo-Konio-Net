@@ -7,6 +7,9 @@ touching either section, and after the diet-arm half of the recovery analysis
 lands (job 26442320) -- the E2.1 numbers are currently the no-diet geometry only.
 
     python tmp_analysis/verify_new_claims.py
+
+2026-09-15: check_generality() adds the Results 2.4 / Fig. 6 / ED Table 13-14 numbers
+of the single-trunk generality test, from the committed generality JSONs.
 """
 import glob
 import json
@@ -701,6 +704,119 @@ def check_perimage() -> None:
               f"diet {d_off:+.1f} < no-diet {n_off:+.1f}")
 
 
+def check_generality() -> None:
+    """Results 2.4 (final paragraph), Fig. 6 and ED Tables 13-14: the single-trunk
+    generality test, from results/figures_v2/generality_{behaviour,cortex}.json
+    (tmp_analysis/figs_v2/generality_{behaviour,cortex}.py)."""
+    print("\n[generality] behaviour (ED Table 13, Fig. 6a-b)")
+    beh = json.load(open("results/figures_v2/generality_behaviour.json"))
+    fam = {f["key"]: f for f in beh["families"]}
+    ws = np.array(fam["resnet50"]["seeds"][0]["ws"])
+    i90 = int(np.argmin(np.abs(ws - 0.90)))
+    single = ["rgb_tsn", "single18", "single34", "resnet50", "resnet152", "vgg16", "vit_b_16", "convnext_small", "convnext_base"]
+    chk("two-stream concat span", fam["concat"]["span"], 0.46, 0.01)
+    chk("two-stream concat S from stream 1", fam["concat"]["frac_S_from_stream1"], 0.99, 0.01)
+    spans = [fam[k]["span"] for k in single]
+    chk("single-trunk span min", min(spans), 0.09, 0.01)
+    chk("single-trunk span max", max(spans), 0.21, 0.01)
+    seed_rhos = [r["rho"] for k in single for r in fam[k]["seeds"]]
+    chk("single-trunk seed-mean rho, min over nets", min(fam[k]["rho"] for k in single), 0.71, 0.01)
+    chk("single-trunk seed rho min (ResNet-34 s0)", min(seed_rhos), 0.19, 0.01)
+    chk("network-seed combinations, rho >= 0.90", float(sum(r >= 0.90 for r in seed_rhos)), 14, 0)
+    chk("network-seed combinations, total", float(len(seed_rhos)), 15, 0)
+    if min(seed_rhos) <= 0:
+        FAILS.append("P1 direction: a seed has rho <= 0"); print("  BAD a seed has rho <= 0")
+    chk("single-trunk shape-leaning frac max", max(fam[k]["frac_shape_leaning"] for k in single), 0.17, 0.01)
+    for k, want in [("resnet50", 0.222), ("resnet152", 0.293), ("vit_b_16", 0.399), ("convnext_base", 0.269),
+                    ("convnext_small", 0.248), ("vgg16", 0.110)]:
+        chk(f"{k} trained rate", fam[k]["trained"], want, 0.002)
+    curve = {k: np.mean([r["mean_curve"] for r in fam[k]["seeds"]], 0) for k in single}
+    chk("resnet50 rate at w=0.90", curve["resnet50"][i90], 0.31, 0.005)
+    chk("convnext_small rate at w=0.90", curve["convnext_small"][i90], 0.31, 0.005)
+    chk("resnet152 rate at w=0.90", curve["resnet152"][i90], 0.40, 0.005)
+    chk("resnet152 rate at w=1", curve["resnet152"][-1], 0.44, 0.005)
+    if not (curve["resnet50"][i90] > fam["resnet152"]["trained"] and curve["convnext_small"][i90] > fam["convnext_base"]["trained"]):
+        FAILS.append("gated re-ordering (ResNet-50 > ResNet-152; ConvNeXt-S > ConvNeXt-B) no longer holds")
+        print("  BAD gated re-ordering")
+    else:
+        print("  OK  gated re-ordering at w = 0.90            ResNet-50 > ResNet-152 trained; ConvNeXt-S > ConvNeXt-B trained")
+    for k, (lo, hi) in [("resnet50", (0.15, 0.90)), ("resnet152", (0.15, 0.90))]:
+        g = fam[k]["seeds"][0]["gain_accuracy"]["w_within_5pts"]
+        chk(f"{k} gate lower w", min(g), lo, 0.001); chk(f"{k} gate upper w", max(g), hi, 0.001)
+    ref = []
+    for k in ("rgb_tsn", "single18", "single34"):
+        for head in ("linear", "mlp"):
+            ref.append(np.mean([r["refit"][head]["span"] for r in fam[k]["seeds"] if "refit" in r]))
+    chk("refit span (seed means) min", min(ref), 0.05, 0.01)
+    chk("refit span (seed means) max", max(ref), 0.10, 0.01)
+    # split-rule sensitivity (Methods 4.8, ED Table 13 last two columns)
+    rules = {(k, rule): fam[k]["rules"][rule] for k in single for rule in ("positive", "decile")
+             if fam[k].get("rules", {}).get(rule) and not fam[k]["rules"][rule].get("undefined")}
+    if rules:
+        chk("rule spans (ungated) min", min(e["span"] for e in rules.values()), 0.11, 0.01)
+        chk("rule spans (ungated) max", max(e["span"] for e in rules.values()), 0.40, 0.01)
+        chk("rule mean rho min", min(e["rho"] for e in rules.values()), 0.29, 0.01)
+        pos = [e for (k, rule), e in rules.items() if rule == "positive"]
+        dec = [e for (k, rule), e in rules.items() if rule == "decile"]
+        chk("absolute-rule |S| min", min(e["n_S"] for e in pos), 2, 0)
+        chk("absolute-rule |S| max", max(e["n_S"] for e in pos), 89, 1)
+        chk("decile-rule |S| min", min(e["n_S"] for e in dec), 51, 0)
+        chk("decile-rule |S| max", max(e["n_S"] for e in dec), 409, 0)
+        gates = sorted(e["w5_hi"] for e in rules.values() if "w5_hi" in e)
+        chk("rule gate upper w min", gates[0], 0.72, 0.005)
+        chk("rule gate upper w, second largest", gates[-2], 0.95, 0.005)
+        chk("rule gate upper w max (ConvNeXt-B decile)", gates[-1], 1.00, 0.005)
+        gated = []
+        for (k, rule), e in rules.items():
+            if "w5_hi" not in e:
+                continue
+            c = np.mean([r["rules"][rule]["mean_curve"] for r in fam[k]["seeds"] if r.get("rules", {}).get(rule) and not r["rules"][rule].get("undefined")], 0)
+            m = (ws >= e["w5_lo"] - 1e-9) & (ws <= e["w5_hi"] + 1e-9)
+            gated.append(c[m].max() - c[m].min())
+        chk("rule gated span min", min(gated), 0.02, 0.005)
+        chk("rule gated span max", max(gated), 0.21, 0.005)
+        chk("concat absolute set size", fam["concat"]["rules"]["positive"]["n_S"], 504, 1)
+        chk("concat absolute-rule span", fam["concat"]["rules"]["positive"]["span"], 0.46, 0.01)
+        if not fam["convnext_small"]["rules"]["positive"].get("undefined"):
+            FAILS.append("ConvNeXt-S absolute rule expected undefined"); print("  BAD ConvNeXt-S absolute rule defined")
+
+    print("\n[generality] cortex (ED Table 14, Fig. 6c-d)")
+    ctx = json.load(open("results/figures_v2/generality_cortex.json"))["families"]
+    st = ctx["rgb_tsn"]["stats"]
+    chk("rgb_tsn extrastriate - V1 (index)", st["extrastriate_minus_V1"]["mean"], -0.32, 0.01)
+    chk("rgb_tsn extrastriate - V1 n neg", st["extrastriate_minus_V1"]["n_neg"], 8, 0)
+    chk("rgb_tsn extrastriate - V1 p", st["extrastriate_minus_V1"]["p"], 0.0078, 0.0001)
+    chk("rgb_tsn w* extrastriate - V1 n neg", st["wstar_extrastriate_minus_V1"]["n_neg"], 7, 0)
+    chk("rgb_tsn w* extrastriate - V1 p", st["wstar_extrastriate_minus_V1"]["p"], 0.023, 0.001)
+    chk("rgb_tsn w* V1 median", st["wstar_median"]["V1"], 0.80, 0.005)
+    st = ctx["single34"]["stats"]
+    chk("single34 hV4 - V1 n neg", st["hV4_minus_V1"]["n_neg"], 7, 0)
+    chk("single34 hV4 - V1 p", st["hV4_minus_V1"]["p"], 0.016, 0.001)
+    chk("single34 extrastriate - V1 n neg", st["extrastriate_minus_V1"]["n_neg"], 7, 0)
+    chk("single34 dorsal - ventral (index)", st["dorsal_minus_ventral"]["mean"], 0.16, 0.01)
+    chk("single34 dorsal - ventral n neg", st["dorsal_minus_ventral"]["n_neg"], 0, 0)
+    st = ctx["resnet50"]["stats"]
+    chk("resnet50 extrastriate - V1 (index)", st["extrastriate_minus_V1"]["mean"], 0.24, 0.01)
+    chk("resnet50 extrastriate - V1 p", st["extrastriate_minus_V1"]["p"], 0.039, 0.001)
+    for famk in ("rgb_tsn", "single34", "resnet50"):
+        fo = ctx[famk]
+        for r in ("V1", "V2", "V3", "hV4", "ventral", "lateral", "dorsal"):
+            u = max(np.nanmean(fo["uS"][r]), np.nanmean(fo["uT"][r]))
+            if u > 0.04:
+                FAILS.append(f"{famk} {r} unique variance {u:.3f} > 0.04")
+                print(f"  BAD {famk} {r} unique variance {u:.3f} > 0.04")
+    print("  OK  single-trunk unique variances <= 0.04 in every region checked")
+    if "shared" in ctx["rgb_tsn"]:
+        fr = [np.nanmean(ctx[k]["shared"][r]) / np.nanmean(ctx[k]["r2"][r]) for k in ("rgb_tsn", "single34", "resnet50")
+              for r in ("V1", "V2", "V3", "hV4", "ventral", "lateral", "dorsal")]
+        chk("single-trunk shared / r2 min", min(fr), 0.80, 0.02)
+        chk("single-trunk shared / r2 max", max(fr), 0.96, 0.02)
+        fr2 = [np.nanmean(ctx["two_stream_diet"]["shared"][r]) / np.nanmean(ctx["two_stream_diet"]["r2"][r])
+               for r in ("V1", "V2", "V3", "hV4", "ventral", "lateral", "dorsal")]
+        chk("two-stream shared / r2 min over regions", float(min(fr2)), 0.45, 0.02)
+        chk("two-stream shared / r2 max over regions", float(max(fr2)), 0.63, 0.02)
+
+
 def main() -> int:
     check_recovery()
     check_production_statistic()
@@ -708,6 +824,7 @@ def main() -> int:
     check_untrained_anchor()
     check_ood()
     check_perimage()
+    check_generality()
     print("\nFAILURES:", FAILS if FAILS else "none")
     return 1 if FAILS else 0
 

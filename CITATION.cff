@@ -1,19 +1,21 @@
 cff-version: 1.2.0
 message: "If you use this software or its results, please cite it as below."
-title: "Shape-biased behaviour does not require shape-biased representations"
+title: "Shape bias is a readout property: a developmental two-stream model, frozen networks and human cortex"
 abstract: >-
   Code and analysis for a two-stream network receiving approximations of the
   magnocellular and parvocellular signals reaching cortex, with the encoding,
-  behavioural and statistical analyses built on it.
+  behavioural, readout and single-trunk generality analyses built on it.
 type: software
 license: BSD-3-Clause
-repository-code: "https://github.com/REPLACE-ME"
+repository-code: "https://github.com/LuZeking/Magno-Parvo-Konio-Net"
+url: "https://github.com/LuZeking/Magno-Parvo-Konio-Net"
 # TODO before submission, and only the authors can supply these:
-#   - confirm the author list, order, and ORCIDs
-#   - replace repository-code with the public URL
+#   - confirm the author list, order, affiliations and ORCIDs (Author contributions
+#     in docs/PAPER_v2.md is the same placeholder)
 #   - add the Zenodo DOI once the release is archived, as:
 #       identifiers:
 #         - type: doi
 #           value: 10.5281/zenodo.XXXXXXX
+#   - set `version` and `date-released` to the archived release
 authors:
-  - name: "See LICENSE; author list to be confirmed before release"
+  - name: "Author list to be confirmed before release (see docs/PAPER_v2.md, Author contributions)"

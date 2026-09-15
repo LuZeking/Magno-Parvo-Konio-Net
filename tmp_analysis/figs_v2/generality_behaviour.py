@@ -2,9 +2,11 @@
 
   python tmp_analysis/figs_v2/generality_behaviour.py [--run-id 2026-09-14_gen]
 
-Reads /scratch/byrong/mpk/generality/behaviour/<run-id>/*_unit_factor.json and
-*_refit_sum.json, prints one row per network and writes
-results/figures_v2/generality_behaviour.json for the figure and the ED table.
+Reads /scratch/byrong/mpk/generality/behaviour/<run-id>/*_unit_factor.json,
+*_refit_sum.json, *_gain_accuracy.json and the split-rule sensitivity files
+*_unit_factor_{positive,decile}.json (+ *_gain_accuracy_{positive,decile}.json),
+prints one row per network and writes results/figures_v2/generality_behaviour.json,
+the single committed source of Fig. 6a-b and Extended Data Table 13.
 """
 from __future__ import annotations
 
@@ -75,6 +77,32 @@ def main():
                                      full_val=float(full[0]["val_top1"]) if full else None,
                                      full_sb=float(full[0]["shape_bias"]) if full else None)
                 r["refit"] = ref
+            fa = os.path.join(root, f"{tag}_gain_accuracy.json")
+            if os.path.exists(fa):
+                za = json.load(open(fa))
+                r["gain_accuracy"] = dict(set=za["set"], n=za["n"], trained_top1=za["trained_top1"], top1=za["top1"],
+                                          w_within_5pts=za["w_within_5pts"])
+            rules = {}
+            for rule in ("positive", "decile"):
+                fu = os.path.join(root, f"{tag}_unit_factor_{rule}.json")
+                if not os.path.exists(fu):
+                    continue
+                zu = json.load(open(fu))["summary"]
+                if zu.get("undefined"):
+                    rules[rule] = dict(undefined=True, frac_shape_leaning=zu["frac_units_shape_leaning"])
+                    continue
+                entry = dict(span=zu["primary"]["span_mean"], span_min=zu["primary"]["span_min"], span_max=zu["primary"]["span_max"],
+                             rho=zu["primary"]["rho_mean"], rho_min=zu["primary"]["rho_min"], n_S=zu.get("n_S_full"),
+                             n_heldout_curves=zu.get("n_heldout_curves"), rate_w0=zu["primary"]["rate_w0"],
+                             rate_w1=zu["primary"]["rate_w1"], mean_curve=zu["primary"]["mean_curve"],
+                             forced_span=zu["forced"]["span_mean"])
+                fga = os.path.join(root, f"{tag}_gain_accuracy_{rule}.json")
+                if os.path.exists(fga):
+                    zg = json.load(open(fga))
+                    entry["w_within_5pts"] = zg["w_within_5pts"]; entry["trained_top1"] = zg["trained_top1"]; entry["top1"] = zg["top1"]
+                rules[rule] = entry
+            if rules:
+                r["rules"] = rules
             rows.append(r)
         if not rows:
             continue
@@ -86,6 +114,28 @@ def main():
                    forced_span=float(np.mean([r["forced_span"] for r in rows])),
                    rate_w0=float(np.mean([r["rate_w0"] for r in rows])), rate_w1=float(np.mean([r["rate_w1"] for r in rows])),
                    frac_shape_leaning=float(np.mean([r["frac_shape_leaning"] for r in rows])))
+        rules_agg = {}
+        for rule in ("positive", "decile"):
+            present = [r["rules"][rule] for r in rows if r.get("rules", {}).get(rule)]
+            defined = [d for d in present if not d.get("undefined")]
+            if not present:
+                continue
+            if not defined:
+                rules_agg[rule] = dict(undefined=True, n_seeds=len(present))
+                continue
+            e = dict(span=float(np.mean([d["span"] for d in defined])), span_min=float(min(d["span_min"] for d in defined)),
+                     span_max=float(max(d["span_max"] for d in defined)), rho=float(np.mean([d["rho"] for d in defined])),
+                     rho_min=float(min(d["rho_min"] for d in defined)), n_defined=len(defined), n_seeds=len(present),
+                     rate_w0=float(np.mean([d["rate_w0"] for d in defined])), rate_w1=float(np.mean([d["rate_w1"] for d in defined])))
+            ns = [d["n_S"] for d in defined if d.get("n_S") is not None]
+            if ns:
+                e["n_S"] = float(np.mean(ns))
+            w5 = [d["w_within_5pts"] for d in defined if d.get("w_within_5pts")]
+            if w5:
+                e["w5_lo"] = float(np.mean([min(x) for x in w5])); e["w5_hi"] = float(np.mean([max(x) for x in w5]))
+            rules_agg[rule] = e
+        if rules_agg:
+            agg["rules"] = rules_agg
         s1 = [r["frac_S_from_stream1"] for r in rows if r.get("frac_S_from_stream1") is not None]
         if s1:
             agg["frac_S_from_stream1"] = float(np.mean(s1))
@@ -95,6 +145,10 @@ def main():
               f"{agg['span']:6.3f} [{agg['span_range'][0]:.2f},{agg['span_range'][1]:.2f}] {agg['rho']:5.2f} "
               f"{agg['forced_span']:11.3f} {agg['frac_shape_leaning']:6.2f} "
               f"{(agg.get('frac_S_from_stream1') or float('nan')):9.2f}  n={len(rows)}")
+        for rule, e in agg.get("rules", {}).items():
+            print(f"    rule {rule:8s}: " + ("undefined" if e.get("undefined") else
+                  f"span {e['span']:.3f} [{e['span_min']:.2f},{e['span_max']:.2f}] rho_min {e['rho_min']:.2f} |S| {e.get('n_S', float('nan')):.0f}"
+                  + (f" gate {e['w5_lo']:.2f}-{e['w5_hi']:.2f}" if "w5_lo" in e else "")))
         for r in rows:
             if "refit" in r:
                 for h, v in r["refit"].items():

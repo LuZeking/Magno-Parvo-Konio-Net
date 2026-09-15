@@ -1,8 +1,8 @@
 """Extended Data Tables 13 (behaviour) and 14 (cortex) for the generality test.
 
-Reads results/figures_v2/generality_behaviour.json, the *_gain_accuracy.json and
-*_refit_sum.json files, and results/figures_v2/generality_cortex.json; replaces or
-inserts the two tables in results/figures_v2/ed_tables.md before the END marker.
+Reads only the committed results/figures_v2/generality_behaviour.json and
+results/figures_v2/generality_cortex.json; replaces or inserts the two tables in
+results/figures_v2/ed_tables.md (then run insert_ed_tables.py).
 Usage: python tmp_analysis/figs_v2/ed_tables_generality.py
 """
 from __future__ import annotations
@@ -34,18 +34,27 @@ def fmt(x, d=2, sign=False):
 
 def table13(beh):
     fam = {f["key"]: f for f in beh["families"]}
-    rows = ["| network | units | trained rate | w = 0 | w = 1 | span (held-out) [range] | ρ(w, rate) | forced-estimator span | shape-leaning units | w within 5 pts of trained top-1 | refit span linear / two-layer | seeds |",
-            "|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    rows = ["| network | units | trained rate | w = 0 | w = 1 | span (held-out) [range] | ρ(w, rate) | forced-estimator span | shape-leaning units | w within 5 pts of trained top-1 | refit span linear / two-layer | span, S = {d > 0} | span, top decile | seeds |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for key in ORDER:
         if key not in fam:
             continue
         f = fam[key]
-        tags = [r["tag"] for r in f["seeds"]]
-        acc = []
-        for t in tags:
-            p = os.path.join(BEH_DIR, f"{t}_gain_accuracy.json")
-            if os.path.exists(p):
-                z = json.load(open(p)); acc.append((min(z["w_within_5pts"]), max(z["w_within_5pts"]), z["trained_top1"]))
+        acc = [(min(r["gain_accuracy"]["w_within_5pts"]), max(r["gain_accuracy"]["w_within_5pts"]), r["gain_accuracy"]["trained_top1"])
+               for r in f["seeds"] if r.get("gain_accuracy")]
+
+        def rule_s(rule):
+            e = f.get("rules", {}).get(rule)
+            if not e:
+                return "—"
+            if e.get("undefined"):
+                return "undefined (empty half)"
+            out = f"{e['span']:.2f} [{e['span_min']:.2f}, {e['span_max']:.2f}] (ρ ≥ {e['rho_min']:.2f}"
+            if e.get("n_S") is not None:
+                out += f"; |S| = {e['n_S']:.0f}"
+            if "w5_lo" in e:
+                out += f"; gate {e['w5_lo']:.2f}–{e['w5_hi']:.2f}"
+            return out + ")"
         acc_s = f"{np.mean([a[0] for a in acc]):.2f}–{np.mean([a[1] for a in acc]):.2f} (top-1 {np.mean([a[2] for a in acc]):.3f})" if acc else "—"
         ref = [r["refit"] for r in f["seeds"] if "refit" in r]
         if ref:
@@ -56,8 +65,8 @@ def table13(beh):
         rows.append(f"| {LABEL[key]} | {f['seeds'][0]['n_units']} | {f['trained']:.3f} | {f['rate_w0']:.3f} | {f['rate_w1']:.3f} | "
                     f"{f['span']:.3f} [{f['span_range'][0]:.2f}, {f['span_range'][1]:.2f}] | {f['rho']:.2f} | {f['forced_span']:.3f} | "
                     f"{f['frac_shape_leaning']:.2f}" + (f" (S from stream 1: {f['frac_S_from_stream1']:.2f})" if f.get("frac_S_from_stream1") is not None else "")
-                    + f" | {acc_s} | {ref_s} | {len(f['seeds'])} |")
-    cap = ("**Extended Data Table 13 | The readout span without a stream split: fixed-head gain sweep on ten frozen networks.** "
+                    + f" | {acc_s} | {ref_s} | {rule_s('positive')} | {rule_s('decile')} | {len(f['seeds'])} |")
+    cap = ("**Extended Data Table 13 | The readout span without a stream split: fixed-head gain sweep on ten frozen networks (nine without a split and the two-stream validation case).** "
            "Each unit of a network's penultimate layer is scored by the fraction of its variance between shape categories minus that between texture categories on the 1,200 cue-conflict images (one-way η²); the median split gives a shape-leaning half S and a texture-leaning half T. "
            "logits(w) = head(g(w) ⊙ y) with g = 2w on S and 2(1 − w) on T, the network's own head untouched; w = 0.5 is the trained network. "
            "The split is defined on one stratified half of the images and the rate scored on the other (10 random splits, both directions; mean, with the range over splits and seeds in brackets). "
@@ -65,7 +74,8 @@ def table13(beh):
            "“shape-leaning units” is the fraction of units with η²_shape > η²_texture on all images; for the two-stream concatenation the fraction of S that belongs to stream 1 is given in parentheses (P3). "
            "“w within 5 pts” is the w-range over which top-1 on held-out natural images (MiniEcoset validation; a stratified 10-per-class ILSVRC-2012 validation subset for the ImageNet networks) stays within 5 points of the trained value. "
            "“refit span” is the lossy-sum protocol z(w) = w·y_S + (1 − w)·y_T with a linear and a two-layer head refitted at every w (Methods 4.3 budget), our networks only. "
-           "Pre-specification: `docs/PLAN_GENERALITY_2026-09-14.md`. Source: `/scratch/byrong/mpk/generality/behaviour/" + RUN + "/`.")
+           "The last two columns are a sensitivity analysis added after the pre-specified analysis, at a referee's request: the same held-out sweep with S defined as the absolute shape-leaning set (units with d_j > 0) or as the top decile of units by d_j, and T as the remainder; given are the held-out span with its range over splits and seeds, the minimum Spearman ρ, the mean size of S and the w-range within 5 points of the trained top-1 (no gate exists for the two-stream concatenation, which has no held-out natural-image features). "
+           "Pre-specification: `docs/PLAN_GENERALITY_2026-09-14.md`. Source: `results/figures_v2/generality_behaviour.json`, aggregated by `tmp_analysis/figs_v2/generality_behaviour.py` from the per-network outputs of `src/analysis/generality/` (`slurm/generality_{cc,mini,inval,rules}.sh`); the per-network files are outside the repository.")
     return cap + "\n\n" + "\n".join(rows)
 
 
@@ -85,6 +95,9 @@ def table14(ctx):
                     + f" | {stat_s('hV4_minus_V1')} | {stat_s('extrastriate_minus_V1')} | {fmt(rho, 2, True)} |")
         rows.append(f"| | U_shape | " + " | ".join(f"{np.nanmean(fo['uS'][r]):.3f}" for r in REGIONS) + " | | | |")
         rows.append(f"| | U_texture | " + " | ".join(f"{np.nanmean(fo['uT'][r]):.3f}" for r in REGIONS) + " | | | |")
+        if fo.get("shared"):
+            rows.append(f"| | shared | " + " | ".join(f"{np.nanmean(fo['shared'][r]):.3f}" for r in REGIONS) + " | | | |")
+            rows.append(f"| | r² (two bands, nc-normalised) | " + " | ".join(f"{np.nanmean(fo['r2'][r]):.3f}" for r in REGIONS) + " | | | |")
         if fo.get("w_star"):
             wm = st.get("wstar_median", {})
             wst = st.get("wstar_extrastriate_minus_V1")
@@ -95,8 +108,9 @@ def table14(ctx):
            "U_shape and U_texture are the noise-ceiling-normalised unique variances and the index is (U_shape − U_texture)/(U_shape + U_texture), median over reliable voxels (noise ceiling > 0.1, ≥ 20 voxels), mean over eight subjects (seeds averaged per subject). "
            "Regions: V1–hV4 from `prf-visualrois`; ventral (VO1/2, PHC1/2), lateral (LO1/2, TO1/2) and dorsal (V3A/B, IPS0–2) from Kastner2015. "
            "The two-stream diet row applies the same computation to the magno (shape-biased) and parvo (texture-biased) bands of Fig. 3. "
+           "“shared” is the cross-validated variance the two bands account for jointly (the two-band r² minus both unique variances) and “r²” the two-band model's noise-ceiling-normalised r², medians over the same voxels. "
            "w*_cortex is the mixing weight of the lossy sum z(w) = w·y_S + (1 − w)·y_T that maximises an ROI's median test R² (Extended Data Fig. 5 protocol). Exact paired Wilcoxon over subjects. "
-           "Source: `/scratch/byrong/mpk/generality/cortex/" + RUN + "/`.")
+           "Source: `results/figures_v2/generality_cortex.json`, aggregated by `tmp_analysis/figs_v2/generality_cortex.py` from the per-subject fits of `src/analysis/generality/cortex_bands.py` (`slurm/generality_{nsd,cortex}.sh`, 7 networks × 8 subjects), which are deposited alongside the encoding outputs of Fig. 3 (Code availability).")
     return cap + "\n\n" + "\n".join(rows)
 
 

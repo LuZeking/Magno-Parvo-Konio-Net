@@ -51,7 +51,7 @@
 | achromatic (luminance) | none | parvo_highsf, stream 2 | −0.266 [0.017] | 0.396 [0.012] | 584 | 2 |
 | achromatic (luminance) | yes | diet, magno | +0.819 [0.014] | 0.878 [0.022] | 488 | 3 |
 
-**Extended Data Table 5 | Single-stream controls trained with the identical diet, and the readout ladder.** Best saved checkpoint per seed; mean [range] over three seeds. Accuracy is validation top-1 at the scored checkpoint. Sources: `results/cue_conflict_bestep/`, `results/cue_conflict_single34_bestep/`, `results/cue_conflict_single_bestep/`, run histories, `results/param_matched/`.
+**Extended Data Table 5 | Single-stream controls trained with the identical diet, and the readout ladder.** Best saved checkpoint per seed, except the no-diet row, which is scored at the final checkpoint because its accuracy does not degrade (Fig. 2d; Methods 4.7); mean [range] over three seeds. Accuracy is validation top-1 at the scored checkpoint. Sources: `results/cue_conflict_bestep/`, `results/cue_conflict_single34_bestep/`, `results/cue_conflict_single_bestep/`, run histories, `results/param_matched/`.
 
 | model / readout | parameters | shape bias | decided / 1,200 | accuracy |
 |---|---|---|---|---|
@@ -74,22 +74,22 @@
 | contrast ‡ | 0.481 [0.460, 0.493] | 0.549 [0.530, 0.578] | 0.543 [0.539, 0.550] | 0.511 [0.498, 0.526] | 0.489 | −0.068 | yes |
 | low-pass ‡ | 0.444 [0.434, 0.464] | 0.356 [0.353, 0.359] | 0.359 [0.353, 0.362] | 0.385 [0.375, 0.392] | 0.436 | +0.089 | yes |
 
-**Extended Data Table 7 | Error consistency (Cohen's κ) with the ten human observers.** The trained readout (w = 0.5) and the best readout over the 21 values of w, per run; κ as a percentage of the human–human ceiling (κ = 0.234, 45 pairs). Published CNN values are from Geirhos et al. (2020). Source: `results/sweep_error_consistency/`.
+**Extended Data Table 7 | Error consistency (Cohen's κ) with the ten human observers.** The trained readout (w = 0.5), the magno stream alone (w = 1; the κ = 0.0082, 3.5% of Results 2.5 is the mean of the three final-checkpoint runs) and the best readout over the 21 values of w, per run; κ as a percentage of the human–human ceiling (κ = 0.234, 45 pairs). Published CNN values are from Geirhos et al. (2020). Source: `results/sweep_error_consistency/`.
 
-| run | shape bias at w = 0.5 | κ at w = 0.5 | % ceiling | best κ over w | % ceiling | w at best | rate at best |
-|---|---|---|---|---|---|---|---|
-| dkl_base_seed0_final | 0.421 | +0.0309 | 13.2 | +0.0404 | 17.3 | 1.00 | 0.438 |
-| dkl_base_seed1_final | 0.433 | +0.0333 | 14.3 | +0.0421 | 18.0 | 0.75 | 0.429 |
-| dkl_base_seed2_final | 0.394 | +0.0372 | 15.9 | +0.0412 | 17.6 | 0.35 | 0.410 |
-| dkl_bcs_seed0_best | 0.594 | +0.0096 | 4.1 | +0.0178 | 7.6 | 1.00 | 0.890 |
-| dkl_bcs_seed0_final | 0.692 | +0.0234 | 10.0 | +0.0405 | 17.3 | 0.90 | 0.857 |
-| dkl_bcs_seed1_best | 0.718 | +0.0269 | 11.5 | +0.0425 | 18.2 | 0.35 | 0.614 |
-| dkl_bcs_seed1_final | 0.686 | +0.0319 | 13.7 | +0.0437 | 18.7 | 0.45 | 0.651 |
-| dkl_bcs_seed2_best | 0.652 | +0.0372 | 15.9 | +0.0483 | 20.7 | 0.85 | 0.847 |
-| dkl_bcs_seed2_final | 0.646 | +0.0280 | 12.0 | +0.0405 | 17.3 | 0.75 | 0.784 |
-| AlexNet (published) | 0.429 | +0.0320 | 13.7 | | | | |
-| GoogLeNet (published) | 0.312 | +0.0250 | 10.7 | | | | |
-| VGG-16 (published) | 0.172 | +0.0170 | 7.3 | | | | |
+| run | shape bias at w = 0.5 | κ at w = 0.5 | % ceiling | κ at w = 1 (magno alone) | % ceiling | rate at w = 1 | best κ over w | % ceiling | w at best | rate at best |
+|---|---|---|---|---|---|---|---|---|---|---|
+| dkl_base_seed0_final | 0.421 | +0.0309 | 13.2 | +0.0404 | 17.3 | 0.438 | +0.0404 | 17.3 | 1.00 | 0.438 |
+| dkl_base_seed1_final | 0.433 | +0.0333 | 14.3 | +0.0390 | 16.7 | 0.431 | +0.0421 | 18.0 | 0.75 | 0.429 |
+| dkl_base_seed2_final | 0.394 | +0.0372 | 15.9 | +0.0349 | 15.0 | 0.400 | +0.0412 | 17.6 | 0.35 | 0.410 |
+| dkl_bcs_seed0_best | 0.594 | +0.0096 | 4.1 | +0.0178 | 7.6 | 0.890 | +0.0178 | 7.6 | 1.00 | 0.890 |
+| dkl_bcs_seed0_final | 0.692 | +0.0234 | 10.0 | +0.0361 | 15.5 | 0.872 | +0.0405 | 17.3 | 0.90 | 0.857 |
+| dkl_bcs_seed1_best | 0.718 | +0.0269 | 11.5 | +0.0058 | 2.5 | 0.913 | +0.0425 | 18.2 | 0.35 | 0.614 |
+| dkl_bcs_seed1_final | 0.686 | +0.0319 | 13.7 | +0.0028 | 1.2 | 0.894 | +0.0437 | 18.7 | 0.45 | 0.651 |
+| dkl_bcs_seed2_best | 0.652 | +0.0372 | 15.9 | -0.0055 | -2.3 | 0.908 | +0.0483 | 20.7 | 0.85 | 0.847 |
+| dkl_bcs_seed2_final | 0.646 | +0.0280 | 12.0 | -0.0143 | -6.1 | 0.871 | +0.0405 | 17.3 | 0.75 | 0.784 |
+| AlexNet (published) | 0.429 | +0.0320 | 13.7 | | | | | | | |
+| GoogLeNet (published) | 0.312 | +0.0250 | 10.7 | | | | | | | |
+| VGG-16 (published) | 0.172 | +0.0170 | 7.3 | | | | | | | |
 
 **Extended Data Table 8 | The estimator's own bias, and the residual-misfit variants.** Synthetic voxels were generated from each arm's fitted 1,000-component feature spaces with the measured per-ROI noise ceilings imposed and the true magno − parvo difference set to zero everywhere; the recovered contrast is the instrument's signed floor. “Displacement” is the real contrast minus the floor, paired per subject. The six variants differ in how the floor is paired (group or per-subject) and whether the residual misfit of the recovery simulation is also removed (before or after rescaling by the recovered slope). Sources: `results/vp_recovery_realnc/diet_floor_paired_2026-09-07.txt`, `floor_pairing_2026-09-07.txt`, `prediction_scored_2026-09-07.txt`.
 
@@ -149,9 +149,9 @@
 | untrained, diet front end, magno alone | 0.513 | 154 | 0.510 | 1 |
 | untrained, no-diet front end, magno alone | 0.568 | 169 | 0.508 | 1 |
 
-**Extended Data Table 11 | Stream preference beyond hV4, on every NSD atlas.** Median over reliable voxels of the per-voxel index (Um − Up)/(Um + Up) (noise ceiling > 0.1, Um + Up > 10⁻³, ≥ 20 voxels per ROI per subject), mean over the eight subjects (n = subjects with enough voxels); trained arms are the mean over training seeds per subject. Positive = magno band, negative = parvo band. Atlases: Wang et al. (2015) Kastner2015 ROIs beyond hV4 (the V1–hV4 rows are Extended Data Table 1 and Fig. 3), NSD's `streams` atlas, and the fLoc category-selective ROIs. Regional contrasts and the exact tests are in Extended Data Fig. 4c and `results/figures_v2/ext_gradient.md`. Source: the stored voxelwise fits in `results/encoding_cc/` and `results/encoding/`, relabelled; no refitting.
+**Extended Data Table 11 | Stream preference beyond hV4, on every NSD atlas.** Median over reliable voxels of the per-voxel index (Um − Up)/(Um + Up) (noise ceiling > 0.1, Um + Up > 10⁻³, ≥ 20 voxels per ROI per subject), mean over the eight subjects (n = subjects with enough voxels); the no-diet and diet arms are the mean over three training seeds per subject, whereas the swap, parvo + high-SF and thesis columns are single networks (seed 0, or the thesis's one checkpoint; Methods 4.5). Positive = magno band, negative = parvo band. Atlases: Wang et al. (2015) Kastner2015 ROIs beyond hV4 (the V1–hV4 rows are Extended Data Table 1 and Fig. 3), NSD's `streams` atlas, and the fLoc category-selective ROIs. Regional contrasts and the exact tests are in Extended Data Fig. 4c and `results/figures_v2/ext_gradient.md`. Source: the stored voxelwise fits in `results/encoding_cc/` and `results/encoding/`, relabelled; no refitting.
 
-| atlas | ROI | untrained (diet front end) | no diet (3 seeds) | diet (3 seeds) | swap | parvo + high-SF | thesis ckpt | voxels (median, diet) |
+| atlas | ROI | untrained (diet front end) | no diet (3 seeds) | diet (3 seeds) | swap (seed 0) | parvo + high-SF (seed 0) | thesis ckpt (n = 1) | voxels (median, diet) |
 |---|---|---|---|---|---|---|---|---|
 | Kastner2015 | VO1 | +0.00 (n=8) | +0.92 (n=8) | −0.87 (n=8) | +0.98 (n=8) | −0.99 (n=8) | −0.94 (n=8) | 196 |
 | Kastner2015 | VO2 | +0.12 (n=8) | +0.97 (n=8) | −0.90 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 220 |
@@ -186,6 +186,7 @@
 | floc-words | VWFA-2 | −0.02 (n=5) | +0.95 (n=6) | −0.94 (n=6) | +0.99 (n=6) | −1.00 (n=6) | −0.96 (n=6) | 150 |
 | floc-words | mfs-words | −0.08 (n=8) | +0.97 (n=8) | −0.93 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.96 (n=8) | 121 |
 
+
 **Extended Data Table 12 | The readout weight cortex prefers against the one behaviour prefers.** For each mixing weight w the classifier's own input z(w) = w·y₁ + (1 − w)·y₂ (y₁ magno stream output, y₂ parvo stream output, 512-d each) is the design of a ridge encoding model of every nsdgeneral voxel (same split, folds and alpha grid as the banded model; Methods 4.5). w*_cortex is the w that maximises the median test R² over reliable voxels of the ROI (mean over seeds per subject; median [range] over 8 subjects). "R² at w = 0.5 / max" is the median R² at the paper's readout weight relative to the best w; "concat" is the median R² of the 1,024-d concatenation, the ceiling for any mixture. "Voxels magno / parvo" is the fraction of the ROI's voxels whose own best w is ≥ 0.75 / ≤ 0.25. The behaviour-optimal weight (trial fit to each of 10 human observers' cue-conflict choices, diet final checkpoints, 3 seeds) is given in the last row for comparison, with the cue-conflict shape-bias rate the diet network produces at each weight.
 
 | arm | ROI | w*_cortex median [range] | R² at w = 0.5 / max | max R² (median) | concat R² | voxels best w ≥ 0.75 | voxels best w ≤ 0.25 | rate at w*_cortex | n |
@@ -206,37 +207,45 @@
 | no diet | dorsal (V3A/B, IPS0–2) | 1.00 [0.75, 1.00] | 0.944 | 0.0805 | 0.0792 | 0.61 | 0.04 | nan | 8 |
 | behaviour (diet) | 10 human observers, trial fit | 0.67 [0.49, 0.89] | — | — | — | — | — | 0.78 | 10 |
 
-**Extended Data Table 13 | The readout span without a stream split: fixed-head gain sweep on ten frozen networks.** Each unit of a network's penultimate layer is scored by the fraction of its variance between shape categories minus that between texture categories on the 1,200 cue-conflict images (one-way η²); the median split gives a shape-leaning half S and a texture-leaning half T. logits(w) = head(g(w) ⊙ y) with g = 2w on S and 2(1 − w) on T, the network's own head untouched; w = 0.5 is the trained network. The split is defined on one stratified half of the images and the rate scored on the other (10 random splits, both directions; mean, with the range over splits and seeds in brackets). Rates by the paper's primary estimator (112-class, decided images) for our networks and the Geirhos 16-class probability aggregation for the ImageNet networks; “forced-estimator span” is the same sweep on the forced two-way estimator. “shape-leaning units” is the fraction of units with η²_shape > η²_texture on all images; for the two-stream concatenation the fraction of S that belongs to stream 1 is given in parentheses (P3). “w within 5 pts” is the w-range over which top-1 on held-out natural images (MiniEcoset validation; a stratified 10-per-class ILSVRC-2012 validation subset for the ImageNet networks) stays within 5 points of the trained value. “refit span” is the lossy-sum protocol z(w) = w·y_S + (1 − w)·y_T with a linear and a two-layer head refitted at every w (Methods 4.3 budget), our networks only. Pre-specification: `docs/PLAN_GENERALITY_2026-09-14.md`. Source: `/scratch/byrong/mpk/generality/behaviour/2026-09-14_gen/`.
+**Extended Data Table 13 | The readout span without a stream split: fixed-head gain sweep on ten frozen networks (nine without a split and the two-stream validation case).** Each unit of a network's penultimate layer is scored by the fraction of its variance between shape categories minus that between texture categories on the 1,200 cue-conflict images (one-way η²); the median split gives a shape-leaning half S and a texture-leaning half T. logits(w) = head(g(w) ⊙ y) with g = 2w on S and 2(1 − w) on T, the network's own head untouched; w = 0.5 is the trained network. The split is defined on one stratified half of the images and the rate scored on the other (10 random splits, both directions; mean, with the range over splits and seeds in brackets). Rates by the paper's primary estimator (112-class, decided images) for our networks and the Geirhos 16-class probability aggregation for the ImageNet networks; “forced-estimator span” is the same sweep on the forced two-way estimator. “shape-leaning units” is the fraction of units with η²_shape > η²_texture on all images; for the two-stream concatenation the fraction of S that belongs to stream 1 is given in parentheses (P3). “w within 5 pts” is the w-range over which top-1 on held-out natural images (MiniEcoset validation; a stratified 10-per-class ILSVRC-2012 validation subset for the ImageNet networks) stays within 5 points of the trained value. “refit span” is the lossy-sum protocol z(w) = w·y_S + (1 − w)·y_T with a linear and a two-layer head refitted at every w (Methods 4.3 budget), our networks only. The last two columns are a sensitivity analysis added after the pre-specified analysis, at a referee's request: the same held-out sweep with S defined as the absolute shape-leaning set (units with d_j > 0) or as the top decile of units by d_j, and T as the remainder; given are the held-out span with its range over splits and seeds, the minimum Spearman ρ, the mean size of S and the w-range within 5 points of the trained top-1 (no gate exists for the two-stream concatenation, which has no held-out natural-image features). Pre-specification: `docs/PLAN_GENERALITY_2026-09-14.md`. Source: `results/figures_v2/generality_behaviour.json`, aggregated by `tmp_analysis/figs_v2/generality_behaviour.py` from the per-network outputs of `src/analysis/generality/` (`slurm/generality_{cc,mini,inval,rules}.sh`); the per-network files are outside the repository.
 
-| network | units | trained rate | w = 0 | w = 1 | span (held-out) [range] | ρ(w, rate) | forced-estimator span | shape-leaning units | w within 5 pts of trained top-1 | refit span linear / two-layer | seeds |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| two-stream, diet, streams concatenated (validation) | 1024 | 0.675 | 0.420 | 0.879 | 0.461 [0.39, 0.57] | 1.00 | 0.307 | 0.49 (S from stream 1: 0.99) | — | — | 3 |
-| single ResNet-34, diet | 512 | 0.625 | 0.565 | 0.688 | 0.136 [0.03, 0.24] | 0.71 | 0.102 | 0.17 | 0.20–0.78 (top-1 0.626) | 0.06 / 0.05 | 3 |
-| single ResNet-18, diet | 512 | 0.557 | 0.467 | 0.652 | 0.194 [0.11, 0.31] | 0.97 | 0.131 | 0.09 | 0.28–0.72 (top-1 0.547) | 0.09 / 0.06 | 3 |
-| single ResNet-18, no diet (`rgb_tsn`) | 512 | 0.445 | 0.374 | 0.566 | 0.195 [0.11, 0.39] | 0.96 | 0.164 | 0.05 | 0.27–0.75 (top-1 0.678) | 0.10 / 0.09 | 3 |
-| ImageNet ViT-B/16 | 768 | 0.399 | 0.371 | 0.455 | 0.086 [0.07, 0.11] | 0.98 | 0.138 | 0.01 | 0.00–1.00 (top-1 0.815) | — | 1 |
-| ImageNet ResNet-152 | 2048 | 0.293 | 0.227 | 0.440 | 0.214 [0.18, 0.25] | 1.00 | 0.196 | 0.02 | 0.15–0.90 (top-1 0.785) | — | 1 |
-| ImageNet ConvNeXt-B | 1024 | 0.269 | 0.229 | 0.343 | 0.115 [0.09, 0.14] | 0.99 | 0.173 | 0.00 | 0.00–1.00 (top-1 0.843) | — | 1 |
-| ImageNet ConvNeXt-S | 768 | 0.248 | 0.211 | 0.335 | 0.124 [0.11, 0.15] | 0.99 | 0.179 | 0.00 | 0.00–1.00 (top-1 0.840) | — | 1 |
-| ImageNet ResNet-50 | 2048 | 0.222 | 0.167 | 0.346 | 0.180 [0.14, 0.23] | 0.99 | 0.202 | 0.02 | 0.15–0.90 (top-1 0.760) | — | 1 |
-| ImageNet VGG-16 | 4096 | 0.110 | 0.096 | 0.189 | 0.095 [0.07, 0.11] | 0.96 | 0.106 | 0.01 | 0.00–1.00 (top-1 0.711) | — | 1 |
+| network | units | trained rate | w = 0 | w = 1 | span (held-out) [range] | ρ(w, rate) | forced-estimator span | shape-leaning units | w within 5 pts of trained top-1 | refit span linear / two-layer | span, S = {d > 0} | span, top decile | seeds |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| two-stream, diet, streams concatenated (validation) | 1024 | 0.675 | 0.420 | 0.879 | 0.461 [0.39, 0.57] | 1.00 | 0.307 | 0.49 (S from stream 1: 0.99) | — | — | 0.46 [0.39, 0.59] (ρ ≥ 0.98; |S| = 504) | 0.20 [0.11, 0.30] (ρ ≥ 0.56; |S| = 102) | 3 |
+| single ResNet-34, diet | 512 | 0.625 | 0.565 | 0.688 | 0.136 [0.03, 0.24] | 0.71 | 0.102 | 0.17 | 0.20–0.78 (top-1 0.626) | 0.06 / 0.05 | 0.12 [0.03, 0.23] (ρ ≥ -0.78; |S| = 89; gate 0.00–0.73) | 0.11 [0.03, 0.20] (ρ ≥ -0.95; |S| = 51; gate 0.00–0.77) | 3 |
+| single ResNet-18, diet | 512 | 0.557 | 0.467 | 0.652 | 0.194 [0.11, 0.31] | 0.97 | 0.131 | 0.09 | 0.28–0.72 (top-1 0.547) | 0.09 / 0.06 | 0.11 [0.04, 0.18] (ρ ≥ -0.63; |S| = 44; gate 0.00–0.73) | 0.12 [0.04, 0.21] (ρ ≥ -0.42; |S| = 51; gate 0.00–0.72) | 3 |
+| single ResNet-18, no diet (`rgb_tsn`) | 512 | 0.445 | 0.374 | 0.566 | 0.195 [0.11, 0.39] | 0.96 | 0.164 | 0.05 | 0.27–0.75 (top-1 0.678) | 0.10 / 0.09 | 0.15 [0.03, 0.31] (ρ ≥ -0.57; |S| = 24; gate 0.00–0.78) | 0.17 [0.07, 0.29] (ρ ≥ -0.55; |S| = 51; gate 0.00–0.75) | 3 |
+| ImageNet ViT-B/16 | 768 | 0.399 | 0.371 | 0.455 | 0.086 [0.07, 0.11] | 0.98 | 0.138 | 0.01 | 0.00–1.00 (top-1 0.815) | — | 0.21 [0.10, 0.34] (ρ ≥ 0.53; |S| = 6; gate 0.00–0.95) | 0.19 [0.14, 0.26] (ρ ≥ 0.81; |S| = 76; gate 0.00–0.95) | 1 |
+| ImageNet ResNet-152 | 2048 | 0.293 | 0.227 | 0.440 | 0.214 [0.18, 0.25] | 1.00 | 0.196 | 0.02 | 0.15–0.90 (top-1 0.785) | — | 0.27 [0.22, 0.33] (ρ ≥ 0.86; |S| = 45; gate 0.00–0.85) | 0.30 [0.26, 0.36] (ρ ≥ 0.94; |S| = 204; gate 0.00–0.80) | 1 |
+| ImageNet ConvNeXt-B | 1024 | 0.269 | 0.229 | 0.343 | 0.115 [0.09, 0.14] | 0.99 | 0.173 | 0.00 | 0.00–1.00 (top-1 0.843) | — | 0.28 [0.20, 0.35] (ρ ≥ 0.14; |S| = 2; gate 0.00–0.95) | 0.21 [0.13, 0.29] (ρ ≥ 0.73; |S| = 102; gate 0.00–1.00) | 1 |
+| ImageNet ConvNeXt-S | 768 | 0.248 | 0.211 | 0.335 | 0.124 [0.11, 0.15] | 0.99 | 0.179 | 0.00 | 0.00–1.00 (top-1 0.840) | — | undefined (empty half) | 0.17 [0.12, 0.20] (ρ ≥ 0.72; |S| = 76; gate 0.00–0.95) | 1 |
+| ImageNet ResNet-50 | 2048 | 0.222 | 0.167 | 0.346 | 0.180 [0.14, 0.23] | 0.99 | 0.202 | 0.02 | 0.15–0.90 (top-1 0.760) | — | 0.27 [0.20, 0.32] (ρ ≥ 0.75; |S| = 34; gate 0.00–0.85) | 0.27 [0.20, 0.31] (ρ ≥ 0.85; |S| = 204; gate 0.00–0.80) | 1 |
+| ImageNet VGG-16 | 4096 | 0.110 | 0.096 | 0.189 | 0.095 [0.07, 0.11] | 0.96 | 0.106 | 0.01 | 0.00–1.00 (top-1 0.711) | — | 0.40 [0.34, 0.46] (ρ ≥ -0.38; |S| = 56; gate 0.00–0.95) | 0.27 [0.22, 0.34] (ρ ≥ 0.23; |S| = 409; gate 0.00–0.90) | 1 |
 
-**Extended Data Table 14 | Cortex without a stream split: the shape- and texture-leaning halves as encoding bands.** For each single-trunk network the penultimate units were split as in Extended Data Table 13 (all 1,200 images) and the two halves entered as two bands of a banded ridge model of every `nsdgeneral` voxel (same split, folds and alpha grid as Methods 4.5); U_shape and U_texture are the noise-ceiling-normalised unique variances and the index is (U_shape − U_texture)/(U_shape + U_texture), median over reliable voxels (noise ceiling > 0.1, ≥ 20 voxels), mean over eight subjects (seeds averaged per subject). Regions: V1–hV4 from `prf-visualrois`; ventral (VO1/2, PHC1/2), lateral (LO1/2, TO1/2) and dorsal (V3A/B, IPS0–2) from Kastner2015. The two-stream diet row applies the same computation to the magno (shape-biased) and parvo (texture-biased) bands of Fig. 3. w*_cortex is the mixing weight of the lossy sum z(w) = w·y_S + (1 − w)·y_T that maximises an ROI's median test R² (Extended Data Fig. 5 protocol). Exact paired Wilcoxon over subjects. Source: `/scratch/byrong/mpk/generality/cortex/2026-09-14_gen/`.
+**Extended Data Table 14 | Cortex without a stream split: the shape- and texture-leaning halves as encoding bands.** For each single-trunk network the penultimate units were split as in Extended Data Table 13 (all 1,200 images) and the two halves entered as two bands of a banded ridge model of every `nsdgeneral` voxel (same split, folds and alpha grid as Methods 4.5); U_shape and U_texture are the noise-ceiling-normalised unique variances and the index is (U_shape − U_texture)/(U_shape + U_texture), median over reliable voxels (noise ceiling > 0.1, ≥ 20 voxels), mean over eight subjects (seeds averaged per subject). Regions: V1–hV4 from `prf-visualrois`; ventral (VO1/2, PHC1/2), lateral (LO1/2, TO1/2) and dorsal (V3A/B, IPS0–2) from Kastner2015. The two-stream diet row applies the same computation to the magno (shape-biased) and parvo (texture-biased) bands of Fig. 3. “shared” is the cross-validated variance the two bands account for jointly (the two-band r² minus both unique variances) and “r²” the two-band model's noise-ceiling-normalised r², medians over the same voxels. w*_cortex is the mixing weight of the lossy sum z(w) = w·y_S + (1 − w)·y_T that maximises an ROI's median test R² (Extended Data Fig. 5 protocol). Exact paired Wilcoxon over subjects. Source: `results/figures_v2/generality_cortex.json`, aggregated by `tmp_analysis/figs_v2/generality_cortex.py` from the per-subject fits of `src/analysis/generality/cortex_bands.py` (`slurm/generality_{nsd,cortex}.sh`, 7 networks × 8 subjects), which are deposited alongside the encoding outputs of Fig. 3 (Code availability).
 
 | network | statistic | V1 | V2 | V3 | hV4 | ventral | lateral | dorsal | hV4 − V1 (n neg, p) | extrastriate − V1 (n neg, p) | ρ(rank, index) V1–hV4 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | two-stream, diet (magno − parvo) | index | -0.06 | -0.44 | -0.70 | -0.84 | -0.88 | -0.87 | -0.87 | — | — | — |
 | | U_shape | 0.087 | 0.045 | 0.026 | 0.016 | 0.014 | 0.014 | 0.013 | | | |
 | | U_texture | 0.099 | 0.119 | 0.145 | 0.180 | 0.246 | 0.190 | 0.181 | | | |
+| | shared | 0.289 | 0.286 | 0.261 | 0.219 | 0.230 | 0.184 | 0.168 | | | |
+| | r² (two bands, nc-normalised) | 0.485 | 0.457 | 0.439 | 0.428 | 0.496 | 0.390 | 0.373 | | | |
 | single ResNet-34, diet | index | +0.05 | +0.02 | +0.05 | -0.03 | -0.22 | -0.09 | -0.06 | -0.080 (7/8, 0.0156) | -0.178 (7/8, 0.0156) | -0.25 |
 | | U_shape | 0.032 | 0.030 | 0.028 | 0.025 | 0.017 | 0.016 | 0.020 | | | |
 | | U_texture | 0.028 | 0.028 | 0.025 | 0.027 | 0.027 | 0.020 | 0.022 | | | |
+| | shared | 0.263 | 0.245 | 0.245 | 0.274 | 0.458 | 0.353 | 0.320 | | | |
+| | r² (two bands, nc-normalised) | 0.327 | 0.304 | 0.300 | 0.329 | 0.506 | 0.392 | 0.366 | | | |
 | | w*_cortex (median) | 0.53 | 0.60 | 0.57 | 0.53 | 0.53 | 0.55 | 0.57 | | Δw* extrastriate − V1 +0.01 (4/8 neg, 0.9453) | |
 | single ResNet-18, no diet | index | +0.17 | +0.13 | +0.12 | +0.17 | -0.15 | -0.14 | -0.14 | -0.005 (5/8, 0.9453) | -0.316 (8/8, 0.0078) | -0.15 |
 | | U_shape | 0.038 | 0.035 | 0.030 | 0.031 | 0.019 | 0.016 | 0.018 | | | |
 | | U_texture | 0.026 | 0.026 | 0.024 | 0.022 | 0.025 | 0.022 | 0.024 | | | |
+| | shared | 0.272 | 0.258 | 0.262 | 0.288 | 0.483 | 0.371 | 0.335 | | | |
+| | r² (two bands, nc-normalised) | 0.340 | 0.321 | 0.319 | 0.347 | 0.530 | 0.415 | 0.381 | | | |
 | | w*_cortex (median) | 0.80 | 0.80 | 0.68 | 0.68 | 0.42 | 0.48 | 0.37 | | Δw* extrastriate − V1 -0.32 (7/8 neg, 0.0234) | |
 | ImageNet ResNet-50 | index | -0.38 | -0.38 | -0.32 | -0.50 | -0.44 | +0.06 | -0.07 | -0.120 (5/8, 0.3828) | +0.235 (1/8, 0.0391) | -0.13 |
 | | U_shape | 0.008 | 0.008 | 0.008 | 0.006 | 0.006 | 0.010 | 0.009 | | | |
 | | U_texture | 0.019 | 0.018 | 0.017 | 0.020 | 0.015 | 0.009 | 0.011 | | | |
+| | shared | 0.312 | 0.292 | 0.297 | 0.365 | 0.606 | 0.489 | 0.446 | | | |
+| | r² (two bands, nc-normalised) | 0.343 | 0.322 | 0.327 | 0.397 | 0.633 | 0.512 | 0.471 | | | |
 | | w*_cortex (median) | 0.10 | 0.10 | 0.00 | 0.05 | 0.00 | 0.85 | 0.70 | | Δw* extrastriate − V1 +0.07 (3/8 neg, 0.8125) | |

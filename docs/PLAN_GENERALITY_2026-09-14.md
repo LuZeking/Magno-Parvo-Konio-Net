@@ -99,12 +99,13 @@ Whatever the outcome, every prediction is reported.
 
 ## Outcomes (appended 2026-09-15, after the runs; Extended Data Tables 13–14, Fig. 6)
 
-- **P1** — direction met in every single-trunk network and seed (ρ ≥ 0.71);
+- **P1** — direction met as specified (ρ > 0 in every seed; seed-mean ρ ≥ 0.71 in every network and ≥ 0.90 in 14 of the 15 network–seed combinations, one diet ResNet-34 seed at 0.19 with a span of 0.06);
   magnitude not met: spans 0.09–0.21 (means 0.19, 0.19, 0.14 for our three
   trunk families; 0.08–0.21 for the six ImageNet networks) against the 0.20
   threshold. Two-stream concatenation 0.46.
-- **P2** — direction met (ρ 0.72–0.98); magnitude not met: linear 0.05–0.11,
-  two-layer 0.05–0.13, validation accuracy unchanged.
+- **P2** — direction met (ρ 0.72–0.98); magnitude not met: linear 0.05–0.11 and
+  two-layer 0.05–0.13 across seeds (seed means 0.05–0.10, Extended Data Table 13),
+  validation accuracy unchanged.
 - **P3** — met: 99% of the shape-leaning half is stream 1 in every seed.
 - **P4** — hV4 − V1 < 0 in ≥ 7/8: met in the diet ResNet-34 (7/8, p = .016),
   not in the no-diet ResNet-18 (5/8) or ResNet-50 (5/8). Extrastriate more
@@ -115,3 +116,12 @@ Whatever the outcome, every prediction is reported.
 - **P5** — met in the no-diet ResNet-18 (7/8, p = .023); not met in the diet
   ResNet-34 (4/8, optimum ≈ 0.55 everywhere) or ResNet-50 (3/8, lateral and
   dorsal cortex prefer the shape-leaning half).
+- **Split-rule sensitivity (post hoc, at a referee's request; run 2026-09-15,
+  `slurm/generality_rules.sh`, not pre-specified).** With S = {d_j > 0} or the top
+  decile of units by d_j, S has 2–89 units (absolute rule; one unit, undefined,
+  for ConvNeXt-S) or a tenth of the units (51–409, decile rule); the
+  fixed-head sweep moves the rate in the same direction (mean ρ 0.29–0.99; not
+  every split monotone in our trunks), by 0.11–0.40 ungated and by 0.02–0.21
+  within 5 points of the trained top-1, because w → 1 then silences ≥ 90% of the
+  units. In the two-stream concatenation the absolute set is 504 units, 99% of
+  them stream 1, and the sweep reproduces the median-split span (0.46).

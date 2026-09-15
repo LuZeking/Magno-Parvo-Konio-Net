@@ -1,7 +1,6 @@
 """Figure 6 — the readout account beyond the two-stream architecture.
 
-Inputs: results/figures_v2/generality_behaviour.json (tmp_analysis/figs_v2/generality_behaviour.py),
-        /scratch/byrong/mpk/generality/behaviour/<run>/*_gain_accuracy.json (accuracy gate),
+Inputs: results/figures_v2/generality_behaviour.json (tmp_analysis/figs_v2/generality_behaviour.py; includes the accuracy gate),
         results/figures_v2/generality_cortex.json (tmp_analysis/figs_v2/generality_cortex.py; optional).
 
 (a) For each frozen network, the cue-conflict shape bias reachable by one gain on its own
@@ -46,14 +45,10 @@ FAM_STYLE = {"two_stream_diet": ("two-stream, diet (magno − parvo)", S.DIET, "
              "resnet50": ("ImageNet ResNet-50", S.PUB, "-", "D")}
 
 
-def gain_accuracy(tags):
-    """w-range within 5 points of trained top-1, averaged over seeds: (w_lo, w_hi) or None."""
-    los, his = [], []
-    for t in tags:
-        f = os.path.join(BEH_DIR, f"{t}_gain_accuracy.json")
-        if os.path.exists(f):
-            z = json.load(open(f))
-            los.append(min(z["w_within_5pts"])); his.append(max(z["w_within_5pts"]))
+def gain_accuracy(seeds):
+    """w-range within 5 points of trained top-1, averaged over seeds: (w_lo, w_hi) or None (from the JSON)."""
+    los = [min(r["gain_accuracy"]["w_within_5pts"]) for r in seeds if r.get("gain_accuracy")]
+    his = [max(r["gain_accuracy"]["w_within_5pts"]) for r in seeds if r.get("gain_accuracy")]
     return (float(np.mean(los)), float(np.mean(his))) if los else None
 
 
@@ -81,7 +76,7 @@ def main():
         curve = np.mean([r["mean_curve"] for r in f["seeds"]], 0)
         lo, hi = curve.min(), curve.max()
         ax_a.plot([curve[0], curve[-1]], [y, y], "-", color=col, lw=2.2, alpha=0.45, solid_capstyle="butt", zorder=2)
-        acc = gain_accuracy([r["tag"] for r in f["seeds"]])
+        acc = gain_accuracy(f["seeds"])
         if acc is not None:
             i0, i1 = int(np.argmin(np.abs(ws - acc[0]))), int(np.argmin(np.abs(ws - acc[1])))
             ax_a.plot([curve[i0], curve[i1]], [y, y], "-", color=col, lw=4.0, solid_capstyle="butt", zorder=3)
@@ -89,7 +84,7 @@ def main():
         ax_a.plot(curve[-1], y, ">", color=col, ms=4.2, mec="white", mew=0.5, zorder=4)
         ax_a.plot(curve[0], y, "<", color=col, ms=4.2, mec="white", mew=0.5, zorder=4)
         ax_a.text(-0.02, y, label, ha="right", va="center", fontsize=6.8, transform=ax_a.get_yaxis_transform(), color=S.INK)
-        ax_a.text(1.015, y, f"{curve[-1] - curve[0]:+.2f}", ha="left", va="center", fontsize=6.2, color=S.MUTED, transform=ax_a.get_yaxis_transform())
+        ax_a.text(1.015, y, f"{f['span']:+.2f}", ha="left", va="center", fontsize=6.2, color=S.MUTED, transform=ax_a.get_yaxis_transform())
     ax_a.set_xlim(0.05, 1.0); ax_a.set_ylim(-1.3, len(ORDER) - 0.4)
     ax_a.set_yticks([]); ax_a.spines["left"].set_visible(False)
     ax_a.set_xlabel("cue-conflict shape bias (held-out images)")

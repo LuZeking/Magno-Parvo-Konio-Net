@@ -140,7 +140,7 @@ def acc(run, ep):
     return v[ep - 1] if ep else v[-1]
 
 params = {"two-stream (2 × ResNet-18)": 22397936, "single stream, ResNet-34 (matched)": 21338992, "single stream, ResNet-18 (half)": 11230832}
-P("**Extended Data Table 5 | Single-stream controls trained with the identical diet, and the readout ladder.** Best saved checkpoint per seed; mean [range] over three seeds. Accuracy is validation top-1 at the scored checkpoint. Sources: `results/cue_conflict_bestep/`, `results/cue_conflict_single34_bestep/`, `results/cue_conflict_single_bestep/`, run histories, `results/param_matched/`.")
+P("**Extended Data Table 5 | Single-stream controls trained with the identical diet, and the readout ladder.** Best saved checkpoint per seed, except the no-diet row, which is scored at the final checkpoint because its accuracy does not degrade (Fig. 2d; Methods 4.7); mean [range] over three seeds. Accuracy is validation top-1 at the scored checkpoint. Sources: `results/cue_conflict_bestep/`, `results/cue_conflict_single34_bestep/`, `results/cue_conflict_single_bestep/`, run histories, `results/param_matched/`.")
 P("")
 P("| model / readout | parameters | shape bias | decided / 1,200 | accuracy |")
 P("|---|---|---|---|---|")
@@ -174,17 +174,17 @@ for fam in FAM:
 P("")
 
 # ------------------------------------------------------------ T7 error consistency
-P("**Extended Data Table 7 | Error consistency (Cohen's κ) with the ten human observers.** The trained readout (w = 0.5) and the best readout over the 21 values of w, per run; κ as a percentage of the human–human ceiling (κ = 0.234, 45 pairs). Published CNN values are from Geirhos et al. (2020). Source: `results/sweep_error_consistency/`.")
+P("**Extended Data Table 7 | Error consistency (Cohen's κ) with the ten human observers.** The trained readout (w = 0.5), the magno stream alone (w = 1; the κ = 0.0082, 3.5% of Results 2.5 is the mean of the three final-checkpoint runs) and the best readout over the 21 values of w, per run; κ as a percentage of the human–human ceiling (κ = 0.234, 45 pairs). Published CNN values are from Geirhos et al. (2020). Source: `results/sweep_error_consistency/`.")
 P("")
-P("| run | shape bias at w = 0.5 | κ at w = 0.5 | % ceiling | best κ over w | % ceiling | w at best | rate at best |")
-P("|---|---|---|---|---|---|---|---|")
+P("| run | shape bias at w = 0.5 | κ at w = 0.5 | % ceiling | κ at w = 1 (magno alone) | % ceiling | rate at w = 1 | best κ over w | % ceiling | w at best | rate at best |")
+P("|---|---|---|---|---|---|---|---|---|---|---|")
 for fp in sorted(glob.glob("results/sweep_error_consistency/*_kappa_sweep.json")):
     r = json.load(open(fp)); ceil = r["human_human_ceiling"]
     sw = sorted(r["sweep"], key=lambda q: q["w"]); mid = [q for q in sw if abs(q["w"] - 0.5) < 1e-6][0]
-    best = max(sw, key=lambda q: q["kappa_mean"])
-    P(f"| {r['model_name']} | {mid['shape_bias']:.3f} | {mid['kappa_mean']:+.4f} | {mid['kappa_pct_ceiling']:.1f} | {best['kappa_mean']:+.4f} | {best['kappa_pct_ceiling']:.1f} | {best['w']:.2f} | {best['shape_bias']:.3f} |")
+    best = max(sw, key=lambda q: q["kappa_mean"]); top = [q for q in sw if abs(q["w"] - 1.0) < 1e-6][0]
+    P(f"| {r['model_name']} | {mid['shape_bias']:.3f} | {mid['kappa_mean']:+.4f} | {mid['kappa_pct_ceiling']:.1f} | {top['kappa_mean']:+.4f} | {top['kappa_pct_ceiling']:.1f} | {top['shape_bias']:.3f} | {best['kappa_mean']:+.4f} | {best['kappa_pct_ceiling']:.1f} | {best['w']:.2f} | {best['shape_bias']:.3f} |")
 for name, sb, k in [("AlexNet (published)", 0.429, 0.032), ("GoogLeNet (published)", 0.312, 0.025), ("VGG-16 (published)", 0.172, 0.017)]:
-    P(f"| {name} | {sb:.3f} | {k:+.4f} | {100 * k / 0.2335:.1f} | | | | |")
+    P(f"| {name} | {sb:.3f} | {k:+.4f} | {100 * k / 0.2335:.1f} | | | | | | | |")
 P("")
 
 # ------------------------------------------------------------ T8 estimator floor and residual variants (stored analyses)

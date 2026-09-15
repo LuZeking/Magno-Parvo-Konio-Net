@@ -42,12 +42,15 @@ def region_masks(vis, kas, nc, extra_ok=None):
     return out
 
 
-def index_stats(uS, uT, m):
+def index_stats(uS, uT, m, shared=None, r2=None):
     v = m & np.isfinite(uS) & np.isfinite(uT) & ((uS + uT) > 1e-3)
     if v.sum() < MIN_VOX:
-        return dict(index=np.nan, uS=np.nan, uT=np.nan, n=int(v.sum()))
+        return dict(index=np.nan, uS=np.nan, uT=np.nan, shared=np.nan, r2=np.nan, n=int(v.sum()))
     r = (uS[v] - uT[v]) / (uS[v] + uT[v])
-    return dict(index=float(np.median(r)), uS=float(np.median(uS[v])), uT=float(np.median(uT[v])), n=int(v.sum()))
+    out = dict(index=float(np.median(r)), uS=float(np.median(uS[v])), uT=float(np.median(uT[v])), n=int(v.sum()))
+    out["shared"] = float(np.nanmedian(shared[v])) if shared is not None else np.nan
+    out["r2"] = float(np.nanmedian(r2[v])) if r2 is not None else np.nan
+    return out
 
 
 def kastner_labels(subject, mask_shape_ref):
@@ -73,7 +76,7 @@ def main():
                 z = np.load(f, allow_pickle=True)
                 s = int(z["subject"])
                 masks = region_masks(z["roi_prf-visualrois"], z["roi_Kastner2015"], z["noise_ceiling"])
-                st = {r: index_stats(z["unique_S"], z["unique_T"], masks[r]) for r in REGIONS}
+                st = {r: index_stats(z["unique_S"], z["unique_T"], masks[r], z["shared"], z["r2_joint_nc"]) for r in REGIONS}
                 st["_r2_joint_nc_median"] = float(np.nanmedian(z["r2_joint_nc"][z["noise_ceiling"] > NC_MIN]))
                 st["_r2_S_median"] = float(np.nanmedian(z["r2_S"][z["noise_ceiling"] > NC_MIN]))
                 st["_r2_T_median"] = float(np.nanmedian(z["r2_T"][z["noise_ceiling"] > NC_MIN]))
@@ -94,11 +97,13 @@ def main():
         if not per_subject:
             continue
         subjects = sorted(per_subject)
-        fam_out = dict(subjects=subjects, n_seeds={s: len(v) for s, v in per_subject.items()}, index={}, uS={}, uT={}, w_star={})
+        fam_out = dict(subjects=subjects, n_seeds={s: len(v) for s, v in per_subject.items()}, index={}, uS={}, uT={}, shared={}, r2={}, w_star={})
         for r in REGIONS:
             fam_out["index"][r] = [float(np.nanmean([st[r]["index"] for st in per_subject[s]])) for s in subjects]
             fam_out["uS"][r] = [float(np.nanmean([st[r]["uS"] for st in per_subject[s]])) for s in subjects]
             fam_out["uT"][r] = [float(np.nanmean([st[r]["uT"] for st in per_subject[s]])) for s in subjects]
+            fam_out["shared"][r] = [float(np.nanmean([st[r]["shared"] for st in per_subject[s]])) for s in subjects]
+            fam_out["r2"][r] = [float(np.nanmean([st[r]["r2"] for st in per_subject[s]])) for s in subjects]
             if per_subject_w:
                 fam_out["w_star"][r] = [float(np.nanmean([ws[r]["w_star"] for ws in per_subject_w[s] if r in ws])) if s in per_subject_w else np.nan for s in subjects]
         fam_out["r2_joint_nc"] = [float(np.nanmean([st["_r2_joint_nc_median"] for st in per_subject[s]])) for s in subjects]
@@ -133,18 +138,20 @@ def main():
             except Exception as e:  # noqa
                 print("no Kastner labels for", s, e); continue
             masks = region_masks(z["roi_prf-visualrois"], kas, z["noise_ceiling"])
-            ref.setdefault(s, []).append({r: index_stats(z["unique_magno"], z["unique_parvo"], masks[r]) for r in REGIONS})
+            ref.setdefault(s, []).append({r: index_stats(z["unique_magno"], z["unique_parvo"], masks[r], z["shared"], z["r2_joint_nc"]) for r in REGIONS})
     if ref:
         subjects = sorted(ref)
         out["families"]["two_stream_diet"] = dict(subjects=subjects, index={r: [float(np.nanmean([st[r]["index"] for st in ref[s]])) for s in subjects] for r in REGIONS},
                                                    uS={r: [float(np.nanmean([st[r]["uS"] for st in ref[s]])) for s in subjects] for r in REGIONS},
-                                                   uT={r: [float(np.nanmean([st[r]["uT"] for st in ref[s]])) for s in subjects] for r in REGIONS})
+                                                   uT={r: [float(np.nanmean([st[r]["uT"] for st in ref[s]])) for s in subjects] for r in REGIONS},
+                                                   shared={r: [float(np.nanmean([st[r]["shared"] for st in ref[s]])) for s in subjects] for r in REGIONS},
+                                                   r2={r: [float(np.nanmean([st[r]["r2"] for st in ref[s]])) for s in subjects] for r in REGIONS})
 
     for fam, fo in out["families"].items():
         print(f"\n== {fam}  (n subjects {len(fo['subjects'])})")
-        print("   region   index(mean)   U_S     U_T" + ("     w*(median)" if fo.get("w_star") else ""))
+        print("   region   index(mean)   U_S     U_T   shared    r2" + ("     w*(median)" if fo.get("w_star") else ""))
         for r in REGIONS:
-            line = f"   {r:8s} {np.nanmean(fo['index'][r]):+7.3f}   {np.nanmean(fo['uS'][r]):6.3f}  {np.nanmean(fo['uT'][r]):6.3f}"
+            line = f"   {r:8s} {np.nanmean(fo['index'][r]):+7.3f}   {np.nanmean(fo['uS'][r]):6.3f}  {np.nanmean(fo['uT'][r]):6.3f}  {np.nanmean(fo.get('shared', {}).get(r, [np.nan])):6.3f}  {np.nanmean(fo.get('r2', {}).get(r, [np.nan])):6.3f}"
             if fo.get("w_star") and r in fo["w_star"]:
                 line += f"      {np.nanmedian(fo['w_star'][r]):.2f}"
             print(line)

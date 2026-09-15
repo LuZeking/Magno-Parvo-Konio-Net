@@ -25,6 +25,7 @@ def main():
     p.add_argument("--factor", required=True)
     p.add_argument("--val", required=True)
     p.add_argument("--out-dir", required=True)
+    p.add_argument("--out-suffix", default="", help="e.g. _positive, matching the unit_factor file")
     args = p.parse_args()
     fac = np.load(args.factor, allow_pickle=True)
     z = np.load(args.val, allow_pickle=True)
@@ -40,10 +41,10 @@ def main():
         g = np.where(S, 2 * w, 2 * (1 - w))
         acc.append(float((np.argmax((y * g) @ W.T + b, 1) == lab).mean()))
     trained = acc[10]
-    out = dict(tag=tag, set=which, n=int(len(lab)), ws=WS.tolist(), top1=acc, trained_top1=trained,
+    out = dict(tag=tag, set=which, rule=str(fac["rule"]) if "rule" in fac.files else "median", n=int(len(lab)), ws=WS.tolist(), top1=acc, trained_top1=trained,
                w_within_5pts=[float(w) for w, a in zip(WS, acc) if a >= trained - 0.05])
     os.makedirs(args.out_dir, exist_ok=True)
-    dest = os.path.join(args.out_dir, f"{tag}_gain_accuracy.json")
+    dest = os.path.join(args.out_dir, f"{tag}_gain_accuracy{args.out_suffix}.json")
     json.dump(out, open(dest, "w"), indent=1)
     print(f"[gain_accuracy] {tag} on {which} (n={len(lab)}): trained {trained:.3f}; "
           f"w=0 {acc[0]:.3f}, w=1 {acc[-1]:.3f}; within 5 pts: w in [{out['w_within_5pts'][0]:.2f}, {out['w_within_5pts'][-1]:.2f}]", flush=True)

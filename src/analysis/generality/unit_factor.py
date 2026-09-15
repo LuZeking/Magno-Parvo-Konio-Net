@@ -1,6 +1,7 @@
 """Unit factorisation and the fixed-head gain sweep (PLAN_GENERALITY D1-D2).
 
   python -m src.analysis.generality.unit_factor --features DIR/<tag>_cue_conflict.npz --out-dir DIR
+  # split-rule sensitivity (not pre-specified): --rule positive|decile --out-suffix _positive|_decile
 
 For each unit j of the penultimate layer, eta2_s(j) and eta2_t(j) are the
 fractions of its variance over the 1,200 cue-conflict images that lie between
@@ -58,6 +59,26 @@ def median_split(d: np.ndarray) -> np.ndarray:
     return S
 
 
+def split_units(d: np.ndarray, rule: str = "median"):
+    """S mask under a split rule. 'median' is the pre-specified rule (top half of
+    units by d); 'positive' is the absolute set d > 0; 'decile' the top 10% of
+    units by d. Returns None when the rule leaves fewer than two units in S or T
+    (sensitivity analysis added 2026-09-15 at a referee's request; not pre-specified)."""
+    if rule == "median":
+        S = median_split(d)
+    elif rule == "positive":
+        S = d > 0
+    elif rule == "decile":
+        order = np.lexsort((np.arange(len(d)), -d))
+        S = np.zeros(len(d), bool)
+        S[order[: max(1, len(d) // 10)]] = True
+    else:
+        raise ValueError(rule)
+    if S.sum() < 2 or (~S).sum() < 2:
+        return None
+    return S
+
+
 def stratified_halves(shapes, textures, rng) -> tuple[np.ndarray, np.ndarray]:
     pair = np.array([f"{s}|{t}" for s, t in zip(shapes, textures)])
     a, b = [], []
@@ -86,6 +107,9 @@ def main():
     p.add_argument("--out-dir", required=True)
     p.add_argument("--n-splits", type=int, default=10)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--rule", choices=["median", "positive", "decile"], default="median",
+                   help="unit split rule; 'median' is the pre-specified analysis")
+    p.add_argument("--out-suffix", default="", help="appended to the output file names, e.g. _positive")
     args = p.parse_args()
     os.makedirs(args.out_dir, exist_ok=True)
 
@@ -104,7 +128,13 @@ def main():
 
     # split on all images (cortex use) + descriptives
     d_full = shape_score(y, shapes, textures)
-    S_full = median_split(d_full)
+    S_full = split_units(d_full, args.rule)
+    out_json = os.path.join(args.out_dir, f"{tag}_unit_factor{args.out_suffix}.json")
+    if S_full is None:
+        json.dump(dict(summary=dict(tag=tag, rule=args.rule, undefined=True, n_units=int(D),
+                                    frac_units_shape_leaning=float((d_full > 0).mean()))), open(out_json, "w"), indent=1)
+        print(f"[unit_factor] rule {args.rule}: a half has fewer than two units; wrote undefined summary", flush=True)
+        return
     e_s, e_t = eta2(y, shapes), eta2(y, textures)
     desc = dict(frac_units_shape_leaning=float((d_full > 0).mean()),
                 median_eta2_shape=float(np.median(e_s)), median_eta2_texture=float(np.median(e_t)),
@@ -125,7 +155,9 @@ def main():
         A, B = stratified_halves(shapes, textures, rng)
         for name, fit, ev in (("A>B", A, B), ("B>A", B, A)):
             d = shape_score(y[fit], shapes[fit], textures[fit])
-            S = median_split(d)
+            S = split_units(d, args.rule)
+            if S is None:
+                continue
             if stream_of_unit is not None:
                 frac_s1.append(float((stream_of_unit[S] == 0).mean()))
             curve = gain_sweep(y[ev], W, b, S, scorer, shapes[ev], textures[ev])
@@ -134,6 +166,12 @@ def main():
             if k == 0:
                 print(f"  split {k} {name}: rate at w=0 {curve[0]['shape_bias']:.3f}, "
                       f"w=0.5 {curve[10]['shape_bias']:.3f}, w=1 {curve[-1]['shape_bias']:.3f}", flush=True)
+
+    if not held:
+        json.dump(dict(summary=dict(tag=tag, rule=args.rule, undefined=True, n_units=int(D),
+                                    frac_units_shape_leaning=float((d_full > 0).mean()))), open(out_json, "w"), indent=1)
+        print(f"[unit_factor] rule {args.rule}: no held-out split kept two non-empty halves", flush=True)
+        return
 
     def summarise(key):
         M = np.array([[r[key] for r in h["curve"]] for h in held])  # (n_curves, n_w)
@@ -144,7 +182,8 @@ def main():
                     rho_mean=float(np.nanmean(rhos)), rho_min=float(np.nanmin(rhos)),
                     rate_w0=float(M[:, 0].mean()), rate_w05=float(M[:, 10].mean()), rate_w1=float(M[:, -1].mean()))
 
-    summary = dict(tag=tag, scorer=kind, n_images=int(N), n_units=int(D), n_splits=args.n_splits,
+    summary = dict(tag=tag, scorer=kind, rule=args.rule, n_images=int(N), n_units=int(D), n_splits=args.n_splits,
+                   n_heldout_curves=len(held), n_S_full=int(S_full.sum()),
                    trained=trained, trained_score_stored=json.loads(str(z["trained_score"])),
                    descriptives=desc, ws=WS.tolist(),
                    primary=summarise("shape_bias"), forced=summarise("forced_two_way"),
@@ -159,10 +198,10 @@ def main():
           f"rho {summary['primary']['rho_mean']:.2f}; forced span {summary['forced']['span_mean']:.3f}; "
           f"units shape-leaning {desc['frac_units_shape_leaning']:.2f}", flush=True)
 
-    json.dump(dict(summary=summary, held_out=held), open(os.path.join(args.out_dir, f"{tag}_unit_factor.json"), "w"), indent=1)
-    np.savez(os.path.join(args.out_dir, f"{tag}_unit_factor.npz"), tag=tag, d_full=d_full, S_full=S_full,
-             eta2_shape=e_s, eta2_texture=e_t, ws=WS)
-    print(f"[unit_factor] wrote {args.out_dir}/{tag}_unit_factor.{{json,npz}}", flush=True)
+    json.dump(dict(summary=summary, held_out=held), open(out_json, "w"), indent=1)
+    np.savez(os.path.join(args.out_dir, f"{tag}_unit_factor{args.out_suffix}.npz"), tag=tag, rule=args.rule,
+             d_full=d_full, S_full=S_full, eta2_shape=e_s, eta2_texture=e_t, ws=WS)
+    print(f"[unit_factor] wrote {args.out_dir}/{tag}_unit_factor{args.out_suffix}.{{json,npz}}", flush=True)
 
 
 if __name__ == "__main__":

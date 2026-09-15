@@ -246,15 +246,26 @@ def assemble(md: str) -> tuple[str, str]:
     # the end of the Introduction.
     start = next((i for i, ln in enumerate(lines) if re.match(r"^## 2\. Results", ln)), 0)
 
+    # Figures are placed in numerical order: figure N goes after the paragraph
+    # holding its first citation that follows figure N-1's citation, so the
+    # compiled PDF never shows Fig. 4 before Fig. 2 (a §2.1 forward reference to
+    # Fig. 4c used to pull it ahead). A figure whose next citation lies beyond
+    # the Results section is placed at the end of Results.
+    results_end = next((i for i, ln in enumerate(lines) if re.match(r"^## 3\. Discussion", ln)), len(lines))
     insertions: dict[int, list[str]] = {}
+    cursor = start
     for key, stem, display in FIGURES:
         pat = re.compile(CITE.format(key=re.escape(key)))
-        first = next((i for i, ln in enumerate(lines) if i >= start and pat.search(ln)), None)
+        first = next((i for i, ln in enumerate(lines) if i >= cursor and pat.search(ln)), None)
         if first is None:
-            print(f"warning: {key} never cited; appending at end", file=sys.stderr)
-            first = len(lines) - 1
-        nxt = next((j for j in range(first + 1, len(lines)) if is_heading(lines[j])), len(lines))
+            print(f"warning: {key} not cited after the previous figure; placing at end of Results", file=sys.stderr)
+            first = results_end
+        if first >= results_end:
+            nxt = results_end
+        else:
+            nxt = next((j for j in range(first + 1, len(lines)) if is_heading(lines[j])), len(lines))
         insertions.setdefault(nxt, []).append(figure_block(stem, display))
+        cursor = first
 
     out = []
     for i, ln in enumerate(lines):
