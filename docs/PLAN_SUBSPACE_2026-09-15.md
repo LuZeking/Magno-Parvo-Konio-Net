@@ -135,4 +135,32 @@ is reported, and the unit-split results are not revised.
   `/scratch/byrong/mpk/generality/cortex/2026-09-15_sub/`.
 
 ## Outcomes
-(appended after the runs)
+
+### Behaviour (D1–D2), appended 2026-09-15 after job 26491660; `results/figures_v2/subspace_behaviour.json`
+- **P-A, standard networks — met.** Gated spans (whole sweep inside the five-point
+  gate: top-1 changes by ≤ 1.5 points at any w) ResNet-50 0.29 (0.16 → 0.45),
+  ResNet-152 0.25 (0.21 → 0.46), VGG-16 0.27 (0.06 → 0.33), ViT-B/16 0.28 (0.29 → 0.57),
+  ConvNeXt-S 0.29 (0.17 → 0.46), ConvNeXt-B 0.33 (0.18 → 0.51): 6 of 6 ≥ 0.20 (threshold
+  4 of 6). Seed-mean ρ ≥ 0.997 in every ImageNet network and ≥ 0.98 in every one of
+  ours (threshold 0.90). Forced-estimator spans 0.27–0.37.
+- **P-A, our single trunks — not met.** Ungated spans 0.23–0.34 but the MiniEcoset
+  top-1 falls by 10–15 points at the ends of the sweep, so the gate closes at
+  w ≈ 0.10–0.25 and 0.73–0.90; gated spans rgb_tsn 0.22, single ResNet-18 0.14, single
+  ResNet-34 0.19 (threshold 0.20 in all three; 1 of 3).
+- **P-B — failed.** On the two-stream concatenation the all-image shape basis places
+  0.63–0.70 of its energy on stream-1 units (held-out 0.55–0.61) and the texture basis
+  0.75–0.79 on stream 2 (threshold 0.90 each); the held-out span is 0.32 (threshold
+  0.40), below the unit split's 0.46. The discriminant subspaces of the two-stream
+  representation are not the streams: the parvo stream also carries shape-discriminant
+  directions, and the LDA takes them. The architectural split remains the most
+  effective factorisation of that network.
+- **P-D — met.** The gated subspace span exceeds the gated unit-split span in all six
+  ImageNet networks (0.25–0.33 v 0.09–0.16) and in all three of our families
+  (0.14–0.22 v 0.07–0.09).
+- Descriptives: mean cosine between the raw shape and texture LDA bases 0.16–0.22
+  (ImageNet) and 0.28–0.42 (ours); Löwdin alignment 0.97–0.99; the two subspaces hold
+  4–16% (S) and 20–34% (T) of feature variance; sequential-order sensitivity spans
+  0.21–0.39, same ordering.
+
+### Refit (D3) and cortex (D4)
+(appended when jobs 26491726, 26491689 and 26491690 complete)
