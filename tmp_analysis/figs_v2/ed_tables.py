@@ -227,5 +227,18 @@ P("| arm interaction, diet − no diet (seed-averaged) | raw | | | +0.305 (8/8, 
 P("")
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
-open(OUT, "w", encoding="utf8").write("\n".join(L) + "\n")
-print(f"wrote {OUT} ({len(L)} lines)")
+# Upsert, never rewrite: other generators own Tables 10-16 in the same file
+# (forced_choice.py, ed_table11.py, readout_w_cortex.py, ed_tables_generality.py, ed_table16_zoo.py).
+generated = "\n".join(L).strip() + "\n"
+blocks = [b for b in re.split(r"(?=\n\*\*Extended Data Table \d+ \|)", "\n" + generated) if b.strip()]
+existing = open(OUT, encoding="utf8").read() if os.path.exists(OUT) else ""
+for block in blocks:
+    block = block.strip("\n")
+    title = re.match(r"\*\*Extended Data Table \d+ \|", block).group(0)
+    pat = re.compile(r"\*\*" + re.escape(title[2:]) + r".*?(?=\n\*\*Extended Data Table|\Z)", re.S)
+    if pat.search(existing):
+        existing = pat.sub(lambda m: block + "\n", existing, count=1)
+    else:
+        existing = existing.rstrip("\n") + "\n\n" + block + "\n"
+open(OUT, "w", encoding="utf8").write(existing)
+print(f"upserted {len(blocks)} tables into {OUT} ({existing.count(chr(10))} lines)")
