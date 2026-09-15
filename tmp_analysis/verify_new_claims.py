@@ -8,8 +8,9 @@ lands (job 26442320) -- the E2.1 numbers are currently the no-diet geometry only
 
     python tmp_analysis/verify_new_claims.py
 
-2026-09-15: check_generality() adds the Results 2.4 / Fig. 6 / ED Table 13-14 numbers
-of the single-trunk generality test, from the committed generality JSONs.
+2026-09-15: check_generality() adds the Results 2.4 / Fig. 6 / ED Table 14-15 numbers
+of the single-trunk generality test (unit-level rule), and check_subspace() the
+ED Table 13 / abstract numbers of the subspace rule, from the committed JSONs.
 """
 import glob
 import json
@@ -705,10 +706,10 @@ def check_perimage() -> None:
 
 
 def check_generality() -> None:
-    """Results 2.4 (final paragraph), Fig. 6 and ED Tables 13-14: the single-trunk
-    generality test, from results/figures_v2/generality_{behaviour,cortex}.json
+    """Results 2.4 (final paragraph), Fig. 6 and ED Tables 14-15: the single-trunk
+    generality test under the unit-level rule, from results/figures_v2/generality_{behaviour,cortex}.json
     (tmp_analysis/figs_v2/generality_{behaviour,cortex}.py)."""
-    print("\n[generality] behaviour (ED Table 13, Fig. 6a-b)")
+    print("\n[generality] behaviour, unit-level rule (ED Table 14, Fig. 6a grey)")
     beh = json.load(open("results/figures_v2/generality_behaviour.json"))
     fam = {f["key"]: f for f in beh["families"]}
     ws = np.array(fam["resnet50"]["seeds"][0]["ws"])
@@ -749,7 +750,7 @@ def check_generality() -> None:
             ref.append(np.mean([r["refit"][head]["span"] for r in fam[k]["seeds"] if "refit" in r]))
     chk("refit span (seed means) min", min(ref), 0.05, 0.01)
     chk("refit span (seed means) max", max(ref), 0.10, 0.01)
-    # split-rule sensitivity (Methods 4.8, ED Table 13 last two columns)
+    # split-rule sensitivity (Methods 4.8, ED Table 14 last two columns)
     rules = {(k, rule): fam[k]["rules"][rule] for k in single for rule in ("positive", "decile")
              if fam[k].get("rules", {}).get(rule) and not fam[k]["rules"][rule].get("undefined")}
     if rules:
@@ -780,7 +781,7 @@ def check_generality() -> None:
         if not fam["convnext_small"]["rules"]["positive"].get("undefined"):
             FAILS.append("ConvNeXt-S absolute rule expected undefined"); print("  BAD ConvNeXt-S absolute rule defined")
 
-    print("\n[generality] cortex (ED Table 14, Fig. 6c-d)")
+    print("\n[generality] cortex, unit halves (ED Table 15, Fig. 6c-d)")
     ctx = json.load(open("results/figures_v2/generality_cortex.json"))["families"]
     st = ctx["rgb_tsn"]["stats"]
     chk("rgb_tsn extrastriate - V1 (index)", st["extrastriate_minus_V1"]["mean"], -0.32, 0.01)
@@ -817,6 +818,96 @@ def check_generality() -> None:
         chk("two-stream shared / r2 max over regions", float(max(fr2)), 0.63, 0.02)
 
 
+def check_subspace() -> None:
+    """Abstract, Results 2.4, Discussion, Limitations, Fig. 6a-b and ED Table 13: the subspace
+    rule of PLAN_SUBSPACE_2026-09-15, from results/figures_v2/subspace_behaviour.json
+    (tmp_analysis/figs_v2/subspace_behaviour.py)."""
+    print("\n[subspace] behaviour (ED Table 13, Fig. 6a-b)")
+    sub = json.load(open("results/figures_v2/subspace_behaviour.json"))
+    fam = {f["key"]: f for f in sub["families"]}
+    ws = np.array(fam["resnet50"]["seeds"][0]["ws"])
+    imagenet = ["resnet50", "resnet152", "vgg16", "vit_b_16", "convnext_small", "convnext_base"]
+    ours = ["rgb_tsn", "single18", "single34"]
+    curve = {k: np.mean([s["mean_curve"] for s in fam[k]["seeds"]], 0) for k in imagenet + ours + ["concat"]}
+
+    def gmask(k):
+        return (ws >= fam[k]["gate"][0] - 1e-9) & (ws <= fam[k]["gate"][1] + 1e-9)
+
+    # ImageNet: magnitude, gate, monotonicity (abstract "0.25-0.33 ... within 1.5 points of top-1")
+    g = {k: fam[k]["gated_span"] for k in imagenet}
+    chk("ImageNet gated span min", min(g.values()), 0.25, 0.005)
+    chk("ImageNet gated span max", max(g.values()), 0.33, 0.005)
+    chk("P-A ImageNet networks with gated span >= 0.20", float(sum(v >= 0.20 for v in g.values())), 6, 0)
+    for k in imagenet:
+        chk(f"{k} gate covers the whole sweep", fam[k]["gate"][1] - fam[k]["gate"][0], 1.0, 1e-6)
+    dtop = max(max(abs(np.array(s["gain_accuracy"]["top1"]) - s["gain_accuracy"]["trained_top1"]))
+               for k in imagenet for s in fam[k]["seeds"]) * 100
+    chk("ImageNet largest top-1 change (points)", dtop, 1.5, 0.05)
+    chk("ImageNet seed-mean rho min", min(fam[k]["rho"] for k in imagenet), 0.997, 0.0005)
+    for k, (a, b) in [("resnet50", (0.16, 0.45)), ("vgg16", (0.06, 0.33)), ("vit_b_16", (0.29, 0.57))]:
+        chk(f"{k} rate at w = 0", curve[k][0], a, 0.005)
+        chk(f"{k} rate at w = 1", curve[k][-1], b, 0.005)
+    tr = {k: fam[k]["trained"] for k in imagenet}
+    chk("ImageNet trained rate min", min(tr.values()), 0.11, 0.005)
+    chk("ImageNet trained rate max", max(tr.values()), 0.40, 0.005)
+    # "each network can be moved past the trained rate of every other (VGG-16 past four of the five)"
+    for k in imagenet:
+        n = sum(curve[k][gmask(k)].max() > tr[o] for o in imagenet if o != k)
+        chk(f"{k} passes n others within the gate", float(n), 4 if k == "vgg16" else 5, 0)
+    # "the six can be placed in the reverse of their trained order": greedy feasibility within the gated ranges
+    lo = {k: curve[k][gmask(k)].min() for k in imagenet}
+    hi = {k: curve[k][gmask(k)].max() for k in imagenet}
+    order = sorted(imagenet, key=lambda k: tr[k])          # ascending trained rate; must end descending
+    prev, feasible = hi[order[0]], True
+    for k in order[1:]:
+        r = min(hi[k], prev - 0.005)
+        feasible &= r >= lo[k]
+        prev = r
+    if feasible:
+        print("  OK  reverse of the trained order is reachable within the gate")
+    else:
+        FAILS.append("reverse ordering of the six ImageNet networks not reachable within the gate"); print("  BAD reverse ordering")
+    # our trunks: ungated 0.23-0.34, ends lose 7-15 points, gated 0.14-0.22, threshold met in 1 of 3
+    ung = [fam[k]["span"] for k in ours]
+    chk("ours ungated span min", min(ung), 0.23, 0.005)
+    chk("ours ungated span max", max(ung), 0.34, 0.005)
+    gt = [fam[k]["gated_span"] for k in ours]
+    chk("ours gated span min", min(gt), 0.14, 0.005)
+    chk("ours gated span max", max(gt), 0.22, 0.005)
+    chk("ours networks with gated span >= 0.20", float(sum(v >= 0.20 for v in gt)), 1, 0)
+    drops = []
+    for k in ours:
+        acc = [s["gain_accuracy"] for s in fam[k]["seeds"]]
+        for i in (0, -1):
+            drops.append(np.mean([a["trained_top1"] - a["top1"][i] for a in acc]) * 100)
+    chk("ours top-1 loss at the sweep ends, min (pts)", min(drops), 7, 0.5)
+    chk("ours top-1 loss at the sweep ends, max (pts)", max(drops), 15, 0.5)
+    # refit (block form): two-layer 0.10-0.15, linear 0.08-0.13, validation within 1.1 points of the ceiling
+    mlp = [fam[k]["refit"]["mlp"]["span"] for k in ours]; lin = [fam[k]["refit"]["linear"]["span"] for k in ours]
+    chk("refit two-layer span min", min(mlp), 0.10, 0.005); chk("refit two-layer span max", max(mlp), 0.15, 0.005)
+    chk("refit linear span min", min(lin), 0.08, 0.005); chk("refit linear span max", max(lin), 0.13, 0.005)
+    short = max(-s["refit"][h]["min_val_minus_ceiling"] for k in ours for s in fam[k]["seeds"] for h in ("linear", "mlp")) * 100
+    print(f"  {'OK ' if short <= 1.2 else 'BAD'} refit validation shortfall, max over seeds and heads: {short:.2f} points (text: within 1.2)")
+    if short > 1.2:
+        FAILS.append("refit validation shortfall exceeds 1.2 points")
+    # distributed information: variance fractions 4-15% / 20-33%; unit-level gated spans 0.07-0.16, a third to two thirds of the subspace spans
+    vS = [np.mean([s["descriptives"]["var_frac_S"] for s in fam[k]["seeds"]]) for k in imagenet + ours]
+    vT = [np.mean([s["descriptives"]["var_frac_T"] for s in fam[k]["seeds"]]) for k in imagenet + ours]
+    chk("variance in S min", min(vS), 0.04, 0.005); chk("variance in S max", max(vS), 0.15, 0.005)
+    chk("variance in T min", min(vT), 0.20, 0.005); chk("variance in T max", max(vT), 0.33, 0.005)
+    ug = {k: fam[k]["unit_gated_span"] for k in imagenet + ours}
+    chk("unit-level gated span min", min(ug.values()), 0.07, 0.005); chk("unit-level gated span max", max(ug.values()), 0.16, 0.005)
+    ratio = [ug[k] / fam[k]["gated_span"] for k in imagenet + ours]
+    chk("unit / subspace gated ratio min", min(ratio), 0.30, 0.02); chk("unit / subspace gated ratio max", max(ratio), 0.65, 0.02)
+    if not all(fam[k]["gated_span"] > ug[k] for k in imagenet + ours):
+        FAILS.append("P-D: a unit-level gated span exceeds the subspace one"); print("  BAD P-D")
+    # P-B: the subspaces are not the streams (63-70% of the shape basis on stream 1); concat span 0.32 v 0.46 (streams)
+    e = [s["descriptives"]["energy_S_on_stream1_full"] for s in fam["concat"]["seeds"]]
+    chk("concat shape-basis energy on stream 1, min", min(e), 0.63, 0.005); chk("concat shape-basis energy on stream 1, max", max(e), 0.70, 0.005)
+    chk("concat subspace span", fam["concat"]["span"], 0.32, 0.005)
+    chk("concat subspace rate at w = 0", curve["concat"][0], 0.50, 0.005); chk("concat subspace rate at w = 1", curve["concat"][-1], 0.80, 0.005)
+
+
 def main() -> int:
     check_recovery()
     check_production_statistic()
@@ -825,6 +916,7 @@ def main() -> int:
     check_ood()
     check_perimage()
     check_generality()
+    check_subspace()
     print("\nFAILURES:", FAILS if FAILS else "none")
     return 1 if FAILS else 0
 

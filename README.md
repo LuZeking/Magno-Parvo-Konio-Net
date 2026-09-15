@@ -52,7 +52,7 @@ the 40 files they share (max |Δr²| = 0.000e+00); the §2.5 out-of-distribution
 relative-accuracy AUCs and per-image human-correspondence percentages; that no
 effect size exceeds the |dz| = 6.60 the manuscript calls its largest; and, from
 `results/figures_v2/generality_behaviour.json` and `generality_cortex.json`, the
-Results 2.4 / Fig. 6 / Extended Data Table 13–14 numbers of the single-trunk
+Results 2.4 / Fig. 6 / Extended Data Tables 13–15 numbers of the single-trunk
 generality test (spans, monotonicity, the accuracy-gated re-ordering of the
 ImageNet networks, and the cortical contrasts of the three networks fitted to
 NSD).
