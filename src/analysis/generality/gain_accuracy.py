@@ -30,18 +30,26 @@ def main():
     fac = np.load(args.factor, allow_pickle=True)
     z = np.load(args.val, allow_pickle=True)
     tag = str(fac["tag"])
-    S = fac["S_full"].astype(bool)
+    subspace = "B_S" in fac.files          # PLAN_SUBSPACE D2: gain on the all-image subspaces
+    S = None if subspace else fac["S_full"].astype(bool)
     W, b = z["W"].astype(np.float64), z["b"].astype(np.float64)
     if "val_features" in z.files:
         y, lab, which = z["val_features"].astype(np.float64), z["val_y"].astype(int), "miniecoset_val"
     else:
         y, lab, which = z["features"].astype(np.float64), z["labels"].astype(int), "imagenet_val_subset"
     acc = []
+    if subspace:
+        from src.analysis.generality.subspace_factor import gain_features
+        B_S, B_T = fac["B_S"].astype(np.float64), fac["B_T"].astype(np.float64)
     for w in WS:
-        g = np.where(S, 2 * w, 2 * (1 - w))
-        acc.append(float((np.argmax((y * g) @ W.T + b, 1) == lab).mean()))
+        if subspace:
+            yw = gain_features(y, B_S, B_T, float(w))
+        else:
+            yw = y * np.where(S, 2 * w, 2 * (1 - w))
+        acc.append(float((np.argmax(yw @ W.T + b, 1) == lab).mean()))
     trained = acc[10]
-    out = dict(tag=tag, set=which, rule=str(fac["rule"]) if "rule" in fac.files else "median", n=int(len(lab)), ws=WS.tolist(), top1=acc, trained_top1=trained,
+    out = dict(tag=tag, set=which, rule="subspace" if subspace else (str(fac["rule"]) if "rule" in fac.files else "median"),
+               n=int(len(lab)), ws=WS.tolist(), top1=acc, trained_top1=trained,
                w_within_5pts=[float(w) for w, a in zip(WS, acc) if a >= trained - 0.05])
     os.makedirs(args.out_dir, exist_ok=True)
     dest = os.path.join(args.out_dir, f"{tag}_gain_accuracy{args.out_suffix}.json")

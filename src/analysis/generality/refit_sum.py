@@ -74,6 +74,9 @@ def main():
     p.add_argument("--out-dir", required=True)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--heads", default="linear,mlp")
+    p.add_argument("--subspace", action="store_true",
+                   help="PLAN_SUBSPACE D3: z(w) = [w*s + (1-w)*t, r] with s, t the 15-d subspace coordinates and r the residual")
+    p.add_argument("--out-suffix", default="")
     args = p.parse_args()
     os.makedirs(args.out_dir, exist_ok=True)
     torch.set_num_threads(max(1, int(os.environ.get("OMP_NUM_THREADS", "8"))))
@@ -107,17 +110,36 @@ def main():
     rng = np.random.default_rng(args.seed)
     A, B = stratified_halves(shapes, textures, rng)  # the first split of unit_factor (same seed)
     for name, fitidx, evidx in (("A>B", A, B), ("B>A", B, A)):
-        d = shape_score(ycc[fitidx].astype(np.float64), shapes[fitidx], textures[fitidx])
-        S = median_split(d)
-        S_order = np.flatnonzero(S)[np.argsort(-d[S], kind="stable")]
-        T_order = np.flatnonzero(~S)[np.argsort(d[~S], kind="stable")]
-        k = min(len(S_order), len(T_order))
-        S_order, T_order = S_order[:k], T_order[:k]
+        if args.subspace:
+            from src.analysis.generality.subspace_factor import subspace_bases
+            B_S, B_T, inf = subspace_bases(ycc.astype(np.float64), shapes, textures, fitidx)
+            Qfull, _ = np.linalg.qr(np.concatenate([B_S, B_T], 1), mode="complete")
+            B_R = Qfull[:, B_S.shape[1] + B_T.shape[1]:]          # orthonormal basis of the residual
+            Bs, Bt, Br = (torch.from_numpy(x.astype(np.float32)) for x in (B_S, B_T, B_R))
+            k = B_S.shape[1] + B_R.shape[1]
+            print(f"  {name}: subspace bases k_pca {inf['k_pca']} overlap {inf['overlap_mean_cos']:.2f}; z dim {k}", flush=True)
+
+            def block(F):
+                Ft = F if isinstance(F, torch.Tensor) else torch.from_numpy(F.astype(np.float32))
+                return Ft @ Bs, Ft @ Bt, Ft @ Br
+            s_tr, t_tr, r_tr = block(trF); s_va, t_va, r_va = block(vaF); s_cc, t_cc, r_cc = block(ycc[evidx])
+        else:
+            d = shape_score(ycc[fitidx].astype(np.float64), shapes[fitidx], textures[fitidx])
+            S = median_split(d)
+            S_order = np.flatnonzero(S)[np.argsort(-d[S], kind="stable")]
+            T_order = np.flatnonzero(~S)[np.argsort(d[~S], kind="stable")]
+            k = min(len(S_order), len(T_order))
+            S_order, T_order = S_order[:k], T_order[:k]
         for w in WS:
             w = float(w)
-            Xtr = w * trF[:, S_order] + (1 - w) * trF[:, T_order]
-            Xva = w * vaF[:, S_order] + (1 - w) * vaF[:, T_order]
-            Xcc = torch.from_numpy(w * ycc[evidx][:, S_order] + (1 - w) * ycc[evidx][:, T_order])
+            if args.subspace:
+                Xtr = torch.cat([w * s_tr + (1 - w) * t_tr, r_tr], 1)
+                Xva = torch.cat([w * s_va + (1 - w) * t_va, r_va], 1)
+                Xcc = torch.cat([w * s_cc + (1 - w) * t_cc, r_cc], 1)
+            else:
+                Xtr = w * trF[:, S_order] + (1 - w) * trF[:, T_order]
+                Xva = w * vaF[:, S_order] + (1 - w) * vaF[:, T_order]
+                Xcc = torch.from_numpy(w * ycc[evidx][:, S_order] + (1 - w) * ycc[evidx][:, T_order])
             for kind_h in heads:
                 h = fit(make_head(kind_h, k, n_cls), Xtr, trY, device)
                 acc = accuracy(h, Xva, vaY, device)
@@ -126,7 +148,7 @@ def main():
                 print(f"  {name} w={w:.2f} {kind_h:6s} val={acc:.4f} sb={sc['shape_bias']:.3f} "
                       f"forced={sc['forced_two_way']:.3f} decided={sc['n_shape'] + sc['n_texture']} ({time.time() - t0:.0f}s)", flush=True)
 
-    dest = os.path.join(args.out_dir, f"{tag}_refit_sum.json")
+    dest = os.path.join(args.out_dir, f"{tag}_refit_sum{args.out_suffix}.json")
     json.dump(rows, open(dest, "w"), indent=1)
     print(f"[refit_sum] wrote {dest}", flush=True)
 
