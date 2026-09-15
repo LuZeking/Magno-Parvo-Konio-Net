@@ -140,7 +140,7 @@ def main():
     # ------------------------------------------------------------ (c) monotonicity vs exact null
     ax = fig.add_subplot(gs[1, 0])
     null = json.load(open("results/hierarchy_permutation_null.json"))
-    q025 = np.mean([e["null_q025"] for e in null if e["stat"] == "norm"])
+    q025 = np.mean([e["null_q025"] for e in null if e["stat"] == "raw"])
     ax.axhspan(q025, 1.0, color="#F0F0F0", lw=0, zorder=0)
     ax.axhline(q025, color="#B0B0B0", lw=0.7, ls=(0, (3, 2)), zorder=1)
     ax.text(0.03, 0.97, "shaded: within the exact null over\nall 630 labellings of the 7 ROIs\n(2.5th percentile as dashed rule)", transform=ax.transAxes,
@@ -156,7 +156,7 @@ def main():
         ax.annotate(f"{r.mean():+.2f}", (i + 0.24, r.mean()), xytext=(3, 0), textcoords="offset points",
                     fontsize=6.6, color=c, fontweight="bold", ha="left", va="center")
         print(f"  (c) {k:10s} rho mean {r.mean():+.3f}  range {r.min():+.3f}..{r.max():+.3f}")
-    pdiet = [e["p_exact_one_sided"] for e in null if e["arm"] == "diet" and e["stat"] == "norm"]
+    pdiet = [e["p_exact_one_sided"] for e in null if e["arm"] == "diet" and e["stat"] == "raw"]
     ax.set_xticks(range(3)); ax.set_xticklabels(["untrained", "trained,\nno diet", "trained,\ndiet"], fontsize=6.4)
     ax.set_xlim(-0.5, 2.85); ax.set_ylim(-1.12, 1.05)
     ax.set_ylabel("Spearman ρ, hierarchical rank\nvs stream preference (per subject)")

@@ -80,13 +80,14 @@ P("")
 
 # ------------------------------------------------------------ T2 monotonicity and exact null
 null = json.load(open("results/hierarchy_permutation_null.json"))
-P("**Extended Data Table 2 | Monotonicity of the profile and the exact permutation null.** Spearman ρ between hierarchical rank [1,1,2,2,3,3,4] and stream preference, mean over subjects; the null enumerates all 630 distinct labellings of the seven ROIs (one-sided in the pre-stated direction, floor 1/630 = .0016). Source: `results/hierarchy_permutation_null.json`.")
+P("**Extended Data Table 2 | Monotonicity of the profile and the exact permutation null.** Spearman ρ between hierarchical rank [1,1,2,2,3,3,4] and stream preference, mean over subjects; the null enumerates all 630 distinct labellings of the seven ROIs (one-sided in the pre-stated direction, floor 1/630 = .0016). “per-voxel index” is the manuscript's statistic (Fig. 3c; Results 2.3): the median over reliable voxels of (U_m − U_p)/(U_m + U_p) per ROI, as in Extended Data Table 1; “ratio of medians” is median(U_m − U_p)/median(U_m + U_p) per ROI, the statistic of an earlier draft, kept for comparison. Source: `results/hierarchy_permutation_null.json` (which labels the two `raw` and `norm`).")
 P("")
 P("| arm | seed | statistic | observed mean ρ | exact p | most extreme of 630 | null 2.5th pct |")
 P("|---|---|---|---|---|---|---|")
-for e in sorted(null, key=lambda e: (e["arm"] != "diet", e["model"], e["stat"])):
+STAT_LABEL = {"raw": "per-voxel index", "norm": "ratio of medians"}   # see the caption; the source file's labels are misleading
+for e in sorted(null, key=lambda e: (e["arm"] != "diet", e["model"], e["stat"] != "raw")):
     sd = re.search(r"seed(\d)", e["model"]).group(1)
-    P(f"| {e['arm']} | {sd} | {e['stat']} | {e['observed_mean_rho']:+.3f} | {e['p_exact_one_sided']:.4f} | {'yes' if e['is_most_extreme'] else 'no'} | {e['null_q025']:+.3f} |")
+    P(f"| {e['arm']} | {sd} | {STAT_LABEL[e['stat']]} | {e['observed_mean_rho']:+.3f} | {e['p_exact_one_sided']:.4f} | {'yes' if e['is_most_extreme'] else 'no'} | {e['null_q025']:+.3f} |")
 P("")
 
 # ------------------------------------------------------------ T3 in-silico cue conflict per seed

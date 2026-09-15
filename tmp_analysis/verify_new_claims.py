@@ -908,6 +908,617 @@ def check_subspace() -> None:
     chk("concat subspace rate at w = 0", curve["concat"][0], 0.50, 0.005); chk("concat subspace rate at w = 1", curve["concat"][-1], 0.80, 0.005)
 
 
+# ---------------------------------------------------------------------------
+# 2026-09-15 extension: Table 1, the carrier x transform 2x2, the Fig. 3b/c
+# numbers the checks above do not cover, Fig. 4a/b and the readout ladder,
+# ED Fig. 5 / ED Table 12, and the remaining Results 2.1-2.5 numbers that have
+# a committed source. Tolerances follow the manuscript's rounding: 0.00051 for
+# three decimals, 0.0051 for two.
+#
+# Coverage of the existing checks, so nothing is pinned twice:
+#   check_production_statistic  -- ED Table 1's 3 x 2 x 3 gradient cells, the
+#                                  .0078 / 8/8 separation, the 6.7x factor
+#   check_displacement          -- -0.871 / -0.130 / -0.103 displacements
+#   check_untrained_anchor      -- untrained, DIET front end (-0.544, -0.120)
+#   check_recovery              -- the zero-truth floors as +0.051 / +0.038
+#   check_effect_size           -- dz -6.60 / -1.09
+#   check_ood                   -- every ED Table 6 diet / no-diet / thesis cell
+# ---------------------------------------------------------------------------
+ST, CC, CC_BEST = "results/shape_texture", "results/cue_conflict", "results/cue_conflict_bestep"
+T3, T2 = 0.00051, 0.0051          # three- and two-decimal rounding tolerances
+
+
+def _jsons(pattern: str) -> list[dict]:
+    return [json.load(open(f)) for f in sorted(glob.glob(pattern)) if f.endswith(".json")]
+
+
+def _probe(pattern: str, stream: str) -> np.ndarray:
+    """Linear-probe shape - texture accuracy per seed (results/shape_texture/*.json)."""
+    return np.array([d["streams"][stream]["bias"] for d in _jsons(pattern)])
+
+
+def _cc(pattern: str, cond: str, key: str = "shape_bias") -> np.ndarray:
+    """Cue-conflict statistic per seed (results/cue_conflict*/*.json). key='decided'
+    is n_shape + n_texture, the primary estimator's denominator."""
+    out = []
+    for d in _jsons(pattern):
+        c = d["conditions"][cond]
+        out.append(c["n_shape"] + c["n_texture"] if key == "decided" else c[key])
+    return np.array(out, float)
+
+
+_CI: dict | None = None
+
+
+def _class_index() -> dict:
+    """Geirhos category -> MiniEcoset class index. Read from the MiniEcoset h5 the
+    cue-conflict module itself reads (outside the repository, like the NSD data
+    the encoding checks need); the restricted estimator is recomputed from the
+    stored logits below and must equal the stored JSON, which validates it."""
+    global _CI
+    if _CI is None:
+        from src.analysis.behavior.cue_conflict import load_class_index
+        _CI = load_class_index()
+    return _CI
+
+
+def _logit_estimators(pattern: str, cond: str) -> tuple[np.ndarray, np.ndarray]:
+    """(forced two-way, restricted) per seed from the stored per-image logits,
+    exactly as tmp_analysis/figs_v2/forced_choice.py computes them."""
+    from src.analysis.behavior.cue_conflict import shape_bias
+    CI = _class_index()
+    fc, rs = [], []
+    for f in sorted(glob.glob(pattern)):
+        z = np.load(f, allow_pickle=True)
+        idx = np.arange(len(z["shapes"]))
+        ls = z[cond][idx, [CI[c] for c in z["shapes"]]]
+        lt = z[cond][idx, [CI[c] for c in z["textures"]]]
+        fc.append(float(np.mean(ls > lt)))
+        rs.append(shape_bias(z[cond], list(z["shapes"]), list(z["textures"]), CI)["shape_bias"])
+    return np.array(fc), np.array(rs)
+
+
+def check_table1() -> None:
+    """Table 1 (Results 2.2), every numeric cell: linear probe from results/shape_texture/,
+    cue-conflict shape bias from results/cue_conflict/, final checkpoints, plus the
+    2.2 sentences around it (no-diet magno +0.417 -> -0.226; parvo -0.504)."""
+    print("\n[Table 1] final checkpoints, results/shape_texture + results/cue_conflict")
+    chk("probe magno, 3 seeds", _probe(f"{ST}/dkl_bcs_seed?_trained.json", "magno").mean(), 0.819, T3)
+    chk("probe parvo, 3 seeds", _probe(f"{ST}/dkl_bcs_seed?_trained.json", "parvo").mean(), -0.518, T3)
+    for cond, want, lab in [("magno_only", 0.878, "magno"), ("parvo_only", 0.418, "parvo"), ("full", 0.675, "integrated")]:
+        chk(f"cue-conflict {lab}, 3 seeds", _cc(f"{CC}/dkl_bcs_seed?.json", cond).mean(), want, T3)
+    u = json.load(open(f"{ST}/untrained_blur_cs.json"))["streams"]
+    t = json.load(open(f"{ST}/dkl_bcs_seed0_trained.json"))["streams"]
+    chk("probe untrained magno, seed 0", u["magno"]["bias"], 0.796, T3)
+    chk("probe untrained parvo, seed 0", u["parvo"]["bias"], -0.087, T3)
+    chk("probe trained magno, seed 0", t["magno"]["bias"], 0.810, T3)
+    chk("probe trained parvo, seed 0", t["parvo"]["bias"], -0.482, T3)
+    chk("contribution of learning, magno", t["magno"]["bias"] - u["magno"]["bias"], 0.014, T3)
+    chk("contribution of learning, parvo", t["parvo"]["bias"] - u["parvo"]["bias"], -0.395, T3)
+    chk("no-diet magno probe, untrained", json.load(open(f"{ST}/untrained_noblur.json"))["streams"]["magno"]["bias"], 0.417, T3)
+    chk("no-diet magno probe, trained", _probe(f"{ST}/dkl_base_seed?_trained.json", "magno").mean(), -0.226, T3)
+    chk("no-diet parvo probe, trained", _probe(f"{ST}/dkl_base_seed?_trained.json", "parvo").mean(), -0.504, T3)
+
+
+# (label, probe pattern, cue-conflict stem, stream, probe, behaviour, decided) as
+# fig1_data.py / ED Table 4 define the cells. parvo_highsf seed 0 is excluded from
+# the probe and behaviour cells (fig1_data.py: its cue-conflict run decided too
+# few images); forced_choice.py uses all three seeds for the forced cell.
+CELLS_2X2 = [
+    ("chromatic, none      (no diet, parvo)", f"{ST}/dkl_base_seed?_trained.json", f"{CC}/dkl_base_seed?", "parvo", -0.504, 0.364, 270),
+    ("chromatic, transform (swap, parvo)", f"{ST}/dkl_bcs_swap_seed?_trained.json", f"{CC}/dkl_bcs_swap_seed?", "parvo", -0.145, 0.495, 165),
+    ("achromatic, none     (parvo_highsf s1-2)", f"{ST}/dkl_bcs_parvo_highsf_seed[12]_trained.json", f"{CC}/dkl_bcs_parvo_highsf_seed[12]", "parvo", -0.266, 0.396, 584),
+    ("achromatic, transform (diet, magno)", f"{ST}/dkl_bcs_seed?_trained.json", f"{CC}/dkl_bcs_seed?", "magno", 0.819, 0.878, 488),
+]
+FORCED_2X2 = [  # (logits pattern, condition, manuscript value) -- Results 2.2 / ED Table 10
+    (f"{CC}/dkl_base_seed?_logits.npz", "parvo_only", 0.44),
+    (f"{CC}/dkl_bcs_swap_seed?_logits.npz", "parvo_only", 0.51),
+    (f"{CC}/dkl_bcs_parvo_highsf_seed?_logits.npz", "parvo_only", 0.35),
+    (f"{CC}/dkl_bcs_seed?_logits.npz", "magno_only", 0.76),
+]
+
+
+def check_two_by_two() -> None:
+    """Results 2.2 / Fig. 2b-d / ED Tables 4 and 10: the carrier x transform 2x2 on the
+    probe, on behaviour and on the forced two-way estimator; the interaction; the
+    decided-image counts. Recomputed from the per-seed JSONs and the stored logits,
+    then cross-checked against results/figures/fig1_data.npz (ED Table 4's source)."""
+    print("\n[2x2] carrier x transform, Results 2.2")
+    D = np.load("results/figures/fig1_data.npz", allow_pickle=True)
+    keys = ["a__chromatic__none", "a__chromatic__transform", "a__achromatic__none", "a__achromatic__transform"]
+    probe, beh, dec, rng = {}, {}, {}, []
+    for (lab, pp, cs, stream, wp, wb, wd), k in zip(CELLS_2X2, keys):
+        p = _probe(pp, stream); b = _cc(f"{cs}.json", f"{stream}_only"); d = _cc(f"{cs}.json", f"{stream}_only", "decided")
+        probe[k], beh[k], dec[k] = p, b, d
+        chk(f"probe   {lab}", p.mean(), wp, T3)
+        chk(f"beh     {lab}", b.mean(), wb, T3)
+        chk(f"decided {lab}", d.mean(), wd, 0.5)
+        rng.append(np.ptp(p))
+        worst = max(np.abs(D[k + "__probe"] - p).max(), np.abs(D[k + "__beh"] - b).max(), np.abs(D[k + "__decided"] - d).max())
+        if worst > 1e-9:
+            FAILS.append(f"fig1_data.npz cell {k} differs from the per-seed JSONs")
+            print(f"  BAD fig1_data.npz {k} differs from JSONs by {worst:.2e}")
+    chk("probe seed range min", min(rng), 0.014, T3)
+    chk("probe seed range max", max(rng), 0.043, T3)
+    conj = probe[keys[3]].mean()
+    additive = probe[keys[2]].mean() + probe[keys[1]].mean() - probe[keys[0]].mean()
+    chk("additive prediction of three cells", additive, 0.09, T2)
+    chk("interaction (conjunction - additive)", conj - additive, 0.73, T2)
+    others = np.concatenate([probe[k] for k in keys[:3]])
+    sep = probe[keys[3]].min() > others.max()
+    print(f"  {'OK ' if sep else 'BAD'} no conjunction seed overlaps another cell: min {probe[keys[3]].min():+.3f} > max {others.max():+.3f}")
+    if not sep:
+        FAILS.append("2x2 conjunction cell overlaps another cell")
+    chk("decided counts, min over cells", min(v.mean() for v in dec.values()), 165, 0.5)
+    chk("decided counts, max over cells", max(v.mean() for v in dec.values()), 584, 0.5)
+    # forced two-way estimator, from the stored logits; the restricted estimator
+    # recomputed alongside must equal the stored JSON (validates the class index)
+    FC = json.load(open("results/figures_v2/forced_choice.json"))
+    fc_labels = ["no diet, parvo stream alone", "swap, parvo stream alone (L−M + transform)",
+                 "parvo_highsf, stream 2 alone (L−M + luminance)", "diet, magno stream alone (final ckpt)"]
+    fcs = []
+    for (pat, cond, want), fl in zip(FORCED_2X2, fc_labels):
+        fc, rs = _logit_estimators(pat, cond)
+        stored = _cc(pat.replace("_logits.npz", ".json"), cond)
+        if np.abs(rs - stored).max() > 1e-12:
+            FAILS.append(f"restricted estimator from logits != stored JSON ({pat})")
+            print(f"  BAD restricted estimator from logits differs from JSON for {pat}")
+        if np.abs(fc - np.array(FC[fl]["forced"])).max() > 1e-12:
+            FAILS.append(f"forced estimator != forced_choice.json ({fl})")
+            print(f"  BAD forced estimator differs from forced_choice.json for {fl}")
+        chk(f"forced  {fl[:38]}", fc.mean(), want, T2)
+        fcs.append(fc.mean())
+    # "preserves every ordering in this paper": the orderings the paper asserts are
+    # the conjunction cell above the other three (the three are read as "no strong
+    # preference", so no ordering among them is claimed), parvo < both < magno for
+    # each checkpoint policy, no diet < diet, and ResNet-18 < ResNet-34.
+    def fmean(row):
+        return float(np.mean(FC[row]["forced"]))
+    kept = fcs[3] > max(fcs[:3])
+    for pol in ("best ckpt", "final ckpt"):
+        kept &= fmean(f"diet, parvo stream alone ({pol})") < fmean(f"diet, both streams w = 0.5 ({pol})") < fmean(f"diet, magno stream alone ({pol})")
+    kept &= fmean("no diet, both streams") < fmean("diet, both streams w = 0.5 (best ckpt)")
+    kept &= fmean("single stream, ResNet-18 (half)") < fmean("single stream, ResNet-34 (matched)")
+    print(f"  {'OK ' if kept else 'BAD'} forced estimator keeps the asserted orderings (conjunction top; parvo < both < magno; "
+          f"no diet < diet; R18 < R34); among the three 'no preference' cells it ranks no-diet parvo {fcs[0]:.3f} above parvo_highsf {fcs[2]:.3f}")
+    if not kept:
+        FAILS.append("forced estimator breaks an asserted ordering")
+    # accuracy-matched control (Fig. 2e-f): closes 7.6% of the probe gap, 7.0% of the behavioural gap
+    dp = _probe("results/shape_texture_bestep/dkl_bcs_seed?_ep*.json", "magno").mean()
+    npb = _probe(f"{ST}/dkl_base_seed?_trained.json", "magno").mean()
+    mp = _probe("results/shape_texture_matched/*.json", "magno").mean()
+    db = _cc(f"{CC_BEST}/dkl_bcs_seed?_ep*.json", "magno_only").mean()
+    nb = _cc(f"{CC}/dkl_base_seed?.json", "magno_only").mean()
+    mb = _cc("results/cue_conflict_matched/*.json", "magno_only").mean()
+    chk("matched closes % of probe gap", 100 * (mp - npb) / (dp - npb), 7.6, 0.051)
+    chk("matched closes % of behavioural gap", 100 * (mb - nb) / (db - nb), 7.0, 0.051)
+    if not mp < 0:
+        FAILS.append("matched magno stream not on the texture side"); print("  BAD matched magno probe not < 0")
+    else:
+        print(f"  OK  matched magno stream stays on the texture side  probe {mp:+.3f}")
+
+
+HIER = np.array([1, 1, 2, 2, 3, 3, 4])
+EXTRASTRIATE_ATLASES = ("Kastner2015", "streams", "floc-faces", "floc-places", "floc-bodies", "floc-words")
+NOT_EXTRASTRIATE = {"V1v", "V1d", "V2v", "V2d", "V3v", "V3d", "hV4", "early"}
+
+
+def _rho(prof: np.ndarray) -> float:
+    return float(np.mean([spearmanr(HIER, r).statistic for r in prof]))
+
+
+def _legacy_profile(out_dir: str, tag: str) -> np.ndarray:
+    """hierarchy_permutation_null.py's 'norm': median(Um-Up)/median(Um+Up) per ROI --
+    the ratio of medians, NOT the manuscript's per-voxel index (its 'raw' key)."""
+    from src.analysis.encoding.stats import load_results
+    res = load_results(out_dir, tag)
+    out = np.full((len(res), 7), np.nan)
+    for i, s in enumerate(sorted(res)):
+        z = res[s]
+        roi, nc, um, up = z["roi_prf-visualrois"], z["noise_ceiling"], z["unique_magno"], z["unique_parvo"]
+        rel = (nc > 0.1) & np.isfinite(um) & np.isfinite(up)
+        for j, lab in enumerate([1, 2, 3, 4, 5, 6, 7]):
+            sel = (roi == lab) & rel
+            if sel.sum() >= 20 and np.median(um[sel] + up[sel]) > 1e-4:
+                out[i, j] = np.median(um[sel] - up[sel]) / np.median(um[sel] + up[sel])
+    return out
+
+
+def _unique_median(tag: str, key: str) -> float:
+    """PAPER_PLAN §48.1: median unique variance (nc-normalised, as stored) of one band
+    over all retinotopic voxels (V1v-hV4, nc > 0.1), per subject, mean over subjects."""
+    from src.analysis.encoding.stats import load_results
+    res = load_results(UNTRAINED_DIR, tag)
+    vals = []
+    for s in sorted(res):
+        z = res[s]
+        v = np.isin(z["roi_prf-visualrois"], [1, 2, 3, 4, 5, 6, 7]) & (z["noise_ceiling"] > 0.1) & np.isfinite(z[key])
+        vals.append(np.median(z[key][v]))
+    return float(np.mean(vals))
+
+
+def _ecc_gradient(out_dir: str, tag: str) -> np.ndarray:
+    """figE3_cortex_controls.grad_by_strata('ecc'): hV4 - mean(V1v, V1d) of the per-voxel
+    index within each of the five prf-eccrois bands, subjects x bands."""
+    from src.analysis.encoding.stats import load_results
+    res = load_results(out_dir, tag)
+    out = np.full((len(res), 5), np.nan)
+    for i, s in enumerate(sorted(res)):
+        z = res[s]
+        um, up = z["unique_magno"], z["unique_parvo"]
+        ok = (z["noise_ceiling"] > 0.1) & ((um + up) > 1e-3) & np.isfinite(um) & np.isfinite(up)
+        val = (um - up) / (um + up)
+        roi, ecc = z["roi_prf-visualrois"], z["roi_prf-eccrois"]
+        med = lambda sel: np.median(val[sel]) if sel.sum() >= 20 else np.nan
+        for k in range(5):
+            st = ok & (ecc == k + 1)
+            out[i, k] = med(st & (roi == 7)) - np.nanmean([med(st & (roi == 1)), med(st & (roi == 2))])
+    return out
+
+
+def check_gradient_extras() -> None:
+    """Results 2.3 / Fig. 3b, c, e / ED Tables 1-3, 11: the gradient numbers not
+    covered above -- untrained no-diet front end, the floors as quoted, the thesis
+    checkpoint, the degenerate controls, the r2/NC cost, the monotonicity rho and
+    exact null, the in-silico cue conflict, the eccentricity bands and the extended
+    gradient (results/figures_v2/ext_gradient.json; its atlas relabelling needs the
+    NSD atlas files, so the JSON is the committed source)."""
+    print("\n[gradient extras] Results 2.3")
+    # untrained, no-diet front end (Fig. 3b; ED Table 1) -- results/encoding only
+    _, prof = roi_profile(UNTRAINED_DIR, "untrained_seed0_noblur", True)
+    c = np.array([hv4_minus_v1(r) for r in prof])
+    chk("untrained no-diet front end hV4-V1", c.mean(), -0.479, T3)
+    chk("untrained no-diet front end p", wilcoxon(c).pvalue, 0.0078, 0.0002)
+    if not (c < 0).all():
+        FAILS.append("untrained no-diet front end not 8/8 negative")
+    print(f"     {(c < 0).sum()}/{len(c)} negative")
+    # the simulated floors as the text rounds them (+0.04 diet, +0.05 no diet)
+    chk("simulated floor, diet (text +0.04)", _ratio_contrasts("dkl_bcs", "B_manufacture").mean(), 0.04, T2)
+    chk("simulated floor, no diet (text +0.05)", _ratio_contrasts("dkl_base", "B_manufacture").mean(), 0.05, T2)
+    # thesis checkpoint and the two degenerate controls (ED Table 1 rows)
+    for d, tag, want, lab in [(ENCODING_DIR, "thesis_dvd_trans", -0.793, "thesis checkpoint hV4-V1"),
+                              (UNTRAINED_DIR, "dkl_bcs_swap_seed0_trained", -0.006, "swap seed 0 hV4-V1 (ED T1)"),
+                              (UNTRAINED_DIR, "dkl_bcs_parvo_highsf_seed0_trained", -0.143, "parvo_highsf seed 0 hV4-V1 (ED T1)")]:
+        _, prof = roi_profile(d, tag, True)
+        chk(lab, float(np.nanmean([hv4_minus_v1(r) for r in prof])), want, T3)
+    chk("swap U_p (retinotopic median)", _unique_median("dkl_bcs_swap_seed0_trained", "unique_parvo"), 0.006, T3)
+    chk("parvo_highsf U_m (retinotopic median)", _unique_median("dkl_bcs_parvo_highsf_seed0_trained", "unique_magno"), 0.007, T3)
+    # Fig. 3e: median r2 / noise ceiling, seed 0, per subject, mean over subjects
+    from src.analysis.encoding.stats import load_results
+    D = np.load("results/figures/fig1_data.npz", allow_pickle=True)
+    r2 = {}
+    for arm, tag in [("diet", "dkl_bcs_seed0_trained"), ("nodiet", "dkl_base_seed0_trained")]:
+        R = load_results(UNTRAINED_DIR, tag)
+        r2[arm] = np.array([np.median(R[s]["r2_joint_nc"][(R[s]["noise_ceiling"] > 0.1) & np.isfinite(R[s]["r2_joint_nc"])]) for s in sorted(R)])
+        if np.abs(r2[arm] - D[f"d__{arm}__r2nc"]).max() > 1e-9:
+            FAILS.append(f"fig1_data d__{arm}__r2nc differs from results/encoding")
+    chk("median r2/NC, diet", r2["diet"].mean(), 0.405, T3)
+    chk("median r2/NC, no diet", r2["nodiet"].mean(), 0.464, T3)
+    chk("diet worse in n subjects", float((r2["diet"] < r2["nodiet"]).sum()), 8, 0)
+    # Fig. 3c / ED Table 2: monotonicity rho and the exact 630-labelling null
+    print("  [monotonicity rho: manuscript statistic = per-voxel index, median per ROI]")
+    rd = [_rho(roi_profile(ENCODING_DIR, f"dkl_bcs_seed{s}_trained", True)[1]) for s in range(3)]
+    rn = [_rho(roi_profile(ENCODING_DIR, f"dkl_base_seed{s}_trained", True)[1]) for s in range(3)]
+    chk("diet rho, most negative seed", min(rd), -0.973, T3)
+    chk("diet rho, least negative seed", max(rd), -0.964, T3)
+    chk("no-diet rho min, manuscript statistic", min(rn), -0.66, T2)
+    chk("no-diet rho max, manuscript statistic", max(rn), -0.46, T2)
+    rl = [_rho(_legacy_profile(ENCODING_DIR, f"dkl_base_seed{s}_trained")) for s in range(3)]
+    chk("ED Table 2 ratio-of-medians rows, min", min(rl), -0.606, T3)
+    chk("ED Table 2 ratio-of-medians rows, max", max(rl), -0.502, T3)
+    null = json.load(open("results/hierarchy_permutation_null.json"))
+    for e in null:
+        assert e["n_permutations"] == 630
+    diet = [e for e in null if e["arm"] == "diet"]; nod = [e for e in null if e["arm"] != "diet"]
+    ok = len(diet) == 6 and all(e["is_most_extreme"] and abs(e["p_exact_one_sided"] - 1 / 630) < 1e-12 for e in diet)
+    print(f"  {'OK ' if ok else 'BAD'} diet most extreme of 630 in {sum(e['is_most_extreme'] for e in diet)}/6 (seed x statistic), p = 1/630")
+    if not ok:
+        FAILS.append("diet arm not the most extreme labelling in every seed / statistic")
+    chk("no-diet exact p, min", min(e["p_exact_one_sided"] for e in nod), 0.019, T3)
+    chk("no-diet exact p, max", max(e["p_exact_one_sided"] for e in nod), 0.092, T3)
+    for e in null:   # the stored rho must equal a recomputation under the key's actual definition
+        tag = e["model"]
+        prof = roi_profile(ENCODING_DIR, tag, True)[1] if e["stat"] == "raw" else _legacy_profile(ENCODING_DIR, tag)
+        if abs(_rho(prof) - e["observed_mean_rho"]) > 1e-6:
+            FAILS.append(f"hierarchy null rho for {tag}/{e['stat']} does not regenerate")
+            print(f"  BAD {tag} {e['stat']}: stored {e['observed_mean_rho']:+.4f} recomputed {_rho(prof):+.4f}")
+    # Fig. 3d / ED Table 3: in-silico cue conflict through the fitted models
+    def cc_diff(tag):
+        out = []
+        for f in sorted(glob.glob(f"{ENCODING_DIR}/{tag}_subj*.npz")):
+            z = np.load(f, allow_pickle=True)
+            ok = z["noise_ceiling"] > 0.1
+            med = lambda v: np.median(v[ok & np.isfinite(v)])
+            out.append(med(z["cc_magno_vsb"]) - med(z["cc_parvo_vsb"]))
+        return np.array(out)
+    dd = [cc_diff(f"dkl_bcs_seed{s}_trained") for s in range(3)]; dn = [cc_diff(f"dkl_base_seed{s}_trained") for s in range(3)]
+    chk("in-silico magno-parvo, diet min", min(d.mean() for d in dd), 1.53, T2)
+    chk("in-silico magno-parvo, diet max", max(d.mean() for d in dd), 1.57, T2)
+    chk("in-silico magno-parvo, no diet min", min(d.mean() for d in dn), 0.08, T2)
+    chk("in-silico magno-parvo, no diet max", max(d.mean() for d in dn), 0.11, T2)
+    for s in range(3):
+        p = wilcoxon(dd[s] - dn[s]).pvalue
+        if not ((dd[s] > dn[s]).all() and abs(p - 0.0078125) < 1e-6):
+            FAILS.append(f"in-silico cue conflict seed {s}: {(dd[s] > dn[s]).sum()}/8, p={p:.4f}")
+    print("  OK  in-silico cue conflict 8/8 subjects, p = .0078 in every seed" if not any("in-silico" in f for f in FAILS) else "  BAD in-silico separation")
+    # eccentricity bands (Results 2.3 nuisance paragraph; ED Fig. 3b)
+    # seeds averaged per subject, then the mean over the subjects with enough voxels
+    # in the band (one subject lacks 20 reliable foveal voxels; figE3 drops it too)
+    ge = np.nanmean(np.nanmean(np.stack([_ecc_gradient(ENCODING_DIR, f"dkl_bcs_seed{s}_trained") for s in range(3)]), 0), 0)
+    gn = np.nanmean(np.nanmean(np.stack([_ecc_gradient(ENCODING_DIR, f"dkl_base_seed{s}_trained") for s in range(3)]), 0), 0)
+    chk("diet gradient, foveal band", ge[0], -0.26, T2)
+    chk("diet gradient, > 4 deg band", ge[4], -0.93, T2)
+    if not (ge < 0).all():
+        FAILS.append("diet gradient not negative in every eccentricity band")
+    print(f"  {'OK ' if (ge < 0).all() else 'BAD'} diet gradient negative in 5/5 bands; no-diet bands "
+          + " ".join(f"{v:+.3f}" for v in gn) + " (text: near zero)")
+    # the extended gradient (Results 2.3 last bold paragraph; ED Fig. 4; ED Table 11)
+    E = json.load(open("results/figures_v2/ext_gradient.json"))
+    chk("ext: diet V1v index", E["Kastner2015"]["diet"]["V1v"]["mean"], -0.05, T2)
+    chk("ext: diet hV4 index", E["Kastner2015"]["diet"]["hV4"]["mean"], -0.81, T2)
+    ext = {(a, r): e["mean"] for a in EXTRASTRIATE_ATLASES for r, e in E[a]["diet"].items()
+           if r not in NOT_EXTRASTRIATE and e.get("mean") is not None and e["n_subjects"] >= 5}
+    lo_k, hi_k = min(ext, key=ext.get), max(ext, key=ext.get)
+    chk(f"ext: extrastriate most negative ({lo_k[1]})", ext[lo_k], -0.94, T2)
+    chk(f"ext: extrastriate least negative ({hi_k[1]})", ext[hi_k], -0.81, T2)
+    for key, want, lab in [("ventral(VO,PHC) - early", -0.76, "ventral"), ("lateral(LO,TO) - early", -0.75, "lateral"), ("dorsal(V3AB,IPS0-3) - early", -0.75, "dorsal")]:
+        e = E["contrasts"][key]["diet"]
+        chk(f"ext: {lab} - V1, diet", e["mean"], want, T2)
+        if not (e["n_neg"] == 8 and abs(e["p_exact"] - 0.0078125) < 1e-6):
+            FAILS.append(f"ext {lab} - V1 not 8/8 / .0078")
+    chk("ext: dorsal - ventral, diet", E["contrasts"]["dorsal - ventral"]["diet"]["mean"], 0.015, T3)
+    chk("ext: dorsal - ventral, no diet", E["contrasts"]["dorsal - ventral"]["no diet"]["mean"], 0.005, T3)
+    rr = {(k, a): E["contrasts"][k][a]["p_exact"] for k in ("dorsal - ventral", "lateral - ventral") for a in ("diet", "no diet")}
+    print(f"  {'OK ' if min(rr.values()) > 0.05 else 'BAD'} Kastner region-minus-region p > .05 under both arms (min p = {min(rr.values()):.3f}); "
+          f"streams-atlas lateral - ventral, diet: p = {E['contrasts']['streams: lateral - ventral']['diet']['p_exact']:.3f}")
+    if min(rr.values()) <= 0.05:
+        FAILS.append("a region-minus-region contrast departs from zero")
+    comp = E["components"]["diet"]
+    chk("ext: parvo unique variance V1v", comp["V1v"][1], 0.10, T2)
+    chk("ext: parvo unique variance PHC2", comp["PHC2"][1], 0.26, T2)
+    um_beyond = {r: v[0] for r, v in comp.items() if r not in NOT_EXTRASTRIATE}
+    print(f"  OK  magno unique variance beyond hV4: {min(um_beyond.values()):.3f}-{max(um_beyond.values()):.3f} (text: about 0.01)")
+
+
+def check_readout_ladder() -> None:
+    """Results 2.4 first three paragraphs / Fig. 4a-c / ED Tables 5, 7 and 10: the w
+    sweep (results/fusion_sweep), the streams alone on both estimators, the refit
+    heads (results/nonlinear_readout_summary.json), the ladder, the human observers
+    and the fit-w controls (results/fit_w_observers)."""
+    print("\n[readout ladder] Results 2.4, Fig. 4")
+    def sweep(policy):
+        rows = []
+        for f in sorted(glob.glob(f"results/fusion_sweep/dkl_bcs_seed?_{policy}_wsweep.json")):
+            pts = sorted(json.load(open(f))["sweep"], key=lambda r: r["w"])
+            rows.append([r["shape_bias"] for r in pts])
+        return np.array(rows)
+    best, final = sweep("best"), sweep("final")
+    assert best.shape == final.shape == (3, 21)
+    chk("sweep, best-ckpt seed mean at w = 0", best.mean(0)[0], 0.40, T2)
+    chk("sweep, best-ckpt seed mean at w = 1", best.mean(0)[-1], 0.90, T2)
+    tb = _cc(f"{CC_BEST}/dkl_bcs_seed?_ep*.json", "full"); tf = _cc(f"{CC}/dkl_bcs_seed?.json", "full")
+    dev = max(np.abs(best[:, 10] - tb).max(), np.abs(final[:, 10] - tf).max())
+    print(f"  {'OK ' if dev < 1e-12 else 'BAD'} w = 0.5 reproduces the trained per-seed values exactly (max dev {dev:.1e})")
+    if dev >= 1e-12:
+        FAILS.append("sweep at w = 0.5 != trained model")
+    fc_p, _ = _logit_estimators(f"{CC_BEST}/dkl_bcs_seed?_ep*_logits.npz", "parvo_only")
+    fc_m, _ = _logit_estimators(f"{CC_BEST}/dkl_bcs_seed?_ep*_logits.npz", "magno_only")
+    chk("forced estimator, parvo alone (best)", fc_p.mean(), 0.41, T2)
+    chk("forced estimator, magno alone (best)", fc_m.mean(), 0.78, T2)
+    magno = _cc(f"{CC_BEST}/dkl_bcs_seed?_ep*.json", "magno_only").mean()
+    both = _cc(f"{CC_BEST}/dkl_bcs_seed?_ep*.json", "full").mean()
+    parvo = _cc(f"{CC_BEST}/dkl_bcs_seed?_ep*.json", "parvo_only").mean()
+    r34 = _cc("results/cue_conflict_single34_bestep/*.json", "full").mean()
+    r18 = _cc("results/cue_conflict_single_bestep/*.json", "full").mean()
+    chk("ladder: magno alone (best)", magno, 0.903, T3)
+    chk("ladder: both streams (best)", both, 0.655, T3)
+    chk("ladder: parvo alone (best)", parvo, 0.400, T3)
+    chk("ladder: single ResNet-34 (best)", r34, 0.625, T3)
+    chk("ladder: single ResNet-18 (best)", r18, 0.567, T3)
+    chk("ladder: capacity step R34 - R18", r34 - r18, 0.058, 0.0011)
+    chk("ladder: integration cost (best)", magno - both, 0.248, 0.0011)
+    fm = _cc(f"{CC}/dkl_bcs_seed?.json", "magno_only"); ff = _cc(f"{CC}/dkl_bcs_seed?.json", "full"); nf = _cc(f"{CC}/dkl_base_seed?.json", "full")
+    chk("ladder: integration cost (final)", fm.mean() - ff.mean(), 0.203, 0.0011)
+    chk("integrated, diet final mean", ff.mean(), 0.675, T3); chk("integrated, diet final s.d. (ddof=1)", ff.std(ddof=1), 0.025, T3)
+    chk("integrated, no diet final mean", nf.mean(), 0.416, T3); chk("integrated, no diet final s.d. (ddof=1)", nf.std(ddof=1), 0.020, T3)
+    chk("thesis checkpoint, integrated", _cc(f"{CC}/thesis_dvd_trans.json", "full")[0], 0.697, T3)
+    if not (r18 < r34 < both < magno and parvo < r18):
+        FAILS.append("ladder ordering parvo < R18 < R34 < both < magno broken")
+    # human observers, from the committed fit-w files (observer_rate is identical in every run file)
+    W = _jsons("results/fit_w_observers/*_wfit.json")
+    rates = np.array([[o["observer_rate"] for o in d["observers"].values()] for d in W])
+    assert np.abs(rates - rates[0]).max() < 1e-12
+    H = rates[0]
+    chk("humans mean", H.mean(), 0.958, T3); chk("humans s.d. (ddof=1)", H.std(ddof=1), 0.019, T3)
+    chk("humans min", H.min(), 0.919, T3); chk("humans max", H.max(), 0.987, T3)
+    chk("human-human kappa ceiling", W[0]["human_human_ceiling"], 0.234, T3)
+    print(f"  {'OK ' if fm.mean() < H.min() else 'BAD'} magno stream {fm.mean():.3f} below the lowest observer {H.min():.3f}")
+    if fm.mean() >= H.min():
+        FAILS.append("magno stream not below the lowest observer")
+    # refit heads (Fig. 4b): medians over the three best-checkpoint seeds
+    NL = json.load(open("results/nonlinear_readout_summary.json"))
+    sp = {h: np.array([NL[f"dkl_bcs_seed{s}_best"][h]["span"] for s in range(3)]) for h in ("affine", "linear", "mlp")}
+    chk("refit: nonlinear median span", np.median(sp["mlp"]), 0.466, T3)
+    chk("refit: frozen affine median span", np.median(sp["affine"]), 0.508, T3)
+    chk("refit: nonlinear / affine (%)", 100 * np.median(sp["mlp"]) / np.median(sp["affine"]), 92, 0.51)
+    chk("refit: weakest seed (%)", 100 * (sp["mlp"] / sp["affine"]).min(), 86, 0.51)
+    chk("refit: linear median span", np.median(sp["linear"]), 0.461, T3)
+    g = np.array([NL[f"dkl_bcs_seed{s}_best"]["mlp"]["gated"] for s in range(3)])
+    chk("refit: gated nonlinear median", np.median(g), 0.283, T3); chk("refit: gated min", g.min(), 0.26, T2); chk("refit: gated max", g.max(), 0.31, T2)
+    # fit-w controls: 0 of 90 attainable, closest 0.027, held-out +0.026 vs floor +0.023, 45 of 90
+    att = sum(o["rate_fit"]["attainable"] for d in W for o in d["observers"].values())
+    n = sum(len(d["observers"]) for d in W)
+    chk("fit-w: attainable observer-runs", float(att), 0, 0); chk("fit-w: observer-runs", float(n), 90, 0)
+    # "the closest approach misses the lowest observer by 0.027": per observer, the
+    # mean |rate - closest reachable rate| over the six diet runs (SUMMARY.txt E1),
+    # minimised over observers -- and that observer must be the lowest-rate one
+    resid = {}
+    for d in W:
+        if d["model_name"].startswith("dkl_bcs"):
+            for obs, o in d["observers"].items():
+                resid.setdefault(obs, []).append(abs(o["rate_fit"]["residual"]))
+    resid = {k: float(np.mean(v)) for k, v in resid.items()}
+    closest = min(resid, key=resid.get)
+    chk("fit-w: closest approach (per-observer mean over 6 diet runs)", resid[closest], 0.027, T3)
+    lowest = min(W[0]["observers"], key=lambda k: W[0]["observers"][k]["observer_rate"])
+    print(f"  {'OK ' if closest == lowest else 'BAD'} closest observer {closest} is the lowest-rate observer {lowest}")
+    if closest != lowest:
+        FAILS.append("closest approach is not the lowest observer")
+    ho = [o["cross_validation"]["held_out_mean"] for d in W for o in d["observers"].values()]
+    fl = [o["cross_validation"]["no_fitting_floor_mean"] for d in W for o in d["observers"].values()]
+    chk("fit-w: held-out agreement", np.mean(ho), 0.026, T3); chk("fit-w: arbitrary-weight floor", np.mean(fl), 0.023, T3)
+    chk("fit-w: held-out beats floor in n of 90", float(sum(o["cross_validation"]["held_out_above_floor"] > 0 for d in W for o in d["observers"].values())), 45, 0)
+
+
+READOUT_W_DIR = os.environ.get("READOUT_W_DIR", "/scratch/byrong/mpk/readout_w/results/2026-09-13_w21_last")
+RW_VIS = {"V1": [1, 2], "V2": [3, 4], "V3": [5, 6], "hV4": [7]}
+RW_KAST = {"ventral (VO, PHC)": [8, 9, 10, 11], "lateral (LO, TO)": [12, 13, 14, 15], "dorsal (V3A/B, IPS0–2)": [16, 17, 18, 19, 20]}
+
+
+def check_readout_w() -> None:
+    """Results 2.4 'Cortex and behaviour prefer different readout weights' / ED Fig. 5 /
+    ED Table 12, from results/figures_v2/readout_w_cortex.json. The per-subject fits it
+    aggregates (READOUT_W_DIR, outside the repository) are re-reduced when present and
+    must give the same w*; the behaviour side is recomputed from results/fit_w_observers
+    and results/fusion_sweep, which are committed."""
+    print("\n[readout w] cortex-optimal vs behaviour-optimal weight")
+    W = json.load(open("results/figures_v2/readout_w_cortex.json"))
+    grid = np.array(W["grid"]); i05 = int(np.argmin(np.abs(grid - 0.5)))
+    ext_names = list(RW_KAST)
+    files = sorted(glob.glob(os.path.join(READOUT_W_DIR, "*.npz")))
+    if files:
+        per = {}
+        for f in files:
+            z = np.load(f, allow_pickle=True)
+            arm = "diet" if str(z["model_name"]).startswith("dkl_bcs") else "no diet"
+            ok = (z["noise_ceiling"] > 0.1) & np.isfinite(z["r2"]).all(0)
+            for name, labs in list(RW_VIS.items()) + list(RW_KAST.items()):
+                v = ok & np.isin(z["roi_prf-visualrois"] if name in RW_VIS else z["roi_Kastner2015"], labs)
+                if v.sum() >= 20:
+                    per.setdefault((arm, int(z["subject"])), {}).setdefault(name, []).append(np.median(z["r2"][:, v], axis=1))
+        worst = 0.0
+        for arm in ("diet", "no diet"):
+            for name in list(RW_VIS) + ext_names:
+                ws = np.array([z["grid"][int(np.argmax(np.mean(per[(arm, s)][name], 0)))] for s in range(1, 9)])
+                worst = max(worst, abs(float(np.median(ws)) - W["arms"][arm][name]["w_star_median"]))
+        print(f"  {'OK ' if worst < 1e-9 else 'BAD'} w* re-reduced from {len(files)} per-subject fits matches the JSON (max dev {worst:.1e})")
+        if worst >= 1e-9:
+            FAILS.append("readout_w_cortex.json w* does not regenerate from the per-subject fits")
+    else:
+        print(f"  --  per-subject fits not found at {READOUT_W_DIR}; checking the committed JSON only")
+    A = W["arms"]["diet"]
+    for roi, want in [("V1", 0.58), ("V2", 0.50), ("V3", 0.40), ("hV4", 0.35)]:
+        chk(f"diet w* {roi}", A[roi]["w_star_median"], want, T2)
+    ext_med = [A[k]["w_star_median"] for k in ext_names]
+    chk("diet w* extrastriate min", min(ext_med), 0.33, T2); chk("diet w* extrastriate max", max(ext_med), 0.35, T2)
+    S_ = W["stats"]["diet"]
+    d = np.array(S_["delta_ext_minus_v1"])
+    chk("diet delta extrastriate - V1", d.mean(), -0.25, T2)
+    chk("diet delta n negative", float((d < 0).sum()), 8, 0)
+    chk("diet delta exact p", wilcoxon(d, method="exact").pvalue, 0.0078, 0.0002)
+    # behaviour-optimal weight: trial fit per observer, mean over the three diet final seeds
+    bw = {}
+    for dd in _jsons("results/fit_w_observers/dkl_bcs_seed?_final_wfit.json"):
+        for obs, o in dd["observers"].items():
+            bw.setdefault(obs, []).append(o["trial_fit"]["w_hat"])
+    bw = np.array([np.mean(v) for v in bw.values()])
+    if np.abs(np.sort(bw) - np.sort(list(W["behaviour_w_trial_per_observer"].values()))).max() > 1e-12:
+        FAILS.append("behaviour w* per observer does not regenerate from fit_w_observers")
+    chk("behaviour w* median", np.median(bw), 0.67, T2); chk("behaviour w* min", bw.min(), 0.49, T2); chk("behaviour w* max", bw.max(), 0.89, T2)
+    ext = np.array(S_["w_extrastriate"])
+    chk("cortex w* extrastriate min", ext.min(), 0.27, T2); chk("cortex w* extrastriate max", ext.max(), 0.40, T2)
+    from scipy.stats import mannwhitneyu
+    chk("Mann-Whitney p, cortex vs behaviour", mannwhitneyu(ext, bw, alternative="two-sided").pvalue, 0.0004, 0.00005)
+    sweeps = []
+    for f in sorted(glob.glob("results/fusion_sweep/dkl_bcs_seed?_final_wsweep.json")):
+        sw = sorted(json.load(open(f))["sweep"], key=lambda r: r["w"]); sweeps.append([p["shape_bias"] for p in sw])
+    sw_w = np.array([p["w"] for p in sw]); rate = np.mean(sweeps, 0)
+    chk("rate at the cortex weight", float(np.interp(np.median(ext), sw_w, rate)), 0.56, T2)
+    chk("rate at the behaviour weight", float(np.interp(np.median(bw), sw_w, rate)), 0.78, T2)
+    B = W["arms"]["no diet"]
+    chk("no-diet w* V1", B["V1"]["w_star_median"], 0.65, T2)
+    nb = [B[k]["w_star_median"] for k in ext_names]
+    chk("no-diet w* beyond hV4 min", min(nb), 0.75, T2); chk("no-diet w* beyond hV4 max", max(nb), 1.00, T2)
+    # "every ROI within 3% of its best r2 at w = 0.5 with the diet and within 6% without": per-ROI median over subjects of r2(0.5)/max
+    for arm, thr in (("diet", 0.97), ("no diet", 0.94)):
+        ratio = {k: float(np.median(v["r2_at_half_over_max"])) for k, v in W["arms"][arm].items()}
+        k = min(ratio, key=ratio.get)
+        ok = ratio[k] >= thr
+        print(f"  {'OK ' if ok else 'BAD'} {arm}: r2(w=0.5)/max >= {thr:.2f} in every ROI (min {ratio[k]:.3f} at {k.split(' (')[0]})")
+        if not ok:
+            FAILS.append(f"{arm}: {k.split(' (')[0]} r2 at w = 0.5 is {100 * (1 - ratio[k]):.1f}% below its best, text says within {100 * (1 - thr):.0f}%")
+
+
+def check_misc() -> None:
+    """Remaining Results 2.1-2.5 numbers with a committed source: parameter counts
+    (results/param_matched), error consistency and the readout sweep of kappa
+    (results/sweep_error_consistency), the equivalence bounds (recomputed from
+    results/ood_bestep and the kappa sweeps), and the participation-ratio side-of-parity
+    claims (results/figures/fig1_data.npz, panel c)."""
+    print("\n[misc] Results 2.1 / 2.5")
+    import re
+    txt = open("results/param_matched/param_counts_2026-09-07.txt").read()
+    pc = {m.group(1): int(m.group(2).replace(",", "")) for m in re.finditer(r"^(dkl_bcs\w*)\s+resnet\d+\s+\(\d, \d\)\s+([\d,]+)", txt, re.M)}
+    chk("params two-stream (M)", pc["dkl_bcs"] / 1e6, 22.4, 0.051)
+    chk("params single ResNet-34 (M)", pc["dkl_bcs_single34"] / 1e6, 21.3, 0.051)
+    chk("params single ResNet-18 (M)", pc["dkl_bcs_single"] / 1e6, 11.2, 0.051)
+    # error consistency (Results 2.5; ED Table 7)
+    K = {os.path.basename(f)[:-len("_kappa_sweep.json")]: json.load(open(f)) for f in sorted(glob.glob("results/sweep_error_consistency/*_kappa_sweep.json"))}
+    ceil = {r["human_human_ceiling"] for r in K.values()}
+    assert len(ceil) == 1
+    ceil = ceil.pop()
+    def at(run, w):
+        return [q for q in K[run]["sweep"] if abs(q["w"] - w) < 1e-6][0]
+    mag = np.array([at(f"dkl_bcs_seed{s}_final", 1.0)["kappa_mean"] for s in range(3)])
+    chk("kappa, diet magno alone (3 final seeds)", mag.mean(), 0.0082, 0.00005)
+    chk("kappa magno alone, % ceiling", 100 * mag.mean() / ceil, 3.5, 0.051)
+    chk("kappa magno alone, weakest seed %", 100 * mag.min() / ceil, -6.1, 0.051)
+    chk("kappa magno alone, strongest seed %", 100 * mag.max() / ceil, 15.5, 0.051)
+    chk("VGG-16 published kappa 0.017, % ceiling", 100 * 0.017 / ceil, 7.3, 0.051)
+    allk = [q["kappa_pct_ceiling"] for r in K.values() for q in r["sweep"]]
+    chk("readouts in the kappa sweep", float(len(allk)), 189, 0)
+    chk("best kappa over all readouts, % ceiling", max(allk), 20.7, 0.051)
+    # the kappa comparison of seven models is the diet magno stream at the bottom
+    seven = {"diet full": np.mean([at(f"dkl_bcs_seed{s}_final", 0.5)["kappa_mean"] for s in range(3)]),
+             "no diet full": np.mean([at(f"dkl_base_seed{s}_final", 0.5)["kappa_mean"] for s in range(3)]),
+             "diet magno": mag.mean(),
+             "no diet magno": np.mean([at(f"dkl_base_seed{s}_final", 1.0)["kappa_mean"] for s in range(3)]),
+             "AlexNet": 0.032, "GoogLeNet": 0.025, "VGG-16": 0.017}
+    low = min(seven, key=seven.get)
+    print(f"  {'OK ' if low == 'diet magno' else 'BAD'} lowest kappa of the seven models: {low}")
+    if low != "diet magno":
+        FAILS.append("diet magno stream is not the lowest-kappa model")
+    # equivalence: kappa change over the shape-bias span (OLS slope, 90% CI, n = 7)
+    from scipy.stats import linregress, t as tdist
+    sb = [0.675, 0.416, 0.878, 0.421, 0.429, 0.312, 0.172]
+    kap = [seven[k] for k in ("diet full", "no diet full", "diet magno", "no diet magno", "AlexNet", "GoogLeNet", "VGG-16")]
+    span = 0.878 - 0.172
+    chk("shape-bias span of the kappa comparison", span, 0.71, T2)
+    res = linregress(sb, kap)
+    bound = abs(res.slope - tdist.ppf(0.95, 5) * res.stderr) * span
+    chk("kappa change excluded over the span", bound, 0.038, T3)
+    # equivalence on phase scrambling: Welch 90% CI of the diet - no-diet AUC difference
+    def rel_auc(files, fam):
+        acc = np.array([json.load(open(f))["families"][fam]["accuracy"] for f in files], float)
+        return (acc / acc[:, :1]).mean(1)
+    dd = rel_auc(sorted(glob.glob("results/ood_bestep/dkl_bcs_seed*.json")), "phase-scrambling")
+    nn = rel_auc(sorted(glob.glob("results/ood_bestep/dkl_base_seed*.json")), "phase-scrambling")
+    se = np.sqrt(dd.var(ddof=1) / 3 + nn.var(ddof=1) / 3)
+    df = se ** 4 / ((dd.var(ddof=1) / 3) ** 2 / 2 + (nn.var(ddof=1) / 3) ** 2 / 2)
+    half = tdist.ppf(0.95, df) * se
+    chk("phase scrambling, |90% CI bound| max", max(abs(dd.mean() - nn.mean() - half), abs(dd.mean() - nn.mean() + half)), 0.033, T3)
+    # participation ratio: side of parity (Results 2.5; ED Fig. 2), from fig1_data.npz panel c
+    D = np.load("results/figures/fig1_data.npz", allow_pickle=True)
+    for arm in ("diet_normal", "diet_highsf", "diet_swap"):
+        above = sum(int(D[f"c__{arm}__above{s}"][0]) for s in range(3)); n = sum(int(D[f"c__{arm}__above{s}"][1]) for s in range(3))
+        chk(f"PR magno-dominant subject-seeds, {arm}", float(above), 24, 0)
+        assert n == 24
+    chk("PR parvo_highsf front end inverted, n subjects", float((D["c__diet_highsf__front"] < 1).sum()), 8, 0)
+    nod = [int(D[f"c__nodiet__above{s}"][0]) for s in range(3)]
+    print(f"  OK  no-diet subject-seeds above parity per seed: {nod} (text: collapses to parity; seed means "
+          + " ".join(f"{v:.3f}" for v in D["c__nodiet__seedmeans"]) + ")")
+
+
 def main() -> int:
     check_recovery()
     check_production_statistic()
@@ -917,6 +1528,12 @@ def main() -> int:
     check_perimage()
     check_generality()
     check_subspace()
+    check_table1()
+    check_two_by_two()
+    check_gradient_extras()
+    check_readout_ladder()
+    check_readout_w()
+    check_misc()
     print("\nFAILURES:", FAILS if FAILS else "none")
     return 1 if FAILS else 0
 

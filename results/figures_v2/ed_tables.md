@@ -14,22 +14,22 @@
 | parvo_highsf, seed 0 (degenerate: U_m ≈ 0) | 0 | −0.143 | | | | |
 | thesis checkpoint (progressive schedule) | — | −0.793 | | | | |
 
-**Extended Data Table 2 | Monotonicity of the profile and the exact permutation null.** Spearman ρ between hierarchical rank [1,1,2,2,3,3,4] and stream preference, mean over subjects; the null enumerates all 630 distinct labellings of the seven ROIs (one-sided in the pre-stated direction, floor 1/630 = .0016). Source: `results/hierarchy_permutation_null.json`.
+**Extended Data Table 2 | Monotonicity of the profile and the exact permutation null.** Spearman ρ between hierarchical rank [1,1,2,2,3,3,4] and stream preference, mean over subjects; the null enumerates all 630 distinct labellings of the seven ROIs (one-sided in the pre-stated direction, floor 1/630 = .0016). “per-voxel index” is the manuscript's statistic (Fig. 3c; Results 2.3): the median over reliable voxels of (U_m − U_p)/(U_m + U_p) per ROI, as in Extended Data Table 1; “ratio of medians” is median(U_m − U_p)/median(U_m + U_p) per ROI, the statistic of an earlier draft, kept for comparison. Source: `results/hierarchy_permutation_null.json` (which labels the two `raw` and `norm`).
 
 | arm | seed | statistic | observed mean ρ | exact p | most extreme of 630 | null 2.5th pct |
 |---|---|---|---|---|---|---|
-| diet | 0 | norm | -0.964 | 0.0016 | yes | -0.754 |
-| diet | 0 | raw | -0.964 | 0.0016 | yes | -0.743 |
-| diet | 1 | norm | -0.973 | 0.0016 | yes | -0.750 |
-| diet | 1 | raw | -0.973 | 0.0016 | yes | -0.743 |
-| diet | 2 | norm | -0.966 | 0.0016 | yes | -0.748 |
-| diet | 2 | raw | -0.966 | 0.0016 | yes | -0.756 |
-| no diet | 0 | norm | -0.502 | 0.0286 | no | -0.502 |
-| no diet | 0 | raw | -0.571 | 0.0206 | no | -0.559 |
-| no diet | 1 | norm | -0.606 | 0.0190 | no | -0.546 |
-| no diet | 1 | raw | -0.661 | 0.0190 | no | -0.594 |
-| no diet | 2 | norm | -0.580 | 0.0365 | no | -0.616 |
-| no diet | 2 | raw | -0.463 | 0.0921 | no | -0.594 |
+| diet | 0 | per-voxel index | -0.964 | 0.0016 | yes | -0.743 |
+| diet | 0 | ratio of medians | -0.964 | 0.0016 | yes | -0.754 |
+| diet | 1 | per-voxel index | -0.973 | 0.0016 | yes | -0.743 |
+| diet | 1 | ratio of medians | -0.973 | 0.0016 | yes | -0.750 |
+| diet | 2 | per-voxel index | -0.966 | 0.0016 | yes | -0.756 |
+| diet | 2 | ratio of medians | -0.966 | 0.0016 | yes | -0.748 |
+| no diet | 0 | per-voxel index | -0.571 | 0.0206 | no | -0.559 |
+| no diet | 0 | ratio of medians | -0.502 | 0.0286 | no | -0.502 |
+| no diet | 1 | per-voxel index | -0.661 | 0.0190 | no | -0.594 |
+| no diet | 1 | ratio of medians | -0.606 | 0.0190 | no | -0.546 |
+| no diet | 2 | per-voxel index | -0.463 | 0.0921 | no | -0.594 |
+| no diet | 2 | ratio of medians | -0.580 | 0.0365 | no | -0.616 |
 
 **Extended Data Table 3 | In-silico cue conflict through the fitted encoding models, per seed.** Median over reliable voxels of the per-voxel predicted shape-bias index for each stream, mean over 8 subjects; the contrast is magno − parvo, paired within subject against the no-diet arm of the same seed. Source: `results/encoding_cc/`.
 

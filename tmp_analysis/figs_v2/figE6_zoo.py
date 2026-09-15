@@ -33,9 +33,9 @@ def main():
     n = len(nets)
 
     fig = plt.figure(figsize=(S.FULL, max(5.0, 0.105 * n + 1.9)))
-    ax_a = fig.add_axes([0.20, 0.17, 0.40, 0.79])
-    ax_b = fig.add_axes([0.70, 0.60, 0.28, 0.36])
-    ax_c = fig.add_axes([0.70, 0.10, 0.28, 0.36])
+    ax_a = fig.add_axes([0.20, 0.14, 0.40, 0.82])
+    ax_b = fig.add_axes([0.72, 0.60, 0.26, 0.36])
+    ax_c = fig.add_axes([0.72, 0.14, 0.26, 0.36])
 
     # ---- a
     ax_a.axvspan(*HUMAN, color="#E8E8E8", lw=0, zorder=0)
@@ -59,9 +59,9 @@ def main():
                Line2D([], [], color=S.PUB, lw=0.8, alpha=0.35, label="whole sweep, w = 0 → 1"),
                Line2D([], [], marker="o", ls="", mfc="white", mec=S.PUB, label="trained readout, convolutional"),
                Line2D([], [], marker="^", ls="", mfc="white", mec=S.PUB, label="trained readout, attention-based"),
-               Line2D([], [], color=S.MATCH, lw=3.2, label="ResNet-50, V2 recipe"),
-               Line2D([], [], color=S.HIGHSF, lw=3.2, label="Stylized-ImageNet ResNet-50s")]
-    ax_a.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.075), ncol=2, fontsize=5.8, frameon=False, columnspacing=1.2)
+               Line2D([], [], color=S.MATCH, lw=3.2, label="ResNet-50, V2 training recipe"),
+               Line2D([], [], color=S.HIGHSF, lw=3.2, label="Stylized-ImageNet ResNet-50s (Geirhos et al., 2019)")]
+    fig.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.5, 0.004), ncol=3, fontsize=5.8, frameon=False, columnspacing=1.6)
     ax_a.text(-0.42, 1.0, "a", transform=ax_a.transAxes, fontsize=10, fontweight="bold", va="bottom")
 
     # ---- b
