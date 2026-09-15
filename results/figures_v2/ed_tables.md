@@ -220,3 +220,23 @@
 | ImageNet ConvNeXt-S | 768 | 0.248 | 0.211 | 0.335 | 0.124 [0.11, 0.15] | 0.99 | 0.179 | 0.00 | 0.00–1.00 (top-1 0.840) | — | 1 |
 | ImageNet ResNet-50 | 2048 | 0.222 | 0.167 | 0.346 | 0.180 [0.14, 0.23] | 0.99 | 0.202 | 0.02 | 0.15–0.90 (top-1 0.760) | — | 1 |
 | ImageNet VGG-16 | 4096 | 0.110 | 0.096 | 0.189 | 0.095 [0.07, 0.11] | 0.96 | 0.106 | 0.01 | 0.00–1.00 (top-1 0.711) | — | 1 |
+
+**Extended Data Table 14 | Cortex without a stream split: the shape- and texture-leaning halves as encoding bands.** For each single-trunk network the penultimate units were split as in Extended Data Table 13 (all 1,200 images) and the two halves entered as two bands of a banded ridge model of every `nsdgeneral` voxel (same split, folds and alpha grid as Methods 4.5); U_shape and U_texture are the noise-ceiling-normalised unique variances and the index is (U_shape − U_texture)/(U_shape + U_texture), median over reliable voxels (noise ceiling > 0.1, ≥ 20 voxels), mean over eight subjects (seeds averaged per subject). Regions: V1–hV4 from `prf-visualrois`; ventral (VO1/2, PHC1/2), lateral (LO1/2, TO1/2) and dorsal (V3A/B, IPS0–2) from Kastner2015. The two-stream diet row applies the same computation to the magno (shape-biased) and parvo (texture-biased) bands of Fig. 3. w*_cortex is the mixing weight of the lossy sum z(w) = w·y_S + (1 − w)·y_T that maximises an ROI's median test R² (Extended Data Fig. 5 protocol). Exact paired Wilcoxon over subjects. Source: `/scratch/byrong/mpk/generality/cortex/2026-09-14_gen/`.
+
+| network | statistic | V1 | V2 | V3 | hV4 | ventral | lateral | dorsal | hV4 − V1 (n neg, p) | extrastriate − V1 (n neg, p) | ρ(rank, index) V1–hV4 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| two-stream, diet (magno − parvo) | index | -0.06 | -0.44 | -0.70 | -0.84 | -0.88 | -0.87 | -0.87 | — | — | — |
+| | U_shape | 0.087 | 0.045 | 0.026 | 0.016 | 0.014 | 0.014 | 0.013 | | | |
+| | U_texture | 0.099 | 0.119 | 0.145 | 0.180 | 0.246 | 0.190 | 0.181 | | | |
+| single ResNet-34, diet | index | +0.05 | +0.02 | +0.05 | -0.03 | -0.22 | -0.09 | -0.06 | -0.080 (7/8, 0.0156) | -0.178 (7/8, 0.0156) | -0.25 |
+| | U_shape | 0.032 | 0.030 | 0.028 | 0.025 | 0.017 | 0.016 | 0.020 | | | |
+| | U_texture | 0.028 | 0.028 | 0.025 | 0.027 | 0.027 | 0.020 | 0.022 | | | |
+| | w*_cortex (median) | 0.53 | 0.60 | 0.57 | 0.53 | 0.53 | 0.55 | 0.57 | | Δw* extrastriate − V1 +0.01 (4/8 neg, 0.9453) | |
+| single ResNet-18, no diet | index | +0.17 | +0.13 | +0.12 | +0.17 | -0.15 | -0.14 | -0.14 | -0.005 (5/8, 0.9453) | -0.316 (8/8, 0.0078) | -0.15 |
+| | U_shape | 0.038 | 0.035 | 0.030 | 0.031 | 0.019 | 0.016 | 0.018 | | | |
+| | U_texture | 0.026 | 0.026 | 0.024 | 0.022 | 0.025 | 0.022 | 0.024 | | | |
+| | w*_cortex (median) | 0.80 | 0.80 | 0.68 | 0.68 | 0.42 | 0.48 | 0.37 | | Δw* extrastriate − V1 -0.32 (7/8 neg, 0.0234) | |
+| ImageNet ResNet-50 | index | -0.38 | -0.38 | -0.32 | -0.50 | -0.44 | +0.06 | -0.07 | -0.120 (5/8, 0.3828) | +0.235 (1/8, 0.0391) | -0.13 |
+| | U_shape | 0.008 | 0.008 | 0.008 | 0.006 | 0.006 | 0.010 | 0.009 | | | |
+| | U_texture | 0.019 | 0.018 | 0.017 | 0.020 | 0.015 | 0.009 | 0.011 | | | |
+| | w*_cortex (median) | 0.10 | 0.10 | 0.00 | 0.05 | 0.00 | 0.85 | 0.70 | | Δw* extrastriate − V1 +0.07 (3/8 neg, 0.8125) | |

@@ -96,3 +96,22 @@ Statistics as in Methods 4.7: exact paired Wilcoxon over eight subjects
 (floor .0078); seeds reported separately and never pooled with subjects; no
 correction claimed, claims resting on complete separation and replication.
 Whatever the outcome, every prediction is reported.
+
+## Outcomes (appended 2026-09-15, after the runs; Extended Data Tables 13–14, Fig. 6)
+
+- **P1** — direction met in every single-trunk network and seed (ρ ≥ 0.71);
+  magnitude not met: spans 0.09–0.21 (means 0.19, 0.19, 0.14 for our three
+  trunk families; 0.08–0.21 for the six ImageNet networks) against the 0.20
+  threshold. Two-stream concatenation 0.46.
+- **P2** — direction met (ρ 0.72–0.98); magnitude not met: linear 0.05–0.11,
+  two-layer 0.05–0.13, validation accuracy unchanged.
+- **P3** — met: 99% of the shape-leaning half is stream 1 in every seed.
+- **P4** — hV4 − V1 < 0 in ≥ 7/8: met in the diet ResNet-34 (7/8, p = .016),
+  not in the no-diet ResNet-18 (5/8) or ResNet-50 (5/8). Extrastriate more
+  T-explained than V1: met in the no-diet ResNet-18 (8/8, p = .0078) and the
+  diet ResNet-34 (7/8, p = .016); reversed in ImageNet ResNet-50 (1/8, +0.24,
+  p = .039), where the texture-leaning half already carries V1–hV4 and ventral
+  cortex and lateral/dorsal cortex are balanced.
+- **P5** — met in the no-diet ResNet-18 (7/8, p = .023); not met in the diet
+  ResNet-34 (4/8, optimum ≈ 0.55 everywhere) or ResNet-50 (3/8, lateral and
+  dorsal cortex prefer the shape-leaning half).
