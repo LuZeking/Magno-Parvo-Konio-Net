@@ -264,3 +264,53 @@
 | | shared | 0.312 | 0.292 | 0.297 | 0.365 | 0.606 | 0.489 | 0.446 | | | |
 | | r² (full model, nc-normalised) | 0.343 | 0.322 | 0.327 | 0.397 | 0.633 | 0.512 | 0.471 | | | |
 | | w*_cortex (median) | 0.10 | 0.10 | 0.00 | 0.05 | 0.00 | 0.85 | 0.70 | | Δw* extrastriate − V1 +0.07 (3/8 neg, 0.8125) | |
+
+**Extended Data Table 16 | The readout span across the field's model zoo.** Frozen ImageNet networks under the subspace rule of Extended Data Table 13 (PCA to 256 dimensions, 16-class shape and texture LDA, 15 directions each, symmetric orthogonalisation; bases fitted on one stratified half of the 1,200 cue-conflict images and the rate scored on the other, 10 splits both directions), each network's own head untouched, the Geirhos 16-class probability aggregation throughout. “gate” is the w-range over which top-1 on a stratified 10-per-class ILSVRC-2012 validation subset (10,000 images; bases fitted on all cue-conflict images) stays within 5 points of the trained value, with the largest change of top-1 inside it; “texture end / shape end” are the held-out rates at the smallest and the largest gated w, and “gated span” is their difference, under the subspace rule and under the pre-specified unit-level median split of Extended Data Table 14. “probe” is the linear probe of Methods 4.3 (PCA to 256 dimensions, multinomial logistic regression, 5-fold stratified cross-validation) predicting the shape class and, separately, the texture class from the same features; bias is shape minus texture accuracy (chance 0.0625). Preprocessing is Resize 256 / CenterCrop 224 except for Inception-v3 (342/299), EfficientNet-B3 (320/300) and EfficientNet-V2-S (384/384), which were not trained at 224. Over the 38 ImageNet-trained networks: Kendall τ between the ranking by trained rate and by the shape-end rate 0.47 (by the texture-end rate 0.78); 188 of 703 pairs (27%) reverse order; gated span 0.20–0.50 (median 0.30), ≥ 0.20 in 97% and the whole sweep inside the gate in 100%; Spearman ρ between gated span and trained rate +0.04, and trained top-1 -0.22; Kendall τ between trained rate and probe bias 0.44. The three Stylized-ImageNet networks are the published checkpoints of Geirhos et al. (2019), all ResNet-50: trained on Stylized-ImageNet (SIN), on SIN + IN, and on SIN + IN then fine-tuned on IN. Pre-specification: `docs/PLAN_ZOO_2026-09-15.md` (predictions P-Z1–P-Z4). Source: `results/figures_v2/zoo_behaviour.json`, aggregated by `tmp_analysis/figs_v2/zoo_behaviour.py` from the outputs of `slurm/zoo_cc.sh`; the per-network files are outside the repository.
+
+| network | D | top-1 (subset) | trained rate | gate: w-range (largest Δtop-1) | rate at texture end / shape end | gated span, subspace rule | ρ(w, rate) | gated span, unit rule | probe: shape / texture accuracy (bias) | whole sweep in gate |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **ImageNet-trained (torchvision IMAGENET1K_V1)** | | | | | | | | | | |
+| ViT-B/32 | 768 | 0.758 | 0.617 | 0.00–1.00 (0.2 pts) | 0.499 / 0.738 | 0.239 | 1.00 | 0.069 | 0.67 / 0.97 (-0.30) | yes |
+| ViT-B/16 | 768 | 0.815 | 0.399 | 0.00–1.00 (0.2 pts) | 0.287 / 0.570 | 0.282 | 1.00 | 0.085 | 0.56 / 0.99 (-0.43) | yes |
+| ViT-L/16 | 1024 | 0.801 | 0.319 | 0.00–1.00 (0.2 pts) | 0.207 / 0.545 | 0.337 | 1.00 | 0.078 | 0.57 / 0.99 (-0.43) | yes |
+| Inception-v3 | 2048 | 0.759 | 0.305 | 0.00–1.00 (0.6 pts) | 0.241 / 0.487 | 0.246 | 0.99 | 0.099 | 0.40 / 0.96 (-0.56) | yes |
+| MaxViT-T | 512 | 0.842 | 0.295 | 0.00–1.00 (0.2 pts) | 0.230 / 0.469 | 0.239 | 1.00 | 0.114 | 0.40 / 0.97 (-0.57) | yes |
+| ResNeXt-101 32x8d | 2048 | 0.796 | 0.294 | 0.00–1.00 (0.6 pts) | 0.228 / 0.511 | 0.283 | 0.99 | 0.220 | 0.47 / 1.00 (-0.53) | yes |
+| ConvNeXt-L | 1536 | 0.848 | 0.293 | 0.00–1.00 (0.1 pts) | 0.196 / 0.528 | 0.332 | 1.00 | 0.079 | 0.51 / 1.00 (-0.49) | yes |
+| ResNet-152 | 2048 | 0.785 | 0.293 | 0.00–1.00 (1.2 pts) | 0.209 / 0.455 | 0.246 | 1.00 | 0.159 | 0.51 / 1.00 (-0.49) | yes |
+| EfficientNet-B3 | 1536 | 0.818 | 0.291 | 0.00–1.00 (0.2 pts) | 0.204 / 0.514 | 0.310 | 1.00 | 0.141 | 0.49 / 0.99 (-0.50) | yes |
+| ResNet-101 | 2048 | 0.777 | 0.284 | 0.00–1.00 (1.4 pts) | 0.216 / 0.493 | 0.276 | 1.00 | 0.143 | 0.48 / 1.00 (-0.52) | yes |
+| Wide-ResNet-101-2 | 2048 | 0.790 | 0.279 | 0.00–1.00 (0.7 pts) | 0.201 / 0.431 | 0.231 | 1.00 | 0.119 | 0.39 / 0.99 (-0.60) | yes |
+| DenseNet-201 | 1920 | 0.764 | 0.273 | 0.00–1.00 (1.5 pts) | 0.206 / 0.540 | 0.334 | 1.00 | 0.085 | 0.51 / 1.00 (-0.49) | yes |
+| EfficientNet-B0 | 1280 | 0.777 | 0.271 | 0.00–1.00 (0.4 pts) | 0.175 / 0.502 | 0.327 | 1.00 | 0.110 | 0.45 / 0.99 (-0.54) | yes |
+| ConvNeXt-B | 1024 | 0.843 | 0.269 | 0.00–1.00 (0.2 pts) | 0.178 / 0.512 | 0.334 | 1.00 | 0.114 | 0.53 / 1.00 (-0.47) | yes |
+| MobileNet-V3-L | 1280 | 0.741 | 0.265 | 0.00–1.00 (1.2 pts) | 0.156 / 0.591 | 0.435 | 1.00 | 0.102 | 0.53 / 1.00 (-0.47) | yes |
+| AlexNet | 4096 | 0.552 | 0.261 | 0.00–1.00 (1.4 pts) | 0.120 / 0.624 | 0.504 | 1.00 | 0.142 | 0.55 / 1.00 (-0.45) | yes |
+| RegNet-Y-16GF | 3024 | 0.808 | 0.261 | 0.00–1.00 (0.6 pts) | 0.180 / 0.480 | 0.300 | 1.00 | 0.208 | 0.50 / 1.00 (-0.50) | yes |
+| ResNet-34 | 512 | 0.732 | 0.259 | 0.00–1.00 (2.7 pts) | 0.175 / 0.528 | 0.353 | 1.00 | 0.084 | 0.47 / 1.00 (-0.53) | yes |
+| GoogLeNet | 1024 | 0.691 | 0.251 | 0.00–1.00 (1.4 pts) | 0.187 / 0.483 | 0.296 | 1.00 | 0.056 | 0.47 / 0.99 (-0.52) | yes |
+| ConvNeXt-S | 768 | 0.840 | 0.248 | 0.00–1.00 (0.1 pts) | 0.170 / 0.458 | 0.287 | 1.00 | 0.124 | 0.47 / 1.00 (-0.53) | yes |
+| RegNet-Y-8GF | 2016 | 0.802 | 0.244 | 0.00–1.00 (0.8 pts) | 0.151 / 0.516 | 0.365 | 1.00 | 0.140 | 0.50 / 1.00 (-0.50) | yes |
+| ConvNeXt-T | 768 | 0.830 | 0.241 | 0.00–1.00 (0.4 pts) | 0.154 / 0.507 | 0.353 | 1.00 | 0.125 | 0.50 / 1.00 (-0.50) | yes |
+| Swin-S | 768 | 0.836 | 0.236 | 0.00–1.00 (0.2 pts) | 0.154 / 0.440 | 0.287 | 1.00 | 0.077 | 0.44 / 0.99 (-0.55) | yes |
+| ShuffleNet-V2 x1.0 | 1024 | 0.686 | 0.234 | 0.00–1.00 (2.5 pts) | 0.146 / 0.527 | 0.381 | 1.00 | 0.034 | 0.57 / 1.00 (-0.43) | yes |
+| Swin-B | 1024 | 0.839 | 0.233 | 0.00–1.00 (0.1 pts) | 0.177 / 0.406 | 0.229 | 1.00 | 0.071 | 0.42 / 1.00 (-0.57) | yes |
+| ResNet-18 | 512 | 0.695 | 0.233 | 0.00–1.00 (3.8 pts) | 0.163 / 0.479 | 0.316 | 1.00 | 0.050 | 0.47 / 0.99 (-0.53) | yes |
+| Wide-ResNet-50-2 | 2048 | 0.785 | 0.230 | 0.00–1.00 (0.6 pts) | 0.166 / 0.427 | 0.261 | 0.99 | 0.105 | 0.38 / 0.99 (-0.62) | yes |
+| MNASNet-1.0 | 1280 | 0.734 | 0.226 | 0.00–1.00 (1.3 pts) | 0.134 / 0.530 | 0.395 | 1.00 | 0.042 | 0.47 / 1.00 (-0.53) | yes |
+| Swin-T | 768 | 0.820 | 0.225 | 0.00–1.00 (0.2 pts) | 0.150 / 0.460 | 0.309 | 1.00 | 0.084 | 0.48 / 1.00 (-0.52) | yes |
+| DenseNet-121 | 1024 | 0.740 | 0.224 | 0.00–1.00 (1.9 pts) | 0.147 / 0.494 | 0.347 | 1.00 | 0.071 | 0.45 / 1.00 (-0.55) | yes |
+| ResNet-50 | 2048 | 0.760 | 0.222 | 0.00–1.00 (1.5 pts) | 0.157 / 0.447 | 0.290 | 1.00 | 0.130 | 0.43 / 1.00 (-0.56) | yes |
+| ResNeXt-50 32x4d | 2048 | 0.774 | 0.219 | 0.00–1.00 (0.9 pts) | 0.145 / 0.461 | 0.316 | 1.00 | 0.193 | 0.41 / 0.99 (-0.58) | yes |
+| EfficientNet-V2-S | 1280 | 0.832 | 0.184 | 0.00–1.00 (0.2 pts) | 0.134 / 0.332 | 0.198 | 1.00 | 0.074 | 0.35 / 0.99 (-0.64) | yes |
+| MobileNet-V2 | 1280 | 0.715 | 0.184 | 0.00–1.00 (4.4 pts) | 0.128 / 0.474 | 0.346 | 1.00 | 0.051 | 0.48 / 1.00 (-0.52) | yes |
+| VGG-19-BN | 4096 | 0.743 | 0.150 | 0.00–1.00 (0.8 pts) | 0.094 / 0.335 | 0.241 | 1.00 | 0.093 | 0.37 / 0.99 (-0.62) | yes |
+| VGG-16-BN | 4096 | 0.733 | 0.115 | 0.00–1.00 (0.7 pts) | 0.068 / 0.294 | 0.226 | 1.00 | 0.104 | 0.36 / 1.00 (-0.64) | yes |
+| VGG-16 | 4096 | 0.711 | 0.110 | 0.00–1.00 (0.5 pts) | 0.061 / 0.329 | 0.268 | 1.00 | 0.093 | 0.33 / 0.99 (-0.66) | yes |
+| VGG-11-BN | 4096 | 0.703 | 0.105 | 0.00–1.00 (1.0 pts) | 0.059 / 0.294 | 0.235 | 1.00 | 0.092 | 0.42 / 1.00 (-0.57) | yes |
+| **same architecture, different training recipe** | | | | | | | | | | |
+| ResNet-50 (V2 recipe) | 2048 | 0.814 | 0.185 | 0.00–1.00 (0.2 pts) | 0.131 / 0.465 | 0.334 | 1.00 | 0.056 | 0.38 / 1.00 (-0.62) | yes |
+| **Stylized-ImageNet controls (Geirhos et al., 2019)** | | | | | | | | | | |
+| ResNet-50 SIN | 2048 | 0.582 | 0.810 | 0.00–1.00 (3.9 pts) | 0.701 / 0.867 | 0.166 | 0.99 | 0.140 | 0.79 / 0.90 (-0.11) | yes |
+| ResNet-50 SIN+IN | 2048 | 0.743 | 0.363 | 0.00–1.00 (2.4 pts) | 0.256 / 0.606 | 0.350 | 1.00 | 0.170 | 0.59 / 0.99 (-0.40) | yes |
+| ResNet-50 SIN+IN, ft IN | 2048 | 0.770 | 0.227 | 0.00–1.00 (1.9 pts) | 0.170 / 0.447 | 0.277 | 1.00 | 0.154 | 0.41 / 0.99 (-0.58) | yes |

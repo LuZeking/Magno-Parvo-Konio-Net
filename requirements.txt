@@ -22,6 +22,11 @@ pandas==3.0.5
 nibabel==5.4.2
 h5py==3.16.0
 pillow==12.3.0
+colour-science==0.4.7         # RGB->DKL conversion (src/utils/helpers.py, imported by dkl_frontend.py); found missing by the container test 2026-09-15
+dvd_scale_free @ git+https://github.com/KietzmannLab/DVD.git@36e56374bb73f52a97fc6e3a39531cba2443bb2f
+                              # KietzmannLab DVD repository, branch dvd_scale_free at the commit installed here (2026-05-13);
+                              # src/utils/helpers.py imports dvd_scale_free.dvd_scale_free.development at module load and
+                              # dkl_frontend.py imports helpers, so the encoding front end needs it. Found by the container test 2026-09-15.
 joblib==1.5.3
 tqdm==4.70.0
 
@@ -51,11 +56,13 @@ tqdm==4.70.0
 #   nsd_visuo_semantics        Imported only by
 #                              src/analysis/lab_analyses/roi_utils.py, which is
 #                              not on the path to any reported number.
-#   DVD                        Commented out in setup.cfg, and correctly so:
-#                              the developmental front-end transform is
-#                              implemented in this repository at
-#                              src/analysis/encoding/dkl_frontend.py rather than
-#                              imported from the DVD package.
+#   DVD                        Commented out in setup.cfg, but NEEDED: the
+#                              2026-09-15 container test showed that
+#                              src/utils/helpers.py imports
+#                              dvd_scale_free.dvd_scale_free.development (DVDConfig,
+#                              DVDTransformer) at module load, and dkl_frontend.py
+#                              imports helpers; dkl_frontend.py also imports the
+#                              DVD transform lazily. Hence the git pin above.
 #
 # So the verification entry point in README.md, and the whole analysis path,
 # run from the pinned list above with no laboratory git dependency at all.

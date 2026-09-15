@@ -158,13 +158,13 @@ def main():
             stats["tau_trained_vs_probe_bias"] = float(kendalltau([r["trained"] for r in pr], [r["probe"]["bias"] for r in pr]).statistic)
             stats["rho_trained_vs_probe_bias"] = float(spearmanr([r["trained"] for r in pr], [r["probe"]["bias"] for r in pr]).statistic)
             stats["n_probe"] = len(pr)
-        complete = len(im) == 39
+        complete = len(im) == 38
         ev["P-Z1_ranking_not_invariant"] = dict(tau=stats["tau_trained_vs_shape_end"], frac_reversed=stats["frac_reversed"], n=len(im), complete=complete,
                                                 met=bool(stats["tau_trained_vs_shape_end"] < 0.7 and stats["frac_reversed"] >= 0.25))
         ev["P-Z2_magnitude_across_zoo"] = dict(frac_gated_ge_0_20=stats["frac_gated_ge_0_20"], frac_whole_sweep_in_gate=stats["frac_whole_sweep_in_gate"], n=len(im), complete=complete,
                                               met=bool(stats["frac_gated_ge_0_20"] >= 0.75 and stats["frac_whole_sweep_in_gate"] >= 0.5))
         if "tau_trained_vs_probe_bias" in stats:
-            ev["P-Z4_rate_vs_probe_dissociate"] = dict(tau=stats["tau_trained_vs_probe_bias"], n=stats["n_probe"], complete=stats["n_probe"] == 39,
+            ev["P-Z4_rate_vs_probe_dissociate"] = dict(tau=stats["tau_trained_vs_probe_bias"], n=stats["n_probe"], complete=stats["n_probe"] == 38,
                                                       met=bool(stats["tau_trained_vs_probe_bias"] < 0.7))
     sin = next((r for r in rows if r["spec"] == "hub:resnet50_sin"), None)
     if sin is not None and im:
@@ -175,7 +175,7 @@ def main():
             c_probe_bias_exceeds_all_imagenet=(dict(sin=sin["probe"]["bias"], max_imagenet=float(max(r["probe"]["bias"] for r in im if "probe" in r)),
                                                     met=bool(sin["probe"]["bias"] > max(r["probe"]["bias"] for r in im if "probe" in r)))
                                                if "probe" in sin and any("probe" in r for r in im) else None),
-            complete=len(im) == 39)
+            complete=len(im) == 38)
     out = dict(run_id=args.run_id, plan="docs/PLAN_ZOO_2026-09-15.md", networks=rows, missing=missing, ranking=stats, evaluation=ev)
     print("\nRanking statistics over ImageNet-trained networks:")
     for k, v in stats.items():

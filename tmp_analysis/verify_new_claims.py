@@ -1519,6 +1519,66 @@ def check_misc() -> None:
           + " ".join(f"{v:.3f}" for v in D["c__nodiet__seedmeans"]) + ")")
 
 
+def check_zoo() -> None:
+    """Results 2.4 / Discussion / ED Fig. 6 / ED Table 16: the model zoo (docs/PLAN_ZOO_2026-09-15.md)."""
+    print("[model zoo, results/figures_v2/zoo_behaviour.json]")
+    z = json.load(open("results/figures_v2/zoo_behaviour.json"))
+    im = [n for n in z["networks"] if n["group"] == "imagenet"]
+    st = z["ranking"]
+    chk("zoo: ImageNet-trained networks", len(im), 38, 0)
+    chk("zoo: networks in total", len(z["networks"]), 42, 0)
+    chk("zoo: missing networks", len(z["missing"]), 0, 0)
+    chk("zoo: pairs", st["n_pairs"], 703, 0)
+    chk("zoo: tau trained vs shape end", st["tau_trained_vs_shape_end"], 0.47, T2)
+    chk("zoo: fraction of pairs reversed", st["frac_reversed"], 0.27, T2)
+    chk("zoo: tau trained vs probe bias", st["tau_trained_vs_probe_bias"], 0.44, T2)
+    gs = np.array([n["gated_span"] for n in im])
+    chk("zoo: gated span min", gs.min(), 0.20, T2); chk("zoo: gated span max", gs.max(), 0.50, T2)
+    chk("zoo: gated span median", float(np.median(gs)), 0.30, T2)
+    chk("zoo: whole sweep in gate, all 38", float(sum(n["whole_sweep_in_gate"] for n in im)), 38, 0)
+    dt = np.array([n["max_abs_dtop1_in_gate"] for n in im])
+    chk("zoo: largest top-1 change inside the gate (pts)", 100 * dt.max(), 4.4, 0.051)
+    chk("zoo: median top-1 change inside the gate (pts)", 100 * float(np.median(dt)), 0.7, 0.051)
+    chk("zoo: rho(span, trained rate)", st["rho_span_vs_trained"], 0.04, T2)
+    chk("zoo: rho(span, top-1)", st["rho_span_vs_top1"], -0.22, T2)
+    chk("zoo: mean span, convolutional", st["mean_gated_span_conv"], 0.31, T2)
+    chk("zoo: mean span, attention-based", st["mean_gated_span_attention"], 0.27, T2)
+    chk("zoo: rho(w, rate) >= 0.99 in every network", float(min(n["rho"] for n in im)), 0.99, 0.0051)
+    pb = np.array([n["probe"]["bias"] for n in im])
+    chk("zoo: probe bias, most texture-informative", pb.min(), -0.66, T2); chk("zoo: probe bias, least", pb.max(), -0.30, T2)
+    tr = np.array([n["trained"] for n in im])
+    chk("zoo: lowest trained rate (VGG-11-BN)", tr.min(), 0.10, T2); chk("zoo: highest trained rate (ViT-B/32)", tr.max(), 0.62, T2)
+    ug = np.array([n["unit_gated_span"] for n in im])
+    chk("zoo: unit-rule gated span min", ug.min(), 0.03, T2); chk("zoo: unit-rule gated span max", ug.max(), 0.22, T2)
+    chk("zoo: subspace > unit rule, n networks", float(sum(gs > ug)), 38, 0)
+    chk("zoo: n reaching ViT-B/32's trained rate at the shape end", float(sum(n["shape_end"] >= tr.max() for n in im)), 2, 0)
+    sin = {n["spec"]: n for n in z["networks"] if n["group"] == "sin"}
+    a = sin["hub:resnet50_sin"]
+    chk("SIN: trained rate", a["trained"], 0.81, T2)
+    chk("SIN: trained rate is the maximum of 42", float(a["trained"] >= max(n["trained"] for n in z["networks"])), 1, 0)
+    chk("SIN: gated span", a["gated_span"], 0.17, T2)
+    chk("SIN: span below every ImageNet network", float(a["gated_span"] < gs.min()), 1, 0)
+    chk("SIN: texture end", a["texture_end"], 0.70, T2); chk("SIN: shape end", a["shape_end"], 0.87, T2)
+    chk("SIN: probe bias", a["probe"]["bias"], -0.11, T2)
+    chk("SIN+IN: trained rate", sin["hub:resnet50_sin_in"]["trained"], 0.36, T2)
+    chk("SIN+IN: gated span", sin["hub:resnet50_sin_in"]["gated_span"], 0.35, T2)
+    chk("SIN+IN: probe bias", sin["hub:resnet50_sin_in"]["probe"]["bias"], -0.40, T2)
+    chk("SIN+IN ft IN: trained rate", sin["hub:resnet50_sin_in_ft"]["trained"], 0.23, T2)
+    chk("SIN+IN ft IN: gated span", sin["hub:resnet50_sin_in_ft"]["gated_span"], 0.28, T2)
+    chk("SIN+IN ft IN: probe bias", sin["hub:resnet50_sin_in_ft"]["probe"]["bias"], -0.58, T2)
+    v2 = [n for n in z["networks"] if n["group"] == "recipe"][0]
+    v1 = [n for n in im if n["spec"] == "tv:resnet50"][0]
+    chk("ResNet-50 V2 recipe: trained rate", v2["trained"], 0.19, T2); chk("ResNet-50 V1: trained rate", v1["trained"], 0.22, T2)
+    chk("ResNet-50 V2 recipe: gated span", v2["gated_span"], 0.33, T2); chk("ResNet-50 V1: gated span", v1["gated_span"], 0.29, T2)
+    chk("ResNet-50 V2 recipe: probe bias", v2["probe"]["bias"], -0.62, T2); chk("ResNet-50 V1: probe bias", v1["probe"]["bias"], -0.57, T2)
+    ev = z["evaluation"]
+    for k, want in (("P-Z1_ranking_not_invariant", True), ("P-Z2_magnitude_across_zoo", True), ("P-Z4_rate_vs_probe_dissociate", True)):
+        chk(f"zoo: {k} met", float(ev[k]["met"]), float(want), 0)
+    chk("zoo: P-Z3a met", float(ev["P-Z3_SIN_control"]["a_trained_is_max"]["met"]), 1, 0)
+    chk("zoo: P-Z3b failed (reported as such)", float(ev["P-Z3_SIN_control"]["b_gated_span_ge_0_20_same_sign"]["met"]), 0, 0)
+    chk("zoo: P-Z3c met", float(ev["P-Z3_SIN_control"]["c_probe_bias_exceeds_all_imagenet"]["met"]), 1, 0)
+
+
 def main() -> int:
     check_recovery()
     check_production_statistic()
@@ -1528,6 +1588,7 @@ def main() -> int:
     check_perimage()
     check_generality()
     check_subspace()
+    check_zoo()
     check_table1()
     check_two_by_two()
     check_gradient_extras()

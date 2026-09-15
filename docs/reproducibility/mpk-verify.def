@@ -23,17 +23,19 @@ From: python:3.11-slim
 
 %post
     set -e
-    apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm -rf /var/lib/apt/lists/*
+    apt-get update && apt-get install -y --no-install-recommends libgomp1 git && rm -rf /var/lib/apt/lists/*
     python -m pip install --no-cache-dir --upgrade pip
     python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.13.0 torchvision==0.28.0
-    grep -E '^(numpy|scipy|himalaya|scikit-learn|matplotlib|pandas|nibabel|h5py|pillow|joblib|tqdm|kornia)==' /opt/requirements.txt > /opt/req-cpu.txt
+    grep -E '^(numpy|scipy|himalaya|scikit-learn|matplotlib|pandas|nibabel|h5py|pillow|colour-science|joblib|tqdm|kornia)==' /opt/requirements.txt > /opt/req-cpu.txt
     python -m pip install --no-cache-dir -r /opt/req-cpu.txt
+    python -m pip install --no-cache-dir --no-deps "dvd_scale_free @ git+https://github.com/KietzmannLab/DVD.git@36e56374bb73f52a97fc6e3a39531cba2443bb2f"
     mkdir -p /opt/mpk /tmp/mpl
 
 %environment
     export PYTHONPATH=/opt/mpk:/opt/mpk/tmp_analysis
     export MPLCONFIGDIR=/tmp/mpl
     export OMP_NUM_THREADS=4
+    export PYTHONNOUSERSITE=1   # never pick up the host user's ~/.local site-packages (apptainer binds $HOME)
 
 %runscript
     cd /opt/mpk && exec python tmp_analysis/verify_new_claims.py "$@"
