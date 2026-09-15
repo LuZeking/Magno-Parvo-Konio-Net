@@ -28,7 +28,9 @@ KAST = {"ventral": [8, 9, 10, 11], "lateral": [12, 13, 14, 15], "dorsal": [16, 1
 REGIONS = list(VIS) + list(KAST)
 FAMILIES = {"rgb_tsn": ["run_rgb_tsn_seed0", "run_rgb_tsn_seed1", "run_rgb_tsn_seed2"],
             "single34": ["run_dkl_bcs_single34_seed0", "run_dkl_bcs_single34_seed1", "run_dkl_bcs_single34_seed2"],
-            "resnet50": ["tv_resnet50"]}
+            "resnet50": ["tv_resnet50"],
+            # PLAN_SUBSPACE D4 adds two ImageNet networks (only present under --run-id 2026-09-15_sub)
+            "vit_b_16": ["tv_vit_b_16"], "convnext_base": ["tv_convnext_base"]}
 
 
 def region_masks(vis, kas, nc, extra_ok=None):
