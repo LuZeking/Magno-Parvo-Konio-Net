@@ -6,17 +6,22 @@
 #   sbatch slurm/encode_cc_controls.sh               # then the rest
 #
 # Same pipeline as slurm/encode_cue_conflict.sh (results/encoding seed-0 cells),
-# feature caches already written by job 26413641, no cue-conflict pass. The
-# single-band ridge fits are batched (--ridge-batched) so the job fits under
-# the 64G cap: the unbatched 2026-08 jobs peaked at 120-128 GB; batched but unchunked
-# the probe (26484409) still exceeded 48G in the banded fit, so voxels are chunked (3 chunks).
-# the n_alphas x n_val x n_targets validation predictions held at once.
+# feature caches already written by job 26413641, no cue-conflict pass.
+#
+# Memory (PLAN_NMI9 W2a, 2026-09-15): the peak of this pipeline is himalaya's banded
+# random search, which forms an (n_alphas_batch x n_test x n_train) matrix per gamma
+# sample and CV fold -- 30 GB with all 21 alphas at once in float64, whatever the voxel
+# chunk (probes 26484409 and 26484845 died at 0% of the search at 48G). --ridge-batched
+# now batches the single-band fits AND the banded search over alphas (n_alphas_batch=7),
+# which changes no estimate; the equivalence probe (slurm/encode_equiv_probe.sh, job
+# 26492385) reproduces the stored diet seed-0 fit and sizes --mem below. No voxel
+# chunking: it multiplies the search cost by the number of chunks for nothing.
 #SBATCH --job-name=mpk_cc_ctrl
 #SBATCH --partition=main
 #SBATCH --qos=standard
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
-#SBATCH --time=12:00:00
+#SBATCH --time=14:00:00
 #SBATCH --array=0-31%8
 #SBATCH --output=slurm/logs/ccctrl_%A_%a.out
 
@@ -49,6 +54,6 @@ cd "$REPO"
 $PY -m src.analysis.encoding.run_encoding \
     --subject "$SUBJECT" --model-name "$MODEL_NAME" --out-dir "$OUT" \
     --feature-cache "$CACHE" --checkpoint "$CKPT" --ridge-batched \
-    --voxel-chunk "${VOXEL_CHUNK:-5300}" \
+    --voxel-chunk "${VOXEL_CHUNK:-0}" \
     $FRONTEND
 echo "[ccctrl] done $MODEL_NAME subj$SUBJECT"

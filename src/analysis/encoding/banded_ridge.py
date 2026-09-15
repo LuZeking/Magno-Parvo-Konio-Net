@@ -121,6 +121,7 @@ def fit_banded(
     X_bands_extra: list[np.ndarray] | None = None,
     single_solver_params: dict | None = None,
     banded_targets_batch: int = 2000,
+    banded_alphas_batch: int | None = None,
 ) -> dict[str, np.ndarray]:
     """Joint banded ridge + per-band single ridge fits; test R2 per voxel.
 
@@ -130,6 +131,18 @@ def fit_banded(
     predictions at once (~24 GB float64 for 15.7k voxels) and drove the
     2026-08 encoding jobs to a 120-128 GB peak. Batching does not change the
     estimates; the default None keeps the original call for provenance.
+
+    ``banded_alphas_batch`` bounds the memory of the banded random search.
+    himalaya's group-ridge solver forms, for every gamma sample and CV fold,
+    the matrix Xtest @ (X^T X + alpha I)^-1 X^T of shape
+    (n_alphas_batch, n_test, n_train); with all 21 alphas at once, 3 folds
+    over 28,455 trials and float64 that is 21 x 9,485 x 18,970 x 8 B = 30 GB,
+    independent of the number of voxels -- which is why the 48 GB control
+    probes of 2026-09-14 (jobs 26484409, 26484845) died at 0% of the search
+    whatever the voxel chunk, and why the original fits needed 160 GB. With
+    n_alphas_batch=7 the same matrix is 10 GB. Batching over alphas changes
+    nothing in the estimates (each alpha is solved independently); None keeps
+    the original call for provenance.
 
     ``X_bands_extra`` is an optional design of further stimuli, in the same
     band order. When given, the *fitted* magno-only, parvo-only and joint
@@ -198,6 +211,8 @@ def fit_banded(
             alphas=alphas,
             n_targets_batch=banded_targets_batch,
             n_targets_batch_refit=500,
+            **({"n_alphas_batch": banded_alphas_batch}
+               if banded_alphas_batch is not None else {}),
         ),
         random_state=seed,
         cv=splits,

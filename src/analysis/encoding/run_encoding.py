@@ -401,6 +401,9 @@ def main():
             single_solver_params=(dict(n_targets_batch=500, n_alphas_batch=7, n_targets_batch_refit=500)
                                   if args.ridge_batched else None),
             banded_targets_batch=1000 if args.ridge_batched else 2000,
+            # the (n_alphas, n_test, n_train) intermediate of the banded random
+            # search is the real memory peak (30 GB unbatched); see fit_banded
+            banded_alphas_batch=7 if args.ridge_batched else None,
         )
         for k, v in part_res.items():
             res_chunks.setdefault(k, []).append(v)
