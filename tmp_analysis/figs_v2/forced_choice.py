@@ -66,7 +66,7 @@ ROWS = [
     ("parvo_highsf, stream 2 alone (L−M + luminance)", "results/cue_conflict/dkl_bcs_parvo_highsf_seed?_logits.npz", "parvo_only"),
     ("single stream, ResNet-34 (matched)", "results/cue_conflict_single34_bestep/*_logits.npz", "full"),
     ("single stream, ResNet-18 (half)", "results/cue_conflict_single_bestep/*_logits.npz", "full"),
-    ("no diet, accuracy-matched (epoch 10), magno alone", "results/cue_conflict_matched/*_logits.npz", "magno_only"),
+    ("no diet, accuracy-matched (epochs 10, 10, 11), magno alone", "results/cue_conflict_matched/*_logits.npz", "magno_only"),
     ("thesis checkpoint (progressive schedule), both streams", "results/cue_conflict/thesis_dvd_trans_logits.npz", "full"),
     ("untrained, diet front end, magno alone", "results/cue_conflict/untrained_blur_cs_logits.npz", "magno_only"),
     ("untrained, no-diet front end, magno alone", "results/cue_conflict/untrained_noblur_logits.npz", "magno_only"),
@@ -97,11 +97,17 @@ def main():
     print("  2x2 forced:", {k: round(v, 3) for k, v in two.items()})
     lines.append("")
     json.dump(res, open("results/figures_v2/forced_choice.json", "w"), indent=1)
+    # Upsert Table 10 in place: Tables 11-16 in the same file belong to other generators
+    import re as _re
     md = open("results/figures_v2/ed_tables.md", encoding="utf8").read()
-    if "Extended Data Table 10" in md:
-        md = md[:md.index("**Extended Data Table 10")]
-    open("results/figures_v2/ed_tables.md", "w", encoding="utf8").write(md.rstrip() + "\n\n" + "\n".join(lines) + "\n")
-    print("appended Extended Data Table 10")
+    block = "\n".join(lines).strip() + "\n"
+    pat = _re.compile(r"\*\*Extended Data Table 10 \|.*?(?=\n\*\*Extended Data Table|\Z)", _re.S)
+    if pat.search(md):
+        md = pat.sub(lambda m: block, md, count=1)
+    else:
+        md = md.rstrip() + "\n\n" + block
+    open("results/figures_v2/ed_tables.md", "w", encoding="utf8").write(md)
+    print("upserted Extended Data Table 10")
 
 
 if __name__ == "__main__":

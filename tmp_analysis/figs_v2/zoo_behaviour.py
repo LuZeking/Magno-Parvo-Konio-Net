@@ -104,6 +104,13 @@ def load_network(root, spec):
     if os.path.exists(f_probe):
         pb = json.load(open(f_probe))
         r["probe"] = dict(shape_acc=pb["shape_acc"], texture_acc=pb["texture_acc"], bias=pb["probe_bias"], chance=pb["chance"])
+    f_k = os.path.join(root, f"{tag}_error_consistency.json")
+    if os.path.exists(f_k):
+        k = json.load(open(f_k))
+        r["kappa"] = dict(ceiling=k["ceiling"], trained=k["trained"]["kappa_mean"], trained_pct=k["trained"]["kappa_pct_ceiling"],
+                          texture_end=k.get("texture_end", {}).get("kappa_mean"), texture_end_pct=k.get("texture_end", {}).get("kappa_pct_ceiling"),
+                          shape_end=k.get("shape_end", {}).get("kappa_mean"), shape_end_pct=k.get("shape_end", {}).get("kappa_pct_ceiling"),
+                          best_in_gate_pct=k.get("best_in_gate", {}).get("kappa_pct_ceiling"), best_in_gate_w=k.get("best_in_gate", {}).get("w"))
     return r
 
 
@@ -131,12 +138,13 @@ def main():
             continue
         r.update(spec=spec, label=label, family=family, group=group, fig6=spec in FIG6)
         rows.append(r)
-    print(f"{'network':26s} {'D':>5s} {'top1':>5s} {'trained':>7s} {'gate':>10s} {'tex-end':>7s} {'shp-end':>7s} {'gated':>6s} {'ρ':>5s} {'unit-g':>6s} {'probe':>6s} {'all-in':>6s}")
+    print(f"{'network':26s} {'D':>5s} {'top1':>5s} {'trained':>7s} {'gate':>10s} {'tex-end':>7s} {'shp-end':>7s} {'gated':>6s} {'ρ':>5s} {'unit-g':>6s} {'probe':>6s} {'all-in':>6s} {'κ%':>6s}")
     for r in sorted(rows, key=lambda x: (x["group"], -x["trained"])):
         ug = "%.3f" % r["unit_gated_span"] if "unit_gated_span" in r else "—"
         pb = "%+.3f" % r["probe"]["bias"] if "probe" in r else "—"
+        kk = "%4.1f%%" % r["kappa"]["trained_pct"] if "kappa" in r else "—"
         print(f"{r['label']:26s} {r['n_units']:5d} {r['trained_top1']:5.3f} {r['trained']:7.3f} {r['gate'][0]:4.2f}–{r['gate'][1]:4.2f} "
-              f"{r['texture_end']:7.3f} {r['shape_end']:7.3f} {r['gated_span']:6.3f} {r['rho']:5.2f} {ug:>6s} {pb:>6s} {'yes' if r['whole_sweep_in_gate'] else 'no':>6s}")
+              f"{r['texture_end']:7.3f} {r['shape_end']:7.3f} {r['gated_span']:6.3f} {r['rho']:5.2f} {ug:>6s} {pb:>6s} {'yes' if r['whole_sweep_in_gate'] else 'no':>6s} {kk:>6s}")
     if missing:
         print(f"\nmissing ({len(missing)}): " + ", ".join(missing))
 
@@ -153,6 +161,15 @@ def main():
                      rho_span_vs_trained=float(spearmanr(gs, tr).statistic), rho_span_vs_top1=float(spearmanr(gs, t1).statistic),
                      mean_gated_span_conv=float(np.mean([r["gated_span"] for r in im if r["family"] == "conv"])),
                      mean_gated_span_attention=float(np.mean([r["gated_span"] for r in im if r["family"] == "attention"])) if any(r["family"] == "attention" for r in im) else None)
+        kp = [r for r in im if "kappa" in r]
+        if len(kp) >= 3:
+            kt = np.array([r["kappa"]["trained_pct"] for r in kp])
+            stats["kappa_trained_pct_min"] = float(kt.min()); stats["kappa_trained_pct_max"] = float(kt.max()); stats["kappa_trained_pct_median"] = float(np.median(kt))
+            stats["kappa_best_in_gate_pct_max"] = float(max(r["kappa"]["best_in_gate_pct"] for r in kp if r["kappa"]["best_in_gate_pct"] is not None))
+            stats["rho_kappa_vs_trained_rate"] = float(spearmanr([r["trained"] for r in kp], kt).statistic)
+            dk = [r["kappa"]["shape_end_pct"] - r["kappa"]["texture_end_pct"] for r in kp if r["kappa"]["shape_end_pct"] is not None]
+            stats["kappa_shape_minus_texture_end_pct_median"] = float(np.median(dk)); stats["kappa_shape_minus_texture_end_pct_max"] = float(max(dk))
+            stats["n_kappa"] = len(kp)
         pr = [r for r in im if "probe" in r]
         if len(pr) >= 3:
             stats["tau_trained_vs_probe_bias"] = float(kendalltau([r["trained"] for r in pr], [r["probe"]["bias"] for r in pr]).statistic)

@@ -9,7 +9,7 @@
       shape/texture boundary. Seeds are the replication unit (3, or 2 for one cell).
   (d, e) accuracy-matched control: a no-diet network brought to the diet's
       accuracy does not acquire the shape bias (probe d, behaviour e). One
-      matched run — read as n = 1.
+      matched runs (three seeds since 2026-09-16, epochs 10/10/11).
   (f) how the streams decide cue-conflict images: shape / texture / neither.
       The denominator caveat, drawn.
 
@@ -133,7 +133,7 @@ def main():
         ax.text(2.42, (vals[0].mean() + vals[1].mean()) / 2, f"gap\n{gap:+.2f}", fontsize=5.8, color=S.MUTED, va="center")
         ax.text(2, vals[2].mean() - (0.07 if j == 0 else 0.03), f"closes {100 * closed:.1f}%\nof the gap", ha="center",
                 va="top", fontsize=6.0, color=S.MATCH)
-        ax.set_xticks([0, 1, 2]); ax.set_xticklabels(["diet\n0.556", "no diet\n0.70", "no diet,\nmatched\n0.548 (n=1)"], fontsize=6.2)
+        ax.set_xticks([0, 1, 2]); ax.set_xticklabels(["diet\n0.556", "no diet\n0.70", "no diet,\nmatched\n0.55 (n=3)"], fontsize=6.2)
         ax.set_xlabel("validation accuracy at the scored checkpoint", fontsize=6.2, color=S.MUTED)
         ax.set_xlim(-0.5, 2.9); ax.set_ylim(*ylim)
         ax.set_ylabel(ylab)

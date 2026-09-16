@@ -254,15 +254,21 @@
    491
   ]
  },
- "no diet, accuracy-matched (epoch 10), magno alone": {
+ "no diet, accuracy-matched (epochs 10, 10, 11), magno alone": {
   "forced": [
-   0.37
+   0.37,
+   0.3641666666666667,
+   0.3566666666666667
   ],
   "restricted": [
-   0.4548872180451128
+   0.4548872180451128,
+   0.4647887323943662,
+   0.43172690763052207
   ],
   "decided": [
-   532
+   532,
+   568,
+   498
   ]
  },
  "thesis checkpoint (progressive schedule), both streams": {

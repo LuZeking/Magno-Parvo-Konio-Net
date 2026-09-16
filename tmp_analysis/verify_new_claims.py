@@ -978,6 +978,10 @@ def _logit_estimators(pattern: str, cond: str) -> tuple[np.ndarray, np.ndarray]:
     return np.array(fc), np.array(rs)
 
 
+def _probe_one(path: str, stream: str) -> float:
+    return float(json.load(open(path))["streams"][stream]["bias"])
+
+
 def check_table1() -> None:
     """Table 1 (Results 2.2), every numeric cell: linear probe from results/shape_texture/,
     cue-conflict shape bias from results/cue_conflict/, final checkpoints, plus the
@@ -993,8 +997,13 @@ def check_table1() -> None:
     chk("probe untrained parvo, seed 0", u["parvo"]["bias"], -0.087, T3)
     chk("probe trained magno, seed 0", t["magno"]["bias"], 0.810, T3)
     chk("probe trained parvo, seed 0", t["parvo"]["bias"], -0.482, T3)
-    chk("contribution of learning, magno", t["magno"]["bias"] - u["magno"]["bias"], 0.014, T3)
-    chk("contribution of learning, parvo", t["parvo"]["bias"] - u["parvo"]["bias"], -0.395, T3)
+    chk("contribution of learning, magno (seed 0)", t["magno"]["bias"] - u["magno"]["bias"], 0.014, T3)
+    chk("contribution of learning, parvo (seed 0)", t["parvo"]["bias"] - u["parvo"]["bias"], -0.395, T3)
+    # Table 1 / Fig. 2a state the 3-seed trained mean minus the untrained seed-0 network
+    _tm = np.mean([_probe_one(f, "magno") for f in sorted(glob.glob("results/shape_texture/dkl_bcs_seed?_trained.json"))])
+    _tp = np.mean([_probe_one(f, "parvo") for f in sorted(glob.glob("results/shape_texture/dkl_bcs_seed?_trained.json"))])
+    chk("Table 1: contribution of learning, magno (3 seeds)", _tm - u["magno"]["bias"], 0.024, T3)
+    chk("Table 1: contribution of learning, parvo (3 seeds)", _tp - u["parvo"]["bias"], -0.432, T3)
     chk("no-diet magno probe, untrained", json.load(open(f"{ST}/untrained_noblur.json"))["streams"]["magno"]["bias"], 0.417, T3)
     chk("no-diet magno probe, trained", _probe(f"{ST}/dkl_base_seed?_trained.json", "magno").mean(), -0.226, T3)
     chk("no-diet parvo probe, trained", _probe(f"{ST}/dkl_base_seed?_trained.json", "parvo").mean(), -0.504, T3)
@@ -1090,8 +1099,15 @@ def check_two_by_two() -> None:
     db = _cc(f"{CC_BEST}/dkl_bcs_seed?_ep*.json", "magno_only").mean()
     nb = _cc(f"{CC}/dkl_base_seed?.json", "magno_only").mean()
     mb = _cc("results/cue_conflict_matched/*.json", "magno_only").mean()
-    chk("matched closes % of probe gap", 100 * (mp - npb) / (dp - npb), 7.6, 0.051)
-    chk("matched closes % of behavioural gap", 100 * (mb - nb) / (db - nb), 7.0, 0.051)
+    chk("matched closes % of probe gap (3 seeds)", 100 * (mp - npb) / (dp - npb), 7.2, 0.051)
+    chk("matched closes % of behavioural gap (3 seeds)", 100 * (mb - nb) / (db - nb), 6.1, 0.051)
+    _mps = _probe("results/shape_texture_matched/*.json", "magno"); _mbs = _cc("results/cue_conflict_matched/*.json", "magno_only")
+    chk("matched seeds", float(len(_mps)), 3, 0)
+    chk("matched probe gap closure, min seed (%)", float(min(100 * (_mps - npb) / (dp - npb))), 5.8, 0.051)
+    chk("matched probe gap closure, max seed (%)", float(max(100 * (_mps - npb) / (dp - npb))), 8.1, 0.051)
+    chk("matched behavioural gap closure, min seed (%)", float(min(100 * (_mbs - nb) / (db - nb))), 2.2, 0.051)
+    chk("matched behavioural gap closure, max seed (%)", float(max(100 * (_mbs - nb) / (db - nb))), 9.1, 0.051)
+    chk("matched magno probe, most texture-leaning seed", float(_mps.min()), -0.17, T2); chk("matched magno probe, least", float(_mps.max()), -0.14, T2)
     if not mp < 0:
         FAILS.append("matched magno stream not on the texture side"); print("  BAD matched magno probe not < 0")
     else:
@@ -1577,6 +1593,17 @@ def check_zoo() -> None:
     chk("zoo: P-Z3a met", float(ev["P-Z3_SIN_control"]["a_trained_is_max"]["met"]), 1, 0)
     chk("zoo: P-Z3b failed (reported as such)", float(ev["P-Z3_SIN_control"]["b_gated_span_ge_0_20_same_sign"]["met"]), 0, 0)
     chk("zoo: P-Z3c met", float(ev["P-Z3_SIN_control"]["c_probe_bias_exceeds_all_imagenet"]["met"]), 1, 0)
+    # error consistency across the zoo (post hoc, PLAN_ZOO outcomes)
+    kp = [n for n in im if "kappa" in n]
+    chk("zoo kappa: networks with kappa", float(len(kp)), 38, 0)
+    kt = np.array([n["kappa"]["trained_pct"] for n in kp])
+    chk("zoo kappa: trained min (% ceiling)", kt.min(), 2.4, 0.051); chk("zoo kappa: trained max", kt.max(), 23.0, 0.051); chk("zoo kappa: trained median", float(np.median(kt)), 7.9, 0.051)
+    chk("zoo kappa: rho(kappa, trained rate)", st["rho_kappa_vs_trained_rate"], 0.80, T2)
+    dk = np.array([n["kappa"]["shape_end_pct"] - n["kappa"]["texture_end_pct"] for n in kp])
+    chk("zoo kappa: shape end > texture end, n", float((dk > 0).sum()), 38, 0); chk("zoo kappa: median rise (points of ceiling)", float(np.median(dk)), 13.5, 0.051)
+    chk("zoo kappa: best in gate, max", float(max(n["kappa"]["best_in_gate_pct"] for n in kp)), 36.7, 0.051)
+    chk("SIN kappa trained (% ceiling)", a["kappa"]["trained_pct"], 39.5, 0.051); chk("SIN kappa shape end", a["kappa"]["shape_end_pct"], 49.7, 0.051); chk("SIN kappa best in gate", a["kappa"]["best_in_gate_pct"], 53.3, 0.051)
+    chk("VGG-16 kappa trained (% ceiling, our pipeline)", [n for n in im if n["spec"] == "tv:vgg16"][0]["kappa"]["trained_pct"], 3.4, 0.051)
 
 
 def check_subspace_cortex() -> None:
