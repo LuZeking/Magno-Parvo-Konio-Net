@@ -16,14 +16,14 @@
 #       bash -c 'cd /opt/mpk && PYTHONPATH=. python notebooks/readout_gain_torchvision.py'
 
 Bootstrap: docker
-From: python:3.11-slim
+From: python:3.11
 
 %files
     requirements.txt /opt/requirements.txt
 
 %post
     set -e
-    apt-get update && apt-get install -y --no-install-recommends libgomp1 git && rm -rf /var/lib/apt/lists/*
+    # the full python:3.11 image already ships the VCS client and libgomp1; an apt step under fakeroot took > 2 h on a compute node
     python -m pip install --no-cache-dir --upgrade pip
     python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.13.0 torchvision==0.28.0
     grep -E '^(numpy|scipy|himalaya|scikit-learn|matplotlib|pandas|nibabel|h5py|pillow|colour-science|joblib|tqdm|kornia)==' /opt/requirements.txt > /opt/req-cpu.txt
