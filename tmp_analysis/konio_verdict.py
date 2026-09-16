@@ -33,9 +33,14 @@ from src.analysis.encoding import nsd_data
 from src.analysis.encoding.stats import load_results
 
 OUT_DIR = "results/encoding"
-REF = "untrained_seed0"
-ARMS = [("matched (PRIMARY)", "untrained_konio_matched"),
-        ("raw (sensitivity)", "untrained_konio_raw")]
+# Seed: `python tmp_analysis/konio_verdict.py [SEED]`. Seed 0 is the published pair (both arms);
+# seeds 1-2 (W2c, slurm/encode_konio_seeds.sh) have the matched arm only, each against the
+# untrained L-M network at the same seed, so the magno gate below still applies within a seed.
+SEED = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+REF = "untrained_seed0" if SEED == 0 else f"untrained_seed{SEED}"
+ARMS = ([("matched (PRIMARY)", "untrained_konio_matched"),
+         ("raw (sensitivity)", "untrained_konio_raw")] if SEED == 0 else
+        [("matched (PRIMARY)", f"untrained_konio_matched_seed{SEED}")])
 
 KASTNER = {1: "V1v", 2: "V1d", 3: "V2v", 4: "V2d", 5: "V3v", 6: "V3d",
            7: "hV4", 8: "VO1", 9: "VO2", 10: "PHC1", 11: "PHC2",
