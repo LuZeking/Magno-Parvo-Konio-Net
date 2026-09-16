@@ -1579,6 +1579,46 @@ def check_zoo() -> None:
     chk("zoo: P-Z3c met", float(ev["P-Z3_SIN_control"]["c_probe_bias_exceeds_all_imagenet"]["met"]), 1, 0)
 
 
+def check_subspace_cortex() -> None:
+    """Results 2.4 / ED Table 15 upper block: the three-band (S, T, R) cortex fits of PLAN_SUBSPACE D4."""
+    print("[subspace-band cortex, results/figures_v2/subspace_cortex.json]")
+    z = json.load(open("results/figures_v2/subspace_cortex.json"))
+    fam = z["families"]
+    regions = z["regions"]
+    ext = ["ventral", "lateral", "dorsal"]
+    # unique variances of the two 15-d subspaces are at the 1% level everywhere; shared+residual carry 23-63%
+    us = [float(np.nanmean(fam[f]["uS"][r])) for f in ("rgb_tsn", "single34", "resnet50", "vit_b_16", "convnext_base") for r in regions]
+    ut = [float(np.nanmean(fam[f]["uT"][r])) for f in ("rgb_tsn", "single34", "resnet50", "vit_b_16", "convnext_base") for r in regions]
+    sh = [float(np.nanmean(fam[f]["shared"][r])) for f in ("rgb_tsn", "single34", "resnet50", "vit_b_16", "convnext_base") for r in regions]
+    r2 = [float(np.nanmean(fam[f]["r2"][r])) for f in ("rgb_tsn", "single34", "resnet50", "vit_b_16", "convnext_base") for r in regions]
+    chk("subspace bands: largest mean unique variance (S or T), any region", max(max(us), max(ut)), 0.013, 0.0006)
+    chk("subspace bands: smallest shared+residual", min(sh), 0.23, T2); chk("subspace bands: largest shared+residual", max(sh), 0.63, T2)
+    chk("subspace bands: full-model r2 min", min(r2), 0.25, T2); chk("subspace bands: full-model r2 max", max(r2), 0.65, T2)
+    # P-C1: extrastriate - V1 contrast of the index
+    for f, n_neg, n, mean in (("rgb_tsn", 2, 8, 0.151), ("single34", 2, 8, 0.130), ("resnet50", 2, 7, 0.106), ("vit_b_16", 3, 8, -0.097), ("convnext_base", 7, 8, -0.440)):
+        st = fam[f]["stats"]["extrastriate_minus_V1"]
+        chk(f"P-C1 {f}: extrastriate - V1, n negative", st["n_neg"], n_neg, 0); chk(f"P-C1 {f}: n subjects", st["n"], n, 0)
+        chk(f"P-C1 {f}: extrastriate - V1 mean", st["mean"], mean, 0.0051)
+    chk("P-C2 convnext_base: exact p", fam["convnext_base"]["stats"]["extrastriate_minus_V1"]["p"], 0.0156, 0.0005)
+    chk("resnet50: hV4 - V1 contrast (positive), n negative", fam["resnet50"]["stats"]["hV4_minus_V1"]["n_neg"], 0, 0)
+    chk("resnet50: hV4 - V1 mean", fam["resnet50"]["stats"]["hV4_minus_V1"]["mean"], 0.452, 0.0051)
+    # P-C3: w* of the 15-d lossy sum, extrastriate vs V1
+    for f, n_low, n in (("rgb_tsn", 6, 8), ("single34", 4, 8), ("resnet50", 4, 7), ("vit_b_16", 3, 8), ("convnext_base", 1, 8)):
+        st = fam[f]["stats"]["wstar_extrastriate_minus_V1"]
+        chk(f"P-C3 {f}: w* lower beyond V1, n", st["n_neg"], n_low, 0); chk(f"P-C3 {f}: n subjects", st["n"], n, 0)
+    chk("P-C3 rgb_tsn: exact p", fam["rgb_tsn"]["stats"]["wstar_extrastriate_minus_V1"]["p"], 0.0391, 0.0005)
+    chk("P-C3 convnext_base: exact p (reverse direction)", fam["convnext_base"]["stats"]["wstar_extrastriate_minus_V1"]["p"], 0.0391, 0.0005)
+    wm = fam["convnext_base"]["stats"]["wstar_median"]
+    chk("convnext_base: w* V1", wm["V1"], 0.45, T2); chk("convnext_base: w* extrastriate (mean of 3 groups)", float(np.mean([wm[r] for r in ext])), 0.73, T2)
+    wm = fam["rgb_tsn"]["stats"]["wstar_median"]
+    chk("rgb_tsn: w* V1", wm["V1"], 0.63, T2); chk("rgb_tsn: w* extrastriate", float(np.mean([wm[r] for r in ext])), 0.33, T2)
+    # evaluation as pre-registered: P-C1 fails in all three named families, P-C2 met, P-C3 met in no family
+    met_c1 = all(fam[f]["stats"]["extrastriate_minus_V1"]["n_neg"] >= 7 for f in ("rgb_tsn", "single34", "resnet50"))
+    met_c2 = any(fam[f]["stats"]["extrastriate_minus_V1"]["n_neg"] >= 7 for f in ("vit_b_16", "convnext_base"))
+    n_c3 = sum(fam[f]["stats"]["wstar_extrastriate_minus_V1"]["n_neg"] >= 7 for f in ("rgb_tsn", "single34", "resnet50", "vit_b_16", "convnext_base"))
+    chk("P-C1 met (text: failed)", float(met_c1), 0, 0); chk("P-C2 met (text: met)", float(met_c2), 1, 0); chk("P-C3 families at >= 7/8 (text: none)", float(n_c3), 0, 0)
+
+
 def main() -> int:
     check_recovery()
     check_production_statistic()
@@ -1589,6 +1629,7 @@ def main() -> int:
     check_generality()
     check_subspace()
     check_zoo()
+    check_subspace_cortex()
     check_table1()
     check_two_by_two()
     check_gradient_extras()

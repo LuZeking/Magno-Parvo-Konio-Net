@@ -173,5 +173,37 @@ is reported, and the unit-split results are not revised.
   and 0.47 with the two streams: a refitted head recovers shape information from the
   residual that the fixed head does not use.
 
-### Cortex (D4)
-(appended when jobs 26491689 and 26491690 complete)
+### Cortex (D4), appended 2026-09-16 after arrays 26491689 / 26491690 (variance partition) and 26492098 (w sweep); `results/figures_v2/subspace_cortex.json`, Extended Data Table 15 (upper block)
+
+71 of the 72 variance-partition elements completed inside 12 h (each ≈ 9–10 h; the three-band
+random search at 30 samples dominates); element 48 (ImageNet ResNet-50, subject 01) timed out and
+was resubmitted with a 22-h limit (job 26496391), so the ResNet-50 row below has n = 7 until it
+lands and will be refreshed then. All 72 w-sweep elements completed.
+
+- **P-C1 failed.** The extrastriate − V1 contrast of the index (U_S − U_T)/(U_S + U_T) is
+  negative in 2/8 subjects in `rgb_tsn` (Δ = +0.15, p = .078), 2/8 in `dkl_bcs_single34`
+  (+0.13, p = .38) and 2/7 in ResNet-50 (+0.11, p = .30). The hV4 − V1 descent is likewise
+  absent (5/8, 2/8, 0/7 negative; ResNet-50's contrast is positive, +0.45, p = .016).
+- **P-C2 met.** In ConvNeXt-B the contrast is negative in 7/8 subjects (Δ = −0.44, p = .016;
+  lateral −0.30, dorsal −0.51 against V1 +0.17); in ViT-B/16 it is negative in 3/8 (−0.10,
+  p = .84), the index being −0.25 to −0.70 in every region including V1.
+- **P-C3 failed.** The cortex-optimal weight of the 15-dimensional lossy sum is lower beyond V1
+  than in V1 in 6/8 subjects in `rgb_tsn` (0.63 → 0.33, p = .039), 4/8 in `dkl_bcs_single34`,
+  4/7 in ResNet-50, 3/8 in ViT-B/16 and 1/8 in ConvNeXt-B (whose extrastriate cortex prefers
+  the shape end, 0.45 → 0.73, p = .039); no family reaches the pre-registered 7/8.
+- **Why, in the numbers (descriptives).** The two 15-dimensional discriminant subspaces add
+  almost no *unique* cortical variance: noise-ceiling-normalised U_S and U_T are 0.002–0.013 in
+  every region of every family, against 0.23–0.63 shared with the residual and full-model r² of
+  0.25–0.65. The index is therefore a ratio of two numbers at the 1% level, and its sign is
+  not stable across subjects. The unit halves, which partition the whole representation
+  (Extended Data Table 15, lower block), carry 0.006–0.04 unique each and their index gave the
+  pre-registered contrasts of `docs/PLAN_GENERALITY_2026-09-14.md`. The two rules therefore
+  answer different questions: the subspace rule finds the directions that move the behavioural
+  rate — 4–15% (shape) and 20–33% (texture) of the feature variance — and those directions are
+  nearly silent as unique cortical predictors; the unit rule finds which half of the
+  representation cortex loads on. Reading, as pre-stated for a failure of P-C1 in ResNet-50: the
+  cortical generality claim stays scoped to the unit-level result and to the networks trained on
+  our images, and Fig. 6c–d keep the unit-level fits; the subspace-band fits are reported in
+  Extended Data Table 15.
+- The `rgb_tsn` seeds and `dkl_bcs_single34` seeds were averaged per subject before every
+  contrast, as pre-stated; reliable-voxel counts per region are in the JSON.

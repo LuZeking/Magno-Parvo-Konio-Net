@@ -237,10 +237,42 @@
 | ImageNet ResNet-50 | 2048 | 0.222 | 0.167 | 0.346 | 0.180 [0.14, 0.23] | 0.99 | 0.202 | 0.02 | 0.15–0.90 (top-1 0.760) | — | 0.27 [0.20, 0.32] (ρ ≥ 0.75; |S| = 34; gate 0.00–0.85) | 0.27 [0.20, 0.31] (ρ ≥ 0.85; |S| = 204; gate 0.00–0.80) | 1 |
 | ImageNet VGG-16 | 4096 | 0.110 | 0.096 | 0.189 | 0.095 [0.07, 0.11] | 0.96 | 0.106 | 0.01 | 0.00–1.00 (top-1 0.711) | — | 0.40 [0.34, 0.46] (ρ ≥ -0.38; |S| = 56; gate 0.00–0.95) | 0.27 [0.22, 0.34] (ρ ≥ 0.23; |S| = 409; gate 0.00–0.90) | 1 |
 
-**Extended Data Table 15 | Cortex without a stream split: the shape- and texture-predictive components as encoding bands.** for each single-trunk network the penultimate units were split as in Extended Data Table 14 (all 1,200 images) and the two halves entered as two bands of a banded ridge model of every `nsdgeneral` voxel (same split, folds and alpha grid as Methods 4.5); U_shape and U_texture are the noise-ceiling-normalised unique variances and the index is (U_shape − U_texture)/(U_shape + U_texture), median over reliable voxels (noise ceiling > 0.1, ≥ 20 voxels), mean over eight subjects (seeds averaged per subject). Regions: V1–hV4 from `prf-visualrois`; ventral (VO1/2, PHC1/2), lateral (LO1/2, TO1/2) and dorsal (V3A/B, IPS0–2) from Kastner2015. The two-stream diet row applies the same computation to the magno (shape-biased) and parvo (texture-biased) bands of Fig. 3. “shared” is the cross-validated variance the bands account for jointly (the full model's r² minus the unique variances) and “r²” the full model's noise-ceiling-normalised r², medians over the same voxels. w*_cortex is the mixing weight of the lossy sum z(w) = w·y_S + (1 − w)·y_T that maximises an ROI's median test R² (Extended Data Fig. 5 protocol). Exact paired Wilcoxon over subjects. Source: `results/figures_v2/generality_cortex.json`, aggregated by `tmp_analysis/figs_v2/generality_cortex.py` from the per-subject fits of `src/analysis/generality/cortex_bands.py` (`slurm/generality_{nsd,cortex}.sh`), which are deposited alongside the encoding outputs of Fig. 3 (Code availability).
+**Extended Data Table 15 | Cortex without a stream split: the shape- and texture-predictive components as encoding bands.** Upper block (subspace bands): the three bands are the shape-predictive subspace S = Y·B_S (15 dimensions), the texture-predictive subspace T = Y·B_T (15) and the residual R = Y·B_R of Extended Data Table 13 (bases fitted on all 1,200 images), with U_S = r²_{STR} − r²_{TR} and U_T = r²_{STR} − r²_{SR} from the three-band model and the two two-band models (random search, 30 and 20 samples); “shared” is r²_{STR} − U_S − U_T and “r²” the three-band model's noise-ceiling-normalised r². w*_cortex there is the weight of the 15-dimensional lossy sum z(w) = w·s + (1 − w)·t alone. Lower block (unit halves): for each single-trunk network the penultimate units were split as in Extended Data Table 14 (all 1,200 images) and the two halves entered as two bands of a banded ridge model of every `nsdgeneral` voxel (same split, folds and alpha grid as Methods 4.5); U_shape and U_texture are the noise-ceiling-normalised unique variances and the index is (U_shape − U_texture)/(U_shape + U_texture), median over reliable voxels (noise ceiling > 0.1, ≥ 20 voxels), mean over eight subjects (seeds averaged per subject). Regions: V1–hV4 from `prf-visualrois`; ventral (VO1/2, PHC1/2), lateral (LO1/2, TO1/2) and dorsal (V3A/B, IPS0–2) from Kastner2015. The two-stream diet row applies the same computation to the magno (shape-biased) and parvo (texture-biased) bands of Fig. 3. “shared” is the cross-validated variance the bands account for jointly (the full model's r² minus the unique variances) and “r²” the full model's noise-ceiling-normalised r², medians over the same voxels. w*_cortex is the mixing weight of the lossy sum z(w) = w·y_S + (1 − w)·y_T that maximises an ROI's median test R² (Extended Data Fig. 5 protocol). Exact paired Wilcoxon over subjects. Source: `results/figures_v2/generality_cortex.json` and `results/figures_v2/subspace_cortex.json`, aggregated by `tmp_analysis/figs_v2/generality_cortex.py` from the per-subject fits of `src/analysis/generality/cortex_bands.py` (`slurm/generality_{nsd,cortex}.sh`, `slurm/subspace_{nsd,cortex}.sh`), which are deposited alongside the encoding outputs of Fig. 3 (Code availability).
 
 | network | statistic | V1 | V2 | V3 | hV4 | ventral | lateral | dorsal | hV4 − V1 (n neg, p) | extrastriate − V1 (n neg, p) | ρ(rank, index) V1–hV4 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| **subspace bands S, T, R** | |  |  |  |  |  |  |  |  | | |
+| single ResNet-18, no diet | index | +0.12 | -0.01 | +0.01 | +0.03 | +0.35 | +0.13 | +0.32 | -0.088 (5/8, 0.4609) | +0.151 (2/8, 0.0781) | -0.25 |
+| | U_shape | 0.011 | 0.009 | 0.010 | 0.010 | 0.013 | 0.009 | 0.011 | | | |
+| | U_texture | 0.008 | 0.009 | 0.009 | 0.009 | 0.006 | 0.007 | 0.006 | | | |
+| | shared | 0.329 | 0.311 | 0.305 | 0.327 | 0.521 | 0.409 | 0.375 | | | |
+| | r² (full model, nc-normalised) | 0.351 | 0.332 | 0.327 | 0.351 | 0.542 | 0.429 | 0.396 | | | |
+| | w*_cortex (median) | 0.63 | 0.68 | 0.68 | 0.63 | 0.33 | 0.33 | 0.33 | | Δw* extrastriate − V1 -0.23 (6/8 neg, 0.0391) | |
+| single ResNet-34, diet | index | -0.03 | -0.13 | -0.08 | +0.13 | +0.19 | -0.02 | +0.14 | +0.153 (2/8, 0.1094) | +0.130 (2/8, 0.3828) | +0.25 |
+| | U_shape | 0.007 | 0.007 | 0.007 | 0.010 | 0.011 | 0.007 | 0.010 | | | |
+| | U_texture | 0.007 | 0.008 | 0.008 | 0.007 | 0.008 | 0.007 | 0.008 | | | |
+| | shared | 0.325 | 0.298 | 0.293 | 0.316 | 0.503 | 0.379 | 0.358 | | | |
+| | r² (full model, nc-normalised) | 0.341 | 0.316 | 0.313 | 0.337 | 0.524 | 0.397 | 0.378 | | | |
+| | w*_cortex (median) | 0.62 | 0.57 | 0.55 | 0.45 | 0.55 | 0.68 | 0.48 | | Δw* extrastriate − V1 -0.01 (4/8 neg, 0.9453) | |
+| ImageNet ResNet-50 | index | -0.34 | -0.18 | -0.23 | +0.11 | -0.18 | -0.24 | -0.29 | +0.452 (0/7, 0.0156) | +0.106 (2/7, 0.2969) | +0.69 |
+| | U_shape | 0.004 | 0.005 | 0.005 | 0.009 | 0.005 | 0.004 | 0.004 | | | |
+| | U_texture | 0.008 | 0.006 | 0.007 | 0.006 | 0.006 | 0.005 | 0.006 | | | |
+| | shared | 0.354 | 0.328 | 0.317 | 0.374 | 0.631 | 0.499 | 0.453 | | | |
+| | r² (full model, nc-normalised) | 0.369 | 0.342 | 0.334 | 0.395 | 0.646 | 0.511 | 0.470 | | | |
+| | w*_cortex (median) | 0.40 | 0.30 | 0.40 | 0.40 | 0.40 | 0.50 | 0.40 | | Δw* extrastriate − V1 -0.01 (4/7 neg, 0.8125) | |
+| ImageNet ViT-B/16 | index | -0.45 | -0.54 | -0.45 | -0.25 | -0.50 | -0.43 | -0.70 | +0.193 (1/8, 0.0781) | -0.097 (3/8, 0.8438) | +0.37 |
+| | U_shape | 0.004 | 0.003 | 0.004 | 0.007 | 0.004 | 0.003 | 0.002 | | | |
+| | U_texture | 0.006 | 0.006 | 0.007 | 0.009 | 0.010 | 0.005 | 0.008 | | | |
+| | shared | 0.254 | 0.242 | 0.254 | 0.292 | 0.555 | 0.404 | 0.382 | | | |
+| | r² (full model, nc-normalised) | 0.267 | 0.256 | 0.271 | 0.310 | 0.573 | 0.416 | 0.398 | | | |
+| | w*_cortex (median) | 0.50 | 0.40 | 0.45 | 0.15 | 0.50 | 0.40 | 0.55 | | Δw* extrastriate − V1 +0.08 (3/8 neg, 0.3828) | |
+| ImageNet ConvNeXt-B | index | +0.17 | +0.01 | -0.17 | +0.38 | +0.00 | -0.30 | -0.51 | +0.212 (3/8, 0.1953) | -0.440 (7/8, 0.0156) | +0.08 |
+| | U_shape | 0.006 | 0.005 | 0.005 | 0.008 | 0.006 | 0.004 | 0.003 | | | |
+| | U_texture | 0.004 | 0.003 | 0.004 | 0.003 | 0.004 | 0.006 | 0.005 | | | |
+| | shared | 0.256 | 0.240 | 0.233 | 0.285 | 0.540 | 0.408 | 0.369 | | | |
+| | r² (full model, nc-normalised) | 0.267 | 0.253 | 0.246 | 0.301 | 0.554 | 0.422 | 0.385 | | | |
+| | w*_cortex (median) | 0.45 | 0.55 | 0.55 | 0.00 | 0.75 | 0.70 | 0.75 | | Δw* extrastriate − V1 +0.20 (1/8 neg, 0.0391) | |
+| **unit halves S, T** | |  |  |  |  |  |  |  |  | | |
 | two-stream, diet (magno − parvo) | index | -0.06 | -0.44 | -0.70 | -0.84 | -0.88 | -0.87 | -0.87 | — | — | — |
 | | U_shape | 0.087 | 0.045 | 0.026 | 0.016 | 0.014 | 0.014 | 0.013 | | | |
 | | U_texture | 0.099 | 0.119 | 0.145 | 0.180 | 0.246 | 0.190 | 0.181 | | | |

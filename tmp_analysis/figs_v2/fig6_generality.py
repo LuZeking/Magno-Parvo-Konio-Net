@@ -52,8 +52,13 @@ def seed_mean(f, key="mean_curve"):
 
 
 def load_ctx():
-    """Subspace cortex fits when they exist, else the unit-split fits (panels c-d say which)."""
-    for path, mode in (("results/figures_v2/subspace_cortex.json", "subspace"), ("results/figures_v2/generality_cortex.json", "unit")):
+    """The pre-registered unit-split cortex fits (PLAN_GENERALITY P3-P5, met); the subspace-band fits
+    (PLAN_SUBSPACE P-C1-P-C3, failed except P-C2) are reported in ED Table 15, not drawn here. Set
+    FIG6_CORTEX=subspace to draw them instead."""
+    order = (("results/figures_v2/generality_cortex.json", "unit"), ("results/figures_v2/subspace_cortex.json", "subspace"))
+    if os.environ.get("FIG6_CORTEX") == "subspace":
+        order = order[::-1]
+    for path, mode in order:
         if os.path.exists(path):
             ctx = json.load(open(path))
             if ctx.get("families"):
