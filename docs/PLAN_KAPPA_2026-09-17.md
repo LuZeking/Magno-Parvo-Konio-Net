@@ -122,4 +122,63 @@ Discussion.
 
 ## Outcomes
 
-*(appended after the run)*
+
+Run 2026-09-17, 20:15 (`slurm/zoo_kappa.sh`, job 26503999; aggregation
+`tmp_analysis/figs_v2/kappa_rate.py`; `results/figures_v2/kappa_rate.{json,md}`). 42 networks,
+21 gains each, 798 gated readouts over the 38 ImageNet-trained networks.
+
+**Five of the six predictions failed, and the failure has a single cause.**
+
+| prediction | outcome | value |
+|---|---|---|
+| K-1 rate range ≥ 0.20 with κ < 40% of ceiling everywhere in the gate | **failed** (34 of 38, threshold 36) | κ < 40% held in **38 of 38**; the gated rate range fell below 0.20 in four networks (VGG-11-BN 0.153, VGG-16-BN 0.157, VGG-19-BN 0.177, EfficientNet-V2-S 0.189), measured here on all-image bases rather than the held-out split mean of Extended Data Table 16 |
+| K-2 κ varies ≥ 2× at matched rate | **failed** | 10.0–18.7% of the ceiling (1.88×), 33 of 38 networks reaching 0.40 ± 0.05 inside their gate |
+| K-3 ρ(κ at matched rate, probe bias) ≥ +0.30 | **failed** | ρ = **+0.01** (with the trained rate +0.07; probe bias against trained rate +0.41) |
+| K-4a across-network s.d. ≥ within-network s.d. | **failed** | 2.3 against 4.1 points of ceiling (0.55×) |
+| K-4b probe adds ≥ 0.05 R² over the rate | **failed** | rank R² 0.891 → 0.895 (Δ +0.004) over 798 gated readouts |
+| K-5 SIN highest at matched rate | met, **but not a matched comparison** | the SIN ResNet-50 cannot be gained below 0.65 inside its gate, so the pre-registered fallback compared it at 0.65 against the others at 0.40; at a common 0.65 it is 28.7% against ViT-B/32's 25.9% |
+| K-6 no ImageNet readout above 50% of the ceiling anywhere | **met** | maximum 36.7% (ViT-B/32 at its shape end) |
+
+**The cause (post hoc).** Cohen's κ has a maximum attainable value at fixed marginals,
+κ_max = (1 − |p_model − p_human| − p_e)/(1 − p_e). The observers decide shape on 0.958 of
+decided trials; an ImageNet network at 0.22 is capped at κ ≈ 0.02, one eighth of the
+human–human κ of 0.234, whatever it does image by image. Over the gated readouts the bound runs
+from 0.006 to 0.219 — from 3% to 94% of the human ceiling — and human pairs themselves reach
+only 35% of their own bound. Almost everything the measure reports is therefore the bound
+moving:
+
+- across the 798 gated readouts, raw κ is a function of the rate (one quadratic, R² = 0.897,
+  RMSE 1.7 points of ceiling; per-network mean offsets −2.2 to +2.8 points, unrelated to the
+  probe bias ρ = +0.04, top-1 −0.02 or the trained rate −0.13);
+- normalised by the bound (κ/κ_max as a percentage of the human-pair value), the rank
+  dependence on the rate disappears: pooled rank R² **0.001** against 0.891, within-network
+  median Spearman ρ **+0.20** against +0.99, and only 22 of 38 networks gain at all from the
+  texture end to the shape end (median +6.6 points against +13.5 raw);
+- at the matched rate the normalised spread is 100.5–185.9% (1.85×) and is still unrelated to
+  the probe bias (ρ = +0.08);
+- at a common rate of 0.65 the Stylized-ImageNet network is 135% [104, 165] against ViT-B/32's
+  120% [64, 174] and AlexNet's 79% [61, 96] (95% percentile bootstrap over the ten observers),
+  so its advantage is not separable from that of an ordinary ImageNet network at the same rate.
+
+**Consequences for the manuscript**, to be written as the pre-registration requires:
+
+1. Error consistency is **not** an independent fourth number. Reported as the field reports it —
+   at each network's own trained readout, as a percentage of the human–human ceiling — it is
+   largely a re-expression of the cue-conflict rate, and it inherits the rate's dependence on
+   the readout: ranking the 33 networks by κ at their trained readouts against by κ at a matched
+   rate gives Kendall τ = 0.33 with 34% of the 528 pairs reversing, *more* re-ordering than the
+   rate ranking itself (τ = 0.47, 27%). The Discussion's "error consistency belongs beside them"
+   must be replaced by: report it at a matched rate, or against its attainable maximum, or not
+   at all.
+2. The readout therefore moves the field's more rigorous human-comparison statistic as well as
+   the rate — a strengthening of the paper's central claim, not a qualification of it.
+3. Results 2.5's own statement for our networks ("no readout exceeds 20.7% of the ceiling") and
+   the zoo's 37% ceiling are unchanged and are now explained: they are close to what the
+   marginal mismatch allows.
+
+**Caveats stated with the result.** κ/κ_max is a ratio with a small denominator at low rates and
+is correspondingly noisy, which is why intervals are given; values above 100% mean a model
+attains a larger share of its (much smaller) attainable agreement than human pairs attain of
+theirs, not that it is more human-like than a human. The decided-image set changes along a
+sweep. The prediction set above was pre-registered; everything under "The cause" is post hoc and
+is labelled as such wherever it is reported.
