@@ -1696,6 +1696,7 @@ def main() -> int:
     check_misc()
     check_konio_seeds_and_compute()
     check_unit_cortex_posthoc()
+    check_kappa_matched()
     print("\nFAILURES:", FAILS if FAILS else "none")
     return 1 if FAILS else 0
 
@@ -1741,6 +1742,36 @@ def check_unit_cortex_posthoc():
     u = [float(np.nanmean(c[f][k][r])) for f in ("rgb_tsn", "single34", "resnet50", "convnext_base") for k in ("uS", "uT") for r in RG]
     chk("unit-halves unique variance min, trunks + ConvNeXt-B (text 0.006)", min(u), 0.006, 0.0006)
     chk("unit-halves unique variance max, trunks + ConvNeXt-B (text 0.04)", max(u), 0.04, T2)
+
+
+def check_kappa_matched():
+    """Results 2.4-2.5, Discussion and ED Table 17: agreement at a matched rate (PLAN_KAPPA)."""
+    print("[error consistency at a matched rate, PLAN_KAPPA]")
+    K = json.load(open("results/figures_v2/kappa_rate.json"))
+    P, B, pr = K["post_hoc"], K["post_hoc"]["bound"], K["predictions"]
+    chk("matched target rate (text 0.40)", K["target_rate"], 0.40, 1e-9)
+    chk("networks reaching the common rate (text 33)", pr["K2"]["n"], 33, 0)
+    chk("gated readouts of the 38 (text 798)", pr["K4b"]["n_readouts"], 798, 0)
+    chk("kappa bound, smallest gated (text 0.006)", B["kappa_max_range"][0], 0.006, 0.0006)
+    chk("kappa bound, largest gated (text 0.219)", B["kappa_max_range"][1], 0.219, 0.0006)
+    chk("one quadratic in the rate, R2 (text 0.90)", P["curve"]["r2"], 0.90, 0.005)
+    chk("pooled rank R2, raw (text 0.891)", B["r2_rate_raw"], 0.891, 0.0006)
+    chk("pooled rank R2, normalised (text 0.001)", B["r2_rate_norm"], 0.001, 0.0006)
+    chk("tau, trained v matched ranking (text 0.33)", P["tau_kappa_trained_vs_matched"], 0.33, 0.005)
+    chk("pairs reversing (text 34%)", 100 * P["kappa_pairs_reversing"], 34, 0.5)
+    chk("matched-rate spread (text 1.9-fold)", pr["K2"]["ratio"], 1.9, 0.05)
+    chk("rho(kappa at matched rate, probe bias) (text +0.01)", pr["K3"]["rho"], 0.01, 0.005)
+    hi = {b["label"]: b for b in B["high_rate"]}
+    chk("SIN at the common rate, normalised (text 135%)", hi["ResNet-50 SIN"]["norm"], 135, 0.5)
+    chk("ViT-B/32 at the common rate, normalised (text 120%)", hi["ViT-B/32"]["norm"], 120, 0.5)
+    chk("human pairs, share of their own bound (Methods 4.3: 0.353)", B["ceiling_over_max"], 0.353, 0.0006)
+    failed = [k for k, v in pr.items() if not v.get("met")]
+    if sorted(failed) != ["K1", "K2", "K3", "K4a", "K4b"]:
+        FAILS.append(f"PLAN_KAPPA outcomes changed: failed = {sorted(failed)}")
+    else:
+        print("  OK  four of six predictions failed (K-1 to K-4), K-5 untestable as specified, K-6 met")
+    if pr["K6"]["max"] >= 40:
+        FAILS.append("some gated readout exceeds 40% of the ceiling; Results 2.4 says 37% is the maximum")
 
 
 if __name__ == "__main__":

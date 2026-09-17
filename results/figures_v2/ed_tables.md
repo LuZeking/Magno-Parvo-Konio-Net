@@ -362,3 +362,44 @@
 | ResNet-50 SIN | 2048 | 0.582 | 0.810 (758) | 0.00–1.00 (3.9 pts) | 0.701 / 0.867 | 0.166 | 0.99 | 0.140 | 0.79 / 0.90 (-0.11) | 39.5 (28.7 → 49.7) | yes |
 | ResNet-50 SIN+IN | 2048 | 0.743 | 0.363 (802) | 0.00–1.00 (2.4 pts) | 0.256 / 0.606 | 0.350 | 1.00 | 0.170 | 0.59 / 0.99 (-0.40) | 11.7 (7.1 → 18.5) | yes |
 | ResNet-50 SIN+IN, ft IN | 2048 | 0.770 | 0.227 (797) | 0.00–1.00 (1.9 pts) | 0.170 / 0.447 | 0.277 | 1.00 | 0.154 | 0.41 / 0.99 (-0.58) | 5.9 (4.6 → 14.7) | yes |
+
+**Extended Data Table 17 | Error consistency with the ten observers at a matched cue-conflict rate.** Every frozen network of Extended Data Table 16 under the same gain (Methods 4.8), swept over w ∈ {0, 0.05, …, 1}; for each network the row is the **gated** readout whose rate is closest to 0.40 (tolerance ± 0.05; networks whose gate does not reach it are absent, 5 of 38: EfficientNet-V2-S, VGG-11-BN, VGG-16-BN, VGG-16, VGG-19-BN). κ is Cohen's κ on trial-by-trial agreement over the images both parties decided, mean over the ten observers, as a percentage of the human–human ceiling κ = 0.234 (Methods 4.3; Extended Data Table 7). “κ at the trained readout” is the same quantity at w = 0.5, the number Extended Data Table 16 reports and the form in which the field reports error consistency. “κ / κ_max” normalises by the largest κ attainable at the two marginals, κ_max = (1 − |p_model − p_human| − p_e)/(1 − p_e), expressed as a percentage of the same ratio for human pairs (35% of their own bound); values above 100% mean a network attains a larger share of its much smaller attainable agreement than two observers do of theirs, not that it is more human-like than a human. Over the 798 gated readouts of the 38 ImageNet-trained networks, raw κ is a function of the rate alone (one quadratic in the rate, R² = 0.90, RMSE 1.7 points of ceiling; per-network offsets −2.2 to 2.8 points, unrelated to the probe bias, ρ = 0.04), the bound itself running from 0.006 to 0.219. Normalised by the bound, the rank dependence on the rate disappears (pooled rank R² 0.001 against 0.891; within-network median Spearman ρ 0.20 against 0.99). Ranking the 33 networks by κ at their trained readouts against by κ here gives Kendall τ = 0.33 with 178 of 528 pairs (34%) reversing. The Stylized-ImageNet ResNet-50 cannot be gained below 0.65 inside its gate; at a common rate of 0.65 it is ResNet-50 SIN 135% [104, 165]; ViT-B/32 120% [64, 174]; AlexNet 79% [61, 96] on the normalised scale (95% percentile bootstrap over the ten observers). Pre-specification: `docs/PLAN_KAPPA_2026-09-17.md` (predictions K-1 to K-6: four failed and a fifth could not be tested as specified; the normalisation by κ_max is post hoc). Source: `results/figures_v2/kappa_rate.json`, aggregated by `tmp_analysis/figs_v2/kappa_rate.py` from the per-network sweeps of `src/analysis/generality/kappa_sweep.py` (`slurm/zoo_kappa.sh`); the per-network files are outside the repository. `\*` not ImageNet-trained.
+
+| network | w at the matched rate | rate | κ, % of human–human ceiling | κ at the trained readout | κ / κ_max, % of the human-pair value | probe bias | trained rate |
+|---|---|---|---|---|---|---|---|
+| GoogLeNet | 0.90 | 0.397 | 18.7 | 9.5 | 185.9 | −0.52 | 0.251 |
+| ShuffleNet-V2 x1.0 | 0.80 | 0.401 | 18.1 | 9.2 | 158.7 | −0.43 | 0.234 |
+| Inception-v3 | 0.80 | 0.406 | 17.8 | 11.0 | 160.2 | −0.56 | 0.305 |
+| Swin-S | 0.95 | 0.413 | 17.5 | 8.9 | 172.7 | −0.55 | 0.236 |
+| MobileNet-V3-L | 0.80 | 0.407 | 17.0 | 10.8 | 173.6 | −0.47 | 0.265 |
+| Swin-B | 1.00 | 0.418 | 17.0 | 7.7 | 169.1 | −0.57 | 0.233 |
+| MaxViT-T | 0.85 | 0.401 | 16.0 | 9.1 | 171.2 | −0.57 | 0.295 |
+| Swin-T | 0.90 | 0.407 | 15.4 | 8.4 | 163.6 | −0.52 | 0.225 |
+| ViT-L/16 | 0.75 | 0.408 | 15.4 | 11.5 | 168.1 | −0.43 | 0.319 |
+| EfficientNet-B3 | 0.75 | 0.396 | 15.1 | 12.5 | 138.4 | −0.50 | 0.291 |
+| DenseNet-201 | 0.85 | 0.403 | 14.9 | 8.5 | 137.8 | −0.49 | 0.273 |
+| MobileNet-V2 | 0.95 | 0.389 | 14.4 | 5.6 | 139.4 | −0.52 | 0.184 |
+| Wide-ResNet-101-2 | 0.90 | 0.402 | 13.9 | 7.9 | 137.8 | −0.60 | 0.279 |
+| EfficientNet-B0 | 0.85 | 0.407 | 13.9 | 7.1 | 130.2 | −0.54 | 0.271 |
+| ResNet-101 | 0.95 | 0.405 | 13.8 | 8.7 | 150.6 | −0.52 | 0.284 |
+| ResNet-152 | 0.90 | 0.402 | 13.7 | 9.1 | 126.5 | −0.49 | 0.293 |
+| ResNet-50 SIN+IN, ft IN \* | 0.95 | 0.397 | 13.5 | 5.9 | 127.8 | −0.58 | 0.227 |
+| ResNet-50 SIN+IN \* | 0.60 | 0.399 | 13.3 | 11.7 | 140.6 | −0.40 | 0.363 |
+| RegNet-Y-16GF | 0.90 | 0.409 | 13.0 | 7.7 | 131.8 | −0.50 | 0.261 |
+| ConvNeXt-B | 0.80 | 0.398 | 13.0 | 8.0 | 132.1 | −0.47 | 0.269 |
+| ViT-B/32 | 0.00 | 0.418 | 12.9 | 23.0 | 130.4 | −0.30 | 0.617 |
+| ResNeXt-50 32x4d | 0.90 | 0.383 | 12.9 | 5.6 | 130.6 | −0.58 | 0.219 |
+| ResNet-18 | 0.90 | 0.407 | 12.7 | 6.3 | 107.3 | −0.53 | 0.233 |
+| ResNet-34 | 0.85 | 0.403 | 12.5 | 6.1 | 131.0 | −0.53 | 0.259 |
+| DenseNet-121 | 0.90 | 0.402 | 12.5 | 5.7 | 114.0 | −0.55 | 0.224 |
+| MNASNet-1.0 | 0.85 | 0.406 | 12.5 | 8.7 | 113.7 | −0.53 | 0.226 |
+| ConvNeXt-S | 0.85 | 0.399 | 12.4 | 8.1 | 122.7 | −0.53 | 0.248 |
+| ConvNeXt-T | 0.85 | 0.395 | 12.3 | 7.0 | 115.3 | −0.50 | 0.241 |
+| ResNet-50 | 1.00 | 0.394 | 12.2 | 5.1 | 116.9 | −0.56 | 0.222 |
+| AlexNet | 0.75 | 0.393 | 12.0 | 7.1 | 124.8 | −0.45 | 0.261 |
+| ConvNeXt-L | 0.80 | 0.401 | 11.8 | 9.2 | 122.4 | −0.49 | 0.293 |
+| ViT-B/16 | 0.50 | 0.399 | 11.6 | 11.6 | 126.2 | −0.43 | 0.399 |
+| RegNet-Y-8GF | 0.90 | 0.407 | 11.5 | 6.7 | 103.1 | −0.50 | 0.244 |
+| Wide-ResNet-50-2 | 0.95 | 0.405 | 10.5 | 5.0 | 100.5 | −0.62 | 0.230 |
+| ResNeXt-101 32x8d | 0.80 | 0.400 | 10.0 | 7.9 | 107.5 | −0.53 | 0.294 |
+| ResNet-50 (V2 recipe) \* | 1.00 | 0.356 | 7.8 | 0.5 | 70.8 | −0.62 | 0.185 |

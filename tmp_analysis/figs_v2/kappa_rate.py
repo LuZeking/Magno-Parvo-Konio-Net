@@ -333,7 +333,10 @@ def main():
                       kappa=m1[t]["kappa_mean"], decided=m1[t]["decided"],
                       probe_bias=nets[t]["probe_bias"], trained_rate=nets[t]["trained_rate"],
                       kappa_trained_pct=next(r["kappa_pct_ceiling"] for r in nets[t]["sweep"]
-                                             if abs(r["w"] - 0.5) < 1e-9))
+                                             if abs(r["w"] - 0.5) < 1e-9),
+                      kappa_norm_pct=(100 * m1[t]["kappa_over_max"] / nets[t]["ceiling_over_max"]
+                                      if m1[t].get("kappa_over_max") is not None
+                                      and nets[t].get("ceiling_over_max") else None))
                  for t in sorted(m1, key=lambda t: -m1[t]["kappa_pct_ceiling"])],
         matched_secondary=dict(target=R_STAR_2 if not switched else R_STAR,
                                n=sum(1 for t in m2 if nets[t]["group"] == "imagenet"),

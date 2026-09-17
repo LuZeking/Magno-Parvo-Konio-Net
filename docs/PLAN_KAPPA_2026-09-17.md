@@ -127,7 +127,7 @@ Run 2026-09-17, 20:15 (`slurm/zoo_kappa.sh`, job 26503999; aggregation
 `tmp_analysis/figs_v2/kappa_rate.py`; `results/figures_v2/kappa_rate.{json,md}`). 42 networks,
 21 gains each, 798 gated readouts over the 38 ImageNet-trained networks.
 
-**Five of the six predictions failed, and the failure has a single cause.**
+**Four of the six predictions failed outright, a fifth could not be tested as specified, and the failures have a single cause.** (K-4 is listed below as its two halves K-4a and K-4b, both of which failed; the commit message of this run says "five of six", counting them separately.)
 
 | prediction | outcome | value |
 |---|---|---|
