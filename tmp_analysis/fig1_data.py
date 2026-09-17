@@ -31,9 +31,13 @@ out = {}
 # magno. Seeds are the replication unit here (not subjects) -- these are model
 # properties measured on the Geirhos set, with no brain data involved.
 #
-# parvo_highsf seed 0 is EXCLUDED: its cue-conflict run decided only 139/150
-# images when the convergence guard ran, so its shape-bias denominator is not
-# comparable. Seeds 1 and 2 agree to 0.012.
+# parvo_highsf seed 0 WAS excluded and is now included, for the same reason swap
+# seed 2 is (below): the exclusion was a convergence guard on a run that had
+# decided only 139/150 images while still training. Re-run at its final
+# checkpoint it decides 626 of the 1,200 images -- MORE than seeds 1 and 2 (595,
+# 572) -- and its probe bias (-0.281) sits beside theirs (-0.258, -0.274).
+# Including it moves the cell by -0.005 (probe) and -0.007 (behaviour) and
+# changes no claim (2026-09-17).
 #
 # swap seed 2 IS included, and §25's table (n=2) is superseded. It was excluded
 # there by the same guard while still training (§20.2, "96/150"); it was re-run
@@ -48,7 +52,7 @@ out = {}
 CELLS = {                       # (carrier, transform) -> (models, which stream)
     ("chromatic", "none"):      ([f"dkl_base_seed{s}" for s in (0, 1, 2)], "parvo"),
     ("chromatic", "transform"): ([f"dkl_bcs_swap_seed{s}" for s in (0, 1, 2)], "parvo"),
-    ("achromatic", "none"):     ([f"dkl_bcs_parvo_highsf_seed{s}" for s in (1, 2)], "parvo"),
+    ("achromatic", "none"):     ([f"dkl_bcs_parvo_highsf_seed{s}" for s in (0, 1, 2)], "parvo"),
     ("achromatic", "transform"):([f"dkl_bcs_seed{s}" for s in (0, 1, 2)], "magno"),
 }
 for (carrier, trans), (models, stream) in CELLS.items():
@@ -99,8 +103,32 @@ for key, model in [("diet", "dkl_bcs_seed0_trained"), ("nodiet", "dkl_base_seed0
 # The set point. Read from the PR store built by pr_retention_highsf.py so the
 # eigendecompositions are not repeated; each entry is (magno PR, parvo PR).
 STORE = os.path.join(os.environ.get("CLAUDE_JOB_DIR", "/tmp"), "tmp", "pr_store.npz")
-_pr = dict(np.load(STORE))
+CACHE = "/scratch/byrong/VST_data/mpk_feature_cache"
+NIMG = 1000
+_pr = dict(np.load(STORE)) if os.path.exists(STORE) else {}
+
+def _pr_of(X):
+    """Participation ratio, Gram side; the estimator of pr_retention_highsf.py."""
+    X = np.asarray(X[:NIMG], dtype=np.float64)
+    X -= X.mean(0, keepdims=True)
+    lam = np.linalg.eigvalsh(X @ X.T)
+    lam = lam[lam > 0]
+    return (lam.sum() ** 2) / (lam ** 2).sum()
+
 def ratio(model):
+    # the store is a cache, not an input: fill any model it lacks from the feature
+    # cache, so this script reproduces panel (c) on a machine that has never run
+    # pr_retention_highsf.py (2026-09-17).
+    dirty = False
+    for f in sorted(glob.glob(f"{CACHE}/{model}_subj*.npz")):
+        key = f"{model}|subj{int(f.split('_subj')[-1].split('.')[0]):02d}"
+        if key not in _pr:
+            z = np.load(f)
+            _pr[key] = np.array([_pr_of(z["magno"]), _pr_of(z["parvo"])])
+            dirty = True
+    if dirty:
+        os.makedirs(os.path.dirname(STORE), exist_ok=True)
+        np.savez(STORE, **_pr)
     d = {int(k.partition("|subj")[2]): v[0] / v[1]
          for k, v in _pr.items() if k.partition("|subj")[0] == model}
     return np.array([d[s] for s in sorted(d)])

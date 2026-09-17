@@ -1025,13 +1025,14 @@ def check_table1() -> None:
 
 
 # (label, probe pattern, cue-conflict stem, stream, probe, behaviour, decided) as
-# fig1_data.py / ED Table 4 define the cells. parvo_highsf seed 0 is excluded from
-# the probe and behaviour cells (fig1_data.py: its cue-conflict run decided too
-# few images); forced_choice.py uses all three seeds for the forced cell.
+# fig1_data.py / ED Table 4 define the cells. All four cells now use three seeds:
+# parvo_highsf seed 0, excluded in 2026-08 by a convergence guard while the run was
+# still training, was re-included on 2026-09-17 (it decides 626 images at its final
+# checkpoint, more than seeds 1 and 2).
 CELLS_2X2 = [
     ("chromatic, none      (no diet, parvo)", f"{ST}/dkl_base_seed?_trained.json", f"{CC}/dkl_base_seed?", "parvo", -0.504, 0.364, 270),
     ("chromatic, transform (swap, parvo)", f"{ST}/dkl_bcs_swap_seed?_trained.json", f"{CC}/dkl_bcs_swap_seed?", "parvo", -0.145, 0.495, 165),
-    ("achromatic, none     (parvo_highsf s1-2)", f"{ST}/dkl_bcs_parvo_highsf_seed[12]_trained.json", f"{CC}/dkl_bcs_parvo_highsf_seed[12]", "parvo", -0.266, 0.396, 584),
+    ("achromatic, none     (parvo_highsf)", f"{ST}/dkl_bcs_parvo_highsf_seed?_trained.json", f"{CC}/dkl_bcs_parvo_highsf_seed?", "parvo", -0.271, 0.389, 598),
     ("achromatic, transform (diet, magno)", f"{ST}/dkl_bcs_seed?_trained.json", f"{CC}/dkl_bcs_seed?", "magno", 0.819, 0.878, 488),
 ]
 FORCED_2X2 = [  # (logits pattern, condition, manuscript value) -- Results 2.2 / ED Table 10
@@ -1074,7 +1075,7 @@ def check_two_by_two() -> None:
     if not sep:
         FAILS.append("2x2 conjunction cell overlaps another cell")
     chk("decided counts, min over cells", min(v.mean() for v in dec.values()), 165, 0.5)
-    chk("decided counts, max over cells", max(v.mean() for v in dec.values()), 584, 0.5)
+    chk("decided counts, max over cells", max(v.mean() for v in dec.values()), 598, 0.5)
     # forced two-way estimator, from the stored logits; the restricted estimator
     # recomputed alongside must equal the stored JSON (validates the class index)
     FC = json.load(open("results/figures_v2/forced_choice.json"))
