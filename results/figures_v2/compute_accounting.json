@@ -1,0 +1,844 @@
+{
+ "since": "2026-08-01",
+ "first_start": "2026-08-25T14:41:51",
+ "last_start": "2026-09-17T02:12:57",
+ "prefix": "mpk_",
+ "totals": {
+  "n": 1222,
+  "core_h": 29026.938888888883,
+  "gpu_h": 604.8102777777777,
+  "mem_gbh": 184431.1283333333
+ },
+ "groups": {
+  "training (21 runs)": {
+   "n": 21,
+   "core_h": 4673.873333333333,
+   "gpu_h": 584.2341666666666,
+   "job_names": [
+    "mpk_single",
+    "mpk_single34",
+    "mpk_train"
+   ]
+  },
+  "matched-control retraining": {
+   "n": 3,
+   "core_h": 157.6911111111111,
+   "gpu_h": 19.711388888888887,
+   "job_names": [
+    "mpk_matched"
+   ]
+  },
+  "two-band encoding fits and their controls": {
+   "n": 342,
+   "core_h": 14815.46222222222,
+   "gpu_h": 0.0,
+   "job_names": [
+    "mpk_cc_ctrl",
+    "mpk_cc_gab",
+    "mpk_cc_pca",
+    "mpk_cc_seeds",
+    "mpk_enc_cc",
+    "mpk_enc_probe",
+    "mpk_encode",
+    "mpk_equiv",
+    "mpk_fe2x2",
+    "mpk_konio",
+    "mpk_konio_seeds",
+    "mpk_vprec",
+    "mpk_vprec_diet",
+    "mpk_vprec_realnc"
+   ]
+  },
+  "single-trunk generality (unit rule)": {
+   "n": 186,
+   "core_h": 1992.0699999999997,
+   "gpu_h": 0.0,
+   "job_names": [
+    "mpk_gen_cc",
+    "mpk_gen_ctx",
+    "mpk_gen_ctx2",
+    "mpk_gen_ctx_test",
+    "mpk_gen_inval",
+    "mpk_gen_mini",
+    "mpk_gen_nsd",
+    "mpk_gen_rules"
+   ]
+  },
+  "cortex-optimal readout weight": {
+   "n": 50,
+   "core_h": 984.9644444444444,
+   "gpu_h": 0.0,
+   "job_names": [
+    "mpk_readout_w"
+   ]
+  },
+  "subspace-rule cortex fits": {
+   "n": 174,
+   "core_h": 4579.488888888889,
+   "gpu_h": 0.0,
+   "job_names": [
+    "mpk_sub_cc",
+    "mpk_sub_ctx",
+    "mpk_sub_nsd",
+    "mpk_sub_refit"
+   ]
+  },
+  "model zoo": {
+   "n": 43,
+   "core_h": 55.47166666666668,
+   "gpu_h": 0.0,
+   "job_names": [
+    "mpk_zoo",
+    "mpk_zoo_kappa"
+   ]
+  },
+  "other (smoke tests, figures, verifier, caches, robustness, seeds)": {
+   "n": 403,
+   "core_h": 1767.9172222222217,
+   "gpu_h": 0.8647222222222222,
+   "job_names": [
+    "mpk_amp",
+    "mpk_aug",
+    "mpk_bundle",
+    "mpk_cache_be",
+    "mpk_cc_single",
+    "mpk_cc_single34",
+    "mpk_ckptw",
+    "mpk_container",
+    "mpk_cueconf",
+    "mpk_diag",
+    "mpk_dkl_conv",
+    "mpk_dkl_minmax",
+    "mpk_eeg_ctrl",
+    "mpk_epjit",
+    "mpk_eptraj",
+    "mpk_figs",
+    "mpk_gpucap",
+    "mpk_humanpi",
+    "mpk_ksweep",
+    "mpk_matched_seeds",
+    "mpk_ood",
+    "mpk_ood_be",
+    "mpk_ood_dvdtrans",
+    "mpk_opt",
+    "mpk_picorr",
+    "mpk_pilogits",
+    "mpk_pixfe",
+    "mpk_preflight",
+    "mpk_prof",
+    "mpk_recovsum",
+    "mpk_resume",
+    "mpk_seedrep",
+    "mpk_shptex",
+    "mpk_smoke",
+    "mpk_smoke_dkl",
+    "mpk_thesisckpt",
+    "mpk_train_probe",
+    "mpk_verify",
+    "mpk_vers",
+    "mpk_wfit",
+    "mpk_wsweep"
+   ]
+  }
+ },
+ "energy": {
+  "kwh_cores": 348.3232666666666,
+  "kwh_memory": 68.70059530416665,
+  "kwh_gpus": 139.1063638888889,
+  "pue": 1.67,
+  "kwh_total": 928.737477185736,
+  "carbon_intensity_kg_per_kwh": 0.35,
+  "kg_co2e": 325.05811701500755,
+  "parameters": {
+   "P_core_W": 12.0,
+   "usage": 1.0,
+   "P_mem_W_per_GB": 0.3725,
+   "P_gpu_W": 230.0
+  }
+ },
+ "per_job_name": {
+  "mpk_amp": {
+   "n": 3,
+   "core_h": 11.5,
+   "gpu_h": 0.3833333333333333,
+   "mem_gbh": 32.583333333333336,
+   "states": {
+    "FAILED": 1,
+    "CANCELLED": 1,
+    "COMPLETED": 1
+   }
+  },
+  "mpk_aug": {
+   "n": 2,
+   "core_h": 0.13555555555555554,
+   "gpu_h": 0.016944444444444443,
+   "mem_gbh": 0.5422222222222222,
+   "states": {
+    "FAILED": 1,
+    "COMPLETED": 1
+   }
+  },
+  "mpk_bundle": {
+   "n": 14,
+   "core_h": 0.6577777777777778,
+   "gpu_h": 0.0,
+   "mem_gbh": 1.3155555555555556,
+   "states": {
+    "COMPLETED": 14
+   }
+  },
+  "mpk_cache_be": {
+   "n": 32,
+   "core_h": 211.3911111111111,
+   "gpu_h": 0.0,
+   "mem_gbh": 634.1733333333333,
+   "states": {
+    "COMPLETED": 32
+   }
+  },
+  "mpk_cc_ctrl": {
+   "n": 34,
+   "core_h": 1562.6044444444447,
+   "gpu_h": 0.0,
+   "mem_gbh": 6672.35111111111,
+   "states": {
+    "OUT_OF_MEMORY": 2,
+    "COMPLETED": 32
+   }
+  },
+  "mpk_cc_gab": {
+   "n": 8,
+   "core_h": 635.4933333333333,
+   "gpu_h": 0.0,
+   "mem_gbh": 6354.933333333334,
+   "states": {
+    "COMPLETED": 8
+   }
+  },
+  "mpk_cc_pca": {
+   "n": 16,
+   "core_h": 602.6177777777779,
+   "gpu_h": 0.0,
+   "mem_gbh": 6026.177777777778,
+   "states": {
+    "COMPLETED": 16
+   }
+  },
+  "mpk_cc_seeds": {
+   "n": 32,
+   "core_h": 1501.7644444444443,
+   "gpu_h": 0.0,
+   "mem_gbh": 15017.644444444442,
+   "states": {
+    "COMPLETED": 32
+   }
+  },
+  "mpk_cc_single": {
+   "n": 6,
+   "core_h": 5.471111111111111,
+   "gpu_h": 0.0,
+   "mem_gbh": 21.884444444444444,
+   "states": {
+    "COMPLETED": 6
+   }
+  },
+  "mpk_cc_single34": {
+   "n": 6,
+   "core_h": 3.5644444444444443,
+   "gpu_h": 0.0,
+   "mem_gbh": 14.257777777777777,
+   "states": {
+    "COMPLETED": 6
+   }
+  },
+  "mpk_ckptw": {
+   "n": 2,
+   "core_h": 0.7444444444444445,
+   "gpu_h": 0.0,
+   "mem_gbh": 2.977777777777778,
+   "states": {
+    "COMPLETED": 2
+   }
+  },
+  "mpk_container": {
+   "n": 3,
+   "core_h": 9.714444444444444,
+   "gpu_h": 0.0,
+   "mem_gbh": 38.85777777777778,
+   "states": {
+    "TIMEOUT": 1,
+    "COMPLETED": 2
+   }
+  },
+  "mpk_cueconf": {
+   "n": 31,
+   "core_h": 16.74222222222222,
+   "gpu_h": 0.0,
+   "mem_gbh": 66.96888888888888,
+   "states": {
+    "COMPLETED": 31
+   }
+  },
+  "mpk_diag": {
+   "n": 1,
+   "core_h": 0.0005555555555555556,
+   "gpu_h": 0.0002777777777777778,
+   "mem_gbh": 0.0022222222222222222,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_dkl_conv": {
+   "n": 1,
+   "core_h": 17.464444444444446,
+   "gpu_h": 0.0,
+   "mem_gbh": 139.71555555555557,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_dkl_minmax": {
+   "n": 1,
+   "core_h": 21.02,
+   "gpu_h": 0.0,
+   "mem_gbh": 84.08,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_eeg_ctrl": {
+   "n": 5,
+   "core_h": 8.782222222222222,
+   "gpu_h": 0.0,
+   "mem_gbh": 35.12888888888889,
+   "states": {
+    "COMPLETED": 5
+   }
+  },
+  "mpk_enc_cc": {
+   "n": 24,
+   "core_h": 1261.9911111111114,
+   "gpu_h": 0.0,
+   "mem_gbh": 12619.911111111109,
+   "states": {
+    "COMPLETED": 24
+   }
+  },
+  "mpk_enc_probe": {
+   "n": 3,
+   "core_h": 319.8,
+   "gpu_h": 0.0,
+   "mem_gbh": 2398.5,
+   "states": {
+    "TIMEOUT": 1,
+    "COMPLETED": 2
+   }
+  },
+  "mpk_encode": {
+   "n": 106,
+   "core_h": 5081.217777777774,
+   "gpu_h": 0.0,
+   "mem_gbh": 48455.125000000015,
+   "states": {
+    "CANCELLED": 10,
+    "FAILED": 6,
+    "OUT_OF_MEMORY": 9,
+    "COMPLETED": 81
+   }
+  },
+  "mpk_epjit": {
+   "n": 40,
+   "core_h": 181.57777777777773,
+   "gpu_h": 0.0,
+   "mem_gbh": 544.7333333333337,
+   "states": {
+    "COMPLETED": 40
+   }
+  },
+  "mpk_eptraj": {
+   "n": 48,
+   "core_h": 141.64444444444445,
+   "gpu_h": 0.0,
+   "mem_gbh": 424.93333333333334,
+   "states": {
+    "COMPLETED": 48
+   }
+  },
+  "mpk_equiv": {
+   "n": 1,
+   "core_h": 61.31111111111111,
+   "gpu_h": 0.0,
+   "mem_gbh": 306.55555555555554,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_fe2x2": {
+   "n": 32,
+   "core_h": 699.6533333333335,
+   "gpu_h": 0.0,
+   "mem_gbh": 5247.399999999999,
+   "states": {
+    "COMPLETED": 32
+   }
+  },
+  "mpk_figs": {
+   "n": 12,
+   "core_h": 0.18222222222222223,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.7288888888888889,
+   "states": {
+    "COMPLETED": 12
+   }
+  },
+  "mpk_gen_cc": {
+   "n": 18,
+   "core_h": 3.583333333333333,
+   "gpu_h": 0.0,
+   "mem_gbh": 14.333333333333332,
+   "states": {
+    "COMPLETED": 18
+   }
+  },
+  "mpk_gen_ctx": {
+   "n": 112,
+   "core_h": 1407.1844444444441,
+   "gpu_h": 0.0,
+   "mem_gbh": 8443.106666666668,
+   "states": {
+    "COMPLETED": 112
+   }
+  },
+  "mpk_gen_ctx2": {
+   "n": 32,
+   "core_h": 399.26666666666677,
+   "gpu_h": 0.0,
+   "mem_gbh": 2395.6,
+   "states": {
+    "COMPLETED": 32
+   }
+  },
+  "mpk_gen_ctx_test": {
+   "n": 1,
+   "core_h": 22.40888888888889,
+   "gpu_h": 0.0,
+   "mem_gbh": 134.45333333333335,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_gen_inval": {
+   "n": 6,
+   "core_h": 14.726666666666667,
+   "gpu_h": 0.0,
+   "mem_gbh": 44.18,
+   "states": {
+    "COMPLETED": 6
+   }
+  },
+  "mpk_gen_mini": {
+   "n": 9,
+   "core_h": 97.29555555555555,
+   "gpu_h": 0.0,
+   "mem_gbh": 389.1822222222222,
+   "states": {
+    "COMPLETED": 9
+   }
+  },
+  "mpk_gen_nsd": {
+   "n": 7,
+   "core_h": 47.60444444444444,
+   "gpu_h": 0.0,
+   "mem_gbh": 190.41777777777776,
+   "states": {
+    "COMPLETED": 7
+   }
+  },
+  "mpk_gen_rules": {
+   "n": 1,
+   "core_h": 0.0,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.0,
+   "states": {
+    "CANCELLED": 1
+   }
+  },
+  "mpk_gpucap": {
+   "n": 1,
+   "core_h": 0.0022222222222222222,
+   "gpu_h": 0.0002777777777777778,
+   "mem_gbh": 0.008888888888888889,
+   "states": {
+    "FAILED": 1
+   }
+  },
+  "mpk_humanpi": {
+   "n": 1,
+   "core_h": 0.45222222222222225,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.9044444444444445,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_konio": {
+   "n": 16,
+   "core_h": 791.9866666666668,
+   "gpu_h": 0.0,
+   "mem_gbh": 7919.866666666666,
+   "states": {
+    "COMPLETED": 16
+   }
+  },
+  "mpk_konio_seeds": {
+   "n": 32,
+   "core_h": 1468.7022222222224,
+   "gpu_h": 0.0,
+   "mem_gbh": 6241.984444444445,
+   "states": {
+    "COMPLETED": 32
+   }
+  },
+  "mpk_ksweep": {
+   "n": 9,
+   "core_h": 4.613333333333332,
+   "gpu_h": 0.0,
+   "mem_gbh": 18.45333333333333,
+   "states": {
+    "COMPLETED": 9
+   }
+  },
+  "mpk_matched": {
+   "n": 3,
+   "core_h": 157.6911111111111,
+   "gpu_h": 19.711388888888887,
+   "mem_gbh": 433.6505555555555,
+   "states": {
+    "COMPLETED": 3
+   }
+  },
+  "mpk_matched_seeds": {
+   "n": 6,
+   "core_h": 2.1644444444444444,
+   "gpu_h": 0.0,
+   "mem_gbh": 8.124444444444444,
+   "states": {
+    "OUT_OF_MEMORY": 2,
+    "COMPLETED": 4
+   }
+  },
+  "mpk_ood": {
+   "n": 12,
+   "core_h": 396.11111111111114,
+   "gpu_h": 0.0,
+   "mem_gbh": 792.2222222222223,
+   "states": {
+    "COMPLETED": 12
+   }
+  },
+  "mpk_ood_be": {
+   "n": 12,
+   "core_h": 385.70222222222225,
+   "gpu_h": 0.0,
+   "mem_gbh": 771.4044444444445,
+   "states": {
+    "COMPLETED": 12
+   }
+  },
+  "mpk_ood_dvdtrans": {
+   "n": 1,
+   "core_h": 33.684444444444445,
+   "gpu_h": 0.0,
+   "mem_gbh": 67.36888888888889,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_opt": {
+   "n": 1,
+   "core_h": 3.0844444444444443,
+   "gpu_h": 0.09638888888888889,
+   "mem_gbh": 6.168888888888889,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_picorr": {
+   "n": 3,
+   "core_h": 0.25333333333333335,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.5066666666666667,
+   "states": {
+    "CANCELLED": 1,
+    "COMPLETED": 2
+   }
+  },
+  "mpk_pilogits": {
+   "n": 9,
+   "core_h": 6.9799999999999995,
+   "gpu_h": 0.0,
+   "mem_gbh": 27.919999999999998,
+   "states": {
+    "COMPLETED": 9
+   }
+  },
+  "mpk_pixfe": {
+   "n": 6,
+   "core_h": 0.9111111111111112,
+   "gpu_h": 0.0,
+   "mem_gbh": 3.644444444444445,
+   "states": {
+    "COMPLETED": 6
+   }
+  },
+  "mpk_preflight": {
+   "n": 4,
+   "core_h": 1.5466666666666669,
+   "gpu_h": 0.0,
+   "mem_gbh": 11.542222222222222,
+   "states": {
+    "FAILED": 1,
+    "COMPLETED": 3
+   }
+  },
+  "mpk_prof": {
+   "n": 1,
+   "core_h": 2.582222222222222,
+   "gpu_h": 0.1613888888888889,
+   "mem_gbh": 10.328888888888889,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_readout_w": {
+   "n": 50,
+   "core_h": 984.9644444444444,
+   "gpu_h": 0.0,
+   "mem_gbh": 5887.564444444444,
+   "states": {
+    "OUT_OF_MEMORY": 2,
+    "COMPLETED": 48
+   }
+  },
+  "mpk_recovsum": {
+   "n": 1,
+   "core_h": 0.0038888888888888888,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.015555555555555555,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_resume": {
+   "n": 1,
+   "core_h": 0.06,
+   "gpu_h": 0.0075,
+   "mem_gbh": 0.165,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_seedrep": {
+   "n": 56,
+   "core_h": 246.20444444444442,
+   "gpu_h": 0.0,
+   "mem_gbh": 738.6133333333333,
+   "states": {
+    "COMPLETED": 56
+   }
+  },
+  "mpk_shptex": {
+   "n": 28,
+   "core_h": 28.888888888888886,
+   "gpu_h": 0.0,
+   "mem_gbh": 115.55555555555554,
+   "states": {
+    "COMPLETED": 26,
+    "CANCELLED": 2
+   }
+  },
+  "mpk_single": {
+   "n": 3,
+   "core_h": 651.8933333333333,
+   "gpu_h": 81.48666666666666,
+   "mem_gbh": 1792.706666666667,
+   "states": {
+    "COMPLETED": 3
+   }
+  },
+  "mpk_single34": {
+   "n": 3,
+   "core_h": 610.6733333333334,
+   "gpu_h": 76.33416666666668,
+   "mem_gbh": 2442.6933333333336,
+   "states": {
+    "COMPLETED": 3
+   }
+  },
+  "mpk_smoke": {
+   "n": 4,
+   "core_h": 0.4211111111111111,
+   "gpu_h": 0.0,
+   "mem_gbh": 2.5266666666666664,
+   "states": {
+    "COMPLETED": 4
+   }
+  },
+  "mpk_smoke_dkl": {
+   "n": 1,
+   "core_h": 0.6244444444444445,
+   "gpu_h": 0.0,
+   "mem_gbh": 2.497777777777778,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_sub_cc": {
+   "n": 18,
+   "core_h": 3.0444444444444443,
+   "gpu_h": 0.0,
+   "mem_gbh": 12.177777777777777,
+   "states": {
+    "COMPLETED": 18
+   }
+  },
+  "mpk_sub_ctx": {
+   "n": 145,
+   "core_h": 4527.935555555556,
+   "gpu_h": 0.0,
+   "mem_gbh": 27167.613333333327,
+   "states": {
+    "COMPLETED": 144,
+    "TIMEOUT": 1
+   }
+  },
+  "mpk_sub_nsd": {
+   "n": 2,
+   "core_h": 20.871111111111112,
+   "gpu_h": 0.0,
+   "mem_gbh": 83.48444444444445,
+   "states": {
+    "COMPLETED": 2
+   }
+  },
+  "mpk_sub_refit": {
+   "n": 9,
+   "core_h": 27.637777777777774,
+   "gpu_h": 0.0,
+   "mem_gbh": 110.5511111111111,
+   "states": {
+    "COMPLETED": 9
+   }
+  },
+  "mpk_thesisckpt": {
+   "n": 4,
+   "core_h": 1.2577777777777777,
+   "gpu_h": 0.0,
+   "mem_gbh": 5.031111111111111,
+   "states": {
+    "COMPLETED": 4
+   }
+  },
+  "mpk_train": {
+   "n": 15,
+   "core_h": 3411.3066666666664,
+   "gpu_h": 426.4133333333333,
+   "mem_gbh": 9381.093333333334,
+   "states": {
+    "COMPLETED": 15
+   }
+  },
+  "mpk_train_probe": {
+   "n": 2,
+   "core_h": 1.588888888888889,
+   "gpu_h": 0.19861111111111113,
+   "mem_gbh": 15.88888888888889,
+   "states": {
+    "COMPLETED": 2
+   }
+  },
+  "mpk_verify": {
+   "n": 3,
+   "core_h": 0.022222222222222223,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.08888888888888889,
+   "states": {
+    "COMPLETED": 3
+   }
+  },
+  "mpk_vers": {
+   "n": 1,
+   "core_h": 0.16944444444444445,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.6777777777777778,
+   "states": {
+    "CANCELLED": 1
+   }
+  },
+  "mpk_vprec": {
+   "n": 8,
+   "core_h": 202.70222222222225,
+   "gpu_h": 0.0,
+   "mem_gbh": 810.808888888889,
+   "states": {
+    "COMPLETED": 8
+   }
+  },
+  "mpk_vprec_diet": {
+   "n": 8,
+   "core_h": 210.87111111111108,
+   "gpu_h": 0.0,
+   "mem_gbh": 843.4844444444443,
+   "states": {
+    "COMPLETED": 8
+   }
+  },
+  "mpk_vprec_realnc": {
+   "n": 22,
+   "core_h": 414.74666666666667,
+   "gpu_h": 0.0,
+   "mem_gbh": 1658.9866666666667,
+   "states": {
+    "COMPLETED": 16,
+    "CANCELLED": 6
+   }
+  },
+  "mpk_wfit": {
+   "n": 23,
+   "core_h": 5.162222222222222,
+   "gpu_h": 0.0,
+   "mem_gbh": 10.828888888888889,
+   "states": {
+    "CANCELLED": 7,
+    "COMPLETED": 16
+   }
+  },
+  "mpk_wsweep": {
+   "n": 6,
+   "core_h": 14.833333333333332,
+   "gpu_h": 0.0,
+   "mem_gbh": 59.33333333333333,
+   "states": {
+    "COMPLETED": 6
+   }
+  },
+  "mpk_zoo": {
+   "n": 42,
+   "core_h": 55.37333333333334,
+   "gpu_h": 0.0,
+   "mem_gbh": 221.49333333333337,
+   "states": {
+    "COMPLETED": 42
+   }
+  },
+  "mpk_zoo_kappa": {
+   "n": 1,
+   "core_h": 0.09833333333333333,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.3933333333333333,
+   "states": {
+    "COMPLETED": 1
+   }
+  }
+ }
+}

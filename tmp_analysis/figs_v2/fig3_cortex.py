@@ -9,8 +9,8 @@ Stream preference per ROI = median over reliable voxels of (Um − Up)/(Um + Up)
 (noise ceiling > 0.1, Um + Up > 1e-3, ≥ 20 voxels) — the normalised statistic of §4.7.
 
   (a) stream-preference profile V1v → hV4 for the untrained network on the diet
-      front end, the trained no-diet and diet arms (3 seeds each, seed-mean of
-      per-subject profiles) and the channel-swap control.
+      front end, the trained no-diet and diet arms and the channel-swap control
+      (3 seeds each, seed-mean of per-subject profiles).
   (b) the gradient hV4 − mean(V1v, V1d) per subject, untrained → trained, both arms.
   (c) Spearman ρ between hierarchical rank and stream preference, per subject,
       against the exact permutation null over all 630 labellings of the ROIs.
@@ -69,7 +69,7 @@ def main():
         "untrained": ("results/encoding", ["untrained_seed0"], S.UNTRAINED),
         "no diet": ("results/encoding_cc", [f"dkl_base_seed{s}_trained" for s in range(3)], S.NODIET),
         "diet": ("results/encoding_cc", [f"dkl_bcs_seed{s}_trained" for s in range(3)], S.DIET),
-        "swap": ("results/encoding", ["dkl_bcs_swap_seed0_trained"], S.SWAP),
+        "swap": ("results/encoding", [f"dkl_bcs_swap_seed{s}_trained" for s in range(3)], S.SWAP),
         "untrained, no-diet front end": ("results/encoding", ["untrained_seed0_noblur"], "#A9A9A9"),
     }
     P = {k: np.stack([spi_profile(d, m) for m in ms]) for k, (d, ms, c) in arms.items()}  # seeds × subj × roi
@@ -92,7 +92,7 @@ def main():
         ax.fill_between(x, mu - se, mu + se, color=c, alpha=0.18, lw=0, zorder=2)
         ax.plot(x, mu, ls=ls, color=c, lw=2.0, zorder=3, marker="o", ms=3.2, mec="white", mew=0.6)
         lab = {"untrained": "untrained (diet front end)", "no diet": "trained, no diet (3 seeds)",
-               "diet": "trained, diet (3 seeds)", "swap": "trained, swap (1 seed)"}[k]
+               "diet": "trained, diet (3 seeds)", "swap": "trained, swap (3 seeds)"}[k]
         ax.annotate(lab, (6, mu[-1]), xytext=(8, 0), textcoords="offset points", fontsize=6.2, color=c, va="center")
         print(f"  (a) {k:10s} profile " + " ".join(f"{v:+.3f}" for v in mu))
     ax.set_xticks(x); ax.set_xticklabels(ROI)

@@ -59,7 +59,7 @@ L = []
 P = L.append
 
 # ------------------------------------------------------------ T1 gradient per seed and statistic
-P("**Extended Data Table 1 | The cortical gradient hV4 − mean(V1v, V1d), per seed and statistic.** “normalised” is the per-voxel index (U_m − U_p)/(U_m + U_p), “raw” the per-voxel difference U_m − U_p, each summarised by its median over reliable voxels per ROI. Mean over 8 subjects of the per-subject contrast; “sep.” is the number of subjects in which the diet arm is more negative than the no-diet arm; p is the exact paired Wilcoxon (floor .0078). The n = 7 column drops subject 01 (Results 2.3). Source: `results/encoding_cc/`.")
+P("**Extended Data Table 1 | The cortical gradient hV4 − mean(V1v, V1d), per seed and statistic.** “normalised” is the per-voxel index (U_m − U_p)/(U_m + U_p), “raw” the per-voxel difference U_m − U_p, each summarised by its median over reliable voxels per ROI. Mean over 8 subjects of the per-subject contrast; “sep.” is the number of subjects in which the diet arm is more negative than the no-diet arm, and for the rows with no paired comparison the number in which the contrast is negative; p is the exact Wilcoxon, paired for the diet against no-diet rows and one-sample otherwise (floor .0078). The n = 7 column drops subject 01 (Results 2.3). The swap and parvo_highsf arms are degenerate by construction, in every seed: the swapped network leaves the parvo band a median unique variance 0.005–0.010 of the magno band's, and the parvo + high-SF network leaves the magno band 0.003–0.005 of the parvo band's, so their gradients describe one surviving band and are not comparable with the two-band arms. Sources: `results/encoding_cc/` (diet, no diet, thesis) and `results/encoding/` (untrained, swap, parvo_highsf).")
 P("")
 P("| statistic | seed | diet | no diet (n = 8) | no diet (n = 7) | sep. | p |")
 P("|---|---|---|---|---|---|---|")
@@ -72,9 +72,12 @@ for ratio, name in [(True, "normalised"), (False, "raw")]:
 gu = grad(profile("results/encoding", "untrained_seed0", True)); gun = grad(profile("results/encoding", "untrained_seed0_noblur", True))
 P(f"| untrained, diet front end | — | {f(gu.mean())} | | | {(gu < 0).sum()}/8 < 0 | {wil(gu):.4f} |")
 P(f"| untrained, no-diet front end | — | | {f(gun.mean())} | | {(gun < 0).sum()}/8 < 0 | {wil(gun):.4f} |")
-gs_ = grad(profile("results/encoding", "dkl_bcs_swap_seed0_trained", True)); gh = grad(profile("results/encoding", "dkl_bcs_parvo_highsf_seed0_trained", True)); gt = grad(profile("results/encoding_cc", "thesis_dvd_trans", True))
-P(f"| swap, seed 0 (degenerate: U_p ≈ 0) | 0 | {f(gs_.mean())} | | | | |")
-P(f"| parvo_highsf, seed 0 (degenerate: U_m ≈ 0) | 0 | {f(gh.mean())} | | | | |")
+for arm, lab, deg in [("dkl_bcs_swap", "swap", "U_p ≈ 0"), ("dkl_bcs_parvo_highsf", "parvo_highsf", "U_m ≈ 0")]:
+    for sd in range(3):
+        gc = grad(profile("results/encoding", f"{arm}_seed{sd}_trained", True))
+        name = f"{lab} (degenerate: {deg})" if sd == 0 else ""
+        P(f"| {name} | {sd} | {f(gc.mean())} | | | {(gc < 0).sum()}/8 < 0 | {wil(gc):.4f} |")
+gt = grad(profile("results/encoding_cc", "thesis_dvd_trans", True))
 P(f"| thesis checkpoint (progressive schedule) | — | {f(gt.mean())} | | | | |")
 P("")
 

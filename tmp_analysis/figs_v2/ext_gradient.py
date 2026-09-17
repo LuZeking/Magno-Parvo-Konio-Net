@@ -45,8 +45,8 @@ ARMS = {
     "untrained": ("results/encoding", ["untrained_seed0"]),
     "no diet": ("results/encoding_cc", [f"dkl_base_seed{s}_trained" for s in range(3)]),
     "diet": ("results/encoding_cc", [f"dkl_bcs_seed{s}_trained" for s in range(3)]),
-    "swap": ("results/encoding", ["dkl_bcs_swap_seed0_trained"]),
-    "parvo_highsf": ("results/encoding", ["dkl_bcs_parvo_highsf_seed0_trained"]),
+    "swap": ("results/encoding", [f"dkl_bcs_swap_seed{s}_trained" for s in range(3)]),
+    "parvo_highsf": ("results/encoding", [f"dkl_bcs_parvo_highsf_seed{s}_trained" for s in range(3)]),
     "thesis": ("results/encoding_cc", ["thesis_dvd_trans"]),
 }
 

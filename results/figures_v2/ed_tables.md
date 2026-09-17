@@ -1,4 +1,4 @@
-**Extended Data Table 1 | The cortical gradient hV4 − mean(V1v, V1d), per seed and statistic.** “normalised” is the per-voxel index (U_m − U_p)/(U_m + U_p), “raw” the per-voxel difference U_m − U_p, each summarised by its median over reliable voxels per ROI. Mean over 8 subjects of the per-subject contrast; “sep.” is the number of subjects in which the diet arm is more negative than the no-diet arm; p is the exact paired Wilcoxon (floor .0078). The n = 7 column drops subject 01 (Results 2.3). Source: `results/encoding_cc/`.
+**Extended Data Table 1 | The cortical gradient hV4 − mean(V1v, V1d), per seed and statistic.** “normalised” is the per-voxel index (U_m − U_p)/(U_m + U_p), “raw” the per-voxel difference U_m − U_p, each summarised by its median over reliable voxels per ROI. Mean over 8 subjects of the per-subject contrast; “sep.” is the number of subjects in which the diet arm is more negative than the no-diet arm, and for the rows with no paired comparison the number in which the contrast is negative; p is the exact Wilcoxon, paired for the diet against no-diet rows and one-sample otherwise (floor .0078). The n = 7 column drops subject 01 (Results 2.3). The swap and parvo_highsf arms are degenerate by construction, in every seed: the swapped network leaves the parvo band a median unique variance 0.005–0.010 of the magno band's, and the parvo + high-SF network leaves the magno band 0.003–0.005 of the parvo band's, so their gradients describe one surviving band and are not comparable with the two-band arms. Sources: `results/encoding_cc/` (diet, no diet, thesis) and `results/encoding/` (untrained, swap, parvo_highsf).
 
 | statistic | seed | diet | no diet (n = 8) | no diet (n = 7) | sep. | p |
 |---|---|---|---|---|---|---|
@@ -10,8 +10,12 @@
 |  | 2 | −0.153 | −0.023 | −0.021 | 8/8 | 0.0078 |
 | untrained, diet front end | — | −0.544 | | | 8/8 < 0 | 0.0078 |
 | untrained, no-diet front end | — | | −0.479 | | 8/8 < 0 | 0.0078 |
-| swap, seed 0 (degenerate: U_p ≈ 0) | 0 | −0.006 | | | | |
-| parvo_highsf, seed 0 (degenerate: U_m ≈ 0) | 0 | −0.143 | | | | |
+| swap (degenerate: U_p ≈ 0) | 0 | −0.006 | | | 5/8 < 0 | 0.4609 |
+|  | 1 | −0.034 | | | 7/8 < 0 | 0.0234 |
+|  | 2 | −0.014 | | | 6/8 < 0 | 0.1953 |
+| parvo_highsf (degenerate: U_m ≈ 0) | 0 | −0.143 | | | 8/8 < 0 | 0.0078 |
+|  | 1 | −0.082 | | | 8/8 < 0 | 0.0078 |
+|  | 2 | −0.108 | | | 8/8 < 0 | 0.0078 |
 | thesis checkpoint (progressive schedule) | — | −0.793 | | | | |
 
 **Extended Data Table 2 | Monotonicity of the profile and the exact permutation null.** Spearman ρ between hierarchical rank [1,1,2,2,3,3,4] and stream preference, mean over subjects; the null enumerates all 630 distinct labellings of the seven ROIs (one-sided in the pre-stated direction, floor 1/630 = .0016). “per-voxel index” is the manuscript's statistic (Fig. 3c; Results 2.3): the median over reliable voxels of (U_m − U_p)/(U_m + U_p) per ROI, as in Extended Data Table 1; “ratio of medians” is median(U_m − U_p)/median(U_m + U_p) per ROI, the statistic of an earlier draft, kept for comparison. Source: `results/hierarchy_permutation_null.json` (which labels the two `raw` and `norm`).

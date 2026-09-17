@@ -155,13 +155,22 @@ for arm_label, arm_name in ARMS:
     # ------------------------------------------------------ per-ROI Delta
     # NC-normalised (primary, matches §7.1's units) and raw, per §8.
     for stat_label, k_u in (("NC-normalised", ""), ("raw", "_raw")):
-        km, kp = f"unique_magno{k_u}", f"unique_parvo{k_u}"
+        # The pre-noise-ceiling arrays were renamed *_raw -> *_pre_nc on 2026-09-07
+        # (src/analysis/encoding/banded_ridge.py); stored fits carry whichever name
+        # was current when they were written, so resolve against the file.
+        def _key(stem, z):
+            for suf in ((k_u, "_pre_nc") if k_u == "_raw" else (k_u,)):
+                if f"{stem}{suf}" in z:
+                    return f"{stem}{suf}"
+            raise KeyError(f"{stem}{k_u} (and _pre_nc) missing")
+        km, kp = _key("unique_magno", arm[shared[0]]), _key("unique_parvo", arm[shared[0]])
+        km_r, kp_r = _key("unique_magno", ref[shared[0]]), _key("unique_parvo", ref[shared[0]])
         tab = np.full((len(shared), len(NAMES)), np.nan)
         nvox = np.zeros((len(shared), len(NAMES)), int)
         for i, s in enumerate(shared):
             # U_k - U_p. r2_magno cancels (gated above), so this equals
             # r2_joint(konio) - r2_joint(parvo), NC-scaled where asked.
-            delta = arm[s][kp] - ref[s][kp]
+            delta = arm[s][kp] - ref[s][kp_r]
             ok = (ncs[s] > NC_MIN) & np.isfinite(delta)
             for j, lab in enumerate(sorted(KASTNER)):
                 v = ok & (labels[s] == lab)

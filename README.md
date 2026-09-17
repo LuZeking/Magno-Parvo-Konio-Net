@@ -119,14 +119,20 @@ Submission scripts live in `slurm/`; adapt the directives to your scheduler.
 Training is the only stage that needs a GPU. Everything else — feature
 extraction, ridge fits, statistics, plotting — runs on CPU.
 
-**A note on the encoding footprint.** Stage 2 is submitted at ~160G per task
-because it holds a subject's full feature matrices in memory alongside the
-banded-ridge solve. If your nodes are smaller, reduce the footprint rather than
-the problem: PCA the streams to fewer components, read the beta files in
-chunks or memory-mapped, and drop cached tensors between folds. This is also why
-the swap and `parvo_highsf` cortical fits of the manuscript are single networks
-(seed 0): that allocation was not available for the two controls once the diet
-and no-diet arms had been fitted (Methods 4.5). Several scripts in `slurm/`
+**A note on the encoding footprint.** The stage-2 jobs that produced the
+committed results were submitted at ~160G per task, which was never the size of
+the data (the stream features are 15,360-d, about 0.6 GB per stream, and the PCA
+takes 25 s). The peak is himalaya's group-ridge random search, which forms an
+(n_alphas x n_test x n_train) array for every gamma sample and CV fold — about
+30 GB in float64 with all 21 alphas at once, whatever the voxel chunk. Passing
+`n_alphas_batch = 7` batches that search over alphas and changes no estimate:
+the equivalence probe (`slurm/encode_equiv_probe.sh`, then
+`tmp_analysis/equiv_check.py`) refits diet seed 0, subject 01 and reproduces the
+stored fit at voxelwise r = 1.00000 on both unique variances, largest per-ROI
+index difference 0.0000. The same fits then peak at 32.6 GB measured and are
+submitted at 34G — see `slurm/encode_cc_controls.sh`, which is the path to
+reproduce stage 2 on, and which produced the three-seed swap and `parvo_highsf`
+arms of the manuscript. Several scripts in `slurm/`
 carry historical resource requests from the runs that produced the committed
 results and are deliberately left as they were rather than rewritten, so check
 the directives before submitting anything. Stage 4's banded fits use

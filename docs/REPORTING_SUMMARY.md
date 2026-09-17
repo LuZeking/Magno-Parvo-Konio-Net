@@ -13,11 +13,12 @@ the form the journal supplies at submission governs which labels apply. Nothing
 below was written to a venue-specific prompt. What NMI adds is
 machine-learning reporting — data provenance, splits and leakage controls,
 optimisation, model and baselines, evaluation — which is stated in
-`PAPER_DRAFT.md` §4.1–§4.7 and audited item by item against DOME in
-`docs/NMI_REVIEW_2026-09-09.md`.
+`docs/PAPER_v2.md` §4.1–§4.9 and audited item by item against DOME in
+`docs/NMI_REVIEW_2026-09-09.md`, most recently re-audited in
+`docs/NMI_REVIEW_v4_2026-09-16.md`.
 
 **Status.** Every factual entry below is either read from the code and results
-files or cited to the section of `PAPER_DRAFT.md` that states it. Two items
+files or cited to the section of `docs/PAPER_v2.md` that states it. Two items
 cannot be completed from what we hold and say so explicitly rather than being
 filled with a plausible value — see *Population characteristics* and
 *Non-participation*. Those are the only gaps.
@@ -42,8 +43,14 @@ Three inferential axes, never pooled (§4.7):
   consistency ceiling (§4.3).
 - Stimuli: **1,280** cue-conflict images, **1,200** after excluding those whose
   shape and texture categories coincide (§4.3).
-Two arms are single-run and are labelled `n = 1` wherever they appear: the
-`swap` and `parvo_highsf` cortical fits, and §2.4's accuracy-matched control.
+Every arm is now three seeds. The `swap` and `parvo_highsf` cortical fits, the
+accuracy-matched control and the untrained koniocellular control were single
+runs in earlier drafts and were labelled `n = 1` there; all four were completed
+to seeds 0–2 on 2026-09-16/17 (`slurm/encode_cc_controls.sh`,
+`slurm/matched_seeds.sh`, `slurm/encode_konio_seeds.sh`) and are reported at
+n = 3 throughout. The **stimulus-side** n for the model zoo of §2.4 is 42
+networks, which is a fixed set and not a sample: rank statistics over it are
+descriptive and carry no p-values (§4.7, §4.8).
 
 **A statement on whether measurements were taken from distinct samples or
 whether the same sample was measured repeatedly.**
@@ -158,7 +165,12 @@ will be released with a DOI and an environment manifest on acceptance.
 
 *RRIDs.* No antibodies, cell lines, organisms or other registered wet-lab
 resources were used, so those categories do not apply. Software is identified by
-name, exact version and citation. SciCrunch RRIDs are not asserted for the
+name, exact version and citation. The environment is pinned three ways —
+`requirements.lock.txt` and `environment.lock.yml` (exact versions, generated
+from the environment that produced the results) and an Apptainer definition
+(`docs/reproducibility/mpk-verify.def`) whose built image runs the claim
+verifier end to end; the image was built and the verifier run inside it on
+2026-09-16 (job 26497432), ending `FAILURES: none`. SciCrunch RRIDs are not asserted for the
 individual Python packages because we have not verified registry entries for
 each, and an unverified identifier is worse than none; any the journal requires
 will be taken from the registry at submission.
@@ -182,6 +194,20 @@ will be taken from the registry at submission.
   (mean 0.958, sd 0.019, range 0.919–0.987), which is how that number was
   validated.
 - **MiniEcoset** — `osf.io/msna2` (Thorat & Kietzmann, 2024).
+- **ILSVRC-2012 validation images** — `image-net.org`, under the ImageNet terms
+  of access, used only as the held-out accuracy gate for the ImageNet networks
+  of §2.4 (§4.8). The exact subset is 10 images per class drawn with
+  `numpy.random.default_rng(0)` and is committed as
+  `results/generality/imagenet_val_subset.txt` (10,000 file names with their
+  class indices), so the gate can be reproduced image for image from a local
+  copy of the release. The images themselves are not redistributable by us.
+- **torchvision classifier weights** — the 38 `IMAGENET1K_V1` checkpoints and
+  the `IMAGENET1K_V2` ResNet-50 recipe variant, downloaded from
+  `download.pytorch.org` by `torchvision.models` at the versions pinned in
+  `requirements.lock.txt`.
+- **Stylized-ImageNet ResNet-50 checkpoints** — the three released by Geirhos
+  et al. (2019) at `github.com/rgeirhos/texture-vs-shape`
+  (`resnet50_train_60_epochs*.pth.tar`, fetched 2026-09-15), used unmodified.
 - Derived results tables and fitted encoding-model summaries sufficient to
   reproduce every figure will be deposited with a DOI on acceptance.
 
@@ -284,7 +310,7 @@ contrasts are between model conditions, and every analysis is a deterministic
 script over stored arrays with seeds fixed and recorded.
 
 **Timing.** Not applicable — no data collection window. Analyses reported here
-were run between 2026-08-27 and 2026-09-08; job identifiers and dates are
+were run between 2026-08-25 and 2026-09-17; job identifiers and dates are
 recorded per result in the manuscript's open-items log, and per-figure build
 scripts and source directories are named in each figure caption.
 
@@ -321,6 +347,27 @@ in the source publication. Cross-validation folds for the encoding models are
 `GroupKFold` by 73k image id with a fixed seed, so image identity never spans
 train and test, and the PCA is fit on training images only and never refit on
 test or on the cue-conflict set.
+
+---
+
+**Pre-registration.** Not registry-based, and it is described as internal
+pre-specification rather than registration throughout. Seven predictions were
+written into version-controlled plan files and committed before the
+corresponding analysis ran, and every one is reported whether it was met or
+not: the front-end 2×2, the inverted-front-end prediction, the corruption
+families and the error-consistency hypothesis (§4.7), then the unit-level
+readout rule (`docs/PLAN_GENERALITY_2026-09-14.md`, P1–P5), the subspace rule
+(`docs/PLAN_SUBSPACE_2026-09-15.md`, P-A, P-A′, P-B, P-C, P-D) and the model zoo
+(`docs/PLAN_ZOO_2026-09-15.md`, P-Z1–P-Z4). Four of these failed and are
+reported as failures, including the cortical predictions of the subspace plan.
+Each plan file carries an *Outcomes* section appended after the run, and no
+prediction was edited after the fact; one arithmetic correction to a plan (741
+→ 703 network pairs) is recorded in place as a correction.
+
+**Use of large language models.** §4.9. No large language model is part of the
+scientific pipeline. One was used as a coding and drafting assistant and for
+internal referee simulations, recorded commit by commit in the repository's
+`Co-Authored-By` trailers.
 
 ---
 
@@ -362,9 +409,18 @@ with the ROI family size disclosed where a set was selected post hoc (§2.2b).
 
 ## Provenance of this file
 
-Written 2026-09-08. Every numeric entry is either quoted from
-`docs/PAPER_DRAFT.md` §4.1–§4.7 or measured from the repository; the software
-versions come from the installed environment's package metadata cross-checked
-against live imports; the CC BY 4.0 licence was verified against the
-repository's `DATASET_LICENSE` file. The two gaps are marked **GAP** in place
-rather than filled, and each names the action that would close it.
+Written 2026-09-08 against `docs/PAPER_DRAFT.md`; revised 2026-09-17 against
+`docs/PAPER_v2.md` §4.1–§4.9, which is the manuscript this file now describes.
+The 2026-09-17 revision changed: the manuscript and audit references; the four
+control arms from `n = 1` to `n = 3`; the analysis window to 2026-08-25 –
+2026-09-17; the data sources, which gained the ILSVRC-2012 validation subset,
+the torchvision weights and the Stylized-ImageNet checkpoints of §2.4; the
+software item, which gained the two lock files and the container; and two new
+study-design items, *Pre-registration* and *Use of large language models*.
+Every numeric entry is either quoted from the manuscript section named beside
+it or measured from the repository; the software versions come from the
+installed environment's package metadata cross-checked against live imports
+(re-checked 2026-09-17, unchanged on all fourteen); the CC BY 4.0 licence was
+verified against the repository's `DATASET_LICENSE` file. The two gaps are
+marked **GAP** in place rather than filled, and each names the action that would
+close it.
