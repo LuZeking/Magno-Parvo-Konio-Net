@@ -1695,6 +1695,7 @@ def main() -> int:
     check_readout_w()
     check_misc()
     check_konio_seeds_and_compute()
+    check_unit_cortex_posthoc()
     print("\nFAILURES:", FAILS if FAILS else "none")
     return 1 if FAILS else 0
 
@@ -1723,6 +1724,23 @@ def check_konio_seeds_and_compute():
     chk("GPU-hours (text 605)", c["totals"]["gpu_h"], 605, 1)
     chk("energy kWh (text 930)", c["energy"]["kwh_total"], 930, 6)
     chk("kg CO2e (text 325)", c["energy"]["kg_co2e"], 325, 3)
+
+
+def check_unit_cortex_posthoc():
+    """Fig. 6c-d caption: ViT-B/16 and ConvNeXt-B unit-rule w* and unique-variance ranges."""
+    print("[unit-rule cortex, post hoc networks, Fig. 6c-d caption]")
+    c = json.load(open("results/figures_v2/generality_cortex.json"))["families"]
+    RG = ("V1", "V2", "V3", "hV4", "ventral", "lateral", "dorsal")
+    wc = [c["convnext_base"]["stats"]["wstar_median"][r] for r in RG]
+    wv = [c["vit_b_16"]["stats"]["wstar_median"][r] for r in RG]
+    chk("convnext_base w* median, largest region (text 0.0)", max(wc), 0.0, 1e-9)
+    chk("vit_b_16 w* median min (text 0.10)", min(wv), 0.10, 1e-6); chk("vit_b_16 w* median max (text 0.25)", max(wv), 0.25, 1e-6)
+    for f in ("convnext_base", "vit_b_16"):
+        if c[f]["stats"]["wstar_extrastriate_minus_V1"]["n_neg"] >= 7:
+            FAILS.append(f"{f}: P5 met, text says not")
+    u = [float(np.nanmean(c[f][k][r])) for f in ("rgb_tsn", "single34", "resnet50", "convnext_base") for k in ("uS", "uT") for r in RG]
+    chk("unit-halves unique variance min, trunks + ConvNeXt-B (text 0.006)", min(u), 0.006, 0.0006)
+    chk("unit-halves unique variance max, trunks + ConvNeXt-B (text 0.04)", max(u), 0.04, T2)
 
 
 if __name__ == "__main__":
