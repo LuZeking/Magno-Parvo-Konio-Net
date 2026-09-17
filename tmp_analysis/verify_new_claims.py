@@ -799,7 +799,22 @@ def check_generality() -> None:
     st = ctx["resnet50"]["stats"]
     chk("resnet50 extrastriate - V1 (index)", st["extrastriate_minus_V1"]["mean"], 0.24, 0.01)
     chk("resnet50 extrastriate - V1 p", st["extrastriate_minus_V1"]["p"], 0.039, 0.001)
-    for famk in ("rgb_tsn", "single34", "resnet50"):
+    RG = ("V1", "V2", "V3", "hV4", "ventral", "lateral", "dorsal")
+    for famk, lo, hi, ext_m, ext_n, ext_p in (("convnext_base", -0.45, -0.09, 0.22, 2, None), ("vit_b_16", -0.31, -0.13, -0.08, 6, 0.25)):
+        idx = [float(np.nanmean(ctx[famk]["index"][r])) for r in RG]
+        chk(f"{famk} unit-rule index, most negative region", min(idx), lo, T2); chk(f"{famk} unit-rule index, least negative region", max(idx), hi, T2)
+        if max(idx) >= 0:
+            FAILS.append(f"{famk}: unit-rule index not negative in every region")
+        e = ctx[famk]["stats"]["extrastriate_minus_V1"]
+        chk(f"{famk} unit-rule extrastriate - V1", e["mean"], ext_m, T2); chk(f"{famk} unit-rule extrastriate - V1 n neg", e["n_neg"], ext_n, 0)
+        chk(f"{famk} unit-rule n subjects", e["n"], 8, 0)
+        if ext_p is not None:
+            chk(f"{famk} unit-rule extrastriate - V1 p", e["p"], ext_p, 0.005)
+    uv = max(max(np.nanmean(ctx["vit_b_16"]["uS"][r]), np.nanmean(ctx["vit_b_16"]["uT"][r])) for r in RG)
+    chk("vit_b_16 largest unit-rule unique variance (text 0.09)", uv, 0.09, T2)
+    fv = [np.nanmean(ctx["vit_b_16"]["shared"][r]) / np.nanmean(ctx["vit_b_16"]["r2"][r]) for r in RG]
+    chk("vit_b_16 shared / r2 min (text 64%)", min(fv), 0.64, 0.006); chk("vit_b_16 shared / r2 max (text 72%)", max(fv), 0.72, 0.006)
+    for famk in ("rgb_tsn", "single34", "resnet50", "convnext_base"):
         fo = ctx[famk]
         for r in ("V1", "V2", "V3", "hV4", "ventral", "lateral", "dorsal"):
             u = max(np.nanmean(fo["uS"][r]), np.nanmean(fo["uT"][r]))
@@ -808,7 +823,7 @@ def check_generality() -> None:
                 print(f"  BAD {famk} {r} unique variance {u:.3f} > 0.04")
     print("  OK  single-trunk unique variances <= 0.04 in every region checked")
     if "shared" in ctx["rgb_tsn"]:
-        fr = [np.nanmean(ctx[k]["shared"][r]) / np.nanmean(ctx[k]["r2"][r]) for k in ("rgb_tsn", "single34", "resnet50")
+        fr = [np.nanmean(ctx[k]["shared"][r]) / np.nanmean(ctx[k]["r2"][r]) for k in ("rgb_tsn", "single34", "resnet50", "convnext_base")
               for r in ("V1", "V2", "V3", "hV4", "ventral", "lateral", "dorsal")]
         chk("single-trunk shared / r2 min", min(fr), 0.80, 0.02)
         chk("single-trunk shared / r2 max", max(fr), 0.96, 0.02)
@@ -1197,6 +1212,22 @@ def check_gradient_extras() -> None:
                               (UNTRAINED_DIR, "dkl_bcs_parvo_highsf_seed0_trained", -0.143, "parvo_highsf seed 0 hV4-V1 (ED T1)")]:
         _, prof = roi_profile(d, tag, True)
         chk(lab, float(np.nanmean([hv4_minus_v1(r) for r in prof])), want, T3)
+    for tag, want in [("dkl_bcs_swap_seed1_trained", -0.034), ("dkl_bcs_swap_seed2_trained", -0.014),
+                      ("dkl_bcs_parvo_highsf_seed1_trained", -0.082), ("dkl_bcs_parvo_highsf_seed2_trained", -0.108)]:
+        _, prof = roi_profile(UNTRAINED_DIR, tag, True)
+        chk(f"{tag} hV4-V1 (ED T1)", float(np.nanmean([hv4_minus_v1(r) for r in prof])), want, T3)
+    # degeneracy (Methods 4.5, ED Table 1 caption): weaker band / stronger band, subject-mean of voxel medians
+    from src.analysis.encoding.stats import load_results as _lr
+    def _deg(tag, num, den):
+        res = _lr(UNTRAINED_DIR, tag); a, b = [], []
+        for s_ in sorted(res):
+            z_ = res[s_]; v_ = (z_["noise_ceiling"] > 0.1) & ((z_["unique_magno"] + z_["unique_parvo"]) > 1e-3)
+            a.append(np.median(z_[num][v_])); b.append(np.median(z_[den][v_]))
+        return float(np.mean(a) / np.mean(b))
+    rs = [_deg(f"dkl_bcs_swap_seed{s_}_trained", "unique_parvo", "unique_magno") for s_ in range(3)]
+    rh = [_deg(f"dkl_bcs_parvo_highsf_seed{s_}_trained", "unique_magno", "unique_parvo") for s_ in range(3)]
+    chk("swap U_p/U_m min over seeds (text 0.005)", min(rs), 0.005, 0.0005); chk("swap U_p/U_m max (text 0.010)", max(rs), 0.010, 0.0005)
+    chk("parvo_highsf U_m/U_p min over seeds (text 0.003)", min(rh), 0.003, 0.0005); chk("parvo_highsf U_m/U_p max (text 0.005)", max(rh), 0.005, 0.0005)
     chk("swap U_p (retinotopic median)", _unique_median("dkl_bcs_swap_seed0_trained", "unique_parvo"), 0.006, T3)
     chk("parvo_highsf U_m (retinotopic median)", _unique_median("dkl_bcs_parvo_highsf_seed0_trained", "unique_magno"), 0.007, T3)
     # Fig. 3e: median r2 / noise ceiling, seed 0, per subject, mean over subjects
@@ -1622,15 +1653,15 @@ def check_subspace_cortex() -> None:
     chk("subspace bands: smallest shared+residual", min(sh), 0.23, T2); chk("subspace bands: largest shared+residual", max(sh), 0.63, T2)
     chk("subspace bands: full-model r2 min", min(r2), 0.25, T2); chk("subspace bands: full-model r2 max", max(r2), 0.65, T2)
     # P-C1: extrastriate - V1 contrast of the index
-    for f, n_neg, n, mean in (("rgb_tsn", 2, 8, 0.151), ("single34", 2, 8, 0.130), ("resnet50", 2, 7, 0.106), ("vit_b_16", 3, 8, -0.097), ("convnext_base", 7, 8, -0.440)):
+    for f, n_neg, n, mean in (("rgb_tsn", 2, 8, 0.151), ("single34", 2, 8, 0.130), ("resnet50", 2, 8, 0.131), ("vit_b_16", 3, 8, -0.097), ("convnext_base", 7, 8, -0.440)):
         st = fam[f]["stats"]["extrastriate_minus_V1"]
         chk(f"P-C1 {f}: extrastriate - V1, n negative", st["n_neg"], n_neg, 0); chk(f"P-C1 {f}: n subjects", st["n"], n, 0)
         chk(f"P-C1 {f}: extrastriate - V1 mean", st["mean"], mean, 0.0051)
     chk("P-C2 convnext_base: exact p", fam["convnext_base"]["stats"]["extrastriate_minus_V1"]["p"], 0.0156, 0.0005)
-    chk("resnet50: hV4 - V1 contrast (positive), n negative", fam["resnet50"]["stats"]["hV4_minus_V1"]["n_neg"], 0, 0)
-    chk("resnet50: hV4 - V1 mean", fam["resnet50"]["stats"]["hV4_minus_V1"]["mean"], 0.452, 0.0051)
+    chk("resnet50: hV4 - V1 contrast (positive), n negative", fam["resnet50"]["stats"]["hV4_minus_V1"]["n_neg"], 1, 0)
+    chk("resnet50: hV4 - V1 mean", fam["resnet50"]["stats"]["hV4_minus_V1"]["mean"], 0.395, 0.0051)
     # P-C3: w* of the 15-d lossy sum, extrastriate vs V1
-    for f, n_low, n in (("rgb_tsn", 6, 8), ("single34", 4, 8), ("resnet50", 4, 7), ("vit_b_16", 3, 8), ("convnext_base", 1, 8)):
+    for f, n_low, n in (("rgb_tsn", 6, 8), ("single34", 4, 8), ("resnet50", 5, 8), ("vit_b_16", 3, 8), ("convnext_base", 1, 8)):
         st = fam[f]["stats"]["wstar_extrastriate_minus_V1"]
         chk(f"P-C3 {f}: w* lower beyond V1, n", st["n_neg"], n_low, 0); chk(f"P-C3 {f}: n subjects", st["n"], n, 0)
     chk("P-C3 rgb_tsn: exact p", fam["rgb_tsn"]["stats"]["wstar_extrastriate_minus_V1"]["p"], 0.0391, 0.0005)
@@ -1663,8 +1694,35 @@ def main() -> int:
     check_readout_ladder()
     check_readout_w()
     check_misc()
+    check_konio_seeds_and_compute()
     print("\nFAILURES:", FAILS if FAILS else "none")
     return 1 if FAILS else 0
+
+
+def check_konio_seeds_and_compute():
+    """Supplementary Note S2 seeds 1-2 (results/konio_verdict/) and Methods 4.2 compute/energy."""
+    import re as _re
+    print("[konio seeds 1-2, Supplementary Note S2]")
+    want = {1: (-0.027, -0.016), 2: (-0.020, -0.014)}
+    for sd, (col, spec) in want.items():
+        t = open(f"results/konio_verdict/seed{sd}.txt", encoding="utf8").read()
+        if "GATE PASSED" not in t or "OUTCOME D" not in t:
+            FAILS.append(f"konio seed {sd}: gate or outcome D missing")
+        cols = [float(x) for x in _re.findall(r"colour set \(hV4,VO1,VO2\)\s+mean=([-+0-9.]+)", t)]
+        specs = [float(x) for x in _re.findall(r"colour set - other ROIs\s+mean=([-+0-9.]+)", t)]
+        chk(f"konio seed {sd}: colour set (NC-normalised)", cols[0], col, T3)
+        chk(f"konio seed {sd}: colour set minus other ROIs", specs[0], spec, T3)
+        ps = _re.findall(r"p=([0-9.]+)\s+(\d)/8 pos", t)
+        if not ps or any(p_ != "0.0078" or k_ != "0" for p_, k_ in ps):
+            FAILS.append(f"konio seed {sd}: not every contrast at p = .0078 with 0/8 positive")
+        else:
+            print(f"  OK  konio seed {sd}: all {len(ps)} contrasts p = .0078, 0/8 positive")
+    print("[compute, Methods 4.2]")
+    c = json.load(open("results/figures_v2/compute_accounting.json"))
+    chk("core-hours (text 29,000)", c["totals"]["core_h"], 29000, 60)
+    chk("GPU-hours (text 605)", c["totals"]["gpu_h"], 605, 1)
+    chk("energy kWh (text 930)", c["energy"]["kwh_total"], 930, 6)
+    chk("kg CO2e (text 325)", c["energy"]["kg_co2e"], 325, 3)
 
 
 if __name__ == "__main__":

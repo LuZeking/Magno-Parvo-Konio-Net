@@ -153,40 +153,40 @@
 | untrained, diet front end, magno alone | 0.513 | 154 | 0.510 | 1 |
 | untrained, no-diet front end, magno alone | 0.568 | 169 | 0.508 | 1 |
 
-**Extended Data Table 11 | Stream preference beyond hV4, on every NSD atlas.** Median over reliable voxels of the per-voxel index (Um − Up)/(Um + Up) (noise ceiling > 0.1, Um + Up > 10⁻³, ≥ 20 voxels per ROI per subject), mean over the eight subjects (n = subjects with enough voxels); the no-diet and diet arms are the mean over three training seeds per subject, whereas the swap, parvo + high-SF and thesis columns are single networks (seed 0, or the thesis's one checkpoint; Methods 4.5). Positive = magno band, negative = parvo band. Atlases: Wang et al. (2015) Kastner2015 ROIs beyond hV4 (the V1–hV4 rows are Extended Data Table 1 and Fig. 3), NSD's `streams` atlas, and the fLoc category-selective ROIs. Regional contrasts and the exact tests are in Extended Data Fig. 4c and `results/figures_v2/ext_gradient.md`. Source: the stored voxelwise fits in `results/encoding_cc/` and `results/encoding/`, relabelled; no refitting.
+**Extended Data Table 11 | Stream preference beyond hV4, on every NSD atlas.** Median over reliable voxels of the per-voxel index (Um − Up)/(Um + Up) (noise ceiling > 0.1, Um + Up > 10⁻³, ≥ 20 voxels per ROI per subject), mean over the eight subjects (n = subjects with enough voxels); the no-diet, diet, swap and parvo + high-SF arms are each the mean over three training seeds per subject, and the thesis column is the thesis's one checkpoint (Methods 4.5). Positive = magno band, negative = parvo band. Atlases: Wang et al. (2015) Kastner2015 ROIs beyond hV4 (the V1–hV4 rows are Extended Data Table 1 and Fig. 3), NSD's `streams` atlas, and the fLoc category-selective ROIs. Regional contrasts and the exact tests are in Extended Data Fig. 4c and `results/figures_v2/ext_gradient.md`. Source: the stored voxelwise fits in `results/encoding_cc/` and `results/encoding/`, relabelled; no refitting.
 
-| atlas | ROI | untrained (diet front end) | no diet (3 seeds) | diet (3 seeds) | swap (seed 0) | parvo + high-SF (seed 0) | thesis ckpt (n = 1) | voxels (median, diet) |
+| atlas | ROI | untrained (diet front end) | no diet (3 seeds) | diet (3 seeds) | swap (3 seeds) | parvo + high-SF (3 seeds) | thesis ckpt (n = 1) | voxels (median, diet) |
 |---|---|---|---|---|---|---|---|---|
 | Kastner2015 | VO1 | +0.00 (n=8) | +0.92 (n=8) | −0.87 (n=8) | +0.98 (n=8) | −0.99 (n=8) | −0.94 (n=8) | 196 |
 | Kastner2015 | VO2 | +0.12 (n=8) | +0.97 (n=8) | −0.90 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 220 |
 | Kastner2015 | PHC1 | +0.41 (n=8) | +0.98 (n=8) | −0.89 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 148 |
-| Kastner2015 | PHC2 | +0.46 (n=8) | +0.99 (n=8) | −0.87 (n=8) | +1.00 (n=8) | −0.99 (n=8) | −0.93 (n=8) | 150 |
-| Kastner2015 | LO1 | +0.13 (n=8) | +0.92 (n=8) | −0.83 (n=8) | +0.99 (n=8) | −0.98 (n=8) | −0.90 (n=8) | 230 |
-| Kastner2015 | LO2 | −0.14 (n=8) | +0.92 (n=8) | −0.90 (n=8) | +0.99 (n=8) | −0.99 (n=8) | −0.94 (n=8) | 166 |
+| Kastner2015 | PHC2 | +0.46 (n=8) | +0.99 (n=8) | −0.87 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.93 (n=8) | 150 |
+| Kastner2015 | LO1 | +0.13 (n=8) | +0.92 (n=8) | −0.83 (n=8) | +0.98 (n=8) | −0.98 (n=8) | −0.90 (n=8) | 230 |
+| Kastner2015 | LO2 | −0.14 (n=8) | +0.92 (n=8) | −0.90 (n=8) | +0.98 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 166 |
 | Kastner2015 | TO1 | +0.25 (n=8) | +0.96 (n=8) | −0.86 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.91 (n=8) | 280 |
 | Kastner2015 | TO2 | +0.20 (n=8) | +0.96 (n=8) | −0.89 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.90 (n=8) | 36 |
-| Kastner2015 | V3A | +0.39 (n=8) | +0.91 (n=8) | −0.81 (n=8) | +0.99 (n=8) | −0.98 (n=8) | −0.84 (n=8) | 278 |
-| Kastner2015 | V3B | +0.24 (n=8) | +0.96 (n=8) | −0.87 (n=8) | +1.00 (n=8) | −0.99 (n=8) | −0.94 (n=8) | 254 |
-| Kastner2015 | IPS0 | +0.15 (n=8) | +0.98 (n=8) | −0.87 (n=8) | +1.01 (n=8) | −1.00 (n=8) | −0.92 (n=8) | 317 |
-| Kastner2015 | IPS1 | −0.06 (n=8) | +0.98 (n=8) | −0.86 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.92 (n=8) | 239 |
-| Kastner2015 | IPS2 | +0.02 (n=8) | +1.00 (n=8) | −0.92 (n=8) | +1.01 (n=8) | −1.01 (n=8) | −0.94 (n=8) | 47 |
-| streams | early | +0.27 (n=8) | +0.86 (n=8) | −0.42 (n=8) | +0.96 (n=8) | −0.92 (n=8) | −0.45 (n=8) | 3133 |
-| streams | midventral | −0.15 (n=8) | +0.87 (n=8) | −0.84 (n=8) | +0.97 (n=8) | −0.98 (n=8) | −0.86 (n=8) | 708 |
-| streams | midlateral | −0.04 (n=8) | +0.91 (n=8) | −0.86 (n=8) | +0.98 (n=8) | −0.99 (n=8) | −0.90 (n=8) | 571 |
-| streams | midparietal | +0.32 (n=8) | +0.94 (n=8) | −0.84 (n=8) | +1.00 (n=8) | −0.99 (n=8) | −0.91 (n=8) | 512 |
-| streams | ventral | +0.08 (n=8) | +0.96 (n=8) | −0.91 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.95 (n=8) | 2724 |
+| Kastner2015 | V3A | +0.39 (n=8) | +0.91 (n=8) | −0.81 (n=8) | +0.98 (n=8) | −0.98 (n=8) | −0.84 (n=8) | 278 |
+| Kastner2015 | V3B | +0.24 (n=8) | +0.96 (n=8) | −0.87 (n=8) | +0.99 (n=8) | −0.99 (n=8) | −0.94 (n=8) | 254 |
+| Kastner2015 | IPS0 | +0.15 (n=8) | +0.98 (n=8) | −0.87 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.92 (n=8) | 317 |
+| Kastner2015 | IPS1 | −0.06 (n=8) | +0.98 (n=8) | −0.86 (n=8) | +1.00 (n=8) | −0.99 (n=8) | −0.92 (n=8) | 239 |
+| Kastner2015 | IPS2 | +0.02 (n=8) | +1.00 (n=8) | −0.92 (n=8) | +1.01 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 47 |
+| streams | early | +0.27 (n=8) | +0.86 (n=8) | −0.42 (n=8) | +0.96 (n=8) | −0.93 (n=8) | −0.45 (n=8) | 3133 |
+| streams | midventral | −0.15 (n=8) | +0.87 (n=8) | −0.84 (n=8) | +0.97 (n=8) | −0.99 (n=8) | −0.86 (n=8) | 708 |
+| streams | midlateral | −0.04 (n=8) | +0.91 (n=8) | −0.86 (n=8) | +0.97 (n=8) | −0.99 (n=8) | −0.90 (n=8) | 571 |
+| streams | midparietal | +0.32 (n=8) | +0.94 (n=8) | −0.84 (n=8) | +0.99 (n=8) | −0.99 (n=8) | −0.91 (n=8) | 512 |
+| streams | ventral | +0.08 (n=8) | +0.96 (n=8) | −0.91 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.95 (n=8) | 2724 |
 | streams | lateral | +0.25 (n=8) | +0.97 (n=8) | −0.87 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.91 (n=8) | 1842 |
-| streams | parietal | +0.12 (n=8) | +0.99 (n=8) | −0.87 (n=8) | +1.01 (n=8) | −1.00 (n=8) | −0.93 (n=8) | 1082 |
-| floc-faces | OFA | −0.07 (n=8) | +0.90 (n=8) | −0.89 (n=8) | +0.98 (n=8) | −1.00 (n=8) | −0.92 (n=8) | 367 |
+| streams | parietal | +0.12 (n=8) | +0.99 (n=8) | −0.87 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.93 (n=8) | 1082 |
+| floc-faces | OFA | −0.07 (n=8) | +0.90 (n=8) | −0.89 (n=8) | +0.98 (n=8) | −0.99 (n=8) | −0.92 (n=8) | 367 |
 | floc-faces | FFA-1 | +0.01 (n=8) | +0.95 (n=8) | −0.91 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 399 |
-| floc-faces | FFA-2 | +0.22 (n=7) | +0.98 (n=7) | −0.92 (n=7) | +0.99 (n=7) | −1.00 (n=7) | −0.95 (n=7) | 260 |
-| floc-places | OPA | +0.34 (n=8) | +0.98 (n=8) | −0.86 (n=8) | +1.01 (n=8) | −1.00 (n=8) | −0.93 (n=8) | 1070 |
-| floc-places | PPA | +0.44 (n=8) | +0.99 (n=8) | −0.88 (n=8) | +1.00 (n=8) | −0.99 (n=8) | −0.94 (n=8) | 620 |
-| floc-bodies | EBA | +0.17 (n=8) | +0.97 (n=8) | −0.88 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.92 (n=8) | 2174 |
+| floc-faces | FFA-2 | +0.22 (n=7) | +0.98 (n=7) | −0.92 (n=7) | +1.00 (n=7) | −1.00 (n=7) | −0.95 (n=7) | 260 |
+| floc-places | OPA | +0.34 (n=8) | +0.98 (n=8) | −0.86 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.93 (n=8) | 1070 |
+| floc-places | PPA | +0.44 (n=8) | +0.99 (n=8) | −0.88 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 620 |
+| floc-bodies | EBA | +0.17 (n=8) | +0.97 (n=8) | −0.88 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.92 (n=8) | 2174 |
 | floc-bodies | FBA-1 | −0.07 (n=6) | +0.96 (n=6) | −0.91 (n=6) | +1.00 (n=6) | −1.00 (n=6) | −0.95 (n=6) | 314 |
-| floc-bodies | FBA-2 | +0.13 (n=8) | +0.98 (n=8) | −0.92 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 252 |
-| floc-words | OWFA | −0.29 (n=8) | +0.88 (n=8) | −0.85 (n=8) | +0.98 (n=8) | −0.99 (n=8) | −0.88 (n=8) | 392 |
-| floc-words | VWFA-1 | −0.16 (n=8) | +0.96 (n=8) | −0.91 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.96 (n=8) | 454 |
+| floc-bodies | FBA-2 | +0.13 (n=8) | +0.98 (n=8) | −0.92 (n=8) | +1.00 (n=8) | −1.00 (n=8) | −0.94 (n=8) | 252 |
+| floc-words | OWFA | −0.29 (n=8) | +0.88 (n=8) | −0.85 (n=8) | +0.96 (n=8) | −0.99 (n=8) | −0.88 (n=8) | 392 |
+| floc-words | VWFA-1 | −0.16 (n=8) | +0.96 (n=8) | −0.91 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.96 (n=8) | 454 |
 | floc-words | VWFA-2 | −0.02 (n=5) | +0.95 (n=6) | −0.94 (n=6) | +0.99 (n=6) | −1.00 (n=6) | −0.96 (n=6) | 150 |
 | floc-words | mfs-words | −0.08 (n=8) | +0.97 (n=8) | −0.93 (n=8) | +0.99 (n=8) | −1.00 (n=8) | −0.96 (n=8) | 121 |
 
@@ -241,7 +241,7 @@
 | ImageNet ResNet-50 | 2048 | 0.222 | 0.167 | 0.346 | 0.180 [0.14, 0.23] | 0.99 | 0.202 | 0.02 | 0.15–0.90 (top-1 0.760) | — | 0.27 [0.20, 0.32] (ρ ≥ 0.75; |S| = 34; gate 0.00–0.85) | 0.27 [0.20, 0.31] (ρ ≥ 0.85; |S| = 204; gate 0.00–0.80) | 1 |
 | ImageNet VGG-16 | 4096 | 0.110 | 0.096 | 0.189 | 0.095 [0.07, 0.11] | 0.96 | 0.106 | 0.01 | 0.00–1.00 (top-1 0.711) | — | 0.40 [0.34, 0.46] (ρ ≥ -0.38; |S| = 56; gate 0.00–0.95) | 0.27 [0.22, 0.34] (ρ ≥ 0.23; |S| = 409; gate 0.00–0.90) | 1 |
 
-**Extended Data Table 15 | Cortex without a stream split: the shape- and texture-predictive components as encoding bands.** Upper block (subspace bands): the three bands are the shape-predictive subspace S = Y·B_S (15 dimensions), the texture-predictive subspace T = Y·B_T (15) and the residual R = Y·B_R of Extended Data Table 13 (bases fitted on all 1,200 images), with U_S = r²_{STR} − r²_{TR} and U_T = r²_{STR} − r²_{SR} from the three-band model and the two two-band models (random search, 30 and 20 samples); “shared” is r²_{STR} − U_S − U_T and “r²” the three-band model's noise-ceiling-normalised r². w*_cortex there is the weight of the 15-dimensional lossy sum z(w) = w·s + (1 − w)·t alone. Lower block (unit halves): for each single-trunk network the penultimate units were split as in Extended Data Table 14 (all 1,200 images) and the two halves entered as two bands of a banded ridge model of every `nsdgeneral` voxel (same split, folds and alpha grid as Methods 4.5); U_shape and U_texture are the noise-ceiling-normalised unique variances and the index is (U_shape − U_texture)/(U_shape + U_texture), median over reliable voxels (noise ceiling > 0.1, ≥ 20 voxels), mean over eight subjects (seeds averaged per subject). Regions: V1–hV4 from `prf-visualrois`; ventral (VO1/2, PHC1/2), lateral (LO1/2, TO1/2) and dorsal (V3A/B, IPS0–2) from Kastner2015. The two-stream diet row applies the same computation to the magno (shape-biased) and parvo (texture-biased) bands of Fig. 3. “shared” is the cross-validated variance the bands account for jointly (the full model's r² minus the unique variances) and “r²” the full model's noise-ceiling-normalised r², medians over the same voxels. w*_cortex is the mixing weight of the lossy sum z(w) = w·y_S + (1 − w)·y_T that maximises an ROI's median test R² (Extended Data Fig. 5 protocol). Exact paired Wilcoxon over subjects. Source: `results/figures_v2/generality_cortex.json` and `results/figures_v2/subspace_cortex.json`, aggregated by `tmp_analysis/figs_v2/generality_cortex.py` from the per-subject fits of `src/analysis/generality/cortex_bands.py` (`slurm/generality_{nsd,cortex}.sh`, `slurm/subspace_{nsd,cortex}.sh`), which are deposited alongside the encoding outputs of Fig. 3 (Code availability).
+**Extended Data Table 15 | Cortex without a stream split: the shape- and texture-predictive components as encoding bands.** Upper block (subspace bands): the three bands are the shape-predictive subspace S = Y·B_S (15 dimensions), the texture-predictive subspace T = Y·B_T (15) and the residual R = Y·B_R of Extended Data Table 13 (bases fitted on all 1,200 images), with U_S = r²_{STR} − r²_{TR} and U_T = r²_{STR} − r²_{SR} from the three-band model and the two two-band models (random search, 30 and 20 samples); “shared” is r²_{STR} − U_S − U_T and “r²” the three-band model's noise-ceiling-normalised r². w*_cortex there is the weight of the 15-dimensional lossy sum z(w) = w·s + (1 − w)·t alone. Lower block (unit halves): for each single-trunk network the penultimate units were split as in Extended Data Table 14 (all 1,200 images) and the two halves entered as two bands of a banded ridge model of every `nsdgeneral` voxel (same split, folds and alpha grid as Methods 4.5); U_shape and U_texture are the noise-ceiling-normalised unique variances and the index is (U_shape − U_texture)/(U_shape + U_texture), median over reliable voxels (noise ceiling > 0.1, ≥ 20 voxels), mean over eight subjects (seeds averaged per subject). Regions: V1–hV4 from `prf-visualrois`; ventral (VO1/2, PHC1/2), lateral (LO1/2, TO1/2) and dorsal (V3A/B, IPS0–2) from Kastner2015. The two-stream diet row applies the same computation to the magno (shape-biased) and parvo (texture-biased) bands of Fig. 3. “shared” is the cross-validated variance the bands account for jointly (the full model's r² minus the unique variances) and “r²” the full model's noise-ceiling-normalised r², medians over the same voxels. w*_cortex is the mixing weight of the lossy sum z(w) = w·y_S + (1 − w)·y_T that maximises an ROI's median test R² (Extended Data Fig. 5 protocol). Exact paired Wilcoxon over subjects. The unit-rule rows for ImageNet ViT-B/16 and ConvNeXt-B were run after the pre-registered analysis, at the identical protocol, to ask whether the unit-rule cortical result depends on architecture; they are post hoc and are marked as such in `docs/PLAN_GENERALITY_2026-09-14.md`. Source: `results/figures_v2/generality_cortex.json` and `results/figures_v2/subspace_cortex.json`, aggregated by `tmp_analysis/figs_v2/generality_cortex.py` from the per-subject fits of `src/analysis/generality/cortex_bands.py` (`slurm/generality_{nsd,cortex}.sh`, `slurm/subspace_{nsd,cortex}.sh`), which are deposited alongside the encoding outputs of Fig. 3 (Code availability).
 
 | network | statistic | V1 | V2 | V3 | hV4 | ventral | lateral | dorsal | hV4 − V1 (n neg, p) | extrastriate − V1 (n neg, p) | ρ(rank, index) V1–hV4 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -258,12 +258,12 @@
 | | shared | 0.325 | 0.298 | 0.293 | 0.316 | 0.503 | 0.379 | 0.358 | | | |
 | | r² (full model, nc-normalised) | 0.341 | 0.316 | 0.313 | 0.337 | 0.524 | 0.397 | 0.378 | | | |
 | | w*_cortex (median) | 0.62 | 0.57 | 0.55 | 0.45 | 0.55 | 0.68 | 0.48 | | Δw* extrastriate − V1 -0.01 (4/8 neg, 0.9453) | |
-| ImageNet ResNet-50 | index | -0.34 | -0.18 | -0.23 | +0.11 | -0.18 | -0.24 | -0.29 | +0.452 (0/7, 0.0156) | +0.106 (2/7, 0.2969) | +0.69 |
-| | U_shape | 0.004 | 0.005 | 0.005 | 0.009 | 0.005 | 0.004 | 0.004 | | | |
-| | U_texture | 0.008 | 0.006 | 0.007 | 0.006 | 0.006 | 0.005 | 0.006 | | | |
-| | shared | 0.354 | 0.328 | 0.317 | 0.374 | 0.631 | 0.499 | 0.453 | | | |
-| | r² (full model, nc-normalised) | 0.369 | 0.342 | 0.334 | 0.395 | 0.646 | 0.511 | 0.470 | | | |
-| | w*_cortex (median) | 0.40 | 0.30 | 0.40 | 0.40 | 0.40 | 0.50 | 0.40 | | Δw* extrastriate − V1 -0.01 (4/7 neg, 0.8125) | |
+| ImageNet ResNet-50 | index | -0.33 | -0.19 | -0.23 | +0.07 | -0.16 | -0.19 | -0.24 | +0.395 (1/8, 0.0156) | +0.131 (2/8, 0.1484) | +0.60 |
+| | U_shape | 0.004 | 0.005 | 0.005 | 0.008 | 0.005 | 0.004 | 0.004 | | | |
+| | U_texture | 0.007 | 0.006 | 0.007 | 0.006 | 0.006 | 0.005 | 0.006 | | | |
+| | shared | 0.333 | 0.311 | 0.307 | 0.365 | 0.635 | 0.496 | 0.462 | | | |
+| | r² (full model, nc-normalised) | 0.348 | 0.325 | 0.324 | 0.384 | 0.649 | 0.508 | 0.479 | | | |
+| | w*_cortex (median) | 0.45 | 0.40 | 0.45 | 0.40 | 0.40 | 0.45 | 0.40 | | Δw* extrastriate − V1 -0.02 (5/8 neg, 0.6406) | |
 | ImageNet ViT-B/16 | index | -0.45 | -0.54 | -0.45 | -0.25 | -0.50 | -0.43 | -0.70 | +0.193 (1/8, 0.0781) | -0.097 (3/8, 0.8438) | +0.37 |
 | | U_shape | 0.004 | 0.003 | 0.004 | 0.007 | 0.004 | 0.003 | 0.002 | | | |
 | | U_texture | 0.006 | 0.006 | 0.007 | 0.009 | 0.010 | 0.005 | 0.008 | | | |
@@ -300,6 +300,18 @@
 | | shared | 0.312 | 0.292 | 0.297 | 0.365 | 0.606 | 0.489 | 0.446 | | | |
 | | r² (full model, nc-normalised) | 0.343 | 0.322 | 0.327 | 0.397 | 0.633 | 0.512 | 0.471 | | | |
 | | w*_cortex (median) | 0.10 | 0.10 | 0.00 | 0.05 | 0.00 | 0.85 | 0.70 | | Δw* extrastriate − V1 +0.07 (3/8 neg, 0.8125) | |
+| ImageNet ViT-B/16 | index | -0.19 | -0.13 | -0.20 | -0.23 | -0.31 | -0.23 | -0.27 | -0.039 (5/8, 0.6406) | -0.081 (6/8, 0.2500) | -0.35 |
+| | U_shape | 0.036 | 0.036 | 0.032 | 0.037 | 0.047 | 0.042 | 0.038 | | | |
+| | U_texture | 0.053 | 0.047 | 0.050 | 0.062 | 0.092 | 0.070 | 0.069 | | | |
+| | shared | 0.162 | 0.154 | 0.161 | 0.189 | 0.381 | 0.292 | 0.258 | | | |
+| | r² (full model, nc-normalised) | 0.252 | 0.239 | 0.245 | 0.290 | 0.527 | 0.409 | 0.366 | | | |
+| | w*_cortex (median) | 0.25 | 0.20 | 0.10 | 0.15 | 0.25 | 0.15 | 0.15 | | Δw* extrastriate − V1 -0.18 (5/8 neg, 0.5469) | |
+| ImageNet ConvNeXt-B | index | -0.45 | -0.40 | -0.37 | -0.31 | -0.30 | -0.32 | -0.09 | +0.140 (2/8, 0.1094) | +0.218 (2/8, 0.0547) | +0.42 |
+| | U_shape | 0.012 | 0.013 | 0.013 | 0.017 | 0.022 | 0.020 | 0.025 | | | |
+| | U_texture | 0.030 | 0.029 | 0.029 | 0.035 | 0.039 | 0.035 | 0.029 | | | |
+| | shared | 0.214 | 0.200 | 0.203 | 0.248 | 0.476 | 0.357 | 0.319 | | | |
+| | r² (full model, nc-normalised) | 0.259 | 0.246 | 0.249 | 0.304 | 0.540 | 0.420 | 0.374 | | | |
+| | w*_cortex (median) | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | | Δw* extrastriate − V1 +0.10 (0/8 neg, 0.5000) | |
 
 **Extended Data Table 16 | The readout span across the field's model zoo.** Frozen ImageNet networks under the subspace rule of Extended Data Table 13 (PCA to 256 dimensions, 16-class shape and texture LDA, 15 directions each, symmetric orthogonalisation; bases fitted on one stratified half of the 1,200 cue-conflict images and the rate scored on the other, 10 splits both directions), each network's own head untouched, the Geirhos 16-class probability aggregation throughout; “images decided” is the number of the 1,200 assigned to their shape or their texture category at the trained readout, the denominator of the rate. “gate” is the w-range over which top-1 on a stratified 10-per-class ILSVRC-2012 validation subset (10,000 images; bases fitted on all cue-conflict images) stays within 5 points of the trained value, with the largest change of top-1 inside it; “texture end / shape end” are the held-out rates at the smallest and the largest gated w, and “gated span” is their difference, under the subspace rule and under the pre-specified unit-level median split of Extended Data Table 14. “probe” is the linear probe of Methods 4.3 (PCA to 256 dimensions, multinomial logistic regression, 5-fold stratified cross-validation) predicting the shape class and, separately, the texture class from the same features; bias is shape minus texture accuracy (chance 0.0625). Preprocessing is Resize 256 / CenterCrop 224 except for Inception-v3 (342/299), EfficientNet-B3 (320/300) and EfficientNet-V2-S (384/384), which were not trained at 224. “κ with observers” is error consistency (Cohen's κ on trial-by-trial agreement, Results 2.5; Extended Data Table 7) with each of the ten human observers, mean over observers, as a percentage of the human–human ceiling κ = 0.234, at the trained readout and, in parentheses, at the texture end and the shape end of the gate under the same gain; computed under this pipeline's preprocessing, so the VGG-16 value differs from the published response file's 7.3% (Extended Data Table 7) as its trained rate does. Over the 38 ImageNet-trained networks: Kendall τ between the ranking by trained rate and by the shape-end rate 0.47 (by the texture-end rate 0.78); 188 of 703 pairs (27%) reverse order; gated span 0.20–0.50 (median 0.30), ≥ 0.20 in 97% and the whole sweep inside the gate in 100%; Spearman ρ between gated span and trained rate +0.04, and trained top-1 -0.22; error consistency at the trained readout 2.4–23.0% of the ceiling (median 7.9%), at most 36.7% anywhere inside a gate, changing by a median of +13.5 points from the texture end to the shape end; ρ(κ, trained rate) +0.80; Kendall τ between trained rate and probe bias 0.44. The three Stylized-ImageNet networks are the published checkpoints of Geirhos et al. (2019), all ResNet-50: trained on Stylized-ImageNet (SIN), on SIN + IN, and on SIN + IN then fine-tuned on IN. Pre-specification: `docs/PLAN_ZOO_2026-09-15.md` (predictions P-Z1–P-Z4). Source: `results/figures_v2/zoo_behaviour.json`, aggregated by `tmp_analysis/figs_v2/zoo_behaviour.py` from the outputs of `slurm/zoo_cc.sh`; the per-network files are outside the repository.
 

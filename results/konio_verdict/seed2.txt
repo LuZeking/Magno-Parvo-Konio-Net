@@ -1,0 +1,109 @@
+reference cell 'untrained_seed2': subjects [1, 2, 3, 4, 5, 6, 7, 8]
+
+##############################################################################
+# ARM: matched (PRIMARY)   [untrained_konio_matched_seed2]
+##############################################################################
+
+==========================================================================
+1. THE GATE (§65.4): r2_magno must be unchanged by swapping the
+   chromatic band. Above 1e-3 the arm is INVALID.
+==========================================================================
+  subj01  max|dr2_magno| = 0.000e+00   mean = 0.000e+00   n_vox = 15724
+  subj02  max|dr2_magno| = 0.000e+00   mean = 0.000e+00   n_vox = 14278
+  subj03  max|dr2_magno| = 0.000e+00   mean = 0.000e+00   n_vox = 15226
+  subj04  max|dr2_magno| = 0.000e+00   mean = 0.000e+00   n_vox = 13153
+  subj05  max|dr2_magno| = 0.000e+00   mean = 0.000e+00   n_vox = 13039
+  subj06  max|dr2_magno| = 0.000e+00   mean = 0.000e+00   n_vox = 17907
+  subj07  max|dr2_magno| = 0.000e+00   mean = 0.000e+00   n_vox = 12682
+  subj08  max|dr2_magno| = 0.000e+00   mean = 0.000e+00   n_vox = 14386
+
+  WORST ACROSS SUBJECTS: 0.000e+00
+  GATE PASSED: the magno side is identical, so Delta below is
+  exactly r2_joint(konio) - r2_joint(parvo) with no magno-side
+  estimation error.
+
+==========================================================================
+2/3. Delta = median(U_konio - U_parvo), NC-normalised, n=8, NC>0.1
+==========================================================================
+  per-ROI, sorted by mean Delta (positive = konio explains more):
+/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-rewrite/tmp_analysis/konio_verdict.py:192: RuntimeWarning: Mean of empty slice
+  order = np.argsort(-np.nanmean(tab, axis=0))
+    V1d    +0.03510   8/8 subj   med n_vox=616
+    V1v    +0.02763   7/8 subj   med n_vox=579
+    V2d    +0.02050   6/8 subj   med n_vox=425
+    V2v    +0.00624   6/8 subj   med n_vox=510
+    V3d    +0.00570   5/8 subj   med n_vox=377
+    PHC2   +0.00075   5/8 subj   med n_vox=151
+    PHC1   -0.00388   3/8 subj   med n_vox=150
+    V3A    -0.00552   2/8 subj   med n_vox=283
+    LO1    -0.00694   3/8 subj   med n_vox=235
+    IPS2   -0.00867   2/8 subj   med n_vox=49
+    V3B    -0.00980   1/8 subj   med n_vox=256
+    IPS1   -0.01108   1/8 subj   med n_vox=251
+    TO1    -0.01185   0/8 subj   med n_vox=282
+    V3v    -0.01245   1/8 subj   med n_vox=385
+    IPS0   -0.01310   1/8 subj   med n_vox=324
+    TO2    -0.01498   0/8 subj   med n_vox=36
+    VO2    -0.01636   1/8 subj   med n_vox=221  <-- colour set
+    LO2    -0.01693   1/8 subj   med n_vox=168
+    hV4    -0.02041   0/8 subj   med n_vox=346  <-- colour set
+    VO1    -0.02193   0/8 subj   med n_vox=197  <-- colour set
+/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-rewrite/tmp_analysis/konio_verdict.py:194: RuntimeWarning: Mean of empty slice
+  m = np.nanmean(tab[:, j])
+
+  pre-declared contrasts:
+    hV4                                mean=-0.02041  median=-0.01690  p=0.0078  0/8 pos  dz=-1.58
+    VO (VO1,VO2)                       mean=-0.01915  median=-0.02109  p=0.0078  0/8 pos  dz=-1.52
+    colour set (hV4,VO1,VO2)           mean=-0.01957  median=-0.01969  p=0.0078  0/8 pos  dz=-1.59
+
+  specificity (§65.5's substitute for ecc residualisation; ~17 other ROIs):
+    colour set - other ROIs            mean=-0.01403  median=-0.01333  p=0.0078  0/8 pos  dz=-1.91
+    mean Delta over other ROIs = -0.00553
+
+==========================================================================
+2/3. Delta = median(U_konio - U_parvo), raw, n=8, NC>0.1
+==========================================================================
+  per-ROI, sorted by mean Delta (positive = konio explains more):
+    V1d    +0.01213   8/8 subj   med n_vox=616
+    V1v    +0.00982   7/8 subj   med n_vox=579
+    V2d    +0.00599   6/8 subj   med n_vox=425
+    V2v    +0.00206   6/8 subj   med n_vox=510
+    V3d    +0.00122   5/8 subj   med n_vox=377
+    PHC2   +0.00023   5/8 subj   med n_vox=151
+    PHC1   -0.00105   3/8 subj   med n_vox=150
+    V3A    -0.00137   2/8 subj   med n_vox=283
+    LO1    -0.00163   3/8 subj   med n_vox=235
+    IPS2   -0.00189   2/8 subj   med n_vox=49
+    IPS1   -0.00277   1/8 subj   med n_vox=251
+    V3B    -0.00314   1/8 subj   med n_vox=256
+    IPS0   -0.00319   1/8 subj   med n_vox=324
+    V3v    -0.00388   1/8 subj   med n_vox=385
+    TO1    -0.00411   0/8 subj   med n_vox=282
+    VO2    -0.00488   1/8 subj   med n_vox=221  <-- colour set
+    LO2    -0.00506   1/8 subj   med n_vox=168
+    TO2    -0.00557   0/8 subj   med n_vox=36
+    VO1    -0.00682   0/8 subj   med n_vox=197  <-- colour set
+    hV4    -0.00718   0/8 subj   med n_vox=346  <-- colour set
+
+  pre-declared contrasts:
+    hV4                                mean=-0.00718  median=-0.00721  p=0.0078  0/8 pos  dz=-1.45
+    VO (VO1,VO2)                       mean=-0.00585  median=-0.00697  p=0.0078  0/8 pos  dz=-1.56
+    colour set (hV4,VO1,VO2)           mean=-0.00630  median=-0.00708  p=0.0078  0/8 pos  dz=-1.59
+
+  specificity (§65.5's substitute for ecc residualisation; ~17 other ROIs):
+    colour set - other ROIs            mean=-0.00497  median=-0.00535  p=0.0078  0/8 pos  dz=-2.10
+    mean Delta over other ROIs = -0.00133
+
+==========================================================================
+4. VERDICT against §65.6 (NC-normalised primary; agreement with raw
+   is required before any claim)
+==========================================================================
+  hv4   NC -0.02041 (p=0.0078)   raw -0.00718 (p=0.0078)   signs AGREE
+  vo    NC -0.01915 (p=0.0078)   raw -0.00585 (p=0.0078)   signs AGREE
+  col   NC -0.01957 (p=0.0078)   raw -0.00630 (p=0.0078)   signs AGREE
+  spec  NC -0.01403 (p=0.0078)   raw -0.00497 (p=0.0078)   signs AGREE
+  -> OUTCOME D: KONIO IS WORSE. Decisive against B3 -- and more
+     so in the raw cell, where konio loses while carrying 2x the
+     contrast (§65.3). Retire the konio channel and say so.
+
+done

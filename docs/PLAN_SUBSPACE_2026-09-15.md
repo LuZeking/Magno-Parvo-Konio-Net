@@ -180,6 +180,11 @@ random search at 30 samples dominates); element 48 (ImageNet ResNet-50, subject 
 was resubmitted with a 22-h limit (job 26496391), so the ResNet-50 row below has n = 7 until it
 lands and will be refreshed then. All 72 w-sweep elements completed.
 
+*Refreshed 2026-09-17 15:57: job 26496391 completed and ResNet-50 is now n = 8. The bullets below keep
+the n = 7 values as first written; at n = 8 they read: P-C1 extrastriate − V1 negative in 2/8
+(+0.13, p = .15), hV4 − V1 negative in 1/8 (+0.40, p = .016), P-C3 w* lower beyond V1 in 5/8
+(p = .64). No verdict changes: P-C1 and P-C3 still fail, P-C2 is untouched.*
+
 - **P-C1 failed.** The extrastriate − V1 contrast of the index (U_S − U_T)/(U_S + U_T) is
   negative in 2/8 subjects in `rgb_tsn` (Δ = +0.15, p = .078), 2/8 in `dkl_bcs_single34`
   (+0.13, p = .38) and 2/7 in ResNet-50 (+0.11, p = .30). The hV4 − V1 descent is likewise

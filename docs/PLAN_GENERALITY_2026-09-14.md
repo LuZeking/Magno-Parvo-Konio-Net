@@ -125,3 +125,12 @@ Whatever the outcome, every prediction is reported.
   within 5 points of the trained top-1, because w → 1 then silences ≥ 90% of the
   units. In the two-stream concatenation the absolute set is 504 units, 99% of
   them stream 1, and the sweep reproduces the median-split span (0.46).
+- **Unit-rule cortex in ViT-B/16 and ConvNeXt-B (post hoc; run 2026-09-16/17, jobs 26497390 and
+  26497400, 8 subjects each).** Not pre-registered: added after NMI review v4 asked whether the
+  unit-rule cortical result depends on architecture, at the D4 protocol unchanged. The index is
+  negative — the texture-leaning half carries more unique variance — in every region in both
+  (ViT-B/16 −0.13 to −0.31, ConvNeXt-B −0.09 to −0.45), as it is from V1 to ventral cortex in
+  ResNet-50. The V1-relative gradient of P4/P5 does not appear in either: extrastriate − V1 is
+  −0.08 (6/8 negative, p = .25) in ViT-B/16 and +0.22 (2/8, p = .055) in ConvNeXt-B. The cortical
+  gradient therefore stays a property of our two trunks; what the ImageNet networks share with
+  them is only that cortex loads on the texture-leaning units.

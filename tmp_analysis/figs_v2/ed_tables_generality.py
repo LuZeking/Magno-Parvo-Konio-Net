@@ -163,7 +163,7 @@ def table15(ctx, sub_ctx=None):
         rows.append("| **subspace bands S, T, R** | | " + " | " * len(REGIONS) + " | | |")
         rows += cortex_rows(sub_ctx, ["rgb_tsn", "single34", "resnet50", "vit_b_16", "convnext_base"])
         rows.append("| **unit halves S, T** | | " + " | " * len(REGIONS) + " | | |")
-    rows += cortex_rows(ctx, ["two_stream_diet", "single34", "rgb_tsn", "resnet50"])
+    rows += cortex_rows(ctx, ["two_stream_diet", "single34", "rgb_tsn", "resnet50", "vit_b_16", "convnext_base"])
     sub_txt = ""
     if sub_ctx and sub_ctx.get("families"):
         sub_txt = ("Upper block (subspace bands): the three bands are the shape-predictive subspace S = Y·B_S (15 dimensions), the texture-predictive subspace T = Y·B_T (15) and the residual R = Y·B_R of Extended Data Table 13 (bases fitted on all 1,200 images), with U_S = r²_{STR} − r²_{TR} and U_T = r²_{STR} − r²_{SR} from the three-band model and the two two-band models (random search, 30 and 20 samples); “shared” is r²_{STR} − U_S − U_T and “r²” the three-band model's noise-ceiling-normalised r². "
@@ -177,6 +177,7 @@ def table15(ctx, sub_ctx=None):
            "The two-stream diet row applies the same computation to the magno (shape-biased) and parvo (texture-biased) bands of Fig. 3. "
            "“shared” is the cross-validated variance the bands account for jointly (the full model's r² minus the unique variances) and “r²” the full model's noise-ceiling-normalised r², medians over the same voxels. "
            "w*_cortex is the mixing weight of the lossy sum z(w) = w·y_S + (1 − w)·y_T that maximises an ROI's median test R² (Extended Data Fig. 5 protocol). Exact paired Wilcoxon over subjects. "
+           "The unit-rule rows for ImageNet ViT-B/16 and ConvNeXt-B were run after the pre-registered analysis, at the identical protocol, to ask whether the unit-rule cortical result depends on architecture; they are post hoc and are marked as such in `docs/PLAN_GENERALITY_2026-09-14.md`. "
            "Source: `results/figures_v2/generality_cortex.json`" + (" and `results/figures_v2/subspace_cortex.json`" if sub_txt else "") +
            ", aggregated by `tmp_analysis/figs_v2/generality_cortex.py` from the per-subject fits of `src/analysis/generality/cortex_bands.py` (`slurm/generality_{nsd,cortex}.sh`" + (", `slurm/subspace_{nsd,cortex}.sh`" if sub_txt else "") +
            "), which are deposited alongside the encoding outputs of Fig. 3 (Code availability).")
