@@ -126,9 +126,46 @@ def main():
     rep["lam_sd"] = spearman(col("lam"), [1 / n["sd"] for n in im])
     rep["m1_max_abs_err_median"] = float(np.median(col("m1_max_abs_err")))
 
+    # post hoc (labelled so wherever reported): what the gain acts on, and the estimator dependence of the span
+    for n in nets:
+        n["texture_share"] = n["texture_term"] / (n["texture_term"] + n["mean_eS"])
+    ts = col("texture_share")
+    pb = [n["probe"]["bias"] for n in im]
+    rng = np.random.default_rng(0)
+    diffs = []
+    for _ in range(10000):
+        i = rng.integers(0, len(im), len(im))
+        a_, b2 = spearman(np.array(ts)[i], np.array(pb)[i]), spearman(np.array(col("rate_trained"))[i], np.array(pb)[i])
+        if np.isfinite(a_) and np.isfinite(b2):
+            diffs.append(abs(a_) - abs(b2))
+    rank_of = lambda key, tag: 1 + sum(n[key] < next(m[key] for m in nets if m["tag"] == tag) for n in im)  # noqa: E731
+    others = {n["tag"]: dict(texture_share=n["texture_share"], shape_term=n["mean_eS"], texture_term=n["texture_term"])
+              for n in nets if n["group"] != "imagenet"}
+    post = dict(
+        texture_share_range=[min(ts), max(ts)], texture_share_median=float(np.median(ts)),
+        n_texture_dominant=int(sum(t > 0.5 for t in ts)), n=len(im),
+        texture_share_exception=[n["label"] for n in im if n["texture_share"] <= 0.5],
+        shape_term_range=[min(col("mean_eS")), max(col("mean_eS"))],
+        texture_term_range=[min(col("texture_term")), max(col("texture_term"))],
+        rho_texture_share_probe_bias=rho_ci(ts, pb),
+        rho_rate_probe_bias=rho_ci(col("rate_trained"), pb),
+        abs_rho_difference=dict(point=abs(spearman(ts, pb)) - abs(spearman(col("rate_trained"), pb)),
+                                ci=[float(np.percentile(diffs, 2.5)), float(np.percentile(diffs, 97.5))]),
+        rho_texture_share_rate=rho_ci(ts, col("rate_trained")),
+        rho_shape_term_probe_shape=rho_ci(col("mean_eS"), [n["probe"]["shape_acc"] for n in im]),
+        rho_texture_share_probe_bias_all42=spearman([n["texture_share"] for n in nets], [n["probe"]["bias"] for n in nets]),
+        others=others,
+        rho_Tf_forced_trained=rho_ci(col("T_f"), col("forced_trained")),
+        rho_Tp_insample_primary=spearman(col("T_p"), col("span_insample")),
+        rho_insample_primary_Tf=spearman(col("span_insample"), col("T_f")),
+        rho_lam_Tf=spearman(col("lam"), col("T_f")), rho_z_Tf=spearman(col("z"), col("T_f")),
+        sin=dict(T_p=sin["T_p"], T_f=sin["T_f"], span_insample=sin["span_insample"],
+                 rank_T_p=rank_of("T_p", SIN), rank_T_f=rank_of("T_f", SIN), rank_insample=rank_of("span_insample", SIN),
+                 of=len(im) + 1),
+    )
     failed = [k for k, v in P.items() if not v["met"]]
     out = dict(plan="docs/PLAN_SPAN_2026-09-18.md", run_id=args.run_id, n_imagenet=len(im),
-               predictions=P, failed=failed, forced_estimator=forced, reported=rep, networks=nets)
+               predictions=P, failed=failed, forced_estimator=forced, reported=rep, post_hoc=post, networks=nets)
     json.dump(out, open(OUT_JSON, "w"), indent=1)
 
     md = ["| network | trained forced rate | Φ(z) | z | λ | shape term | texture term | H | T_f | M0 | M1 | T_p | random span: max |.| |",
@@ -142,6 +179,8 @@ def main():
         print(k, "MET" if v["met"] else "FAILED", {kk: vv for kk, vv in v.items() if kk != "met"})
     print("forced estimator (m5):", forced)
     print("reported:", rep)
+    print("post hoc:", json.dumps({k: v for k, v in post.items() if k != "others"}, default=float))
+    print("others:", others)
     print("failed:", failed)
 
 
