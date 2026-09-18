@@ -1698,6 +1698,7 @@ def main() -> int:
     check_konio_seeds_and_compute()
     check_unit_cortex_posthoc()
     check_kappa_matched()
+    check_span_model()
     print("\nFAILURES:", FAILS if FAILS else "none")
     return 1 if FAILS else 0
 
@@ -1773,6 +1774,60 @@ def check_kappa_matched():
         print("  OK  four of six predictions failed (K-1 to K-4), K-5 untestable as specified, K-6 met")
     if pr["K6"]["max"] >= 40:
         FAILS.append("some gated readout exceeds 40% of the ceiling; Results 2.4 says 37% is the maximum")
+
+
+def check_span_model():
+    """Results 2.4, Discussion, Methods 4.8, ED Table 18 and ED Fig. 6: what sets the span (PLAN_SPAN)."""
+    print("[what the gain acts on, PLAN_SPAN]")
+    S = json.load(open("results/figures_v2/span_model.json"))
+    P, F, H = S["predictions"], S["forced_estimator"], S["post_hoc"]
+    chk("M0 median largest error (text 0.009)", P["S1"]["median_max_abs_err"], 0.009, 0.0006)
+    chk("two numbers rank the forced spans (text 0.95)", P["S2"]["rho_m1_Tf"], 0.95, 0.005)
+    chk("two numbers rank the reported spans (text 0.59)", P["S2"]["rho_m1_Tp"], 0.59, 0.005)
+    chk("reported v forced span ranking (ED 18 / plan 0.58)", S["reported"]["Tp_Tf"], 0.58, 0.005)
+    chk("forced span v trained forced rate (text +0.50)", H["rho_Tf_forced_trained"]["rho"], 0.50, 0.005)
+    chk("reported span v trained rate (text +0.04)", S["reported"]["span_rate"], 0.04, 0.005)
+    chk("forced-estimator tau (text 0.58)", F["tau_forced"], 0.58, 0.005)
+    chk("forced-estimator pairs reversing (text 21%)", 100 * F["frac_forced"], 21, 0.5)
+    chk("largest random span (text no more than 0.08)", max(n["rand_max_abs"] for n in S["networks"]), 0.076, 0.004)
+    chk("median random span (text 0.01)", P["S7"]["random_median_abs_median"], 0.01, 0.0015)
+    chk("labelled span above every random draw (42 of 42)", P["S7"]["all42_n_exceeds"], 42, 0)
+    chk("SIN span rank in sample (text 9th of 39)", H["sin"]["rank_insample"], 9, 0)
+    chk("SIN span rank forced (text 16th)", H["sin"]["rank_T_f"], 16, 0)
+    chk("SIN span rank held out (smallest)", H["sin"]["rank_T_p"], 1, 0)
+    chk("SIN forced span (text 0.32)", H["sin"]["T_f"], 0.32, 0.005)
+    chk("SIN held-out span (text 0.17)", H["sin"]["T_p"], 0.17, 0.005)
+    chk("texture term larger (text 37 of 38)", H["n_texture_dominant"], 37, 0)
+    chk("texture share median (text 89%)", 100 * H["texture_share_median"], 89, 0.5)
+    chk("ViT-B/32 texture share (text 45%)", 100 * H["texture_share_range"][0], 45, 0.5)
+    if H["texture_share_exception"] != ["ViT-B/32"]:
+        FAILS.append(f"texture-share exception changed: {H['texture_share_exception']}")
+    chk("texture share v probe bias (text -0.81)", H["rho_texture_share_probe_bias"]["rho"], -0.81, 0.005)
+    chk("  its interval, low (text -0.91)", H["rho_texture_share_probe_bias"]["ci"][0], -0.91, 0.005)
+    chk("  its interval, high (text -0.62)", H["rho_texture_share_probe_bias"]["ci"][1], -0.62, 0.005)
+    chk("trained rate v probe bias (text +0.59)", H["rho_rate_probe_bias"]["rho"], 0.59, 0.005)
+    chk("difference in |rho| (text 0.22)", H["abs_rho_difference"]["point"], 0.22, 0.005)
+    chk("  its interval, low (text 0.04)", H["abs_rho_difference"]["ci"][0], 0.04, 0.005)
+    chk("  its interval, high (text 0.44)", H["abs_rho_difference"]["ci"][1], 0.44, 0.005)
+    o = H["others"]
+    chk("SIN texture share (text 11%)", 100 * o["hub_resnet50_sin"]["texture_share"], 11, 0.5)
+    chk("SIN+IN texture share (text 75%)", 100 * o["hub_resnet50_sin_in"]["texture_share"], 75, 0.5)
+    chk("SIN+IN fine-tuned texture share (text 91%)", 100 * o["hub_resnet50_sin_in_ft"]["texture_share"], 91, 0.5)
+    chk("SIN texture term (text 0.31)", P["S5b"]["sin_texture_term"], 0.31, 0.005)
+    chk("ImageNet texture terms, low (text 0.93)", H["texture_term_range"][0], 0.93, 0.005)
+    chk("ImageNet texture terms, high (text 3.95)", H["texture_term_range"][1], 3.95, 0.005)
+    failed = sorted(k for k, v in P.items() if not v["met"])
+    if failed != ["S2", "S3", "S4", "S5a", "S6"]:
+        FAILS.append(f"PLAN_SPAN outcomes changed: failed = {failed}")
+    else:
+        print("  OK  two of seven predictions met (S-1, S-7), four failed (S-2, S-3, S-4, S-6), S-5 met in half (b)")
+    paper = open("docs/PAPER_v2.md", encoding="utf8").read()
+    for phrase in ("moves it least", "moves least"):
+        if phrase in paper:
+            FAILS.append(f"withdrawn Stylized-ImageNet claim still in the paper: '{phrase}'")
+    cap = open("results/figures_v2/figE6_zoo_caption.md", encoding="utf8").read()
+    if "moves it least" in cap:
+        FAILS.append("withdrawn Stylized-ImageNet claim still in the ED Fig. 6 caption")
 
 
 if __name__ == "__main__":

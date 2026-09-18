@@ -355,22 +355,25 @@ pre-specification rather than registration throughout. Predictions were
 written into version-controlled files and committed before the corresponding
 analysis ran: four single predictions — the front-end 2×2, the
 inverted-front-end prediction, the corruption families and the
-error-consistency hypothesis, two of which failed (§4.7) — and four plan files
+error-consistency hypothesis, two of which failed (§4.7) — and five plan files
 with their own prediction sets, for the unit-level readout rule
 (`docs/PLAN_GENERALITY_2026-09-14.md`, P1–P5), the subspace rule
 (`docs/PLAN_SUBSPACE_2026-09-15.md`, P-A, P-A′, P-B, P-C, P-D) and the model zoo
-(`docs/PLAN_ZOO_2026-09-15.md`, P-Z1–P-Z4), and error consistency at a matched
-rate (`docs/PLAN_KAPPA_2026-09-17.md`, K-1 to K-6). Every prediction is reported
+(`docs/PLAN_ZOO_2026-09-15.md`, P-Z1–P-Z4), error consistency at a matched
+rate (`docs/PLAN_KAPPA_2026-09-17.md`, K-1 to K-6) and what sets the span
+(`docs/PLAN_SPAN_2026-09-18.md`, S-1 to S-7). Every prediction is reported
 whether met or not, including the failures: the cortical predictions P-C1 and
 P-C3 of the subspace plan, part (b) of the zoo's Stylized-ImageNet prediction,
 and four of the six predictions of the matched-rate plan (a fifth could not be
-tested as specified); the manuscript reports that failure and its cause in
-Results 2.5. Each plan file carries an *Outcomes* section appended after the
+tested as specified), and four of the seven predictions of the span plan (a
+fifth held in one of its two halves); the manuscript reports those failures and
+their causes in Results 2.4–2.5. Each plan file carries an *Outcomes* section appended after the
 run; no prediction was edited after the fact, one arithmetic correction to a
 plan (741 → 703 network pairs) is recorded in place as a correction, and
 analyses added afterwards (the split-rule sensitivity, error consistency across
 the zoo, the unit-rule cortex fits of ViT-B/16 and ConvNeXt-B, the normalisation
-of κ by its attainable maximum) are labelled
+of κ by its attainable maximum, the texture share of the gain's effect and its
+relation to the probe) are labelled
 post hoc in the plan files and the manuscript.
 
 **Use of large language models.** §4.9. No large language model is part of the
