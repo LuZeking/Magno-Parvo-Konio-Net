@@ -32,6 +32,60 @@ ROI_ORDER = list(VIS) + list(KAST)
 ARM_OF = {"dkl_bcs": "diet", "dkl_base": "no diet"}
 
 
+
+def caption12(out):
+    """Extended Data Table 12's caption, built from the aggregated result so a rerun reproduces it.
+
+    The concatenation is a reference, not a bound: every mixture is a linear map of it, but the two
+    models are regularised separately, so the fitted concatenation can be beaten. How often, and by
+    how much, is the reproducibility scale of the whole w sweep and is reported here.
+    """
+    cells = [R for A in out["arms"].values() for R in A.values()]
+    m = np.concatenate([np.array(R["max_r2"], float) for R in cells])
+    c = np.concatenate([np.array(R["concat"], float) for R in cells])
+    h = np.concatenate([np.array(R["r2_at_half_over_max"], float) for R in cells])
+    exc = m - c
+    pos = exc > 0
+    gain = float(np.median((1.0 - h) * m))
+
+    def ci(arm):
+        """Percentile bootstrap over subjects; its own seed, so each arm is reproducible alone."""
+        d = np.array(out["stats"][arm]["delta_ext_minus_v1"], float)
+        rng = np.random.default_rng(0)
+        lo, hi = np.percentile([rng.choice(d, len(d), replace=True).mean() for _ in range(10000)], [2.5, 97.5])
+        return d.mean(), lo, hi
+
+    dd, dlo, dhi = ci("diet")
+    nd, nlo, nhi = ci("no diet")
+    sd, snd = out["stats"]["diet"], out["stats"]["no diet"]
+    n_d, n_nd = len(sd["delta_ext_minus_v1"]), len(snd["delta_ext_minus_v1"])
+    mi = "\u2212"
+    return (
+        "**Extended Data Table 12 | The readout weight cortex prefers against the one behaviour prefers.** "
+        "For each mixing weight w the classifier's own input z(w) = w\u00b7y\u2081 + (1 \u2212 w)\u00b7y\u2082 "
+        "(y\u2081 magno stream output, y\u2082 parvo stream output, 512-d each) is the design of a ridge encoding "
+        "model of every nsdgeneral voxel (same split, folds and alpha grid as the banded model; Methods 4.5). "
+        "w*_cortex is the w that maximises the median test R\u00b2 over reliable voxels of the ROI (mean over seeds "
+        "per subject; median [range] over 8 subjects). \"R\u00b2 at w = 0.5 / max\" is the median R\u00b2 at the "
+        "paper's readout weight relative to the best w. \"concat\" is the median R\u00b2 of the 1,024-d "
+        "concatenation [y\u2081, y\u2082], fitted as a reference and not as a bound: every mixture is a linear map "
+        "of the concatenation, but the two models are regularised separately on a shared alpha grid, and the best "
+        f"mixture exceeds the fitted concatenation in {int(pos.sum())} of the {len(m)} subject \u00d7 ROI \u00d7 arm "
+        f"cells, by a median {float(np.median(exc[pos])):.4f} R\u00b2 ({float(np.median(exc[pos] / c[pos]) * 100):.1f}% "
+        f"of the concatenation; largest {float(exc.max()):.4f}). That excess is the reproducibility scale of these "
+        f"curves and exceeds the median R\u00b2 the sweep itself buys, {gain:.4f} from w = \u00bd to w*, so w*_cortex "
+        "is read as the location of an optimum and never as an R\u00b2 difference. What the table supports is the "
+        f"ordinal contrast: extrastriate below V1 in {sd['delta_n_neg']}/{n_d} subjects (\u0394 = {mi}{abs(dd):.3f} "
+        f"[{mi}{abs(dlo):.3f}, {mi}{abs(dhi):.3f}], 10,000-sample percentile bootstrap over subjects, exact Wilcoxon "
+        f"p = {str(round(sd['p_exact'], 4)).lstrip('0')}), reversed without the diet (+{nd:.3f} [+{nlo:.3f}, +{nhi:.3f}], "
+        f"{n_nd - snd['delta_n_neg']}/{n_nd} positive, p = {str(round(snd['p_exact'], 3)).lstrip('0')}). "
+        "\"Voxels magno / parvo\" is the fraction of the ROI's voxels whose own best w is \u2265 0.75 / \u2264 0.25. "
+        "The behaviour-optimal weight (trial fit to each of 10 human observers' cue-conflict choices, diet final "
+        "checkpoints, 3 seeds) is given in the last row for comparison, with the cue-conflict shape-bias rate the "
+        "diet network produces at each weight."
+    )
+
+
 def load_all():
     out = {}
     for f in sorted(glob.glob(os.path.join(RES_DIR, "*.npz"))):
@@ -112,7 +166,7 @@ def main():
     # ---------- JSON + table ----------
     out = {"grid": grid.tolist(), "behaviour_w_trial_per_observer": beh_w,
            "behaviour_w_trial_median": float(np.median(list(beh_w.values()))), "arms": {}}
-    lines = ["**Extended Data Table 12 | The readout weight cortex prefers against the one behaviour prefers.** For each mixing weight w the classifier's own input z(w) = w·y₁ + (1 − w)·y₂ (y₁ magno stream output, y₂ parvo stream output, 512-d each) is the design of a ridge encoding model of every nsdgeneral voxel (same split, folds and alpha grid as the banded model; Methods 4.5). w*_cortex is the w that maximises the median test R² over reliable voxels of the ROI (mean over seeds per subject; median [range] over 8 subjects). \"R² at w = 0.5 / max\" is the median R² at the paper's readout weight relative to the best w; \"concat\" is the median R² of the 1,024-d concatenation, the ceiling for any mixture. \"Voxels magno / parvo\" is the fraction of the ROI's voxels whose own best w is ≥ 0.75 / ≤ 0.25. The behaviour-optimal weight (trial fit to each of 10 human observers' cue-conflict choices, diet final checkpoints, 3 seeds) is given in the last row for comparison, with the cue-conflict shape-bias rate the diet network produces at each weight.", "",
+    lines = ["@@CAP12@@", "",
              "| arm | ROI | w*_cortex median [range] | R² at w = 0.5 / max | max R² (median) | concat R² | voxels best w ≥ 0.75 | voxels best w ≤ 0.25 | rate at w*_cortex | n |",
              "|---|---|---|---|---|---|---|---|---|---|"]
     i05 = int(np.argmin(np.abs(grid - 0.5)))
@@ -164,6 +218,7 @@ def main():
                                             rate_at_cortex_w=rate_at(float(np.median(ext))), rate_at_behaviour_w=rate_at(float(np.median(bw))))
         print("cortex (extrastriate, diet) vs behaviour w*:", stats["cortex_vs_behaviour"])
     out["stats"] = stats
+    lines[0] = caption12(out)
     json.dump(out, open("results/figures_v2/readout_w_cortex.json", "w"), indent=1)
     md = open("results/figures_v2/ed_tables.md", encoding="utf8").read()
     if "Extended Data Table 12" in md:

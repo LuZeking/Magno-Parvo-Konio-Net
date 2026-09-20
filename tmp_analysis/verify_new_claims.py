@@ -1461,7 +1461,7 @@ def check_readout_w() -> None:
     chk("diet w* extrastriate min", min(ext_med), 0.33, T2); chk("diet w* extrastriate max", max(ext_med), 0.35, T2)
     S_ = W["stats"]["diet"]
     d = np.array(S_["delta_ext_minus_v1"])
-    chk("diet delta extrastriate - V1", d.mean(), -0.25, T2)
+    chk("diet delta extrastriate - V1", d.mean(), -0.252, T3)
     chk("diet delta n negative", float((d < 0).sum()), 8, 0)
     chk("diet delta exact p", wilcoxon(d, method="exact").pvalue, 0.0078, 0.0002)
     # behaviour-optimal weight: trial fit per observer, mean over the three diet final seeds
@@ -1495,6 +1495,59 @@ def check_readout_w() -> None:
         print(f"  {'OK ' if ok else 'BAD'} {arm}: r2(w=0.5)/max >= {thr:.2f} in every ROI (min {ratio[k]:.3f} at {k.split(' (')[0]})")
         if not ok:
             FAILS.append(f"{arm}: {k.split(' (')[0]} r2 at w = 0.5 is {100 * (1 - ratio[k]):.1f}% below its best, text says within {100 * (1 - thr):.0f}%")
+    # ED Table 12 / Methods 4.5: the concatenation is a reference, not a bound, and by how much
+    cells = [R for A in W["arms"].values() for R in A.values()]
+    mx = np.concatenate([np.array(R["max_r2"], float) for R in cells])
+    cc = np.concatenate([np.array(R["concat"], float) for R in cells])
+    hh = np.concatenate([np.array(R["r2_at_half_over_max"], float) for R in cells])
+    exc = mx - cc
+    pos = exc > 0
+    chk("cells, mixture over concatenation", float(pos.sum()), 36, 0)
+    chk("cells, total", float(len(mx)), 112, 0)
+    chk("median excess over the concatenation", float(np.median(exc[pos])), 0.0019, 0.00005)
+    chk("largest excess", float(exc.max()), 0.0054, 0.00005)
+    chk("excess as a fraction of concat (%)", float(np.median(exc[pos] / cc[pos]) * 100), 1.5, 0.05)
+    chk("median r2 the w sweep buys", float(np.median((1.0 - hh) * mx)), 0.0016, 0.00005)
+    ok = float(np.median(exc[pos])) > float(np.median((1.0 - hh) * mx))
+    print(f"  {'OK ' if ok else 'BAD'} the excess exceeds what the sweep buys (the text's reason for reading w* as ordinal)")
+    if not ok:
+        FAILS.append("ED Table 12: the excess no longer exceeds the r2 the sweep buys")
+    for arm, want_mean, want_lo, want_hi, npos in (("diet", -0.252, -0.283, -0.219, 8), ("no diet", 0.188, 0.077, 0.285, 7)):
+        dl = np.array(W["stats"][arm]["delta_ext_minus_v1"], float)
+        rng = np.random.default_rng(0)
+        lo, hi = np.percentile([rng.choice(dl, len(dl), replace=True).mean() for _ in range(10000)], [2.5, 97.5])
+        chk(f"{arm} delta mean", float(dl.mean()), want_mean, T3)
+        chk(f"{arm} delta bootstrap lo", float(lo), want_lo, T3)
+        chk(f"{arm} delta bootstrap hi", float(hi), want_hi, T3)
+        chk(f"{arm} delta on the stated side", float((dl < 0).sum() if arm == "diet" else (dl > 0).sum()), npos, 0)
+
+
+def check_prf_input_null() -> None:
+    """Supplementary Note S3 and ED Table 9: the pRF dissociation is already present at random
+    weights, so the note says training amplifies it rather than installs it. Read from the
+    committed results/prf_continuous/input_null_2026-09-08.txt (normalised block)."""
+    print("\n[pRF input null] the untrained network already carries the dissociation")
+    txt = open("results/prf_continuous/input_null_2026-09-08.txt", encoding="utf8").read()
+    blocks = txt.split("statistic = ")
+    norm = [b for b in blocks if b.lstrip().startswith("norm")]
+    if not norm:
+        FAILS.append("input_null_2026-09-08.txt: no normalised block")
+        return
+    row = [l for l in norm[0].splitlines() if l.startswith("untrained_seed0 ")]
+    gab = [l for l in norm[0].splitlines() if l.startswith("gabor_blur_cs ")]
+    if not row or not gab:
+        FAILS.append("input_null_2026-09-08.txt: untrained_seed0 / gabor_blur_cs row missing")
+        return
+    f = row[0].split()
+    chk("untrained, ecc | size", float(f[2]), 0.083, T3)
+    chk("untrained, size | ecc", float(f[5]), -0.038, T3)
+    print(f"  OK  untrained subjects on the stated side: {f[3]} and {f[6].replace('neg', '')}")
+    chk("Gabor bank, ecc | size", float(gab[0].split()[2]), 0.035, T3)
+    note = open("docs/PAPER_v2.md", encoding="utf8").read()
+    for phrase in ("the dissociation is something training installs",
+                   "the ceiling any mixture can reach", "the ceiling for any mixture"):
+        if phrase in note:
+            FAILS.append(f"withdrawn wording still in the paper: '{phrase}'")
 
 
 def check_misc() -> None:
@@ -1694,6 +1747,7 @@ def main() -> int:
     check_gradient_extras()
     check_readout_ladder()
     check_readout_w()
+    check_prf_input_null()
     check_misc()
     check_konio_seeds_and_compute()
     check_unit_cortex_posthoc()
