@@ -1731,6 +1731,82 @@ def check_subspace_cortex() -> None:
     chk("P-C1 met (text: failed)", float(met_c1), 0, 0); chk("P-C2 met (text: met)", float(met_c2), 1, 0); chk("P-C3 families at >= 7/8 (text: none)", float(n_c3), 0, 0)
 
 
+def check_exemplar() -> None:
+    """PLAN_EXEMPLAR outcomes (docs/PLAN_EXEMPLAR_2026-09-21.md), re-derived from the per-network rows of
+    results/figures_v2/exemplar_{zoo,streams}.json: the reproduction of the stored spans, the exemplar-
+    disjoint span, the ranking against its floor, the balanced probe, Table 1 on held-out exemplars and
+    the 2x2 interaction."""
+    import itertools as _it
+    print("\n[exemplar] PLAN_EXEMPLAR outcomes")
+    Z = json.load(open("results/figures_v2/exemplar_zoo.json"))
+    S = json.load(open("results/figures_v2/exemplar_streams.json"))
+    rows = Z["networks"]; im = [r for r in rows if r["group"] == "imagenet"]
+    if len(rows) != 42 or len(im) != 38:
+        FAILS.append("exemplar: network count"); print(f"  BAD {len(rows)} networks, {len(im)} ImageNet")
+    worst = max(abs(r["spans"]["E0"]["gated"] - r["E0_gated_reported"]) for r in rows)
+    ok = worst < 1e-9
+    print(f"  {'OK ' if ok else 'BAD'} E0 rerun reproduces every reported gated span (max |d| {worst:.1e})")
+    if not ok:
+        FAILS.append("exemplar: E0 reproduction")
+    e1 = np.array([r["spans"]["E1"]["span"] for r in im])
+    chk("E1 median span (38)", float(np.median(e1)), 0.189, T3)
+    chk("E1 min span (38)", float(e1.min()), 0.085, T3)
+    chk("E1 max span (38)", float(e1.max()), 0.294, T3)
+    chk("E1 networks reaching 0.20", float((e1 >= 0.20).sum()), 12, 0)
+    chk("E2 median span (texture exemplars)", float(np.median([r["spans"]["E2"]["span"] for r in im])), 0.195, T3)
+    chk("E3 median span (object exemplars)", float(np.median([r["spans"]["E3"]["span"] for r in im])), 0.293, T3)
+    chk("E0 median span (38)", float(np.median([r["spans"]["E0"]["span"] for r in im])), 0.298, T3)
+    n_null = sum(r["spans"]["E1"]["span"] > r["rand_max_abs"] for r in rows)
+    n_mono = sum(r["spans"]["E1"]["rho_mean_curve"] >= 0.9 for r in rows)
+    chk("E1 above the random maximum (of 42)", float(n_null), 42, 0)
+    chk("E1 monotone, rho >= 0.9 (of 42)", float(n_mono), 42, 0)
+    tr = [r["trained"] for r in im]; se = [r["spans"]["E1"]["shape_end"] for r in im]
+    n_rev = sum((tr[i] - tr[j]) * (se[i] - se[j]) < 0 for i, j in _it.combinations(range(len(im)), 2))
+    chk("E1 pairs reversed (of 703)", float(n_rev), 131, 0)
+    rk = Z["stats"]["ranking"]
+    chk("test-retest floor, mean", rk["floor_primary"]["mean"], 0.089, T3)
+    chk("test-retest floor, upper 95%", rk["floor_primary"]["ci"][1], 0.122, T3)
+    chk("reversed among resolved pairs", rk["E1_frac_reversed_resolved"], 0.084, T3)
+    q1 = np.array([r["probes"]["Q1"]["bias"] for r in im])
+    chk("Q1 median bias (38)", float(np.median(q1)), -0.360, T3)
+    chk("Q1 intervals below zero (of 38)", float(sum(r["probes"]["Q1"]["bias_p95"] < 0 for r in im)), 37, 0)
+    top = max(rows, key=lambda r: r["probes"]["Q1"]["bias"])
+    ok = top["tag"] == "hub_resnet50_sin"
+    print(f"  {'OK ' if ok else 'BAD'} highest Q1 of 42 is the Stylized-ImageNet ResNet-50 ({top['tag']})")
+    if not ok:
+        FAILS.append("exemplar: SIN not highest")
+    chk("SIN ResNet-50 Q1 bias", top["probes"]["Q1"]["bias"], 0.234, T3)
+    chk("Q1b median bias (38; the outlier)", float(np.median([r["probes"]["Q1b"]["bias"] for r in im])), 0.026, T3)
+    chk("rho(Q1, S256n) over 42", float(spearmanr([r["probes"]["Q1"]["bias"] for r in rows],
+                                                   [r["probes"]["S256n"]["bias"] for r in rows]).correlation), 0.94, T2)
+    chk("rho(texture share, Q1) over 38", float(spearmanr([r["texture_share"] for r in im], q1).correlation), -0.58, T2)
+    st = S["streams"]; q = lambda n, k: st[n][k]["Q1"]["bias"]
+    diet = [f"dkl_bcs_seed{i}_trained" for i in range(3)]
+    chk("diet magno Q1 (seed mean)", float(np.mean([q(d, "magno") for d in diet])), 0.337, T3)
+    chk("diet parvo Q1 (seed mean)", float(np.mean([q(d, "parvo") for d in diet])), -0.168, T3)
+    chk("untrained magno Q1", q("untrained_blur_cs", "magno"), 0.210, T3)
+    chk("untrained parvo Q1", q("untrained_blur_cs", "parvo"), -0.033, T3)
+    chk("diet magno texture acc on new exemplars (max)", max(st[d]["magno"]["Q1"]["texture_acc"] for d in diet), 0.08, T2)
+    for est, want_int in (("Q0", 0.731), ("Q1", 0.360)):
+        c = S["two_by_two"][est]["cells"]; m = {k: float(np.mean(v)) for k, v in c.items()}
+        inter = m["achromatic_transform"] - (m["chromatic_transform"] + m["achromatic_none"] - m["chromatic_none"])
+        chk(f"2x2 interaction, {est}", inter, want_int, T3)
+    T = S["trunks"]
+    sg = [T[f"run_dkl_bcs_single_seed{i}"]["probes"]["Q1"]["bias"] for i in range(3)]
+    mg = [T[f"concat_dkl_bcs_seed{i}"]["stream_probes"]["stream1"]["Q1"]["bias"] for i in range(3)]
+    ok = all(a < b for a, b in zip(sg, mg))
+    print(f"  {'OK ' if ok else 'BAD'} single dieted ResNet-18 below the magno stream on Q1, 3/3 "
+          f"({', '.join(f'{a:+.3f}<{b:+.3f}' for a, b in zip(sg, mg))})")
+    if not ok:
+        FAILS.append("exemplar: division of labour")
+    met = {**{k: v["met"] for k, v in Z["predictions"].items()}, **{k: v["met"] for k, v in S["predictions"].items()}}
+    failed = sorted(k for k, v in met.items() if not v)
+    ok = len(met) == 17 and failed == ["P-X7", "P-X8"]
+    print(f"  {'OK ' if ok else 'BAD'} predictions: {len(met) - len(failed)}/{len(met)} met, failed {failed}")
+    if not ok:
+        FAILS.append("exemplar: prediction ledger")
+
+
 def main() -> int:
     check_recovery()
     check_production_statistic()
@@ -1753,6 +1829,7 @@ def main() -> int:
     check_unit_cortex_posthoc()
     check_kappa_matched()
     check_span_model()
+    check_exemplar()
     print("\nFAILURES:", FAILS if FAILS else "none")
     return 1 if FAILS else 0
 

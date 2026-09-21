@@ -33,17 +33,17 @@ def rho_ci(a, b, seed=0):
     return dict(rho=r, ci=[float(np.percentile(bs, 2.5)), float(np.percentile(bs, 97.5))], n=len(a))
 
 
+def pair_mask_reversed(a, b):
+    """Per pair (i < j, itertools.combinations order): does the order differ between a and b (ties not reversed)."""
+    a, b = np.asarray(a, float), np.asarray(b, float)
+    i, j = np.triu_indices(len(a), 1)
+    return (a[i] - a[j]) * (b[i] - b[j]) < 0
+
+
 def reversals(a, b):
     """As tmp_analysis/figs_v2/zoo_behaviour.py: pairs whose order differs (ties not reversed)."""
-    n_rev = n_pairs = 0
-    for i, j in itertools.combinations(range(len(a)), 2):
-        n_pairs += 1
-        n_rev += (a[i] - a[j]) * (b[i] - b[j]) < 0
-    return int(n_rev), n_pairs
-
-
-def pair_mask_reversed(a, b):
-    return np.array([(a[i] - a[j]) * (b[i] - b[j]) < 0 for i, j in itertools.combinations(range(len(a)), 2)])
+    m = pair_mask_reversed(a, b)
+    return int(m.sum()), int(m.size)
 
 
 def test_retest(Hs, Ht, Fo, seed=0):
@@ -62,7 +62,8 @@ def test_retest(Hs, Ht, Fo, seed=0):
             rev.append(reversals(r1, r2)[0] / len(pairs))
             boot.append(r1)
         B = np.array(boot)
-        D = np.stack([B[:, i] - B[:, j] for i, j in pairs], 1)
+        ii, jj = np.triu_indices(Hs.shape[0], 1)
+        D = B[:, ii] - B[:, jj]
         lo, hi = np.percentile(D, 2.5, 0), np.percentile(D, 97.5, 0)
         out[name] = dict(mean=float(np.mean(rev)), ci=[float(np.percentile(rev, 2.5)), float(np.percentile(rev, 97.5))],
                          resolved=((lo > 0) | (hi < 0)).tolist())
@@ -122,7 +123,7 @@ def zoo():
     q1 = np.array([r["probes"]["Q1"]["bias"] for r in im])
     st["probes"] = {k: dict(median=float(np.median([r["probes"][k]["bias"] for r in im])),
                             min=float(np.min([r["probes"][k]["bias"] for r in im])), max=float(np.max([r["probes"][k]["bias"] for r in im])))
-                    for k in ("Q0", "Q1", "Q1b", "Q2")}
+                    for k in ("Q0", "Q1", "Q1b", "Q2", "S64", "S256n") if k in im[0]["probes"]}
     st["probes"]["Q1_n_interval_below_0"] = int(sum(r["probes"]["Q1"]["bias_p95"] < 0 for r in im))
     st["probes"]["Q1_n_interval_above_0"] = int(sum(r["probes"]["Q1"]["bias_p05"] > 0 for r in im))
     allq1 = {r["tag"]: r["probes"]["Q1"]["bias"] for r in rows}
@@ -132,6 +133,8 @@ def zoo():
     st["rho_texture_share_Q1"] = rho_ci([r["texture_share"] for r in im], q1)
     st["rho_texture_share_Q0"] = rho_ci([r["texture_share"] for r in im], [r["probes"]["Q0"]["bias"] for r in im])
     st["tau_trained_Q1"] = float(kendalltau(tr, q1).statistic)
+    st["rho_Q1_S256n_all"] = rho_ci([r["probes"]["Q1"]["bias"] for r in rows], [r["probes"]["S256n"]["bias"] for r in rows]) if "S256n" in rows[0]["probes"] else None
+    st["tau_trained_Q0"] = float(kendalltau(tr, [r["probes"]["Q0"]["bias"] for r in im]).statistic)
     st["Q1_top3"] = [(t, allq1[t]) for t in top[:3]]
     n_null = sum(r["spans"]["E1"]["span"] > r["rand_max_abs"] for r in rows if r["rand_max_abs"] is not None)
     n_null_den = sum(r["rand_max_abs"] is not None for r in rows)
@@ -195,7 +198,7 @@ def streams():
     spec = [("chromatic_none", "dkl_base_seed{}_trained", "parvo"), ("chromatic_transform", "dkl_bcs_swap_seed{}_trained", "parvo"),
             ("achromatic_none", "dkl_bcs_parvo_highsf_seed{}_trained", "parvo"), ("achromatic_transform", "dkl_bcs_seed{}_trained", "magno")]
     if all(p.format(i) in S for _, p, _ in spec for i in range(3)):
-        for est in ("Q0", "Q1", "Q1b", "Q2"):
+        for est in [e for e in ("Q0", "Q1", "Q1b", "Q2", "S64", "S256n") if e in S[spec[0][1].format(0)][spec[0][2]]]:
             c = {name: [q(p.format(i), s, est) for i in range(3)] for name, p, s in spec}
             m = {k: float(np.mean(v)) for k, v in c.items()}
             add = m["chromatic_transform"] + m["achromatic_none"] - m["chromatic_none"]

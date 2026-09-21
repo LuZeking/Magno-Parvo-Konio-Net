@@ -275,3 +275,122 @@ probe loses most of its generalisation.
 - **Two estimators are added to every probe**, as post-hoc sensitivities that are reported but not scored:
   **S64** (PCA-64 on all images, standardised) and **S256n** (PCA-256 on all images, not standardised).
 - The pre-registered Q0, Q1, Q1b and Q2, the spans and every prediction are unchanged.
+
+## Outcomes (appended 2026-09-21; predictions above unchanged)
+
+Runs: array A `26515240` (54 elements), array B `26515241` (20 elements) and aggregation `26515972`, all
+COMPLETED; array B peaked at 17.7 GB. Aggregates are in `results/figures_v2/exemplar_zoo.json` and
+`exemplar_streams.json` (`tmp_analysis/figs_v2/exemplar_aggregate.py`); per-network outputs are in
+`/scratch/byrong/mpk/exemplar/`.
+
+Every reproduction check passed exactly:
+- E0 reproduces the stored held-out span at |d| = 0 in all 54 elements.
+- Q0 reproduces the stored probe at |d| = 0 in all 42 zoo networks and for both streams of all 20
+  configurations.
+
+**Score: 15 of 17 scored items met** (P-X3 has two parts). **P-X7 and P-X8 failed.**
+
+| | Prediction | Outcome | |
+|---|---|---|---|
+| P-X1 | E1 span above the stored random maximum in ≥ 40/42 | 42/42 | met |
+| P-X2 | ρ(w, E1 mean curve) ≥ 0.9 in all 42 | 42/42 | met |
+| P-X3a | median E1 span ≥ 0.15 (38) | 0.189 (range 0.085–0.294; E0 0.298, 0.198–0.504) | met |
+| P-X3b | fewer than 19/38 reach 0.20 | 12/38 (E0: 37/38) | met |
+| P-X4 | median E2 < median E3 | 0.195 v 0.293 | met |
+| P-X5 | E1 reversal above the test–retest upper bound | 18.6% (131/703) v floor 8.9% [6.0%, 12.2%] | met |
+| P-X6 | abs ρ(trained rate, E1 span) ≤ 0.3 | +0.10 [−0.27, +0.43] | met |
+| P-X7 | median Q1 in [−0.10, +0.10] and < 10/38 intervals below 0 | median −0.360; 37/38 below 0 | **failed** |
+| P-X8 | ρ(Q1, Q0) ≥ 0.7 over 42 | 0.67 [0.37, 0.86] | **failed** |
+| P-X9 | SIN highest Q1 of 42 (confirmatory) | SIN +0.234 [+0.133, +0.341]; next ViT-B/32 +0.007 | met |
+| P-X10 | ρ(texture share, Q1) ≤ −0.5 (38) | −0.58 [−0.78, −0.29] (Q0: −0.81) | met |
+| P-X11 | diet magno − parvo Q1 > 0 in 3/3 | +0.51, +0.52, +0.49 | met |
+| P-X12 | diet parvo Q1 < 0 in 3/3 | −0.173, −0.175, −0.157 | met |
+| P-X13 | untrained (diet front end) magno Q1 > 0 | +0.210 | met |
+| P-X14 | diet parvo Q1 below untrained parvo in 3/3 | by −0.14, −0.14, −0.12 (untrained −0.033) | met |
+| P-X15 | single dieted ResNet-18 Q1 below diet magno (penultimate), 3/3 | −0.100, −0.083, −0.060 v +0.270, +0.266, +0.256 | met |
+| P-X16 | 2×2 interaction on Q1 ≥ +0.20 | +0.360 (Q0 +0.731) | met |
+
+### The spans: the rate moves on new exemplars, by about 60% of the stated amount
+
+The span exists on exemplars that the subspaces never saw, in every network: it is monotone and above its null
+in 42 of 42. Its size is about 60% of the reported one (median E1/E0 ratio 0.60):
+- The median falls from 0.30 to 0.19 (forced two-way estimator: 0.33 to 0.23).
+- The range falls from 0.20–0.50 to 0.09–0.29.
+- 12 of 38 networks clear `PLAN_ZOO`'s 0.20, against 37 before.
+
+The inflation comes mainly from texture exemplars. Holding out texture exemplars alone gives a median of 0.195;
+holding out object exemplars alone gives 0.293, which is barely changed.
+
+The span is still unrelated to the trained rate (ρ = +0.10). The ranking reversal survives its noise floor:
+- 18.6% of the 703 pairs reverse (forced two-way 16.2%), against a trained-ranking test–retest reversal of
+  8.9% [6.0%, 12.2%] (forced 7.4% [4.7%, 10.2%]).
+- Among the 490 pairs the trained rate separates at 95%, 8.4% reverse.
+
+The SIN network's E1 span, 0.127, is the 3rd smallest of 39.
+
+For our trunks, E1 against E0:
+- two-stream concatenation: 0.24–0.27 against 0.26–0.37;
+- gated dieted single ResNet-18: 0.10–0.11 against 0.14–0.15.
+
+### The probes: the paper's texture-leaning representations survive on held-out exemplars, smaller
+
+**With exemplars held out and balanced (Q1), 37 of the 38 ImageNet networks are texture-leaning.** The one
+exception is ViT-B/32, at +0.007. Texture is decoded on new exemplars at 0.46–0.74 and shape at 0.22–0.46. The
+median bias is −0.36, against −0.53 for Q0.
+
+**SIN ResNet-50 is the only clearly shape-leaning network.** It sits at +0.234 [+0.133, +0.341], and the next
+network, ViT-B/32, is at +0.007. Its lead widens from 0.18 under Q0 to 0.23. The two SIN+IN variants sit
+between them and the ImageNet networks: −0.140 and −0.334.
+
+The post-hoc sensitivities agree with Q1:
+- S256n: median −0.39, and ρ(Q1, S256n) = 0.94 over the 42 networks.
+- S64: median −0.14.
+- Q2: median −0.18.
+
+Q1b, the paper's preprocessing on the balanced design, is the outlier. It gives a median of +0.03, as the test
+runs showed.
+
+**P-X7 failed because it was written from K1.** K1's estimator was Q1b, and the prediction was falsified by the
+pre-registered primary estimator. **P-X8 failed narrowly:** the probe ordering changes more than predicted
+(ρ = 0.67). τ(trained rate, probe), however, is unchanged: 0.43 for Q1 against 0.44 for Q0.
+
+### Streams and trunks: every Table 1 direction survives, at smaller magnitude
+
+Q1 values on stage-pooled features, seed means, with Q0 in brackets:
+
+| Configuration | Magno | Parvo |
+|---|---|---|
+| Diet | +0.34 (+0.82) | −0.17 (−0.52) |
+| No diet | −0.12 (−0.23) | −0.12 (−0.50) |
+| Untrained, diet front end | +0.21 (+0.80) | −0.03 (−0.09) |
+| Untrained, no blur | +0.09 (+0.42) | −0.03 (−0.09) |
+| Swap | −0.12 (−0.23) | ±0.01 (−0.15) |
+| parvo_highsf | +0.33 (+0.84) | −0.14 (−0.27) |
+
+What stands out:
+- The diet magno stream decodes texture on new exemplars at 0.08 in every seed, against a chance level of
+  0.0625 (parvo_highsf magno: 0.06–0.07), while decoding shape at 0.41–0.42.
+- The parvo stream's texture lean is learnt: −0.03 untrained, −0.17 diet-trained, −0.12 trained without the diet.
+- The carrier × transform interaction halves, from +0.73 to +0.36. It is positive under every estimator except
+  the outlier Q1b (Q2 +0.45, S64 +0.27, S256n +0.38, Q1b +0.10).
+- At the penultimate level, the two-stream model's magno units sit at +0.26 to +0.27 and its parvo units at
+  −0.21 to −0.24. The dieted single ResNet-18 sits at −0.06 to −0.10, and the dieted single ResNet-34 at
+  −0.00 to −0.03. **The division of labour is present in the representation**, not only in behaviour.
+
+### What changes in the manuscript (by the rules above)
+
+- **P-X1, P-X2 and P-X5 hold.**
+  - The zoo claim stays.
+  - "0.20–0.50" becomes "0.09–0.29 (median 0.19) on exemplars the subspaces were not fitted on".
+  - "a quarter of all pairs" becomes "19% of pairs, about twice the trained ranking's own test–retest
+    reversal".
+  - E0 and Q0 remain, labelled "exemplar-shared".
+- **P-X7 failed.** The failing branch was not written out in the plan. Its reading is that "texture-biased
+  representation" stays for the ImageNet networks, with the Q1 magnitudes (median −0.36; 37 of 38) replacing
+  the Q0 ones. The Stylized-ImageNet sentence is kept, and is stronger: it is the only shape-leaning network of
+  the 42.
+- **P-X11 and P-X12 hold.** "Opposite directions" and "the texture-biased stream" stand, with Table 1 given on
+  both probes.
+- **P-X15 holds.** The single-trunk comparison enters Results 2.2, and the abstract's magno sentence names the
+  second stream.
+- **The 2×2 interaction is restated** as +0.36 on held-out exemplars, with +0.73 as the exemplar-shared value.
