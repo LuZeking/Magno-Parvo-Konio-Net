@@ -112,6 +112,10 @@ PREAMBLE = r"""
 \usepackage{etoolbox}
 \AtBeginEnvironment{longtable}{\small}
 \usepackage{caption}
+% Pandoc wraps a caption-less longtable in \def\LTcaptype{none}. With the caption
+% package loaded, ltcaption still calls \refstepcounter{\LTcaptype}, so the counter
+% has to exist. Nothing ever typesets it.
+\newcounter{none}
 \usepackage{microtype}
 \usepackage{xcolor}
 \definecolor{linkblue}{RGB}{0,72,140}
