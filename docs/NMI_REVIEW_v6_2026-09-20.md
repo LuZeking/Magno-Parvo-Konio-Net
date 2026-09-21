@@ -230,8 +230,16 @@ No D-Fail, no E-Fail, no override triggered.
 
 **Try-to-run note.** A fresh verifier run under the repository's own job script (`slurm/verify_claims.sh`,
 job 26510851) was killed at the script's one-hour wall limit after passing 600+ checks; the previous run of
-the same script took 35 minutes. The wall time is now marginal rather than wrong, but a referee following the
-repository's instructions can hit it. VERIFIER_RESULT_PLACEHOLDER
+the same script took 35 minutes. Neither figure measures the analysis. `verify_new_claims.check_two_by_two`
+imports `shape_bias`, a twenty-line pure-numpy scoring function whose module chain (`cue_conflict` ->
+`dkl_frontend` -> `helpers`) imports `torch` at module level, and the interpreter the script pinned sat on a
+Lustre scratch filesystem that the group's own job arrays had saturated: a bare interpreter took 37 s to
+start there, and `import torch` had not completed after 23 minutes. With the identical environment rebuilt
+from the repository's own `requirements.lock.txt` on a filesystem that was not under load, the suite runs
+**637 checks in 1 min 35 s with no failures** (job 26511423, 1.5 GB peak RSS), which is what a referee should
+expect. The job script now pins that interpreter and requests 4 GB and 20 minutes. The module-level `torch`
+imports in `src/` are left in place: they cost nothing once the filesystem is fast, but they would penalise
+anyone re-using those modules for CPU-only scoring, and that is worth a line in the repository README.
 
 ---
 

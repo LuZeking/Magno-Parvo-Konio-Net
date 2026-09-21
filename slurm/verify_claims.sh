@@ -4,8 +4,8 @@
 #SBATCH --partition=main
 #SBATCH --qos=standard
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=16G
-#SBATCH --time=03:00:00
+#SBATCH --mem=4G
+#SBATCH --time=00:20:00
 #SBATCH --output=slurm/logs/verify_%j.out
 set -euo pipefail
 mkdir -p slurm/logs
