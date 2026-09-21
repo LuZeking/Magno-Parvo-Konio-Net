@@ -115,17 +115,19 @@ for sd in range(3):
 P("")
 
 # ------------------------------------------------------------ T4 the 2x2
-P("**Extended Data Table 4 | The carrier × transform 2×2 on the probe and on behaviour.** Mean over training seeds with the seed range in brackets; “decided” is the mean number of the 1,200 cue-conflict images the readout classifies as the shape or the texture category (the shape-bias denominator). Cells are read out on stream 2 in three cases and on the diet's magno stream in the fourth. Source: `results/figures/fig1_data.npz` (from `results/shape_texture/`, `results/cue_conflict/`).")
+P("**Extended Data Table 4 | The carrier × transform 2×2 on the probe and on behaviour.** Mean over training seeds with the seed range in brackets; “decided” is the mean number of the 1,200 cue-conflict images the readout classifies as the shape or the texture category (the shape-bias denominator). Cells are read out on stream 2 in three cases and on the diet's magno stream in the fourth. Source: `results/figures/fig1_data.npz` (from `results/shape_texture/`, `results/cue_conflict/`). “probe bias, exemplars held out” is the exemplar-balanced probe of Methods 4.3, scored on object and texture exemplars the probe was not trained on (three exemplars per category for both labels, leave one exemplar out, PCA inside the folds, mean of 20 draws; `docs/PLAN_EXEMPLAR_2026-09-21.md`, `results/figures_v2/exemplar_streams.json`); “probe bias” is the original stratified-fold probe, whose test images share exemplars with its training folds.")
 P("")
-P("| carrier | transform | condition, stream | probe bias | cue-conflict shape bias | decided / 1,200 | seeds |")
-P("|---|---|---|---|---|---|---|")
+P("| carrier | transform | condition, stream | probe bias | probe bias, exemplars held out | cue-conflict shape bias | decided / 1,200 | seeds |")
+P("|---|---|---|---|---|---|---|---|")
+EX2 = json.load(open("results/figures_v2/exemplar_streams.json"))["two_by_two"]["Q1"]["cells"]
 cells = [("chromatic (L−M)", "none", "no diet, parvo", "chromatic", "none"),
          ("chromatic (L−M)", "yes", "swap, parvo", "chromatic", "transform"),
          ("achromatic (luminance)", "none", "parvo_highsf, stream 2", "achromatic", "none"),
          ("achromatic (luminance)", "yes", "diet, magno", "achromatic", "transform")]
 for carrier, tr, cond, ck, tk in cells:
     pr, be, de = D[f"a__{ck}__{tk}__probe"], D[f"a__{ck}__{tk}__beh"], D[f"a__{ck}__{tk}__decided"]
-    P(f"| {carrier} | {tr} | {cond} | {f(pr.mean())} [{np.ptp(pr):.3f}] | {be.mean():.3f} [{np.ptp(be):.3f}] | {de.mean():.0f} | {len(pr)} |")
+    q1 = np.array(EX2[f"{ck}_{tk}"])
+    P(f"| {carrier} | {tr} | {cond} | {f(pr.mean())} [{np.ptp(pr):.3f}] | {f(q1.mean())} [{np.ptp(q1):.3f}] | {be.mean():.3f} [{np.ptp(be):.3f}] | {de.mean():.0f} | {len(pr)} |")
 P("")
 
 # ------------------------------------------------------------ T5 single-stream controls and ladder
@@ -211,7 +213,7 @@ P("| per-ROI normalised floor, V1v … hV4 (no-diet geometry) | | +0.025, +0.025
 P("")
 
 # ------------------------------------------------------------ T9 pRF regressions (stored analyses)
-P("**Extended Data Table 9 | Stream preference regressed on pRF eccentricity and pRF size within subject.** Per-voxel stream-preference index regressed on log pRF eccentricity and log pRF size (NSD pRF estimates, voxels with pRF R² > 5%, noise ceiling > 0.1); “ecc | size” is the partial slope for eccentricity controlling for size and vice versa; mean over 8 subjects, with the number of subjects on the stated side and the exact Wilcoxon p. Collinearity between the two predictors is modest (mean VIF 1.66). The arm interaction is the paired difference of partial slopes, seed-averaged within arm. Sources: `results/prf_continuous/dissociation_2026-09-08.txt`, `interaction_2026-09-08.txt`, `input_null_2026-09-08.txt`.")
+P("**Extended Data Table 9 | Stream preference regressed on pRF eccentricity and pRF size within subject.** Per-voxel stream-preference index regressed on log pRF eccentricity and log pRF size (NSD pRF estimates, voxels with pRF R² > 5%, noise ceiling > 0.1); “ecc | size” is the partial slope for eccentricity controlling for size and vice versa; mean over 8 subjects, with the number of subjects on the stated side and the exact Wilcoxon p. Collinearity between the two predictors is modest (mean VIF 1.66). The arm interaction is the paired difference of partial slopes, seed-averaged within arm. Sources: `results/prf_continuous/dissociation_2026-09-08.txt`, `interaction_2026-09-08.txt`, `input_null_2026-09-08.txt`. The paired trained − untrained rows compare each subject's partial slope in the trained seed-0 network with the untrained network on the diet front end; training with the diet changes neither statistic significantly and the two disagree in sign, while training without the diet removes the dissociation on the raw statistic.")
 P("")
 P("| model | statistic | ecc alone | size alone | ecc \\| size | size \\| ecc |")
 P("|---|---|---|---|---|---|")
@@ -225,6 +227,11 @@ P("| diet, seed 0 | raw | +0.103 (1/8, .039) | −0.158 (8/8, .0078) | +0.325 (0
 P("| no diet, seed 0 | raw | +0.130 (1/8, .023) | +0.181 (0/8, .0078) | +0.028 (3/8, .84) | +0.163 (0/8, .0078) |")
 P("| Gabor bank, diet front end (input null) | normalised | | | +0.035 (6/8 pos, .15) | +0.002 (4/8 neg, .95) |")
 P("| untrained network, diet front end | normalised | | | +0.083 (7/8 pos, .016) | −0.038 (6/8 neg, .039) |")
+P("| untrained network, undieted front end | normalised | | | +0.089 (7/8 pos, .023) | −0.038 (8/8 neg, .0078) |")
+P("| trained diet − untrained (diet front end), paired | normalised | | | +0.036 (6/8 pos, .11) | |")
+P("| trained diet − untrained (diet front end), paired | raw | | | −0.077 (2/8 pos, .11) | |")
+P("| trained no diet − untrained (diet front end), paired | normalised | | | −0.087 (2/8 pos, .15) | |")
+P("| trained no diet − untrained (diet front end), paired | raw | | | −0.374 (0/8 pos, .0078) | |")
 P("| arm interaction, diet − no diet (seed-averaged) | normalised | | | +0.134 (8/8, .0078) | −0.119 (0/8 pos, .0078) |")
 P("| arm interaction, diet − no diet (seed-averaged) | raw | | | +0.305 (8/8, .0078) | −0.502 (0/8 pos, .0078) |")
 P("")

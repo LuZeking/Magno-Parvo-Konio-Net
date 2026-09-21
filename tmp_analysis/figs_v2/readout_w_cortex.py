@@ -214,7 +214,7 @@ def main():
     if "diet" in stats:
         ext = np.array(stats["diet"]["w_extrastriate"])
         stats["cortex_vs_behaviour"] = dict(extrastriate_range=[float(ext.min()), float(ext.max())], behaviour_range=[float(bw.min()), float(bw.max())],
-                                            mannwhitney_p=float(sps.mannwhitneyu(ext, bw, alternative="two-sided").pvalue),
+                                            mannwhitney_p=float(sps.mannwhitneyu(ext, bw, alternative="two-sided", method="exact").pvalue), mannwhitney_method="exact",
                                             rate_at_cortex_w=rate_at(float(np.median(ext))), rate_at_behaviour_w=rate_at(float(np.median(bw))))
         print("cortex (extrastriate, diet) vs behaviour w*:", stats["cortex_vs_behaviour"])
     out["stats"] = stats

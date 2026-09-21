@@ -7,11 +7,17 @@ Runs the paper's pipeline on a frozen network (Methods 4.3, 4.8; docs/PLAN_ZOO_2
 and prints the three numbers a shape-bias claim should carry:
 
   1. the cue-conflict shape-bias rate at the trained readout (Geirhos 16-class rule);
-  2. the span of rates the same frozen features reach under one gain on the network's own
-     shape-predictive subspace, restricted to readouts within 5 points of the trained top-1
-     on a stratified 10-per-class ILSVRC-2012 validation subset (the unit-level median split
-     is printed beside it);
-  3. the probe-based representational bias: shape minus texture accuracy of a linear probe.
+  2. the span of rates the same frozen features reach under a reciprocal gain on the network's
+     own shape- and texture-predictive subspaces, restricted to readouts within 5 points of the
+     trained top-1 on a stratified 10-per-class ILSVRC-2012 validation subset, scored on object and
+     texture exemplars the subspaces were not fitted on (docs/PLAN_EXEMPLAR_2026-09-21.md; the
+     exemplar-shared span and the unit-level median split are printed beside it);
+  3. the probe-based representational bias: shape minus texture accuracy of an exemplar-balanced
+     linear probe scored on held-out exemplars, with its 5-95% interval over exemplar draws (the
+     exemplar-shared probe beside it).
+
+None of the three is a model-quality or human-likeness score, and the rate (1) can be moved by
+the readout without changing the features: report all three, never the rate alone.
 
 Each stage writes its file under --work-dir/<features|behaviour> and is skipped when the
 file exists, so re-running is free. Needs the cue-conflict set (src/analysis/behavior/
@@ -72,10 +78,14 @@ def main():
             run("gain_accuracy", "--factor", os.path.join(beh, f"{tag}_unit_factor.npz"), "--val", val, "--out-dir", beh)
     if not os.path.exists(os.path.join(beh, f"{tag}_probe_bias.json")):
         run("probe_bias", "--features", cc, "--out-dir", beh)
+    if not os.path.exists(os.path.join(beh, f"{tag}_exemplar.json")):
+        run("exemplar", "--features", cc, "--behaviour-dir", beh, "--out-dir", beh)
 
     z = json.load(open(os.path.join(beh, f"{tag}_subspace.json")))["summary"]
     u = json.load(open(os.path.join(beh, f"{tag}_unit_factor.json")))["summary"]
     pb = json.load(open(os.path.join(beh, f"{tag}_probe_bias.json")))
+    ex = json.load(open(os.path.join(beh, f"{tag}_exemplar.json")))
+    e1, q1 = ex["spans"]["E1"], ex["probes"]["Q1"]
     ws = np.array(z["ws"])
     tr = z["trained"]
     print("\n" + "=" * 78)
@@ -87,7 +97,10 @@ def main():
         g = json.load(open(os.path.join(beh, f"{tag}_gain_accuracy_subspace.json")))
         span, lo, hi = gated(z["primary"]["mean_curve"], ws, g["w_within_5pts"])
         top1 = np.array(g["top1"]); m = np.isin(ws, g["w_within_5pts"])
-        print(f"2. reachable span within 5 points of top-1       {span:.3f}   "
+        print(f"2. span within 5 pts of top-1, exemplars held out {e1['primary']['gated_span']:.3f}   "
+              f"(rate {e1['primary']['texture_end']:.3f} -> {e1['primary']['shape_end']:.3f}; forced two-way {e1['forced']['gated_span']:.3f}; "
+              f"range over repetitions {e1['primary']['span_min']:.3f}-{e1['primary']['span_max']:.3f})")
+        print(f"   exemplars shared (the published estimator)     {span:.3f}   "
               f"(rate {lo:.3f} -> {hi:.3f} for w in [{min(g['w_within_5pts']):.2f}, {max(g['w_within_5pts']):.2f}]; "
               f"top-1 {g['trained_top1']:.3f}, min {top1[m].min():.3f}; ungated {z['primary']['span_mean']:.3f}, rho {z['primary']['rho_mean']:.2f})")
         if not u.get("undefined"):
@@ -95,13 +108,18 @@ def main():
             uspan = gated(u["primary"]["mean_curve"], ws, ug["w_within_5pts"])[0]
             print(f"   under the unit-level median split               {uspan:.3f}   (ungated {u['primary']['span_mean']:.3f})")
     else:
-        print(f"2. reachable span (ungated; no accuracy gate)     {z['primary']['span_mean']:.3f}   (rho {z['primary']['rho_mean']:.2f})")
+        print(f"2. UNGATED span, exemplars held out              {e1['primary']['span_mean']:.3f}   (no accuracy gate was applied, so this is not "
+              f"comparable with the paper's gated spans; exemplars shared {z['primary']['span_mean']:.3f})")
         if not u.get("undefined"):
             print(f"   under the unit-level median split               {u['primary']['span_mean']:.3f}")
-    print(f"3. probe-based representational bias             {pb['probe_bias']:+.3f}   "
-          f"(shape {pb['shape_acc']:.3f}, texture {pb['texture_acc']:.3f}; chance {pb['chance']:.3f})")
+    print(f"3. probe bias, exemplars held out                {q1['bias']:+.3f}   "
+          f"(5-95% over draws {q1['bias_p05']:+.3f} to {q1['bias_p95']:+.3f}; shape {q1['shape_acc']:.3f}, texture {q1['texture_acc']:.3f}; "
+          f"chance {pb['chance']:.3f})")
+    print(f"   exemplars shared (the published estimator)     {pb['probe_bias']:+.3f}   "
+          f"(shape {pb['shape_acc']:.3f}, texture {pb['texture_acc']:.3f})")
     print("=" * 78)
-    print("Rule, gate and estimators: Methods 4.3 and 4.8; docs/PLAN_SUBSPACE_2026-09-15.md; docs/PLAN_ZOO_2026-09-15.md.")
+    print("Rule, gate and estimators: Methods 4.3 and 4.8; docs/PLAN_SUBSPACE_2026-09-15.md; docs/PLAN_ZOO_2026-09-15.md;")
+    print("docs/PLAN_EXEMPLAR_2026-09-21.md. Not a model-quality or human-likeness score; report all three numbers.")
 
 
 if __name__ == "__main__":

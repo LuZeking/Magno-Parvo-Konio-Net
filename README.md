@@ -9,8 +9,9 @@ components*, not a report of any one component. The luminance stream ends
 training shape-biased and the chromatic stream texture-biased; fitted to eight
 subjects of the Natural Scenes Dataset it is the **texture**-biased stream whose
 unique variance carries extrastriate cortex; behaviour, reading out from both, is
-shape-biased; and in nine frozen networks with no stream split at all, a gain on
-their own shape-leaning units moves the rate and reorders the field's ranking.
+shape-biased; and in 42 frozen public networks with no stream split at all, a
+reciprocal gain on their own shape- and texture-predictive subspaces moves the rate,
+on exemplars those subspaces never saw, and reorders the field's ranking.
 
 Manuscript: `docs/PAPER_v2.md` (the Extended Data tables are embedded between the
 `ED_TABLES` markers; figure legends are `results/figures_v2/*_caption.md`; the
@@ -161,11 +162,16 @@ PYTHONPATH=. python -m src.analysis.generality.report --model tv:resnet50
 ```
 
 prints the three numbers a shape-bias claim should carry (Methods 4.3, 4.8;
-`docs/PLAN_ZOO_2026-09-15.md`): the cue-conflict rate at the trained readout;
-the span of rates the same frozen features reach under one gain on the network's
-own shape-predictive subspace within 5 points of the trained top-1 (the
-unit-level median split beside it); and the probe-based representational bias
-(shape minus texture accuracy of a linear probe). Any `tv:<arch>[:<weights>]`
+`docs/PLAN_ZOO_2026-09-15.md`, `docs/PLAN_EXEMPLAR_2026-09-21.md`): the
+cue-conflict rate at the trained readout; the span of rates the same frozen
+features reach under a reciprocal gain on the network's own shape- and
+texture-predictive subspaces within 5 points of the trained top-1, scored on
+object and texture exemplars the subspaces were not fitted on; and the
+representational bias of an exemplar-balanced linear probe scored on held-out
+exemplars, with its interval over exemplar draws. The exemplar-shared values of
+the published pre-registered estimators, and the unit-level median split, are
+printed beside them. None of the three is a model-quality or human-likeness
+score, and the rate can be moved by the readout alone: report all three. Any `tv:<arch>[:<weights>]`
 torchvision classifier works — the loader takes the input of the network's last
 linear layer and checks it reproduces the logits. Stages are cached under
 `--work-dir`, so a re-run is free; needs the cue-conflict stimuli

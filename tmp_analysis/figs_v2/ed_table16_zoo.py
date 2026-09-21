@@ -21,25 +21,43 @@ GROUP_TITLE = {"imagenet": "**ImageNet-trained (torchvision IMAGENET1K_V1)**",
                "sin": "**Stylized-ImageNet controls (Geirhos et al., 2019)**"}
 
 
+def exemplar_stats(ex, nets):
+    im = [ex[n["tag"]] for n in nets if n["group"] == "imagenet" and n["tag"] in ex]
+    if not im:
+        return ""
+    ez = json.load(open("results/figures_v2/exemplar_zoo.json"))["stats"]
+    g = np.array([r["spans"]["E1"]["gated"] for r in im]); q = np.array([r["probes"]["Q1"]["bias"] for r in im])
+    rk = ez["ranking"]
+    return (f"With exemplars held out, over the {len(im)} ImageNet-trained networks: gated span {g.min():.2f}–{g.max():.2f} (median {np.median(g):.2f}), ≥ 0.20 in {int((g >= 0.20).sum())}; "
+            f"{rk['E1_frac_reversed'] * 100:.1f}% of the {rk['n_pairs']} pairs reverse between the trained ranking and the shape-end ranking (forced two-way {rk['E1_forced_frac_reversed'] * 100:.1f}%), against "
+            f"{rk['floor_primary']['mean'] * 100:.1f}% [{rk['floor_primary']['ci'][0] * 100:.1f}%, {rk['floor_primary']['ci'][1] * 100:.1f}%] between two bootstrap resamples of the images at the trained readout; "
+            f"probe bias {q.min():+.2f} to {q.max():+.2f} (median {np.median(q):+.2f}), the 5–95% interval over draws below zero in {sum(r['probes']['Q1']['bias_p95'] < 0 for r in im)}. ")
+
+
 def table16(zoo):
-    rows = ["| network | D | top-1 (subset) | trained rate (images decided) | gate: w-range (largest Δtop-1) | rate at texture end / shape end | gated span, subspace rule | ρ(w, rate) | gated span, unit rule | probe: shape / texture accuracy (bias) | κ with observers, % of ceiling: trained (texture end → shape end) | whole sweep in gate |",
-            "|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    rows = ["| network | D | top-1 (subset) | trained rate (images decided) | gate: w-range (largest Δtop-1) | rate at texture end / shape end | gated span, subspace rule | gated span, exemplars held out | ρ(w, rate) | gated span, unit rule | probe: shape / texture accuracy (bias) | probe, exemplars held out: shape / texture (bias) | κ with observers, % of ceiling: trained (texture end → shape end) | whole sweep in gate |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    ex = {r["tag"]: r for r in json.load(open("results/figures_v2/exemplar_zoo.json"))["networks"]} if os.path.exists("results/figures_v2/exemplar_zoo.json") else {}
     nets = zoo["networks"]
     for group in ("imagenet", "recipe", "sin"):
         sub = sorted([n for n in nets if n["group"] == group], key=lambda n: -n["trained"])
         if not sub:
             continue
-        rows.append(f"| {GROUP_TITLE[group]} | | | | | | | | | | | |")
+        rows.append(f"| {GROUP_TITLE[group]} | | | | | | | | | | | | | |")
         for n in sub:
             pr = n.get("probe")
             probe_s = f"{pr['shape_acc']:.2f} / {pr['texture_acc']:.2f} ({pr['bias']:+.2f})" if pr else "—"
             kp = n.get("kappa")
             kappa_s = (f"{kp['trained_pct']:.1f} ({kp['texture_end_pct']:.1f} → {kp['shape_end_pct']:.1f})"
                        if kp and kp.get("texture_end_pct") is not None else (f"{kp['trained_pct']:.1f}" if kp else "—"))
+            e = ex.get(n["tag"])
+            e1_s = f"{e['spans']['E1']['gated']:.3f}" if e else "—"
+            q1 = e["probes"]["Q1"] if e else None
+            q1_s = f"{q1['shape_acc']:.2f} / {q1['texture_acc']:.2f} ({q1['bias']:+.2f})" if q1 else "—"
             rows.append(f"| {n['label']} | {n['n_units']} | {n['trained_top1']:.3f} | {n['trained']:.3f} ({n['decided']}) | "
                         f"{n['gate'][0]:.2f}–{n['gate'][1]:.2f} ({n['max_abs_dtop1_in_gate'] * 100:.1f} pts) | "
-                        f"{n['texture_end']:.3f} / {n['shape_end']:.3f} | {n['gated_span']:.3f} | {n['rho']:.2f} | "
-                        f"{fmt(n.get('unit_gated_span'), 3)} | {probe_s} | {kappa_s} | {'yes' if n['whole_sweep_in_gate'] else 'no'} |")
+                        f"{n['texture_end']:.3f} / {n['shape_end']:.3f} | {n['gated_span']:.3f} | {e1_s} | {n['rho']:.2f} | "
+                        f"{fmt(n.get('unit_gated_span'), 3)} | {probe_s} | {q1_s} | {kappa_s} | {'yes' if n['whole_sweep_in_gate'] else 'no'} |")
     st = zoo.get("ranking", {})
     n_im = st.get("n", 0)
     stat_s = ""
@@ -55,6 +73,8 @@ def table16(zoo):
            "Frozen ImageNet networks under the subspace rule of Extended Data Table 13 (PCA to 256 dimensions, 16-class shape and texture LDA, 15 directions each, symmetric orthogonalisation; bases fitted on one stratified half of the 1,200 cue-conflict images and the rate scored on the other, 10 splits both directions), each network's own head untouched, the Geirhos 16-class probability aggregation throughout; “images decided” is the number of the 1,200 assigned to their shape or their texture category at the trained readout, the denominator of the rate. "
            "“gate” is the w-range over which top-1 on a stratified 10-per-class ILSVRC-2012 validation subset (10,000 images; bases fitted on all cue-conflict images) stays within 5 points of the trained value, with the largest change of top-1 inside it; “texture end / shape end” are the held-out rates at the smallest and the largest gated w, and “gated span” is their difference, under the subspace rule and under the pre-specified unit-level median split of Extended Data Table 14. "
            "“probe” is the linear probe of Methods 4.3 (PCA to 256 dimensions, multinomial logistic regression, 5-fold stratified cross-validation) predicting the shape class and, separately, the texture class from the same features; bias is shape minus texture accuracy (chance 0.0625). "
+           "The stratified halves and the probe's folds share object and texture exemplars (the 1,200 images reuse 160 object and 48 texture exemplars), so both are also given with exemplars held out (`docs/PLAN_EXEMPLAR_2026-09-21.md`; `results/figures_v2/exemplar_zoo.json`): “gated span, exemplars held out” fits the subspaces on images whose object and texture exemplars both lie outside one of three exemplar folds and scores the rate on the images whose exemplars both lie inside it (ten repetitions); “probe, exemplars held out” is the exemplar-balanced probe of Methods 4.3 (three exemplars per category for both labels, leave one exemplar out, PCA inside the folds, mean of 20 draws). "
+           + exemplar_stats(ex, nets) +
            "Preprocessing is Resize 256 / CenterCrop 224 except for Inception-v3 (342/299), EfficientNet-B3 (320/300) and EfficientNet-V2-S (384/384), which were not trained at 224. "
            "“κ with observers” is error consistency (Cohen's κ on trial-by-trial agreement, Results 2.5; Extended Data Table 7) with each of the ten human observers, mean over observers, as a percentage of the human–human ceiling κ = 0.234, at the trained readout and, in parentheses, at the texture end and the shape end of the gate under the same gain; computed under this pipeline's preprocessing, so the VGG-16 value differs from the published response file's 7.3% (Extended Data Table 7) as its trained rate does. "
            + stat_s +

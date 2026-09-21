@@ -1476,7 +1476,10 @@ def check_readout_w() -> None:
     ext = np.array(S_["w_extrastriate"])
     chk("cortex w* extrastriate min", ext.min(), 0.27, T2); chk("cortex w* extrastriate max", ext.max(), 0.40, T2)
     from scipy.stats import mannwhitneyu
-    chk("Mann-Whitney p, cortex vs behaviour", mannwhitneyu(ext, bw, alternative="two-sided").pvalue, 0.0004, 0.00005)
+    chk("exact Mann-Whitney p, cortex vs behaviour (x1e5)", 1e5 * mannwhitneyu(ext, bw, alternative="two-sided", method="exact").pvalue, 4.6, 0.05)
+    cvb = W["stats"]["cortex_vs_behaviour"]
+    if cvb.get("mannwhitney_method") != "exact" or abs(cvb["mannwhitney_p"] - 4.570592805886923e-05) > 1e-12:
+        FAILS.append("readout_w_cortex.json: Mann-Whitney p not the exact value")
     sweeps = []
     for f in sorted(glob.glob("results/fusion_sweep/dkl_bcs_seed?_final_wsweep.json")):
         sw = sorted(json.load(open(f))["sweep"], key=lambda r: r["w"]); sweeps.append([p["shape_bias"] for p in sw])
@@ -1524,7 +1527,8 @@ def check_readout_w() -> None:
 
 def check_prf_input_null() -> None:
     """Supplementary Note S3 and ED Table 9: the pRF dissociation is already present at random
-    weights, so the note says training amplifies it rather than installs it. Read from the
+    weights on either front end, and training with the diet neither installs nor amplifies it
+    (the paired trained - untrained contrasts are not significant and disagree in sign). Read from the
     committed results/prf_continuous/input_null_2026-09-08.txt (normalised block)."""
     print("\n[pRF input null] the untrained network already carries the dissociation")
     txt = open("results/prf_continuous/input_null_2026-09-08.txt", encoding="utf8").read()
@@ -1543,9 +1547,29 @@ def check_prf_input_null() -> None:
     chk("untrained, size | ecc", float(f[5]), -0.038, T3)
     print(f"  OK  untrained subjects on the stated side: {f[3]} and {f[6].replace('neg', '')}")
     chk("Gabor bank, ecc | size", float(gab[0].split()[2]), 0.035, T3)
+    nb = [l for l in norm[0].splitlines() if l.startswith("untrained_seed0_noblur ")][0].split()
+    chk("untrained, undieted front end, ecc | size", float(nb[2]), 0.089, T3)
+    chk("untrained, undieted front end, size | ecc", float(nb[5]), -0.038, T3)
+    raw = [b for b in blocks if b.lstrip().startswith("raw")][0]
+    def contrast(block, label):
+        line = [l for l in block.splitlines() if l.strip().startswith(label)][0]
+        return float(line.split()[-3]), line.split()[-2], float(line.split()[-1])
+    for block, name, label, want, want_p in (
+            (norm[0], "normalised", "TRAINED diet  -  untrained diet", 0.036, 0.1094),
+            (raw, "raw", "TRAINED diet  -  untrained diet", -0.077, 0.1094),
+            (norm[0], "normalised", "TRAINED no-diet  -  untrained diet", -0.087, 0.1484),
+            (raw, "raw", "TRAINED no-diet  -  untrained diet", -0.374, 0.0078)):
+        d, pos, pv = contrast(block, label)
+        chk(f"S3 {label.split()[1]} - untrained, {name}", d, want, T3)
+        chk(f"S3 {label.split()[1]} - untrained, {name}, p", pv, want_p, 0.0001)
+    for block, name, want in ((raw, "raw", 0.028), (norm[0], "normalised", -0.004)):
+        line = [l for l in block.splitlines() if l.startswith("dkl_base_seed0_trained ")][0].split()
+        chk(f"trained no-diet, ecc | size, {name}", float(line[2]), want, T3)
     note = open("docs/PAPER_v2.md", encoding="utf8").read()
     for phrase in ("the dissociation is something training installs",
-                   "the ceiling any mixture can reach", "the ceiling for any mixture"):
+                   "so training amplifies a dissociation", "and neither is present without the diet",
+                   "the ceiling any mixture can reach", "the ceiling for any mixture",
+                   "Mann–Whitney p = .0004", "can be moved past the trained rate of every other"):
         if phrase in note:
             FAILS.append(f"withdrawn wording still in the paper: '{phrase}'")
 
@@ -1799,6 +1823,65 @@ def check_exemplar() -> None:
           f"({', '.join(f'{a:+.3f}<{b:+.3f}' for a, b in zip(sg, mg))})")
     if not ok:
         FAILS.append("exemplar: division of labour")
+    # numbers the manuscript states (Results 2.2 and 2.4, Table 1, captions, Methods 4.3/4.8)
+    g1 = np.array([r["spans"]["E1"]["gated"] for r in im])
+    chk("E1 gated span min (38)", float(g1.min()), 0.08, T2); chk("E1 gated span max (38)", float(g1.max()), 0.29, T2)
+    chk("E1 gated span median (38)", float(np.median(g1)), 0.19, T2); chk("E1 gated spans >= 0.20 (38)", float((g1 >= 0.20).sum()), 11, 0)
+    six = ["tv_resnet50", "tv_resnet152", "tv_vgg16", "tv_vit_b_16", "tv_convnext_small", "tv_convnext_base"]
+    by = {r["tag"]: r for r in rows}
+    g6 = [by[t]["spans"]["E1"]["gated"] for t in six]
+    chk("six networks, E1 gated min", min(g6), 0.14, T2); chk("six networks, E1 gated max", max(g6), 0.20, T2)
+    chk("six networks reaching 0.20 (E1)", float(sum(v >= 0.20 for v in g6)), 1, 0)
+    chk("six networks, E1 mean-curve rho min", min(by[t]["spans"]["E1"]["rho_mean_curve"] for t in six), 0.999, 0.0005)
+    tr6 = {t: by[t]["trained"] for t in six}
+    for est, want_counts, want_rev in (("E0", [4, 4, 4, 1, 4, 4], True), ("E1", [3, 2, 0, 0, 3, 4], False)):
+        lo = {t: by[t]["spans"][est]["texture_end"] for t in six}; hi = {t: by[t]["spans"][est]["shape_end"] for t in six}
+        cnt = [sum((hi[a] > tr6[b]) if tr6[a] < tr6[b] else (lo[a] < tr6[b]) for b in six if b != a) for a in six]
+        cur, rev_ok = np.inf, True
+        for t in sorted(six, key=lambda t: tr6[t]):
+            v = min(hi[t], cur - 1e-9)
+            if v < lo[t]:
+                rev_ok = False; break
+            cur = v
+        ok = cnt == want_counts and rev_ok == want_rev
+        print(f"  {'OK ' if ok else 'BAD'} Fig. 6b, {est}: moved past {cnt} of 5 trained rates; reverse order reachable {rev_ok}")
+        if not ok:
+            FAILS.append(f"exemplar: Fig. 6b claims ({est})")
+    chk("tau(trained, E1 shape end)", rk["tau_trained_vs_E1_shape_end"], 0.63, T2)
+    chk("E1 forced-estimator reversal", rk["E1_forced_frac_reversed"], 0.162, T3)
+    chk("rho(trained rate, E1 span)", Z["stats"]["rho_trained_E1span"]["rho"], 0.10, T2)
+    chk("tau(trained rate, Q1)", Z["stats"]["tau_trained_Q1"], 0.43, T2)
+    chk("rho(texture share, Q1) low CI", Z["stats"]["rho_texture_share_Q1"]["ci"][0], -0.78, T2)
+    chk("rho(texture share, Q1) high CI", Z["stats"]["rho_texture_share_Q1"]["ci"][1], -0.29, T2)
+    chk("S64 median (38)", Z["stats"]["probes"]["S64"]["median"], -0.14, T2)
+    chk("S256n median (38)", Z["stats"]["probes"]["S256n"]["median"], -0.39, T2)
+    chk("Q1 ImageNet min", float(q1.min()), -0.52, T2); chk("Q1 ImageNet max", float(q1.max()), 0.01, T2)
+    sin = by["hub_resnet50_sin"]
+    chk("SIN Q1 interval low", sin["probes"]["Q1"]["bias_p05"], 0.13, T2); chk("SIN Q1 interval high", sin["probes"]["Q1"]["bias_p95"], 0.34, T2)
+    chk("SIN E1 gated span", sin["spans"]["E1"]["gated"], 0.12, T2)
+    chk("SIN E1 span rank among 39", float(1 + sum(r["spans"]["E1"]["gated"] < sin["spans"]["E1"]["gated"] for r in im)), 3, 0)
+    for cfg, stream, want in (("dkl_base_seed{}_trained", "magno", -0.122), ("dkl_base_seed{}_trained", "parvo", -0.118),
+                              ("dkl_bcs_parvo_highsf_seed{}_trained", "parvo", -0.139)):
+        chk(f"{cfg.split('_seed')[0]} {stream} Q1 (seed mean)", float(np.mean([q(cfg.format(i), stream) for i in range(3)])), want, T3)
+    chk("untrained, undieted front end, magno Q1", q("untrained_noblur", "magno"), 0.090, T3)
+    chk("seed-0 diet parvo Q1 (Table 1)", q("dkl_bcs_seed0_trained", "parvo"), -0.173, T3)
+    chk("contribution of learning, magno, Q1", float(np.mean([q(d, "magno") for d in diet])) - q("untrained_blur_cs", "magno"), 0.127, T3)
+    chk("contribution of learning, parvo, Q1", float(np.mean([q(d, "parvo") for d in diet])) - q("untrained_blur_cs", "parvo"), -0.135, T3)
+    c1 = S["two_by_two"]["Q1"]["cells"]
+    chk("2x2 additive prediction, Q1", float(np.mean(c1["chromatic_transform"]) + np.mean(c1["achromatic_none"]) - np.mean(c1["chromatic_none"])), -0.02, T2)
+    chk("2x2 conjunction seed min, Q1", min(c1["achromatic_transform"]), 0.333, T3)
+    chk("2x2 other cells seed max, Q1", max(max(c1[k]) for k in ("chromatic_none", "chromatic_transform", "achromatic_none")), 0.008, T3)
+    chk("single ResNet-18 penultimate Q1, low", min(sg), -0.10, T2); chk("single ResNet-18 penultimate Q1, high", max(sg), -0.06, T2)
+    chk("magno penultimate Q1, low", min(mg), 0.26, T2); chk("magno penultimate Q1, high", max(mg), 0.27, T2)
+    fam = {"single18": "run_dkl_bcs_single_seed{}", "single34": "run_dkl_bcs_single34_seed{}", "rgb_tsn": "run_rgb_tsn_seed{}"}
+    fm = {k: float(np.mean([T[v.format(i)]["spans"]["E1"]["span"] for i in range(3)])) for k, v in fam.items()}
+    chk("single trunks, E1 family-mean span, low", min(fm.values()), 0.17, T2); chk("single trunks, E1 family-mean span, high", max(fm.values()), 0.28, T2)
+    chk("two-stream concat, E1 span (seed mean)", float(np.mean([T[f"concat_dkl_bcs_seed{i}"]["spans"]["E1"]["span"] for i in range(3)])), 0.25, T2)
+    abstract = open("docs/PAPER_v2.md", encoding="utf8").read().split("## Abstract", 1)[1].split("## 1.", 1)[0]
+    nw = len(abstract.split())
+    print(f"  {'OK ' if nw <= 200 else 'BAD'} abstract {nw} words (limit 200)")
+    if nw > 200:
+        FAILS.append("abstract over 200 words")
     met = {**{k: v["met"] for k, v in Z["predictions"].items()}, **{k: v["met"] for k, v in S["predictions"].items()}}
     failed = sorted(k for k, v in met.items() if not v)
     ok = len(met) == 17 and failed == ["P-X7", "P-X8"]

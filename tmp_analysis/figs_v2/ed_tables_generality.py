@@ -29,11 +29,28 @@ def fmt(x, d=2, sign=False):
     return f"{x:+.{d}f}" if sign else f"{x:.{d}f}"
 
 
+EXEMPLAR_TAGS = {"concat": [f"concat_dkl_bcs_seed{i}" for i in range(3)], "single34": [f"run_dkl_bcs_single34_seed{i}" for i in range(3)],
+                 "single18": [f"run_dkl_bcs_single_seed{i}" for i in range(3)], "rgb_tsn": [f"run_rgb_tsn_seed{i}" for i in range(3)]}
+
+
+def exemplar_span(key):
+    """E1 span (fully exemplar-disjoint folds; docs/PLAN_EXEMPLAR_2026-09-21.md): mean over seeds, seed range."""
+    if not os.path.exists("results/figures_v2/exemplar_zoo.json"):
+        return "—"
+    zoo = {r["tag"]: r["spans"]["E1"]["span"] for r in json.load(open("results/figures_v2/exemplar_zoo.json"))["networks"]}
+    tr = {t: v["spans"]["E1"]["span"] for t, v in json.load(open("results/figures_v2/exemplar_streams.json"))["trunks"].items()}
+    tags = EXEMPLAR_TAGS.get(key, [f"tv_{key}"])
+    v = [zoo.get(t, tr.get(t)) for t in tags]
+    if any(x is None for x in v):
+        return "—"
+    return f"{np.mean(v):.3f}" + (f" [{min(v):.2f}, {max(v):.2f}]" if len(v) > 1 else "")
+
+
 def table13(sub):
     """Subspace rule (PLAN_SUBSPACE D1-D3)."""
     fam = {f["key"]: f for f in sub["families"]}
-    rows = ["| network | D | trained rate | w = 0 | w = 1 | span (held-out) [range] | ρ(w, rate) | gated span (w-range; largest change of top-1) | forced-estimator span | refit span linear / two-layer (largest shortfall of top-1) | variance in S / T | order sensitivity, S first / T first | median-split gated span | seeds |",
-            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    rows = ["| network | D | trained rate | w = 0 | w = 1 | span, exemplars shared [range] | span, exemplars held out [seed range] | ρ(w, rate) | gated span (w-range; largest change of top-1) | forced-estimator span | refit span linear / two-layer (largest shortfall of top-1) | variance in S / T | order sensitivity, S first / T first | median-split gated span | seeds |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for key in ORDER:
         if key not in fam:
             continue
@@ -65,13 +82,14 @@ def table13(sub):
         sf = np.mean([s["sensitivity"]["S_first"]["span"] for s in seeds]); tf = np.mean([s["sensitivity"]["T_first"]["span"] for s in seeds])
         unit = f.get("unit_gated_span")
         rows.append(f"| {LABEL[key]} | {seeds[0]['n_units']} | {f['trained']:.3f} | {f['rate_w0']:.3f} | {f['rate_w1']:.3f} | "
-                    f"{f['span']:.3f} [{f['span_range'][0]:.2f}, {f['span_range'][1]:.2f}] | {f['rho']:.2f} | {gate_s} | {f['forced_span']:.3f} | "
+                    f"{f['span']:.3f} [{f['span_range'][0]:.2f}, {f['span_range'][1]:.2f}] | {exemplar_span(key)} | {f['rho']:.2f} | {gate_s} | {f['forced_span']:.3f} | "
                     f"{ref_s} | {vS:.2f} / {vT:.2f} | {sf:.2f} / {tf:.2f} | {fmt(unit)} | {len(seeds)} |")
     cap = ("**Extended Data Table 13 | The readout span without a stream split: one gain on a network's own shape- and texture-predictive subspaces, head fixed.** "
            "For each frozen network with logits = W·y + b, the 15 discriminant directions of a 16-class shape LDA and of a 16-class texture LDA on the penultimate features y (PCA to 256 dimensions, Ledoit–Wolf shrinkage; fitted on one stratified half of the 1,200 cue-conflict images) are made mutually orthogonal by symmetric (Löwdin) orthogonalisation, giving orthonormal bases B_S and B_T (15 directions each) and the residual B_R. "
            "logits(w) = W·(P_R y + 2w·P_S y + 2(1 − w)·P_T y) + b with the network's own head untouched; w = 0.5 is the trained network. "
            "The rate is scored on the other half of the images (10 random splits, both directions; mean, with the range over splits and seeds in brackets), by the paper's primary estimator (112-class, decided images) for our networks and the Geirhos 16-class probability aggregation for the ImageNet networks; “forced-estimator span” is the same sweep on the forced two-way estimator. "
            "“gated span” is max − min of the seed-mean held-out curve over the w at which top-1 of the gained features (bases fitted on all 1,200 images) on held-out natural images (MiniEcoset validation for our networks; a stratified 10-per-class ILSVRC-2012 validation subset for the ImageNet networks) stays within 5 points of the trained value, followed by that w-range and the largest change of top-1 anywhere in the sweep. "
+           "The two stratified halves share object and texture exemplars (98% and 100% of scored images; the 1,200 images reuse 160 object and 48 texture exemplars), so the span is also given with exemplars held out: fitted on images whose object and texture exemplars both lie outside one of three exemplar folds and scored on the images whose exemplars both lie inside it, ten repetitions, ungated (`docs/PLAN_EXEMPLAR_2026-09-21.md`; `results/figures_v2/exemplar_zoo.json`, `exemplar_streams.json`). "
            "“refit span” is the block-form lossy sum z(w) = [w·s + (1 − w)·t, B_R^T^y], s = B_S^T^y and t = B_T^T^y paired by discriminant rank, with a linear and a two-layer head refitted at each w (Methods 4.3 budget), our networks only; in parentheses the largest shortfall of validation accuracy, over w, from a head refitted on the unmixed features. "
            "“variance in S / T” is the fraction of the feature variance on the fitting half lying in each subspace; “order sensitivity” replaces the symmetric orthogonalisation by sequential Gram–Schmidt with the shape basis or the texture basis first. "
            "“median-split gated span” is the gated span of the pre-specified unit-level rule of Extended Data Table 14 on the same networks and images. "
