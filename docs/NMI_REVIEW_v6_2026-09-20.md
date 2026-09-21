@@ -241,6 +241,11 @@ expect. The job script now pins that interpreter and requests 4 GB and 20 minute
 imports in `src/` are left in place: they cost nothing once the filesystem is fast, but they would penalise
 anyone re-using those modules for CPU-only scoring, and that is worth a line in the repository README.
 
+*Amended 2026-09-21 in `5bc77d7`, after this report's date: when the review was written this note was a
+marked placeholder, and it was completed once job 26511423 finished. The seventh round
+(`NMI_REVIEW_v7_2026-09-21.md`) found that this run, like the container run, could read three inputs from
+`/scratch`, so it shows that the environment is pinned, not that the checks are self-contained.*
+
 ---
 
 ## Specific Improvement Suggestions (ranked, with feasibility)
