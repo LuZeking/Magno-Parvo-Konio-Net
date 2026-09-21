@@ -219,3 +219,20 @@ Kendall τ, with a 95% bootstrap interval over networks (10,000 resamples, seed 
   and never see cue-conflict splits, but the unit split's η² is fitted on all cue-conflict images; its
   exemplar calibration is noted as a limitation.
 - The behaviour-preferred weight (κ vs κ/κ_max) is a separate item and is not part of this plan.
+
+## Clarifications recorded before any result existed (2026-09-21, same day)
+
+Written after `exemplar.py` was drafted and before any output of it or of `stream_features.py` existed; the
+one-network test job (26513795) had not finished.
+
+1. **The stream features of Table 1 are not the stored penultimate features.** `stream_shape_texture.py`
+   probes `features.extract_stream_features`, the four ResNet stages each pooled to 4 × 4 and concatenated
+   (15,360 dimensions per stream), not the 512-dimensional penultimate block stored in `concat_dkl_bcs`. The
+   cross-check "extracted features reproduce the stored concat stream blocks" therefore cannot hold and is
+   withdrawn. The extraction is validated by Q0 reproducing `results/shape_texture/*.json` exactly (on the
+   float32 features, as the original script ran). P-X11 to P-X14 and P-X16 are scored on these stage-pooled
+   features, because they are the features behind the numbers they test.
+2. **P-X15 is scored on penultimate features**, the only level at which both the single trunk and the
+   magno stream are stored: the Q1 bias of `run_dkl_bcs_single_seed{s}` (512 units) against the Q1 bias of the
+   stream-1 units of `concat_dkl_bcs_seed{s}` (512 units), paired by seed. The stream-level Q1 on
+   stage-pooled features is reported beside it but does not score the prediction.
