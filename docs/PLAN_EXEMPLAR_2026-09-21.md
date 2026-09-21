@@ -236,3 +236,42 @@ one-network test job (26513795) had not finished.
    magno stream are stored: the Q1 bias of `run_dkl_bcs_single_seed{s}` (512 units) against the Q1 bias of the
    stream-1 units of `concat_dkl_bcs_seed{s}` (512 units), paired by seed. The stream-level Q1 on
    stage-pooled features is reported beside it but does not score the prediction.
+
+## Note after the one-network test runs, before the full arrays (2026-09-21)
+
+**The two test elements were seen before the full run.** They are `tv_resnet18` (job 26513795) and
+`dkl_bcs_seed0_trained` (job 26513798). Both belong to scored sets, and their outputs are recorded here so that
+nothing is presented later as unseen.
+- Every reproduction check passed exactly: E0 at |d| = 0, and Q0 at |d| = 0 for the zoo network and for both
+  streams.
+- ResNet-18: E0 span 0.316, E1 0.200, E2 0.210. Probes: Q0 −0.528, Q1 −0.338 [−0.422, −0.234] (shape 0.249,
+  texture 0.586), Q1b +0.008, Q2 −0.139.
+- Diet seed 0, magno stream: Q0 +0.810, Q1 +0.337 (shape 0.418, texture 0.081), Q1b +0.092.
+- Diet seed 0, parvo stream: Q0 −0.482, Q1 −0.173 (shape 0.271, texture 0.444), Q1b −0.047.
+
+**A preprocessing sensitivity, found post hoc.** Q1 and Q1b disagree in sign for ResNet-18, so the balanced
+design was re-run on ResNet-18 and SIN ResNet-50 under eight preprocessings, three draws each (exploratory;
+script kept under `/scratch/byrong/mpk/review_v7/scripts/`). The variants were:
+- PCA on all images with k = 16, 64 or 256, each standardised;
+- PCA-256 on all images, not standardised;
+- raw standardised features;
+- PCA inside the folds with k = 16, 64 or n − 1.
+
+**Q1b is the outlier.** Q1b is PCA-256 on all images, then standardised; it is also K1's estimator and the
+paper's own. Every other variant puts ResNet-18 at −0.21 to −0.56, with texture decoded on held-out exemplars at
+0.49–0.72 against shape at 0.16–0.32, and SIN at +0.17 to +0.26. Q1b alone gives −0.014 and +0.198.
+
+The likely mechanism is this. With about 250 training images, standardising 256 components gives the many
+low-variance components the same scale as the few components that carry category information, and the texture
+probe loses most of its generalisation.
+
+**Consequences:**
+- **K1's reading is withdrawn.** K1 read the zoo's ImageNet representations as "roughly neutral once exemplars
+  are held out". That reading came from this preprocessing, not from the representations. The same holds for
+  the v7 review's statement that the paper's −0.30 to −0.66 "measures exemplar memorisation", and for the story
+  note built on it. Both files carry a correction.
+- **P-X7 and P-X9 were written with K1 in view.** They are left exactly as written and will be scored as
+  written.
+- **Two estimators are added to every probe**, as post-hoc sensitivities that are reported but not scored:
+  **S64** (PCA-64 on all images, standardised) and **S256n** (PCA-256 on all images, not standardised).
+- The pre-registered Q0, Q1, Q1b and Q2, the spans and every prediction are unchanged.

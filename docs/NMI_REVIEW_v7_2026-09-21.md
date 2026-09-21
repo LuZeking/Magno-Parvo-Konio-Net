@@ -21,6 +21,15 @@ probe's folds nor the zoo's "held-out" halves are grouped by exemplar. The edito
 checks before accepting them (see *Editor's verification*). The score falls for that reason, not because the
 manuscript got worse.
 
+**Correction, 2026-09-21, added after this report was committed (`c1de1f2`).** The editor's exemplar-balanced
+probe (job 26513461) used the paper's preprocessing: PCA-256 on all images, then standardised. In the balanced design
+that preprocessing is an outlier (`docs/PLAN_EXEMPLAR_2026-09-21.md`, note after the test runs): with PCA inside
+the folds, fewer components, no standardisation or raw features, the ImageNet ResNet-18 is clearly texture-leaning
+on held-out exemplars (−0.21 to −0.56) and SIN ResNet-50 shape-leaning (+0.17 to +0.26). The statements below that
+the paper's −0.30 to −0.66 "measures exemplar memorisation, not a texture-biased representation", and the editor's
+"note on the story", are therefore withdrawn. The exemplar-leakage finding itself (shared exemplars between fit and
+score, and its effect on the span) stands. The pre-registered re-analysis reports the corrected numbers.
+
 ---
 
 ## Pre-checks
