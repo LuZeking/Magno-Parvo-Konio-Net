@@ -45,6 +45,13 @@ Expected final line:
 FAILURES: none
 ```
 
+637 checks, about 95 seconds and 1.5 GB of memory on four CPU cores. If it takes
+tens of minutes instead, the cost is almost certainly not the arithmetic: one
+check imports `shape_bias`, and that module chain imports `torch` at module
+level, so a slow or contended filesystem under the interpreter turns a pure-numpy
+suite into a full deep-learning cold start. Put the environment on a local or
+otherwise fast filesystem before concluding anything about the analysis.
+
 It checks, among others: the §2.3 untrained cortical anchor (−0.544 normalised,
 −0.120 raw, 8/8 subjects at the exact Wilcoxon floor p = .0078); that
 `results/encoding/` and `results/encoding_cc/` are numerically identical across
