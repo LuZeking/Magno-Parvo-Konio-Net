@@ -394,3 +394,17 @@ What stands out:
 - **P-X15 holds.** The single-trunk comparison enters Results 2.2, and the abstract's magno sentence names the
   second stream.
 - **The 2×2 interaction is restated** as +0.36 on held-out exemplars, with +0.73 as the exemplar-shared value.
+
+## Addendum before array B′ (2026-09-22; nothing above changed)
+
+Redrawing Fig. 2 on the held-out probe needs its panel e. That panel draws the accuracy-matched control, which scores six checkpoints that array B did not include:
+- the diet's best saved checkpoints, `dkl_bcs_seed{0,1,2}` at epochs 125, 75 and 50 (`results/shape_texture_bestep/`);
+- the matched no-diet checkpoints, `dkl_base_matched_seed{0,1,2}` at epochs 10, 10 and 11 (`results/shape_texture_matched/`).
+
+Array B′ (`slurm/exemplar_streams_matched.sh`) runs `stream_features.py` on these six, unchanged, with the same estimators, and applies the same reproduction check (Q0 against the stored JSON).
+
+**This is descriptive, not a test.** The matched control's claim is a comparison — how much of the diet − no-diet magno gap the matched network closes — and no prediction is registered for it here. Whatever Q1 shows is reported:
+- in Fig. 2e;
+- in its caption, beside the exemplar-shared 7.2%.
+
+If the matched network closes more of the gap on held-out exemplars than with exemplars shared, the caption says so.
