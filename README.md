@@ -76,10 +76,11 @@ PYTHONPATH=. python notebooks/readout_gain_torchvision.py        # add --model t
 
 It downloads the Geirhos et al. (2019) cue-conflict stimuli from the authors'
 repository, runs torchvision ResNet-50 on CPU, and prints the trained rate
-(0.222, 814/1,200 images decided), the held-out readout curve under one gain on
-the network's own shape-predictive subspace, its span and ρ(w, rate) — each
-beside the committed value from `results/figures_v2/subspace_behaviour.json`
-(Fig. 6b, Extended Data Table 13). With `IMAGENET_VAL` pointing at the
+(0.222, 814/1,200 images decided), the readout curve under one gain on the
+network's own shape-predictive subspace on the pre-registered stratified halves
+(which share exemplars), its span and ρ(w, rate) — each beside the committed
+value from `results/figures_v2/subspace_behaviour.json` (the grey bracket of
+Fig. 6a; Extended Data Table 13). With `IMAGENET_VAL` pointing at the
 ILSVRC-2012 validation images it also runs the 5-point accuracy gate. About
 five minutes on a laptop after a 200 MB download.
 
@@ -99,7 +100,7 @@ src/analysis/generality/                        readout re-weighting without a s
                                                 ResNet-50s), extract.py, subspace_factor.py, unit_factor.py,
                                                 gain_accuracy.py, refit_sum.py, cortex_bands.py, probe_bias.py,
                                                 report.py (the one-command report), scoring.py
-notebooks/readout_gain_torchvision.py           referee script: the Fig. 6b ResNet-50 curve from a fresh download, CPU, minutes
+notebooks/readout_gain_torchvision.py           referee script: the exemplar-shared ResNet-50 curve (Fig. 6a bracket) from a fresh download, CPU, minutes
 docs/reproducibility/mpk-verify.def             Apptainer definition of the pinned CPU environment that runs the verification
 environment.lock.yml, requirements.lock.txt     the complete environment behind the numbers (conda export, pip freeze)
 tmp_analysis/                                   the analysis entry points named in Methods §4.1-§4.7

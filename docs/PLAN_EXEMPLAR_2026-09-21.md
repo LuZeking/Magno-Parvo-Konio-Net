@@ -408,3 +408,21 @@ Array B′ (`slurm/exemplar_streams_matched.sh`) runs `stream_features.py` on th
 - in its caption, beside the exemplar-shared 7.2%.
 
 If the matched network closes more of the gap on held-out exemplars than with exemplars shared, the caption says so.
+
+### Outcome of array B′ (appended 2026-09-22; descriptive, as registered)
+
+Job 26518287 ran six tasks (6–34 min each). All six reproduce the stored probe exactly (|d| = 0 on both streams).
+
+Magno-stream probe, seed means:
+
+| Checkpoint | Held-out probe (Q1) | Exemplar-shared probe (Q0) |
+|---|---|---|
+| Diet, best saved checkpoint | +0.334 | +0.806 |
+| No diet, final checkpoint | −0.122 | −0.226 |
+| Accuracy-matched no diet | −0.102 | −0.152 |
+
+- **Gap closed by matching accuracy.** On held-out exemplars the matched network closes 4.3% of the diet − no-diet gap (1.5–5.9% across seeds), against 7.2% with exemplars shared. The other held-out variants give 4.1–8.0% (Q2 8.0%, S64 4.1%, S256n 4.1%).
+- **Sign.** The matched magno stream stays on the texture side in every seed on Q1 (−0.10 to −0.12).
+- **Direction.** The control is no weaker on held-out exemplars; it closes slightly less of the gap.
+
+**Where it is reported:** Fig. 2e, its caption, and Results 2.2 (`results/figures_v2/exemplar_matched.json`).

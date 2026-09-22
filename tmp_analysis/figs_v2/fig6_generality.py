@@ -1,15 +1,18 @@
 """Figure 6 — the readout account beyond the two-stream architecture (subspace rule; PLAN_SUBSPACE_2026-09-15).
 
-Inputs: results/figures_v2/subspace_behaviour.json   (tmp_analysis/figs_v2/subspace_behaviour.py; gated spans, accuracy gate,
-                                                     unit-split gated span for comparison)
+Inputs: results/figures_v2/subspace_behaviour.json   (tmp_analysis/figs_v2/subspace_behaviour.py; trained rates, accuracy
+                                                     gate and top-1 along the sweep, exemplar-shared curves and spans)
+        results/figures_v2/exemplar_zoo.json         (exemplar-held-out curves of the six ImageNet networks; PLAN_EXEMPLAR)
+        results/figures_v2/exemplar_trunk_curves.json (exemplar-held-out curves of our trunks)
         results/figures_v2/subspace_cortex.json      (tmp_analysis/figs_v2/generality_cortex.py --run-id 2026-09-15_sub; optional)
         results/figures_v2/generality_cortex.json    (unit-split cortex; used for panels c-d until the subspace cortex fits exist)
 
 (a) For each frozen network, the cue-conflict shape bias reachable by one gain on its own shape- and
-    texture-predictive subspaces with its own head (thin bar, w = 0 → 1), the trained readout (dot), the part
-    of the sweep within 5 points of the trained top-1 (thick segment), and the gated span of the pre-specified
-    unit-level rule (grey bracket below) as the weaker rule.
-(b) Rate against w for the six ImageNet networks, with the change of top-1 along the sweep beneath.
+    texture-predictive subspaces with its own head, the subspaces fitted on images sharing no object or texture
+    exemplar with those scored (E1, docs/PLAN_EXEMPLAR_2026-09-21.md): thin bar, w = 0 → 1; thick segment, the
+    part of the sweep within 5 points of the trained top-1; dot, the trained readout. Grey bracket below: the same
+    gated range under the pre-registered estimator, whose halves share exemplars (E0).
+(b) Held-out rate against w for the six ImageNet networks, with the change of top-1 along the sweep beneath.
 (c) Cortex: the S − T index across the hierarchy, with the two-stream diet model's magno − parvo profile for reference.
 (d) Cortex-optimal mixing weight of the lossy sum per region.
 Usage: PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/fig6_generality.py
@@ -44,11 +47,34 @@ FAM_STYLE = {"two_stream_diet": ("two-stream, diet (magno − parvo)", S.DIET, "
              "resnet50": ("ImageNet ResNet-50", S.PUB, "-", "D"),
              "vit_b_16": ("ImageNet ViT-B/16", "#000000", "--", "v"),
              "convnext_base": ("ImageNet ConvNeXt-B", "#009E73", "--", "P")}
-UNIT_COL = "#9A9A9A"
+SHARED_COL = "#9A9A9A"
+TRUNKS = ("concat", "single34", "single18", "rgb_tsn")
+WS_GRID = np.round(np.linspace(0, 1, 21), 10)
 
 
 def seed_mean(f, key="mean_curve"):
     return np.mean([s[key] for s in f["seeds"]], 0)
+
+
+def held_out():
+    """E1 mean curve (seed mean for our trunks) and the number printed beside it: the gated span of that curve,
+    or, for the ungated two-stream concatenation, the mean over seeds of the per-repetition span, as for E0."""
+    zoo = {n["tag"]: n for n in json.load(open("results/figures_v2/exemplar_zoo.json"))["networks"]}
+    tr = json.load(open("results/figures_v2/exemplar_trunk_curves.json"))["families"]
+    out = {}
+    for key in TRUNKS:
+        out[key] = dict(curve=np.mean([x["E1"]["mean_curve"] for x in tr[key]], 0),
+                        span=float(np.mean([x["E1"]["span_mean"] for x in tr[key]])))
+    for key in IMAGENET:
+        out[key] = dict(curve=np.array(zoo[f"tv_{key}"]["spans"]["E1"]["mean_curve"]), span=None)
+    return out
+
+
+def gated(curve, gate):
+    if gate is None:
+        return None
+    m = (WS_GRID >= gate[0] - 1e-9) & (WS_GRID <= gate[1] + 1e-9)
+    return float(curve[m].min()), float(curve[m].max())
 
 
 def load_ctx():
@@ -71,9 +97,8 @@ def main():
     fam = {f["key"]: f for f in sub["families"]}
     ws = np.array(fam["resnet50"]["seeds"][0]["ws"])
     ctx, ctx_mode = load_ctx()
-    unit = None
-    if os.path.exists("results/figures_v2/generality_behaviour.json"):
-        unit = {f["key"]: f for f in json.load(open("results/figures_v2/generality_behaviour.json"))["families"]}
+    ho = held_out()
+    assert np.allclose(ws, WS_GRID)
 
     fig = plt.figure(figsize=(S.FULL, 6.0))
     ax_a = fig.add_axes([0.26, 0.585, 0.36, 0.355])
@@ -90,41 +115,34 @@ def main():
     for y, (key, label, col) in zip(ys, ORDER):
         if key not in fam:
             continue
-        f = fam[key]
-        curve = seed_mean(f)
+        f, h = fam[key], ho[key]
+        curve, gate = h["curve"], f.get("gate")
         ax_a.plot([curve.min(), curve.max()], [y, y], "-", color=col, lw=2.2, alpha=0.45, solid_capstyle="butt", zorder=2)
-        gate = f.get("gate")
-        if gate is not None:
-            m = (ws >= gate[0] - 1e-9) & (ws <= gate[1] + 1e-9)
-            ax_a.plot([curve[m].min(), curve[m].max()], [y, y], "-", color=col, lw=4.0, solid_capstyle="butt", zorder=3)
+        g1 = gated(curve, gate)
+        if g1 is not None:
+            ax_a.plot(list(g1), [y, y], "-", color=col, lw=4.0, solid_capstyle="butt", zorder=3)
         ax_a.plot(f["trained"], y, "o", color=col, ms=5.5, mec="white", mew=0.9, zorder=5)
         ax_a.plot(curve[-1], y, ">", color=col, ms=4.2, mec="white", mew=0.5, zorder=4)
         ax_a.plot(curve[0], y, "<", color=col, ms=4.2, mec="white", mew=0.5, zorder=4)
-        # the pre-specified unit-level rule, within the same gate (grey bracket beneath)
-        if unit and key in unit:
-            u = unit[key]
-            ucurve = np.mean([s["mean_curve"] for s in u["seeds"]], 0)
-            acc = [s["gain_accuracy"]["w_within_5pts"] for s in u["seeds"] if s.get("gain_accuracy")]
-            if acc:
-                lo, hi = np.mean([min(a) for a in acc]), np.mean([max(a) for a in acc])
-                mu = (ws >= lo - 1e-9) & (ws <= hi + 1e-9)
-                ax_a.plot([ucurve[mu].min(), ucurve[mu].max()], [y - 0.34, y - 0.34], "-", color=UNIT_COL, lw=1.6, solid_capstyle="butt", zorder=2)
-            else:  # the two-stream concatenation: the streams recovered, no gate
-                ax_a.plot([ucurve.min(), ucurve.max()], [y - 0.34, y - 0.34], "-", color=UNIT_COL, lw=1.6, solid_capstyle="butt", zorder=2)
+        # the pre-registered estimator, halves sharing exemplars, within the same gate (grey bracket beneath)
+        c0 = seed_mean(f)
+        g0 = gated(c0, gate) or (float(c0.min()), float(c0.max()))
+        ax_a.plot(list(g0), [y - 0.34, y - 0.34], "-", color=SHARED_COL, lw=1.6, solid_capstyle="butt", zorder=2)
         ax_a.text(-0.02, y, label, ha="right", va="center", fontsize=6.8, transform=ax_a.get_yaxis_transform(), color=S.INK)
-        span_txt = f"{f['gated_span']:.2f}" if f.get("gated_span") is not None else f"{f['span']:.2f}"
-        unit_txt = f"{f['unit_gated_span']:.2f}" if f.get("unit_gated_span") is not None else (f"{unit[key]['span']:.2f}" if unit and key in unit else "")
-        ax_a.text(1.01, y, span_txt, ha="left", va="center", fontsize=6.0, color=col if col != S.PUB else S.INK, transform=ax_a.get_yaxis_transform())
-        ax_a.text(1.09, y, unit_txt, ha="left", va="center", fontsize=6.0, color=UNIT_COL, transform=ax_a.get_yaxis_transform())
+        ho_span = g1[1] - g1[0] if g1 is not None else h["span"]
+        sh_span = f["gated_span"] if f.get("gated_span") is not None else f["span"]
+        ax_a.text(1.01, y, f"{ho_span:.2f}", ha="left", va="center", fontsize=6.0, color=col if col != S.PUB else S.INK, transform=ax_a.get_yaxis_transform())
+        ax_a.text(1.11, y, f"{sh_span:.2f}", ha="left", va="center", fontsize=6.0, color=SHARED_COL, transform=ax_a.get_yaxis_transform())
+        print(f"  (a) {key:15s} held out {ho_span:.3f} ({'gated' if g1 else 'ungated, seed-mean span'}) | shared {sh_span:.3f} | trained {f['trained']:.3f}")
     ax_a.set_xlim(0.0, 1.0); ax_a.set_ylim(-2.35, len(ORDER) - 0.35)
     ax_a.set_yticks([]); ax_a.spines["left"].set_visible(False)
-    ax_a.set_xlabel("cue-conflict shape bias (held-out images)")
-    ax_a.text(1.01, len(ORDER) - 0.4, "span", ha="left", va="bottom", fontsize=6.0, color=S.INK, transform=ax_a.get_yaxis_transform())
-    ax_a.text(1.09, len(ORDER) - 0.4, "units", ha="left", va="bottom", fontsize=6.0, color=UNIT_COL, transform=ax_a.get_yaxis_transform())
+    ax_a.set_xlabel("cue-conflict shape bias (exemplars held out)")
+    ax_a.text(1.01, len(ORDER) - 0.4, "held\nout", ha="left", va="bottom", fontsize=6.0, color=S.INK, transform=ax_a.get_yaxis_transform(), linespacing=0.95)
+    ax_a.text(1.11, len(ORDER) - 0.4, "shared", ha="left", va="bottom", fontsize=6.0, color=SHARED_COL, transform=ax_a.get_yaxis_transform())
     ax_a.plot([], [], "o", color=S.MUTED, label="trained readout (w = 0.5)")
     ax_a.plot([], [], "-", color=S.MUTED, lw=2.2, alpha=0.45, label="reachable, w = 0 → 1, head fixed")
     ax_a.plot([], [], "-", color=S.MUTED, lw=4, label="within 5 points of trained top-1")
-    ax_a.plot([], [], "-", color=UNIT_COL, lw=1.6, label="unit-level rule (median split), gated")
+    ax_a.plot([], [], "-", color=SHARED_COL, lw=1.6, label="the same, exemplars shared (pre-registered)")
     ax_a.legend(loc="lower center", bbox_to_anchor=(0.47, -0.01), ncol=2, fontsize=5.8, handlelength=1.6,
                 labelspacing=0.25, columnspacing=1.0, frameon=False)
     S.letter(ax_a, "a", dx=-0.24, title="one gain on a network's own shape-predictive subspace moves its rate")
@@ -136,7 +154,7 @@ def main():
         if key not in fam:
             continue
         f = fam[key]
-        curve = seed_mean(f)
+        curve = ho[key]["curve"]
         ax_b.plot(ws, curve, "-", color=IN_COL[key], lw=1.3)
         ax_b.plot(0.5, f["trained"], "o", color=IN_COL[key], ms=4, mec="white", mew=0.6, zorder=5)
         ends.append((float(curve[-1]), ORDER[[k for k, _, _ in ORDER].index(key)][1].replace("ImageNet ", ""), IN_COL[key]))
@@ -150,7 +168,7 @@ def main():
         ypos[i] = max(ypos[i], ypos[i - 1] + 0.03)
     for (yv, lab, col), yp in zip(ends, ypos):
         ax_b.text(1.03, yp, lab, ha="left", va="center", fontsize=5.9, color=col, clip_on=False)
-    ax_b.set_ylabel("cue-conflict shape bias")
+    ax_b.set_ylabel("cue-conflict shape bias\n(exemplars held out)", fontsize=6.5)
     ax_b.set_xlim(0, 1); ax_b.set_ylim(0.0, 0.6); ax_b.set_yticks([0, 0.2, 0.4, 0.6])
     plt.setp(ax_b.get_xticklabels(), visible=False)
     ax_b2.axhspan(-5, 5, color="#F4F4F4", zorder=0)

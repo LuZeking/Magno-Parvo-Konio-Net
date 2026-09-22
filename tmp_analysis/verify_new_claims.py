@@ -1890,6 +1890,89 @@ def check_exemplar() -> None:
         FAILS.append("exemplar: prediction ledger")
 
 
+# Fig. 2e on the held-out probe (array B', 2026-09-22)
+FIG2E = dict(diet=0.334, matched=-0.102, closed=4.3, closed_lo=1.5, closed_hi=5.9)
+
+def check_exemplar_figures() -> None:
+    """Figs. 2a-b, 2e, 6a-b and Extended Data Fig. 6 drawn on the exemplar-held-out estimators (2026-09-22):
+    the numbers their captions state that check_exemplar does not already lock, and the consistency of the
+    trunk curves extracted for Fig. 6a with the spans aggregated in exemplar_streams.json."""
+    print("\n[exemplar figures] Figs. 2, 6 and Extended Data Fig. 6 on held-out exemplars")
+    Z = json.load(open("results/figures_v2/exemplar_zoo.json"))
+    S = json.load(open("results/figures_v2/exemplar_streams.json"))
+    TC = json.load(open("results/figures_v2/exemplar_trunk_curves.json"))["families"]
+    sub = {f["key"]: f for f in json.load(open("results/figures_v2/subspace_behaviour.json"))["families"]}
+    zb = {m["tag"]: m for m in json.load(open("results/figures_v2/zoo_behaviour.json"))["networks"]}
+    rows = Z["networks"]; im = [r for r in rows if r["group"] == "imagenet"]; by = {r["tag"]: r for r in rows}
+    # the trunk curves are the aggregated runs
+    worst = max(abs(x["E1"]["gated_span"] - S["trunks"][x["tag"]]["spans"]["E1"]["gated"]) for v in TC.values() for x in v)
+    ok = worst < 1e-12
+    print(f"  {'OK ' if ok else 'BAD'} trunk curves match the aggregated E1 spans (max |d| {worst:.1e})")
+    if not ok:
+        FAILS.append("exemplar figures: trunk curves")
+    ws = np.round(np.linspace(0, 1, 21), 10)
+
+    def gated(curve, gate):
+        m = (ws >= gate[0] - 1e-9) & (ws <= gate[1] + 1e-9)
+        return float(curve[m].max() - curve[m].min())
+    tg = {k: gated(np.mean([x["E1"]["mean_curve"] for x in TC[k]], 0), sub[k]["gate"]) for k in ("single34", "single18", "rgb_tsn")}
+    chk("Fig. 6a single trunks, held-out gated, low", min(tg.values()), 0.10, T2)
+    chk("Fig. 6a single trunks, held-out gated, high", max(tg.values()), 0.15, T2)
+    chk("Fig. 6a single trunks, shared gated, low", min(sub[k]["gated_span"] for k in tg), 0.14, T2)
+    chk("Fig. 6a single trunks, shared gated, high", max(sub[k]["gated_span"] for k in tg), 0.22, T2)
+    cc = np.mean([x["E1"]["mean_curve"] for x in TC["concat"]], 0)
+    chk("Fig. 6a concat held-out curve, low", float(cc.min()), 0.54, T2); chk("Fig. 6a concat held-out curve, high", float(cc.max()), 0.77, T2)
+    chk("Fig. 6a concat shared span", sub["concat"]["span"], 0.32, T2)
+    six = ["tv_resnet50", "tv_resnet152", "tv_vgg16", "tv_vit_b_16", "tv_convnext_small", "tv_convnext_base"]
+    chk("Fig. 6a six networks, shared gated, low", min(by[t]["spans"]["E0"]["gated"] for t in six), 0.25, T2)
+    chk("Fig. 6a six networks, shared gated, high", max(by[t]["spans"]["E0"]["gated"] for t in six), 0.33, T2)
+    ratio = np.median([r["spans"]["E0"]["gated"] for r in im]) / np.median([r["spans"]["E1"]["gated"] for r in im])
+    chk("shared / held-out median span (about 1.6)", float(ratio), 1.6, 0.05)
+    # Extended Data Fig. 6
+    g1 = np.array([r["spans"]["E1"]["gated"] for r in im])
+    chk("ED Fig. 6b rho(held-out span, top-1)", float(spearmanr(g1, [zb[r["tag"]]["trained_top1"] for r in im]).correlation), -0.27, T2)
+    chk("ED Fig. 6b rho(held-out span, rate)", float(spearmanr(g1, [r["trained"] for r in im]).correlation), 0.10, T2)
+    for fam, want in (("conv", 0.19), ("attention", 0.16)):
+        chk(f"ED Fig. 6b mean held-out span, {fam}", float(np.mean([r["spans"]["E1"]["gated"] for r in im if zb[r["tag"]]["family"] == fam])), want, T2)
+    chk("ED Fig. 6a held-out curve vs trained at w = 0.5", max(abs(r["spans"]["E1"]["mean_curve"][10] - r["trained"]) for r in rows), 0.02, 0.001)
+    chk("ED Fig. 6a held-out rho(w, rate) min (42)", min(r["spans"]["E1"]["rho_mean_curve"] for r in rows), 0.99, 0.01)
+    v32 = by["tv_vit_b_32"]["probes"]["Q1"]
+    chk("ViT-B/32 Q1 bias", v32["bias"], 0.01, T2); chk("ViT-B/32 Q1 low", v32["bias_p05"], -0.09, T2); chk("ViT-B/32 Q1 high", v32["bias_p95"], 0.09, T2)
+    sin = by["hub_resnet50_sin"]["spans"]
+    chk("SIN held-out texture end", sin["E1"]["texture_end"], 0.73, T2); chk("SIN held-out shape end", sin["E1"]["shape_end"], 0.85, T2)
+    chk("SIN shared texture end", sin["E0"]["texture_end"], 0.70, T2); chk("SIN shared shape end", sin["E0"]["shape_end"], 0.87, T2)
+    # Fig. 2e: the accuracy-matched control on the held-out probe (array B')
+    M = json.load(open("results/figures_v2/exemplar_matched.json"))
+    for est in ("Q0",):
+        g = M["gap"][est]
+        chk("matched control, shared probe closes (%)", 100 * g["closed"], 7.2, 0.051)
+    for n, v in M["streams"].items():
+        st = v["magno"]["Q0"]
+        if "stored_bias" in st and abs(st["bias"] - st["stored_bias"]) > 1e-9:
+            FAILS.append(f"exemplar figures: B' Q0 reproduction {n}")
+    g = M["gap"]["Q1"]
+    chk("matched control, held-out: diet magno Q1 (seed mean)", float(np.mean(g["diet"])), FIG2E["diet"], T3)
+    chk("matched control, held-out: matched magno Q1 (seed mean)", float(np.mean(g["matched"])), FIG2E["matched"], T3)
+    chk("matched control, held-out: gap closed (%)", 100 * g["closed"], FIG2E["closed"], 0.051)
+    chk("matched control, held-out: closed, min seed (%)", 100 * min(g["closed_per_seed"]), FIG2E["closed_lo"], 0.051)
+    chk("matched control, held-out: closed, max seed (%)", 100 * max(g["closed_per_seed"]), FIG2E["closed_hi"], 0.051)
+    others = [100 * M["gap"][e]["closed"] for e in ("Q2", "S64", "S256n")]
+    chk("matched control, other held-out variants, low (%)", min(others), 4.1, 0.051)
+    chk("matched control, other held-out variants, high (%)", max(others), 8.0, 0.051)
+    chk("matched magno Q1, most negative seed", min(g["matched"]), -0.12, T2)
+    chk("matched magno Q1, least negative seed", max(g["matched"]), -0.10, T2)
+    ok = max(g["matched"]) < 0
+    print(f"  {'OK ' if ok else 'BAD'} matched magno stream texture-side on the held-out probe in every seed ({', '.join(f'{x:+.3f}' for x in g['matched'])})")
+    if not ok:
+        FAILS.append("exemplar figures: matched seed sign")
+    # withdrawn wording
+    caps = {f: open(f"results/figures_v2/{f}_caption.md", encoding="utf8").read() for f in ("fig2_streams", "fig6_generality", "figE6_zoo")}
+    for f, phrase in (("fig2_streams", "The probe drawn here is the original"), ("fig6_generality", "The curves are the pre-registered estimator"),
+                      ("fig6_generality", "give 0.46 (grey)"), ("figE6_zoo", "The two halves share object and texture exemplars; values with exemplars held out")):
+        if phrase in caps[f]:
+            FAILS.append(f"{f} caption still describes the exemplar-shared drawing: '{phrase}'")
+
+
 def main() -> int:
     check_recovery()
     check_production_statistic()
@@ -1913,6 +1996,7 @@ def main() -> int:
     check_kappa_matched()
     check_span_model()
     check_exemplar()
+    check_exemplar_figures()
     print("\nFAILURES:", FAILS if FAILS else "none")
     return 1 if FAILS else 0
 
