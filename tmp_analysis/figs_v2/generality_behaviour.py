@@ -6,7 +6,7 @@ Reads /scratch/byrong/mpk/generality/behaviour/<run-id>/*_unit_factor.json,
 *_refit_sum.json, *_gain_accuracy.json and the split-rule sensitivity files
 *_unit_factor_{positive,decile}.json (+ *_gain_accuracy_{positive,decile}.json),
 prints one row per network and writes results/figures_v2/generality_behaviour.json,
-the single committed source of Fig. 6a-b and Extended Data Table 13.
+the single committed source of Fig. 6a-b and Extended Data Table 3.
 """
 from __future__ import annotations
 

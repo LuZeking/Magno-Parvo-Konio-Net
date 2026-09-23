@@ -1,4 +1,4 @@
-"""Extended Data Table 17: error consistency at a matched cue-conflict rate (PLAN_KAPPA).
+"""Supplementary Table S13: error consistency at a matched cue-conflict rate (PLAN_KAPPA).
 
   PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/ed_table17_kappa.py
 
@@ -30,14 +30,14 @@ def table17(K):
         rows.append(f"| {r['label']}{star} | {r['w']:.2f} | {r['rate']:.3f} | {n(r['kappa_pct'])} | "
                     f"{n(r['kappa_trained_pct'])} | {'—' if norm is None else n(norm)} | "
                     f"{n(r['probe_bias'], 2)} | {r['trained_rate']:.3f} |")
-    cap = ("**Extended Data Table 17 | Error consistency with the ten observers at a matched cue-conflict rate.** "
-           "Every frozen network of Extended Data Table 16 under the same gain (Methods 4.8), swept over "
+    cap = ("**Supplementary Table S13 | Error consistency with the ten observers at a matched cue-conflict rate.** "
+           "Every frozen network of Extended Data Table 4 under the same gain (Methods 4.8), swept over "
            "w ∈ {0, 0.05, …, 1}; for each network the row is the **gated** readout whose rate is closest to "
            f"{K['target_rate']:.2f} (tolerance ± {K['tol']:.2f}; networks whose gate does not reach it are absent, "
            f"{len(pr['K2']['excluded'])} of 38: {', '.join(pr['K2']['excluded'])}). κ is Cohen's κ on trial-by-trial "
            "agreement over the images both parties decided, mean over the ten observers, as a percentage of the "
-           "human–human ceiling κ = 0.234 (Methods 4.3; Extended Data Table 7). “κ at the trained readout” is the "
-           "same quantity at w = 0.5, the number Extended Data Table 16 reports and the form in which the field "
+           "human–human ceiling κ = 0.234 (Methods 4.3; Supplementary Table S6). “κ at the trained readout” is the "
+           "same quantity at w = 0.5, the number Extended Data Table 4 reports and the form in which the field "
            "reports error consistency. “κ / κ_max” normalises by the largest κ attainable at the two marginals, "
            "κ_max = (1 − |p_model − p_human| − p_e)/(1 − p_e), expressed as a percentage of the same ratio for human "
            f"pairs ({100 * B['ceiling_over_max']:.0f}% of their own bound); values above 100% mean a network attains a "
@@ -72,7 +72,7 @@ def main():
     K = json.load(open("results/figures_v2/kappa_rate.json"))
     md_path = "results/figures_v2/ed_tables.md"
     md = open(md_path, encoding="utf8").read()
-    md = upsert(md, "Extended Data Table 17 |", table17(K))
+    md = upsert(md, "Supplementary Table S13 |", table17(K))
     open(md_path, "w", encoding="utf8").write(md)
     print("updated", md_path, f"({len(K['matched'])} rows)")
 

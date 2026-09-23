@@ -1,4 +1,4 @@
-"""Extended Data Table 18: what the gain acts on — the span decomposed (PLAN_SPAN).
+"""Supplementary Table S14: what the gain acts on — the span decomposed (PLAN_SPAN).
 
   PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/ed_table18_span.py
 
@@ -45,8 +45,8 @@ def table18(S):
     EX = dict(rho_q1=ez["stats"]["rho_texture_share_Q1"], tau_E1=ez["stats"]["ranking"]["tau_trained_vs_E1_shape_end"],
               frac_E1=ez["stats"]["ranking"]["E1_frac_reversed"],
               sin_rank_E1=1 + sum(r["spans"]["E1"]["gated"] < sin_e1 for r in im_ex))
-    cap = ("**Extended Data Table 18 | What the gain acts on: the span decomposed.** "
-           "Every frozen network of Extended Data Table 16, at its trained readout. For each cue-conflict image the Geirhos rule "
+    cap = ("**Supplementary Table S14 | What the gain acts on: the span decomposed.** "
+           "Every frozen network of Extended Data Table 4, at its trained readout. For each cue-conflict image the Geirhos rule "
            "gives a margin Δ = log p_shape − log p_texture (p_c the mean softmax probability over category c's ImageNet classes; "
            "the forced two-way estimator calls the image “shape” iff Δ > 0). The gain of Methods 4.8 adds (2w − 1)·W(P_S − P_T)y "
            "to the logits exactly, so to first order it changes Δ by (2w − 1)(e_S − e_T), with e_S and e_T the evidence the head "
@@ -59,7 +59,7 @@ def table18(S):
            "the bases fitted on all 1,200 images. Random-direction span: ten draws (seeds 0–9) of two mutually orthogonal random "
            "15-dimensional subspaces inside each network's 256-dimensional PCA space of the cue-conflict features, same gain, "
            "estimator (in sample) and gate; every random sweep stays inside its gate. "
-           f"Pre-specification: `docs/PLAN_SPAN_2026-09-18.md`, predictions S-1 to S-7, written after Extended Data Table 16 and "
+           f"Pre-specification: `docs/PLAN_SPAN_2026-09-18.md`, predictions S-1 to S-7, written after Extended Data Table 4 and "
            "before this analysis; the whole analysis is post hoc with respect to the manuscript's first three plans. Met: S-1 "
            f"(M0 reproduces the forced-choice curve, median largest error {P['S1']['median_max_abs_err']:.3f}; ρ(M0, forced span) "
            f"= {P['S1']['rho_m0_Tf']:.2f}), S-5b (the Stylized-ImageNet texture term {P['S5b']['sin_texture_term']:.2f} is below "
@@ -88,7 +88,7 @@ def table18(S):
            f"closely than the trained rate does ({n(H['rho_rate_probe_bias']['rho'])} [{n(H['rho_rate_probe_bias']['ci'][0])}, "
            f"{n(H['rho_rate_probe_bias']['ci'][1])}]; difference in |ρ| {H['abs_rho_difference']['point']:.2f} "
            f"[{H['abs_rho_difference']['ci'][0]:.2f}, {H['abs_rho_difference']['ci'][1]:.2f}]); against the exemplar-balanced probe "
-           f"scored on held-out exemplars (Extended Data Table 16) it is {n(EX['rho_q1']['rho'])} [{n(EX['rho_q1']['ci'][0])}, "
+           f"scored on held-out exemplars (Extended Data Table 4) it is {n(EX['rho_q1']['rho'])} [{n(EX['rho_q1']['ci'][0])}, "
            f"{n(EX['rho_q1']['ci'][1])}], no closer than the trained rate. Intervals are 95% percentile "
            "bootstraps over networks (10,000 resamples), descriptive of this fixed zoo. On the forced estimator the ranking by "
            f"trained rate and by the shape-end rate agree at Kendall τ = {F['tau_forced']:.2f} with {F['reversals_forced']} of "
@@ -105,7 +105,7 @@ def main():
     S = json.load(open("results/figures_v2/span_model.json"))
     md_path = "results/figures_v2/ed_tables.md"
     md = open(md_path, encoding="utf8").read()
-    md = upsert(md, "Extended Data Table 18 |", table18(S))
+    md = upsert(md, "Supplementary Table S14 |", table18(S))
     open(md_path, "w", encoding="utf8").write(md)
     print("updated", md_path, f"({len(S['networks'])} rows)")
 

@@ -443,3 +443,36 @@ Magno-stream probe, seed means:
 
    Pairs count as **resolved** when the 95% interval of the trained-rate difference excludes zero. Resolved pairs, and the observed reversal among them, are given under each unit. The manuscript reports all of them beside the all-pairs figure.
 3. **Probe preprocessing** (weakness 5). No new computation. Q1 stays the primary probe and the reporting standard names its preprocessing: exemplar-balanced leave-one-exemplar-out folds, PCA to 256 dimensions and standardisation fitted inside the folds, logistic regression with C = 1 untuned. The spread over the held-out variants already computed (Q1b, Q2, S64, S256n) is reported beside every probe value that the standard's argument uses.
+
+### Outcome of addendum C (appended 2026-09-23; post hoc, as stated)
+
+**1. Gate on the held-out bases.** Array C, job 26522010, ran 42 of 42 tasks. The E1 mean curve reproduced exactly in every network (|d| = 0). Results are in `results/figures_v2/exemplar_gate.json`.
+- **Top-1 change.** The largest top-1 change over the sweep, on the mean of the 30 fold bases, is a median 1.5× the all-image figure: at most 6.3 points against 4.4.
+- **Narrowed gates.** The primary gate narrows in three networks: ResNet-18 (w = 0.10–0.95), MobileNet-V2 and SIN ResNet-50 (both w = 0.05–0.95). The strict gate adds ResNet-34.
+- **Zoo summaries are unchanged under both gates.**
+  - Primary gate: gated span 0.084–0.293, median 0.182, 11 of 38 ≥ 0.20; 18.6% of pairs reversed; τ = 0.627.
+  - Strict gate: 18.3% reversed; τ = 0.633.
+- **What does change.**
+  - ρ(span, trained rate) moves from +0.10 to +0.17.
+  - The SIN span falls to 0.107, the 2nd smallest of 39.
+  - The six networks of Fig. 6 stay inside the gate over the whole sweep (at most 3.5 points).
+- **Where the manuscript now reports this:** Methods 4.8, Results 2.4, ED Fig. 6 (redrawn on this gate) and Fig. 6b (held-out top-1 drawn solid).
+
+**2. Reversal floors by resampling unit** (`results/figures_v2/exemplar_floors.json`).
+
+| Resampling unit | Floor, all pairs | Resolved pairs | Reversed among resolved (held-out gate) | Floor among resolved |
+|---|---|---|---|---|
+| Images | 8.9% [6.0, 12.2] | 490 | 39 (8.0%) | 0.33% |
+| Object exemplars | 9.1% [6.0, 12.7] | 486 | 37 | 0.34% |
+| Texture exemplars | 13.6% [8.3, 20.9] | 389 | 12 (3.1%) | 0.47% |
+
+- On the all-image gate, the image-unit row reproduces the committed 41 of 490.
+- **The all-pairs 18.6% is not decisive against the texture-exemplar floor.** The resolved-pair reversal exceeds its floor under every unit. Results 2.4 now says both.
+
+**3. Probe spread** (`results/figures_v2/exemplar_probe_spread.json`).
+- The ImageNet median runs from −0.14 (S64) to −0.39 (S256n), and is +0.03 for Q1b.
+- τ against the trained ranking is 0.28–0.54 over the five held-out variants.
+- SIN sits above all 38 ImageNet networks under every variant.
+- The reporting standard now names Q1's preprocessing and reads the probe for sign and order.
+
+**The exploratory eight-preprocessing script** named in the note after the test runs is now deposited at `tmp_analysis/exemplar_preprocessing_diag.py`, unchanged.

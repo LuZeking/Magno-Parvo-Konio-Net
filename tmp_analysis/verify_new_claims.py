@@ -2010,6 +2010,121 @@ def check_exemplar_figures() -> None:
             FAILS.append(f"{f} caption still describes the exemplar-shared drawing: '{phrase}'")
 
 
+def check_addendum_c() -> None:
+    """PLAN_EXEMPLAR addendum C (post hoc, 2026-09-23): the accuracy gate on the held-out bases, the reversal
+    floors by resampling unit, the probe's preprocessing spread; plus the v8 statement fixes (Methods 4.2
+    GPU-hours, Geirhos year, cortical-label caveat) and the length cut (Supplementary Notes S4 and S5)."""
+    print("\n[addendum C] held-out gate, reversal floors, probe spread (post hoc)")
+    paper = open("docs/PAPER_v2.md", encoding="utf8").read()
+    main = paper.split("## 1. Introduction", 1)[1].split("## 4. Methods", 1)[0]
+    def has(label, text, where=paper):
+        ok = text in where
+        print(f"  {'OK ' if ok else 'BAD'} {label}")
+        if not ok:
+            FAILS.append(f"addendum C: {label}")
+    def lacks(label, text, where=paper):
+        ok = text not in where
+        print(f"  {'OK ' if ok else 'BAD'} {label}")
+        if not ok:
+            FAILS.append(f"addendum C: {label}")
+    G = json.load(open("results/figures_v2/exemplar_gate.json")); gs = G["summary"]
+    by = {r["tag"]: r for r in G["networks"]}
+    chk("gate: E1 reproduction max |d|", gs["repro_max_abs_diff"], 0.0, 1e-12)
+    chk("gate: 42 networks", gs["n_networks"], 42, 0)
+    h = gs["heldout"]
+    chk("held-out gate: gated span min (0.08)", h["gated_min"], 0.084, 0.005)
+    chk("held-out gate: gated span max (0.29)", h["gated_max"], 0.293, 0.005)
+    chk("held-out gate: median (0.18)", h["gated_median"], 0.18, 0.005)
+    chk("held-out gate: n >= 0.20 (11)", h["n_ge_0_20"], 11, 0)
+    chk("held-out gate: pairs reversed (19%)", h["frac_reversed"], 0.19, 0.005)
+    chk("held-out gate: tau (0.63)", h["tau"], 0.63, 0.005)
+    chk("worst top-1 drop, held-out bases, max (6.3 pts)", 100 * gs["worst_drop_heldout_max"], 6.3, 0.05)
+    chk("worst top-1 drop, all-image bases, max (4.4 pts)", 100 * gs["worst_drop_allimage_max"], 4.4, 0.05)
+    chk("held-out / all-image worst drop, median ratio (1.5)", gs["ratio_heldout_to_allimage_median"], 1.5, 0.05)
+    chk("held-out worst drop, median (1.4 pts, ED Fig. 6)", 100 * gs["worst_drop_heldout_median"], 1.4, 0.05)
+    ok = sorted(gs["narrowed_heldout"]) == ["hub_resnet50_sin", "tv_mobilenet_v2", "tv_resnet18"] and gs["narrowed_allimage"] == []
+    print(f"  {'OK ' if ok else 'BAD'} gate narrows in ResNet-18, MobileNet-V2 and SIN only (held-out bases), in none (all-image)")
+    if not ok:
+        FAILS.append("addendum C: narrowed networks")
+    chk("ResNet-18 held-out gate low end (0.10)", by["tv_resnet18"]["heldout"]["w_range"][0], 0.10, 1e-9)
+    chk("MobileNet-V2 held-out gate low end (0.05)", by["tv_mobilenet_v2"]["heldout"]["w_range"][0], 0.05, 1e-9)
+    ok = "tv_resnet34" in gs["narrowed_strict"] and len(gs["narrowed_strict"]) == 4
+    print(f"  {'OK ' if ok else 'BAD'} strict gate: a fourth network, ResNet-34")
+    if not ok:
+        FAILS.append("addendum C: strict gate")
+    six = ["tv_resnet50", "tv_resnet152", "tv_vgg16", "tv_vit_b_16", "tv_convnext_small", "tv_convnext_base"]
+    chk("six Fig. 6 networks: largest held-out drop (3.5 pts)", 100 * max(by[t]["worst_drop_heldout"] for t in six), 3.5, 0.05)
+    chk("six Fig. 6 networks: largest all-image drop (1.5 pts)", 100 * max(by[t]["worst_drop_allimage"] for t in six), 1.5, 0.05)
+    ok = all(by[t]["heldout"]["w_range"] == [0.0, 1.0] for t in six)
+    print(f"  {'OK ' if ok else 'BAD'} six Fig. 6 networks keep the whole sweep inside the held-out gate")
+    if not ok:
+        FAILS.append("addendum C: six networks gate")
+    sin = by["hub_resnet50_sin"]["heldout"]
+    chk("SIN held-out-gate span (0.11)", sin["gated_span"], 0.11, 0.005)
+    ranks = sorted((r["heldout"]["gated_span"], r["tag"]) for r in G["networks"] if r["group"] == "imagenet" or r["tag"] == "hub_resnet50_sin")
+    chk("SIN rank among 39 (2nd smallest)", [t for _, t in ranks].index("hub_resnet50_sin") + 1, 2, 0)
+    from scipy.stats import spearmanr as _sp
+    im = [r for r in G["networks"] if r["group"] == "imagenet"]
+    chk("rho(held-out gated span, trained rate) (+0.17)", _sp([r["heldout"]["gated_span"] for r in im], [r["trained"] for r in im])[0], 0.17, 0.005)
+    F = json.load(open("results/figures_v2/exemplar_floors.json"))["units"]
+    chk("floor, images (8.9%)", F["image"]["floor_all"], 0.089, 0.0005)
+    chk("floor, object exemplars (9.1%)", F["object_exemplar"]["floor_all"], 0.091, 0.0005)
+    chk("floor, texture exemplars (13.6%)", F["texture_exemplar"]["floor_all"], 0.136, 0.0005)
+    chk("texture floor CI low (8.3%)", F["texture_exemplar"]["floor_all_ci"][0], 0.083, 0.0005)
+    chk("texture floor CI high (20.9%)", F["texture_exemplar"]["floor_all_ci"][1], 0.209, 0.0005)
+    chk("resolved pairs, images (490)", F["image"]["n_resolved"], 490, 0)
+    chk("resolved pairs, texture exemplars (389)", F["texture_exemplar"]["n_resolved"], 389, 0)
+    chk("resolved reversed, images, held-out gate (39)", F["image"]["observed"]["heldout_gate"]["n_resolved_reversed"], 39, 0)
+    chk("resolved reversed, texture, held-out gate (12)", F["texture_exemplar"]["observed"]["heldout_gate"]["n_resolved_reversed"], 12, 0)
+    chk("resolved-pair floor, images (0.33%)", 100 * F["image"]["floor_resolved"], 0.33, 0.005)
+    chk("resolved-pair floor, texture (0.47%)", 100 * F["texture_exemplar"]["floor_resolved"], 0.47, 0.005)
+    chk("floors: all-image gate reproduces the committed 8.4% of 490", F["image"]["observed"]["allimage_gate"]["resolved"], 0.0837, 0.0001)
+    P = json.load(open("results/figures_v2/exemplar_probe_spread.json"))["variants"]
+    others = ["Q2", "S64", "S256n"]
+    chk("probe spread: least negative median (-0.14, S64)", max(P[k]["median"] for k in others), -0.14, 0.005)
+    chk("probe spread: most negative median (-0.39, S256n)", min(P[k]["median"] for k in others), -0.39, 0.005)
+    chk("probe spread: Q1b median (+0.03)", P["Q1b"]["median"], 0.03, 0.005)
+    held = ["Q1", "Q2", "S64", "S256n", "Q1b"]
+    chk("probe tau(trained), lowest (0.28)", min(P[k]["tau_trained"] for k in held), 0.28, 0.005)
+    chk("probe tau(trained), highest (0.54)", max(P[k]["tau_trained"] for k in held), 0.54, 0.005)
+    ok = all(P[k]["sin_above_all"] for k in held)
+    print(f"  {'OK ' if ok else 'BAD'} SIN above all 38 ImageNet networks under every held-out preprocessing")
+    if not ok:
+        FAILS.append("addendum C: SIN above all")
+    Mx = json.load(open("results/figures_v2/exemplar_matched.json"))
+    has("text: resolved-pair reversal stated", "39 of 490 reverse under image resampling (8.0%, against a floor of 0.33%)", main)
+    has("text: texture-exemplar floor stated", "13.6% [8.3%, 20.9%] (texture exemplars)", main)
+    has("text: held-out gate in Methods 4.8", "the gate narrows in three networks (ResNet-18 to w = 0.10–0.95", paper)
+    has("text: probe preprocessing fixed in the reporting standard", "we fix exemplar-balanced leave-one-exemplar-out folds", main)
+    has("text: cortical-label caveat", "the design cannot separate texture bias from bandwidth", main)
+    has("text: re-analysis labelled post hoc", "is post hoc with respect to the five before it", main)
+    has("Methods 4.2: 584 GPU-hours from the scheduler", "584 GPU-hours in total", paper)
+    lacks("Methods 4.2: unsourced 19.5-51.4 h range gone", "19.5–51.4 h", paper)
+    lacks("no 'Geirhos et al., 2019' left", "Geirhos et al., 2019", paper)
+    lacks("no 'Geirhos et al. (2019)' left", "Geirhos et al. (2019)", paper)
+    c = json.load(open("results/figures_v2/compute_accounting_after.json"))["totals"]
+    chk("post-window core-hours (1,830)", c["core_h"], 1830, 10)
+    chk("post-window GPU-hours (1.5)", c["gpu_h"], 1.5, 0.05)
+    import re as _re
+    L = paper.split("\n")
+    def wc(a, b):
+        i = next(k for k, l in enumerate(L) if l.startswith(a)); j = next(k for k, l in enumerate(L) if l.startswith(b))
+        return len(_re.sub(r"^\|.*$", "", "\n".join(L[i + 1:j]), flags=_re.M).split())
+    n_main = wc("## 1. Introduction", "## 4. Methods")
+    print(f"  {'OK ' if n_main <= 5000 else 'BAD'} main text {n_main} words (Intro + Results + Discussion, table rows excluded) <= 5,000")
+    if n_main > 5000:
+        FAILS.append("addendum C: main text over 5,000 words")
+    n_ed = len(set(_re.findall(r"^\*\*Extended Data Table (\d+) \|", paper, flags=_re.M)))
+    n_su = len(set(_re.findall(r"^\*\*Supplementary Table S(\d+) \|", paper, flags=_re.M)))
+    chk("Extended Data tables (4)", n_ed, 4, 0)
+    chk("Supplementary tables (14)", n_su, 14, 0)
+    for k in range(5, 19):
+        if f"Extended Data Table {k}" in paper:
+            FAILS.append(f"addendum C: stale reference Extended Data Table {k}"); print(f"  BAD stale Extended Data Table {k}")
+    has("Supplementary Note S4 present", "## Supplementary Note S4 — passages condensed in the main text", paper)
+    has("Supplementary Note S5 present", "## Supplementary Note S5 — the pre-registration ledgers", paper)
+
+
 def _run(fn, needs=()) -> None:
     missing = [n for n in needs if not _have(n)]
     if missing:
@@ -2041,6 +2156,7 @@ def main() -> int:
     check_span_model()
     check_exemplar()
     check_exemplar_figures()
+    check_addendum_c()
     if SKIPS:
         print(f"\nSKIPPED {len(SKIPS)} blocks for inputs not in the repository:")
         for fn, need in SKIPS:

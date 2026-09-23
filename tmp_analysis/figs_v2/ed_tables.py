@@ -83,7 +83,7 @@ P("")
 
 # ------------------------------------------------------------ T2 monotonicity and exact null
 null = json.load(open("results/hierarchy_permutation_null.json"))
-P("**Extended Data Table 2 | Monotonicity of the profile and the exact permutation null.** Spearman ρ between hierarchical rank [1,1,2,2,3,3,4] and stream preference, mean over subjects; the null enumerates all 630 distinct labellings of the seven ROIs (one-sided in the pre-stated direction, floor 1/630 = .0016). “per-voxel index” is the manuscript's statistic (Fig. 3c; Results 2.3): the median over reliable voxels of (U_m − U_p)/(U_m + U_p) per ROI, as in Extended Data Table 1; “ratio of medians” is median(U_m − U_p)/median(U_m + U_p) per ROI, the statistic of an earlier draft, kept for comparison. Source: `results/hierarchy_permutation_null.json` (which labels the two `raw` and `norm`).")
+P("**Supplementary Table S1 | Monotonicity of the profile and the exact permutation null.** Spearman ρ between hierarchical rank [1,1,2,2,3,3,4] and stream preference, mean over subjects; the null enumerates all 630 distinct labellings of the seven ROIs (one-sided in the pre-stated direction, floor 1/630 = .0016). “per-voxel index” is the manuscript's statistic (Fig. 3c; Results 2.3): the median over reliable voxels of (U_m − U_p)/(U_m + U_p) per ROI, as in Extended Data Table 1; “ratio of medians” is median(U_m − U_p)/median(U_m + U_p) per ROI, the statistic of an earlier draft, kept for comparison. Source: `results/hierarchy_permutation_null.json` (which labels the two `raw` and `norm`).")
 P("")
 P("| arm | seed | statistic | observed mean ρ | exact p | most extreme of 630 | null 2.5th pct |")
 P("|---|---|---|---|---|---|---|")
@@ -103,7 +103,7 @@ def cc_streams(model):
         mg.append(med(z["cc_magno_vsb"])); pv.append(med(z["cc_parvo_vsb"]))
     return np.array(mg), np.array(pv)
 
-P("**Extended Data Table 3 | In-silico cue conflict through the fitted encoding models, per seed.** Median over reliable voxels of the per-voxel predicted shape-bias index for each stream, mean over 8 subjects; the contrast is magno − parvo, paired within subject against the no-diet arm of the same seed. Source: `results/encoding_cc/`.")
+P("**Supplementary Table S2 | In-silico cue conflict through the fitted encoding models, per seed.** Median over reliable voxels of the per-voxel predicted shape-bias index for each stream, mean over 8 subjects; the contrast is magno − parvo, paired within subject against the no-diet arm of the same seed. Source: `results/encoding_cc/`.")
 P("")
 P("| seed | arm | magno stream | parvo stream | magno − parvo | diet − no diet | sep. | p |")
 P("|---|---|---|---|---|---|---|---|")
@@ -115,7 +115,7 @@ for sd in range(3):
 P("")
 
 # ------------------------------------------------------------ T4 the 2x2
-P("**Extended Data Table 4 | The carrier × transform 2×2 on the probe and on behaviour.** Mean over training seeds with the seed range in brackets; “decided” is the mean number of the 1,200 cue-conflict images the readout classifies as the shape or the texture category (the shape-bias denominator). Cells are read out on stream 2 in three cases and on the diet's magno stream in the fourth. Source: `results/figures/fig1_data.npz` (from `results/shape_texture/`, `results/cue_conflict/`). “probe bias, exemplars held out” is the exemplar-balanced probe of Methods 4.3, scored on object and texture exemplars the probe was not trained on (three exemplars per category for both labels, leave one exemplar out, PCA inside the folds, mean of 20 draws; `docs/PLAN_EXEMPLAR_2026-09-21.md`, `results/figures_v2/exemplar_streams.json`); “probe bias” is the original stratified-fold probe, whose test images share exemplars with its training folds.")
+P("**Supplementary Table S3 | The carrier × transform 2×2 on the probe and on behaviour.** Mean over training seeds with the seed range in brackets; “decided” is the mean number of the 1,200 cue-conflict images the readout classifies as the shape or the texture category (the shape-bias denominator). Cells are read out on stream 2 in three cases and on the diet's magno stream in the fourth. Source: `results/figures/fig1_data.npz` (from `results/shape_texture/`, `results/cue_conflict/`). “probe bias, exemplars held out” is the exemplar-balanced probe of Methods 4.3, scored on object and texture exemplars the probe was not trained on (three exemplars per category for both labels, leave one exemplar out, PCA inside the folds, mean of 20 draws; `docs/PLAN_EXEMPLAR_2026-09-21.md`, `results/figures_v2/exemplar_streams.json`); “probe bias” is the original stratified-fold probe, whose test images share exemplars with its training folds.")
 P("")
 P("| carrier | transform | condition, stream | probe bias | probe bias, exemplars held out | cue-conflict shape bias | decided / 1,200 | seeds |")
 P("|---|---|---|---|---|---|---|---|")
@@ -146,7 +146,7 @@ def acc(run, ep):
     return v[ep - 1] if ep else v[-1]
 
 params = {"two-stream (2 × ResNet-18)": 22397936, "single stream, ResNet-34 (matched)": 21338992, "single stream, ResNet-18 (half)": 11230832}
-P("**Extended Data Table 5 | Single-stream controls trained with the identical diet, and the readout ladder.** Best saved checkpoint per seed, except the no-diet row, which is scored at the final checkpoint because its accuracy does not degrade (Fig. 2d; Methods 4.7); mean [range] over three seeds. Accuracy is validation top-1 at the scored checkpoint. Sources: `results/cue_conflict_bestep/`, `results/cue_conflict_single34_bestep/`, `results/cue_conflict_single_bestep/`, run histories, `results/param_matched/`.")
+P("**Supplementary Table S4 | Single-stream controls trained with the identical diet, and the readout ladder.** Best saved checkpoint per seed, except the no-diet row, which is scored at the final checkpoint because its accuracy does not degrade (Fig. 2d; Methods 4.7); mean [range] over three seeds. Accuracy is validation top-1 at the scored checkpoint. Sources: `results/cue_conflict_bestep/`, `results/cue_conflict_single34_bestep/`, `results/cue_conflict_single_bestep/`, run histories, `results/param_matched/`.")
 P("")
 P("| model / readout | parameters | shape bias | decided / 1,200 | accuracy |")
 P("|---|---|---|---|---|")
@@ -168,7 +168,7 @@ def auc(prefix):
     runs = [json.load(open(fp)) for fp in sorted(glob.glob(f"results/ood_bestep/{prefix}*.json"))]
     return {fam: np.array([(np.array(r["families"][fam]["accuracy"]) / r["families"][fam]["accuracy"][0]).mean() for r in runs]) for fam in FAM}
 A = {k: auc(p) for k, p in [("diet", "dkl_bcs_seed"), ("no diet", "dkl_base_seed"), ("swap", "dkl_bcs_swap_seed"), ("parvo_highsf", "dkl_bcs_parvo_highsf_seed"), ("thesis schedule", "thesis_dvd_trans")]}
-P("**Extended Data Table 6 | Out-of-distribution robustness: relative-accuracy AUC per corruption family and condition.** Mean over three seeds [range]; the thesis's schedule-trained checkpoint is a single run. “sep.” marks complete seed separation between the diet and no-diet arms (the exact 3 v 3 floor, p = 0.100). Families marked ‡ were declared trained-in before the run. Source: `results/ood_bestep/`.")
+P("**Supplementary Table S5 | Out-of-distribution robustness: relative-accuracy AUC per corruption family and condition.** Mean over three seeds [range]; the thesis's schedule-trained checkpoint is a single run. “sep.” marks complete seed separation between the diet and no-diet arms (the exact 3 v 3 floor, p = 0.100). Families marked ‡ were declared trained-in before the run. Source: `results/ood_bestep/`.")
 P("")
 P("| family | diet | no diet | swap | parvo_highsf | thesis schedule | diet − no diet | sep. |")
 P("|---|---|---|---|---|---|---|---|")
@@ -180,7 +180,7 @@ for fam in FAM:
 P("")
 
 # ------------------------------------------------------------ T7 error consistency
-P("**Extended Data Table 7 | Error consistency (Cohen's κ) with the ten human observers.** The trained readout (w = 0.5), the magno stream alone (w = 1; the κ = 0.0082, 3.5% of Results 2.5 is the mean of the three final-checkpoint runs) and the best readout over the 21 values of w, per run; κ as a percentage of the human–human ceiling (κ = 0.234, 45 pairs). Published CNN values are from Geirhos et al. (2020). Source: `results/sweep_error_consistency/`.")
+P("**Supplementary Table S6 | Error consistency (Cohen's κ) with the ten human observers.** The trained readout (w = 0.5), the magno stream alone (w = 1; the κ = 0.0082, 3.5% of Results 2.5 is the mean of the three final-checkpoint runs) and the best readout over the 21 values of w, per run; κ as a percentage of the human–human ceiling (κ = 0.234, 45 pairs). Published CNN values are from Geirhos et al. (2020). Source: `results/sweep_error_consistency/`.")
 P("")
 P("| run | shape bias at w = 0.5 | κ at w = 0.5 | % ceiling | κ at w = 1 (magno alone) | % ceiling | rate at w = 1 | best κ over w | % ceiling | w at best | rate at best |")
 P("|---|---|---|---|---|---|---|---|---|---|---|")
@@ -194,7 +194,7 @@ for name, sb, k in [("AlexNet (published)", 0.429, 0.032), ("GoogLeNet (publishe
 P("")
 
 # ------------------------------------------------------------ T8 estimator floor and residual variants (stored analyses)
-P("**Extended Data Table 8 | The estimator's own bias, and the residual-misfit variants.** Synthetic voxels were generated from each arm's fitted 1,000-component feature spaces with the measured per-ROI noise ceilings imposed and the true magno − parvo difference set to zero everywhere; the recovered contrast is the instrument's signed floor. “Displacement” is the real contrast minus the floor, paired per subject. The six variants differ in how the floor is paired (group or per-subject) and whether the residual misfit of the recovery simulation is also removed (before or after rescaling by the recovered slope). Sources: `results/vp_recovery_realnc/diet_floor_paired_2026-09-07.txt`, `floor_pairing_2026-09-07.txt`, `prediction_scored_2026-09-07.txt`.")
+P("**Supplementary Table S7 | The estimator's own bias, and the residual-misfit variants.** Synthetic voxels were generated from each arm's fitted 1,000-component feature spaces with the measured per-ROI noise ceilings imposed and the true magno − parvo difference set to zero everywhere; the recovered contrast is the instrument's signed floor. “Displacement” is the real contrast minus the floor, paired per subject. The six variants differ in how the floor is paired (group or per-subject) and whether the residual misfit of the recovery simulation is also removed (before or after rescaling by the recovered slope). Sources: `results/vp_recovery_realnc/diet_floor_paired_2026-09-07.txt`, `floor_pairing_2026-09-07.txt`, `prediction_scored_2026-09-07.txt`.")
 P("")
 P("| quantity | diet | no diet |")
 P("|---|---|---|")
@@ -213,7 +213,7 @@ P("| per-ROI normalised floor, V1v … hV4 (no-diet geometry) | | +0.025, +0.025
 P("")
 
 # ------------------------------------------------------------ T9 pRF regressions (stored analyses)
-P("**Extended Data Table 9 | Stream preference regressed on pRF eccentricity and pRF size within subject.** Per-voxel stream-preference index regressed on log pRF eccentricity and log pRF size (NSD pRF estimates, voxels with pRF R² > 5%, noise ceiling > 0.1); “ecc | size” is the partial slope for eccentricity controlling for size and vice versa; mean over 8 subjects, with the number of subjects on the stated side and the exact Wilcoxon p. Collinearity between the two predictors is modest (mean VIF 1.66). The arm interaction is the paired difference of partial slopes, seed-averaged within arm. Sources: `results/prf_continuous/dissociation_2026-09-08.txt`, `interaction_2026-09-08.txt`, `input_null_2026-09-08.txt`. The paired trained − untrained rows compare each subject's partial slope in the trained seed-0 network with the untrained network on the diet front end; training with the diet changes neither statistic significantly and the two disagree in sign, while training without the diet removes the dissociation on the raw statistic.")
+P("**Supplementary Table S8 | Stream preference regressed on pRF eccentricity and pRF size within subject.** Per-voxel stream-preference index regressed on log pRF eccentricity and log pRF size (NSD pRF estimates, voxels with pRF R² > 5%, noise ceiling > 0.1); “ecc | size” is the partial slope for eccentricity controlling for size and vice versa; mean over 8 subjects, with the number of subjects on the stated side and the exact Wilcoxon p. Collinearity between the two predictors is modest (mean VIF 1.66). The arm interaction is the paired difference of partial slopes, seed-averaged within arm. Sources: `results/prf_continuous/dissociation_2026-09-08.txt`, `interaction_2026-09-08.txt`, `input_null_2026-09-08.txt`. The paired trained − untrained rows compare each subject's partial slope in the trained seed-0 network with the untrained network on the diet front end; training with the diet changes neither statistic significantly and the two disagree in sign, while training without the diet removes the dissociation on the raw statistic.")
 P("")
 P("| model | statistic | ecc alone | size alone | ecc \\| size | size \\| ecc |")
 P("|---|---|---|---|---|---|")

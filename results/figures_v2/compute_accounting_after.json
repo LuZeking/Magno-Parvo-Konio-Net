@@ -1,0 +1,666 @@
+{
+ "since": "2026-09-17",
+ "first_start": "2026-09-16T15:42:12",
+ "last_start": "2026-09-23T15:23:30",
+ "prefix": "mpk_",
+ "totals": {
+  "n": 559,
+  "core_h": 1826.933055555555,
+  "gpu_h": 1.5313888888888891,
+  "mem_gbh": 7480.212777777777
+ },
+ "groups": {
+  "training (21 runs)": {
+   "n": 0,
+   "core_h": 0,
+   "gpu_h": 0,
+   "job_names": []
+  },
+  "matched-control retraining": {
+   "n": 0,
+   "core_h": 0,
+   "gpu_h": 0,
+   "job_names": []
+  },
+  "two-band encoding fits and their controls": {
+   "n": 28,
+   "core_h": 1353.2644444444443,
+   "gpu_h": 0.0,
+   "job_names": [
+    "mpk_cc_ctrl",
+    "mpk_konio_seeds"
+   ]
+  },
+  "single-trunk generality (unit rule)": {
+   "n": 2,
+   "core_h": 41.28888888888889,
+   "gpu_h": 0.0,
+   "job_names": [
+    "mpk_gen_ctx2"
+   ]
+  },
+  "cortex-optimal readout weight": {
+   "n": 0,
+   "core_h": 0,
+   "gpu_h": 0,
+   "job_names": []
+  },
+  "subspace-rule cortex fits": {
+   "n": 1,
+   "core_h": 91.75111111111111,
+   "gpu_h": 0.0,
+   "job_names": [
+    "mpk_sub_ctx"
+   ]
+  },
+  "model zoo": {
+   "n": 3,
+   "core_h": 2.771111111111111,
+   "gpu_h": 0.0,
+   "job_names": [
+    "mpk_zoo_kappa"
+   ]
+  },
+  "other (smoke tests, figures, verifier, caches, robustness, seeds)": {
+   "n": 525,
+   "core_h": 337.8574999999999,
+   "gpu_h": 1.5313888888888891,
+   "job_names": [
+    "mpk_ablation_decoder",
+    "mpk_ablation_features",
+    "mpk_ablation_features_cpu",
+    "mpk_ablation_precision",
+    "mpk_ablation_report",
+    "mpk_ablation_svd_retry",
+    "mpk_displacement_report",
+    "mpk_edtables",
+    "mpk_exagg",
+    "mpk_exemplar",
+    "mpk_exgate",
+    "mpk_exgate_agg",
+    "mpk_exmatched",
+    "mpk_exstreams",
+    "mpk_fig1data",
+    "mpk_ioprobe",
+    "mpk_ioprobe2",
+    "mpk_kappa_agg",
+    "mpk_kappa_build",
+    "mpk_kappa_ed",
+    "mpk_nsd_publish",
+    "mpk_nsd_seed0_reuse",
+    "mpk_nsd_seed_audit",
+    "mpk_nsd_seed_fit",
+    "mpk_nsd_seed_recover",
+    "mpk_nsd_seed_report",
+    "mpk_nsd_texture",
+    "mpk_nsd_texture_feat",
+    "mpk_nsd_texture_report",
+    "mpk_pdf",
+    "mpk_precision_probe",
+    "mpk_precision_stage",
+    "mpk_rebuild",
+    "mpk_seed_native",
+    "mpk_seed_prepare",
+    "mpk_svd_diagnostic",
+    "mpk_texbehavior",
+    "mpk_texbehavior_batch",
+    "mpk_texture",
+    "mpk_texture_ablation",
+    "mpk_texture_batch",
+    "mpk_texture_displacement",
+    "mpk_texture_followup",
+    "mpk_texture_lowlevel",
+    "mpk_torchprobe",
+    "mpk_v7_balprobe",
+    "mpk_verify",
+    "mpk_verify_clone",
+    "mpk_verify_syspy",
+    "mpk_zoo_span"
+   ]
+  }
+ },
+ "energy": {
+  "kwh_cores": 21.92319666666666,
+  "kwh_memory": 2.7863792597222217,
+  "kwh_gpus": 0.3522194444444445,
+  "pue": 1.67,
+  "kwh_total": 41.853198269291646,
+  "carbon_intensity_kg_per_kwh": 0.35,
+  "kg_co2e": 14.648619394252075,
+  "parameters": {
+   "P_core_W": 12.0,
+   "usage": 1.0,
+   "P_mem_W_per_GB": 0.3725,
+   "P_gpu_W": 230.0
+  }
+ },
+ "per_job_name": {
+  "mpk_ablation_decoder": {
+   "n": 33,
+   "core_h": 0.6577777777777777,
+   "gpu_h": 0.0,
+   "mem_gbh": 1.6444444444444444,
+   "states": {
+    "FAILED": 16,
+    "COMPLETED": 17
+   }
+  },
+  "mpk_ablation_features": {
+   "n": 1,
+   "core_h": 0.0,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.0,
+   "states": {
+    "CANCELLED": 1
+   }
+  },
+  "mpk_ablation_features_cpu": {
+   "n": 1,
+   "core_h": 1.02,
+   "gpu_h": 0.0,
+   "mem_gbh": 2.04,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_ablation_precision": {
+   "n": 4,
+   "core_h": 0.11,
+   "gpu_h": 0.0275,
+   "mem_gbh": 0.44,
+   "states": {
+    "FAILED": 2,
+    "COMPLETED": 2
+   }
+  },
+  "mpk_ablation_report": {
+   "n": 2,
+   "core_h": 0.22944444444444445,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.4588888888888889,
+   "states": {
+    "CANCELLED": 1,
+    "COMPLETED": 1
+   }
+  },
+  "mpk_ablation_svd_retry": {
+   "n": 1,
+   "core_h": 0.08666666666666667,
+   "gpu_h": 0.0,
+   "mem_gbh": 1.3866666666666667,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_cc_ctrl": {
+   "n": 6,
+   "core_h": 307.1555555555555,
+   "gpu_h": 0.0,
+   "mem_gbh": 1305.411111111111,
+   "states": {
+    "COMPLETED": 6
+   }
+  },
+  "mpk_displacement_report": {
+   "n": 2,
+   "core_h": 0.08444444444444443,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.16888888888888887,
+   "states": {
+    "CANCELLED": 1,
+    "COMPLETED": 1
+   }
+  },
+  "mpk_edtables": {
+   "n": 1,
+   "core_h": 0.015555555555555555,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.12444444444444444,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_exagg": {
+   "n": 1,
+   "core_h": 0.016666666666666666,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.06666666666666667,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_exemplar": {
+   "n": 55,
+   "core_h": 33.62666666666667,
+   "gpu_h": 0.0,
+   "mem_gbh": 67.25333333333334,
+   "states": {
+    "COMPLETED": 55
+   }
+  },
+  "mpk_exgate": {
+   "n": 43,
+   "core_h": 14.425555555555551,
+   "gpu_h": 0.0,
+   "mem_gbh": 28.851111111111102,
+   "states": {
+    "CANCELLED": 1,
+    "COMPLETED": 42
+   }
+  },
+  "mpk_exgate_agg": {
+   "n": 1,
+   "core_h": 0.20583333333333334,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.8233333333333334,
+   "states": {
+    "CANCELLED": 1
+   }
+  },
+  "mpk_exmatched": {
+   "n": 7,
+   "core_h": 10.255555555555556,
+   "gpu_h": 0.0,
+   "mem_gbh": 30.766666666666666,
+   "states": {
+    "RESIZING": 1,
+    "COMPLETED": 6
+   }
+  },
+  "mpk_exstreams": {
+   "n": 21,
+   "core_h": 45.17777777777777,
+   "gpu_h": 0.0,
+   "mem_gbh": 180.71111111111108,
+   "states": {
+    "COMPLETED": 21
+   }
+  },
+  "mpk_fig1data": {
+   "n": 3,
+   "core_h": 1.2733333333333334,
+   "gpu_h": 0.0,
+   "mem_gbh": 5.093333333333334,
+   "states": {
+    "FAILED": 1,
+    "COMPLETED": 2
+   }
+  },
+  "mpk_gen_ctx2": {
+   "n": 2,
+   "core_h": 41.28888888888889,
+   "gpu_h": 0.0,
+   "mem_gbh": 247.73333333333332,
+   "states": {
+    "COMPLETED": 2
+   }
+  },
+  "mpk_ioprobe": {
+   "n": 1,
+   "core_h": 0.6766666666666666,
+   "gpu_h": 0.0,
+   "mem_gbh": 1.3533333333333333,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_ioprobe2": {
+   "n": 1,
+   "core_h": 0.0022222222222222222,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.0044444444444444444,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_kappa_agg": {
+   "n": 7,
+   "core_h": 0.005555555555555556,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.011111111111111112,
+   "states": {
+    "COMPLETED": 7
+   }
+  },
+  "mpk_kappa_build": {
+   "n": 2,
+   "core_h": 0.3755555555555556,
+   "gpu_h": 0.0,
+   "mem_gbh": 1.5022222222222223,
+   "states": {
+    "COMPLETED": 2
+   }
+  },
+  "mpk_kappa_ed": {
+   "n": 1,
+   "core_h": 0.0,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.0,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_konio_seeds": {
+   "n": 22,
+   "core_h": 1046.1088888888887,
+   "gpu_h": 0.0,
+   "mem_gbh": 4445.962777777778,
+   "states": {
+    "COMPLETED": 22
+   }
+  },
+  "mpk_nsd_publish": {
+   "n": 5,
+   "core_h": 0.8566666666666667,
+   "gpu_h": 0.0,
+   "mem_gbh": 1.7133333333333334,
+   "states": {
+    "CANCELLED": 2,
+    "COMPLETED": 3
+   }
+  },
+  "mpk_nsd_seed0_reuse": {
+   "n": 2,
+   "core_h": 0.15722222222222224,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.6288888888888889,
+   "states": {
+    "CANCELLED": 1,
+    "COMPLETED": 1
+   }
+  },
+  "mpk_nsd_seed_audit": {
+   "n": 11,
+   "core_h": 2.3755555555555556,
+   "gpu_h": 0.0,
+   "mem_gbh": 4.751111111111111,
+   "states": {
+    "FAILED": 1,
+    "COMPLETED": 8,
+    "CANCELLED": 2
+   }
+  },
+  "mpk_nsd_seed_fit": {
+   "n": 33,
+   "core_h": 49.56888888888889,
+   "gpu_h": 0.0,
+   "mem_gbh": 99.13777777777779,
+   "states": {
+    "COMPLETED": 28,
+    "CANCELLED": 5
+   }
+  },
+  "mpk_nsd_seed_recover": {
+   "n": 5,
+   "core_h": 0.9666666666666668,
+   "gpu_h": 0.0,
+   "mem_gbh": 1.9333333333333336,
+   "states": {
+    "COMPLETED": 3,
+    "CANCELLED": 1,
+    "PENDING": 1
+   }
+  },
+  "mpk_nsd_seed_report": {
+   "n": 1,
+   "core_h": 0.0,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.0,
+   "states": {
+    "PENDING": 1
+   }
+  },
+  "mpk_nsd_texture": {
+   "n": 17,
+   "core_h": 31.053333333333335,
+   "gpu_h": 0.0,
+   "mem_gbh": 124.21333333333334,
+   "states": {
+    "COMPLETED": 14,
+    "CANCELLED": 3
+   }
+  },
+  "mpk_nsd_texture_feat": {
+   "n": 10,
+   "core_h": 6.015555555555556,
+   "gpu_h": 1.503888888888889,
+   "mem_gbh": 24.062222222222225,
+   "states": {
+    "FAILED": 1,
+    "CANCELLED": 1,
+    "COMPLETED": 8
+   }
+  },
+  "mpk_nsd_texture_report": {
+   "n": 1,
+   "core_h": 0.3888888888888889,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.7777777777777778,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_pdf": {
+   "n": 6,
+   "core_h": 4.414444444444445,
+   "gpu_h": 0.0,
+   "mem_gbh": 17.65777777777778,
+   "states": {
+    "COMPLETED": 5,
+    "TIMEOUT": 1
+   }
+  },
+  "mpk_precision_probe": {
+   "n": 1,
+   "core_h": 0.0,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.0,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_precision_stage": {
+   "n": 1,
+   "core_h": 0.014444444444444444,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.028888888888888888,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_rebuild": {
+   "n": 1,
+   "core_h": 0.08555555555555555,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.3422222222222222,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_seed_native": {
+   "n": 9,
+   "core_h": 2.3088888888888888,
+   "gpu_h": 0.0,
+   "mem_gbh": 4.6177777777777775,
+   "states": {
+    "CANCELLED": 3,
+    "FAILED": 1,
+    "COMPLETED": 5
+   }
+  },
+  "mpk_seed_prepare": {
+   "n": 53,
+   "core_h": 11.855555555555558,
+   "gpu_h": 0.0,
+   "mem_gbh": 25.09111111111111,
+   "states": {
+    "COMPLETED": 45,
+    "FAILED": 3,
+    "CANCELLED": 4,
+    "PENDING": 1
+   }
+  },
+  "mpk_sub_ctx": {
+   "n": 1,
+   "core_h": 91.75111111111111,
+   "gpu_h": 0.0,
+   "mem_gbh": 550.5066666666667,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_svd_diagnostic": {
+   "n": 1,
+   "core_h": 0.06666666666666667,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.06666666666666667,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_texbehavior": {
+   "n": 3,
+   "core_h": 0.5863888888888888,
+   "gpu_h": 0.0,
+   "mem_gbh": 1.7633333333333332,
+   "states": {
+    "COMPLETED": 2,
+    "CANCELLED": 1
+   }
+  },
+  "mpk_texbehavior_batch": {
+   "n": 2,
+   "core_h": 1.6400000000000001,
+   "gpu_h": 0.0,
+   "mem_gbh": 4.92,
+   "states": {
+    "COMPLETED": 2
+   }
+  },
+  "mpk_texture": {
+   "n": 14,
+   "core_h": 2.4699999999999998,
+   "gpu_h": 0.0,
+   "mem_gbh": 7.409999999999999,
+   "states": {
+    "COMPLETED": 12,
+    "CANCELLED": 2
+   }
+  },
+  "mpk_texture_ablation": {
+   "n": 104,
+   "core_h": 66.10222222222222,
+   "gpu_h": 0.0,
+   "mem_gbh": 132.20444444444445,
+   "states": {
+    "CANCELLED": 6,
+    "COMPLETED": 97,
+    "FAILED": 1
+   }
+  },
+  "mpk_texture_batch": {
+   "n": 2,
+   "core_h": 1.8511111111111112,
+   "gpu_h": 0.0,
+   "mem_gbh": 5.553333333333333,
+   "states": {
+    "COMPLETED": 2
+   }
+  },
+  "mpk_texture_displacement": {
+   "n": 20,
+   "core_h": 3.6666666666666674,
+   "gpu_h": 0.0,
+   "mem_gbh": 7.333333333333335,
+   "states": {
+    "COMPLETED": 18,
+    "CANCELLED": 2
+   }
+  },
+  "mpk_texture_followup": {
+   "n": 16,
+   "core_h": 1.3366666666666667,
+   "gpu_h": 0.0,
+   "mem_gbh": 4.010000000000001,
+   "states": {
+    "COMPLETED": 13,
+    "CANCELLED": 3
+   }
+  },
+  "mpk_texture_lowlevel": {
+   "n": 1,
+   "core_h": 0.043055555555555555,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.5166666666666667,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_torchprobe": {
+   "n": 1,
+   "core_h": 1.6111111111111112,
+   "gpu_h": 0.0,
+   "mem_gbh": 3.2222222222222223,
+   "states": {
+    "CANCELLED": 1
+   }
+  },
+  "mpk_v7_balprobe": {
+   "n": 1,
+   "core_h": 2.15,
+   "gpu_h": 0.0,
+   "mem_gbh": 4.3,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_verify": {
+   "n": 11,
+   "core_h": 29.16222222222222,
+   "gpu_h": 0.0,
+   "mem_gbh": 94.63444444444444,
+   "states": {
+    "COMPLETED": 8,
+    "TIMEOUT": 1,
+    "CANCELLED": 2
+   }
+  },
+  "mpk_verify_clone": {
+   "n": 2,
+   "core_h": 2.102222222222222,
+   "gpu_h": 0.0,
+   "mem_gbh": 8.408888888888889,
+   "states": {
+    "COMPLETED": 2
+   }
+  },
+  "mpk_verify_syspy": {
+   "n": 1,
+   "core_h": 0.022222222222222223,
+   "gpu_h": 0.0,
+   "mem_gbh": 0.06666666666666667,
+   "states": {
+    "COMPLETED": 1
+   }
+  },
+  "mpk_zoo_kappa": {
+   "n": 3,
+   "core_h": 2.771111111111111,
+   "gpu_h": 0.0,
+   "mem_gbh": 8.313333333333333,
+   "states": {
+    "CANCELLED": 1,
+    "COMPLETED": 2
+   }
+  },
+  "mpk_zoo_span": {
+   "n": 2,
+   "core_h": 6.74,
+   "gpu_h": 0.0,
+   "mem_gbh": 20.22,
+   "states": {
+    "COMPLETED": 2
+   }
+  }
+ }
+}

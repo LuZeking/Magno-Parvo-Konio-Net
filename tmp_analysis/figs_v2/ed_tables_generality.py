@@ -1,4 +1,4 @@
-"""Extended Data Tables 13 (subspace behaviour), 14 (unit-split behaviour) and 15 (cortex) for the generality test.
+"""Extended Data Table 3 (subspace behaviour), 14 (unit-split behaviour) and 15 (cortex) for the generality test.
 
 Reads only the committed results/figures_v2/{subspace_behaviour,generality_behaviour,generality_cortex,subspace_cortex}.json;
 replaces or inserts the three tables in results/figures_v2/ed_tables.md (then run insert_ed_tables.py).
@@ -84,7 +84,7 @@ def table13(sub):
         rows.append(f"| {LABEL[key]} | {seeds[0]['n_units']} | {f['trained']:.3f} | {f['rate_w0']:.3f} | {f['rate_w1']:.3f} | "
                     f"{f['span']:.3f} [{f['span_range'][0]:.2f}, {f['span_range'][1]:.2f}] | {exemplar_span(key)} | {f['rho']:.2f} | {gate_s} | {f['forced_span']:.3f} | "
                     f"{ref_s} | {vS:.2f} / {vT:.2f} | {sf:.2f} / {tf:.2f} | {fmt(unit)} | {len(seeds)} |")
-    cap = ("**Extended Data Table 13 | The readout span without a stream split: one gain on a network's own shape- and texture-predictive subspaces, head fixed.** "
+    cap = ("**Extended Data Table 3 | The readout span without a stream split: one gain on a network's own shape- and texture-predictive subspaces, head fixed.** "
            "For each frozen network with logits = W·y + b, the 15 discriminant directions of a 16-class shape LDA and of a 16-class texture LDA on the penultimate features y (PCA to 256 dimensions, Ledoit–Wolf shrinkage; fitted on one stratified half of the 1,200 cue-conflict images) are made mutually orthogonal by symmetric (Löwdin) orthogonalisation, giving orthonormal bases B_S and B_T (15 directions each) and the residual B_R. "
            "logits(w) = W·(P_R y + 2w·P_S y + 2(1 − w)·P_T y) + b with the network's own head untouched; w = 0.5 is the trained network. "
            "The rate is scored on the other half of the images (10 random splits, both directions; mean, with the range over splits and seeds in brackets), by the paper's primary estimator (112-class, decided images) for our networks and the Geirhos 16-class probability aggregation for the ImageNet networks; “forced-estimator span” is the same sweep on the forced two-way estimator. "
@@ -92,14 +92,14 @@ def table13(sub):
            "The two stratified halves share object and texture exemplars (98% and 100% of scored images; the 1,200 images reuse 160 object and 48 texture exemplars), so the span is also given with exemplars held out: fitted on images whose object and texture exemplars both lie outside one of three exemplar folds and scored on the images whose exemplars both lie inside it, ten repetitions, ungated (`docs/PLAN_EXEMPLAR_2026-09-21.md`; `results/figures_v2/exemplar_zoo.json`, `exemplar_streams.json`). "
            "“refit span” is the block-form lossy sum z(w) = [w·s + (1 − w)·t, B_R^T^y], s = B_S^T^y and t = B_T^T^y paired by discriminant rank, with a linear and a two-layer head refitted at each w (Methods 4.3 budget), our networks only; in parentheses the largest shortfall of validation accuracy, over w, from a head refitted on the unmixed features. "
            "“variance in S / T” is the fraction of the feature variance on the fitting half lying in each subspace; “order sensitivity” replaces the symmetric orthogonalisation by sequential Gram–Schmidt with the shape basis or the texture basis first. "
-           "“median-split gated span” is the gated span of the pre-specified unit-level rule of Extended Data Table 14 on the same networks and images. "
+           "“median-split gated span” is the gated span of the pre-specified unit-level rule of Supplementary Table S11 on the same networks and images. "
            "For the two-stream concatenation, which has no held-out natural-image features, the fraction of the shape basis's energy lying on stream-1 units (all-image bases; held-out bases in parentheses; range over seeds) replaces the gate. "
            "Pre-specification: `docs/PLAN_SUBSPACE_2026-09-15.md` (predictions P-A, P-A′, P-B, P-D). Source: `results/figures_v2/subspace_behaviour.json`, aggregated by `tmp_analysis/figs_v2/subspace_behaviour.py` from the outputs of `src/analysis/generality/subspace_factor.py`, `gain_accuracy.py` and `refit_sum.py` (`slurm/subspace_{cc,refit}.sh`); the per-network files are outside the repository.")
     return cap + "\n\n" + "\n".join(rows)
 
 
 def table14(beh):
-    """Unit-split rule (PLAN_GENERALITY D1-D3), formerly Extended Data Table 13."""
+    """Unit-split rule (PLAN_GENERALITY D1-D3), formerly Extended Data Table 3."""
     fam = {f["key"]: f for f in beh["families"]}
     rows = ["| network | units | trained rate | w = 0 | w = 1 | span (held-out) [range] | ρ(w, rate) | forced-estimator span | shape-leaning units | w within 5 pts of trained top-1 | refit span linear / two-layer | span, S = {d > 0} | span, top decile | seeds |",
             "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
@@ -133,10 +133,10 @@ def table14(beh):
                     f"{f['span']:.3f} [{f['span_range'][0]:.2f}, {f['span_range'][1]:.2f}] | {f['rho']:.2f} | {f['forced_span']:.3f} | "
                     f"{f['frac_shape_leaning']:.2f}" + (f" (S from stream 1: {f['frac_S_from_stream1']:.2f})" if f.get("frac_S_from_stream1") is not None else "")
                     + f" | {acc_s} | {ref_s} | {rule_s('positive')} | {rule_s('decile')} | {len(f['seeds'])} |")
-    cap = ("**Extended Data Table 14 | The readout span without a stream split under the pre-specified unit-level rule: fixed-head gain sweep on the shape- and texture-leaning halves of the units.** "
-           "The special case of Extended Data Table 13 in which the two subspaces are spanned by disjoint sets of units. Each unit of a network's penultimate layer is scored by the fraction of its variance between shape categories minus that between texture categories on the 1,200 cue-conflict images (one-way η²); the median split gives a shape-leaning half S and a texture-leaning half T. "
+    cap = ("**Supplementary Table S11 | The readout span without a stream split under the pre-specified unit-level rule: fixed-head gain sweep on the shape- and texture-leaning halves of the units.** "
+           "The special case of Extended Data Table 3 in which the two subspaces are spanned by disjoint sets of units. Each unit of a network's penultimate layer is scored by the fraction of its variance between shape categories minus that between texture categories on the 1,200 cue-conflict images (one-way η²); the median split gives a shape-leaning half S and a texture-leaning half T. "
            "logits(w) = head(g(w) ⊙ y) with g = 2w on S and 2(1 − w) on T, the network's own head untouched; w = 0.5 is the trained network. "
-           "The split is defined on one stratified half of the images and the rate scored on the other (10 random splits, both directions, the same splits as Extended Data Table 13; mean, with the range over splits and seeds in brackets). "
+           "The split is defined on one stratified half of the images and the rate scored on the other (10 random splits, both directions, the same splits as Extended Data Table 3; mean, with the range over splits and seeds in brackets). "
            "Rates by the paper's primary estimator (112-class, decided images) for our networks and the Geirhos 16-class probability aggregation for the ImageNet networks; “forced-estimator span” is the same sweep on the forced two-way estimator. "
            "“shape-leaning units” is the fraction of units with η²_shape > η²_texture on all images; for the two-stream concatenation the fraction of S that belongs to stream 1 is given in parentheses (P3). "
            "“w within 5 pts” is the w-range over which top-1 on held-out natural images (MiniEcoset validation; a stratified 10-per-class ILSVRC-2012 validation subset for the ImageNet networks) stays within 5 points of the trained value. "
@@ -184,12 +184,12 @@ def table15(ctx, sub_ctx=None):
     rows += cortex_rows(ctx, ["two_stream_diet", "single34", "rgb_tsn", "resnet50", "vit_b_16", "convnext_base"])
     sub_txt = ""
     if sub_ctx and sub_ctx.get("families"):
-        sub_txt = ("Upper block (subspace bands): the three bands are the shape-predictive subspace S = Y·B_S (15 dimensions), the texture-predictive subspace T = Y·B_T (15) and the residual R = Y·B_R of Extended Data Table 13 (bases fitted on all 1,200 images), with U_S = r²_{STR} − r²_{TR} and U_T = r²_{STR} − r²_{SR} from the three-band model and the two two-band models (random search, 30 and 20 samples); “shared” is r²_{STR} − U_S − U_T and “r²” the three-band model's noise-ceiling-normalised r². "
+        sub_txt = ("Upper block (subspace bands): the three bands are the shape-predictive subspace S = Y·B_S (15 dimensions), the texture-predictive subspace T = Y·B_T (15) and the residual R = Y·B_R of Extended Data Table 3 (bases fitted on all 1,200 images), with U_S = r²_{STR} − r²_{TR} and U_T = r²_{STR} − r²_{SR} from the three-band model and the two two-band models (random search, 30 and 20 samples); “shared” is r²_{STR} − U_S − U_T and “r²” the three-band model's noise-ceiling-normalised r². "
                    "w*_cortex there is the weight of the 15-dimensional lossy sum z(w) = w·s + (1 − w)·t alone. "
                    "Lower block (unit halves): ")
-    cap = ("**Extended Data Table 15 | Cortex without a stream split: the shape- and texture-predictive components as encoding bands.** "
+    cap = ("**Supplementary Table S12 | Cortex without a stream split: the shape- and texture-predictive components as encoding bands.** "
            + sub_txt +
-           "for each single-trunk network the penultimate units were split as in Extended Data Table 14 (all 1,200 images) and the two halves entered as two bands of a banded ridge model of every `nsdgeneral` voxel (same split, folds and alpha grid as Methods 4.5); "
+           "for each single-trunk network the penultimate units were split as in Supplementary Table S11 (all 1,200 images) and the two halves entered as two bands of a banded ridge model of every `nsdgeneral` voxel (same split, folds and alpha grid as Methods 4.5); "
            "U_shape and U_texture are the noise-ceiling-normalised unique variances and the index is (U_shape − U_texture)/(U_shape + U_texture), median over reliable voxels (noise ceiling > 0.1, ≥ 20 voxels), mean over eight subjects (seeds averaged per subject). "
            "Regions: V1–hV4 from `prf-visualrois`; ventral (VO1/2, PHC1/2), lateral (LO1/2, TO1/2) and dorsal (V3A/B, IPS0–2) from Kastner2015. "
            "The two-stream diet row applies the same computation to the magno (shape-biased) and parvo (texture-biased) bands of Fig. 3. "
@@ -216,16 +216,16 @@ def main():
     md_path = "results/figures_v2/ed_tables.md"
     md = open(md_path, encoding="utf8").read()
     # one-time renumbering of the two older tables (13 -> 14 unit split, 14 -> 15 cortex): drop them and re-emit
-    for old in ("Extended Data Table 14 | Cortex without a stream split: the shape- and texture-leaning halves",
-                "Extended Data Table 13 | The readout span without a stream split: fixed-head gain sweep on ten frozen"):
+    for old in ("Supplementary Table S11 | Cortex without a stream split: the shape- and texture-leaning halves",
+                "Extended Data Table 3 | The readout span without a stream split: fixed-head gain sweep on ten frozen"):
         md = re.sub(r"\*\*" + re.escape(old) + r".*?(?=\n\*\*Extended Data Table|\Z)", "", md, flags=re.S).rstrip("\n") + "\n"
-    md = upsert(md, "Extended Data Table 13 |", table13(sub))
-    md = upsert(md, "Extended Data Table 14 |", table14(beh))
+    md = upsert(md, "Extended Data Table 3 |", table13(sub))
+    md = upsert(md, "Supplementary Table S11 |", table14(beh))
     if os.path.exists("results/figures_v2/generality_cortex.json"):
         ctx = json.load(open("results/figures_v2/generality_cortex.json"))
         sub_ctx = json.load(open("results/figures_v2/subspace_cortex.json")) if os.path.exists("results/figures_v2/subspace_cortex.json") else None
         if ctx["families"]:
-            md = upsert(md, "Extended Data Table 15 |", table15(ctx, sub_ctx))
+            md = upsert(md, "Supplementary Table S12 |", table15(ctx, sub_ctx))
     open(md_path, "w", encoding="utf8").write(md)
     print("updated", md_path)
 

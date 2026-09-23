@@ -37,6 +37,7 @@ ORDER = [("concat", "two-stream, diet (streams concatenated)", S.DIET),
          ("convnext_small", "ImageNet ConvNeXt-S", S.PUB),
          ("resnet50", "ImageNet ResNet-50", S.PUB),
          ("vgg16", "ImageNet VGG-16", S.PUB)]
+GATE = {}
 IMAGENET = ["vit_b_16", "resnet152", "convnext_base", "convnext_small", "resnet50", "vgg16"]
 IN_COL = {"vit_b_16": "#000000", "resnet152": "#0072B2", "convnext_base": "#009E73", "convnext_small": "#56B4E9",
           "resnet50": "#D55E00", "vgg16": "#CC79A7"}
@@ -93,6 +94,8 @@ def load_ctx():
 
 
 def main():
+    global GATE
+    GATE = {g["tag"]: g for g in json.load(open("results/figures_v2/exemplar_gate.json"))["networks"]}
     sub = json.load(open("results/figures_v2/subspace_behaviour.json"))
     fam = {f["key"]: f for f in sub["families"]}
     ws = np.array(fam["resnet50"]["seeds"][0]["ws"])
@@ -159,9 +162,12 @@ def main():
         ax_b.plot(0.5, f["trained"], "o", color=IN_COL[key], ms=4, mec="white", mew=0.6, zorder=5)
         ends.append((float(curve[-1]), ORDER[[k for k, _, _ in ORDER].index(key)][1].replace("ImageNet ", ""), IN_COL[key]))
         acc = [s["gain_accuracy"] for s in f["seeds"] if s.get("gain_accuracy")]
-        if acc:
+        if acc:                         # dotted: top-1 on bases fitted on all images
             d = np.mean([(np.array(a["top1"]) - a["trained_top1"]) * 100 for a in acc], 0)
-            ax_b2.plot(ws, d, "-", color=IN_COL[key], lw=1.0)
+            ax_b2.plot(ws, d, ":", color=IN_COL[key], lw=0.8)
+        g = GATE.get(f"tv_{key}")       # solid: mean top-1 over the 30 held-out fold bases the curves use
+        if g is not None:
+            ax_b2.plot(ws, (np.array(g["fold_top1_mean"]) - g["trained_top1"]) * 100, "-", color=IN_COL[key], lw=1.0)
     ends.sort()
     ypos = [e[0] for e in ends]
     for i in range(1, len(ypos)):
@@ -176,7 +182,7 @@ def main():
     ax_b2.set_ylim(-6, 2); ax_b2.set_yticks([-5, 0])
     ax_b2.set_xticks([0, 0.5, 1]); ax_b2.set_xlabel("gain weight w on the shape subspace")
     ax_b2.set_ylabel("Δ top-1\n(points)", fontsize=6.5)
-    ax_b2.text(0.02, -4.6, "5-point budget", fontsize=5.6, color=S.MUTED, va="bottom")
+    ax_b2.text(0.02, -5.6, "5-pt budget · solid held-out,\ndotted all-image bases", fontsize=5.6, color=S.MUTED, va="bottom")
     S.letter(ax_b, "b", dx=-0.09, title="the ranking is not readout-invariant")
 
     # ---------------- (c) cortex index profile

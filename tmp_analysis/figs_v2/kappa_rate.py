@@ -8,7 +8,7 @@ labels, groups), evaluates predictions K-1 to K-6 of `docs/PLAN_KAPPA_2026-09-17
 writes `results/figures_v2/kappa_rate.json` plus a markdown table.
 
 The zoo is a fixed set of networks, so across-network statistics are descriptive and carry no
-p-values, as in Extended Data Table 16. The only sampled unit is the ten observers; kappa
+p-values, as in Extended Data Table 4. The only sampled unit is the ten observers; kappa
 intervals are percentile bootstraps over them.
 """
 from __future__ import annotations

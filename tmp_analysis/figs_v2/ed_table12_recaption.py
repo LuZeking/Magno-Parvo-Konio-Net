@@ -1,4 +1,4 @@
-"""Rewrite Extended Data Table 12's caption from the committed aggregate, leaving its rows alone.
+"""Rewrite Extended Data Table 2's caption from the committed aggregate, leaving its rows alone.
 
   PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/ed_table12_recaption.py
 
@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from readout_w_cortex import caption12  # noqa: E402
 
 MD = "results/figures_v2/ed_tables.md"
-HEAD = "**Extended Data Table 12 |"
+HEAD = "**Extended Data Table 2 |"
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
     j = md.index("\n\n", i)                       # the caption is one paragraph
     md = md[:i] + caption12(out) + md[j:]
     open(MD, "w", encoding="utf8").write(md)
-    print(f"recaptioned Extended Data Table 12 in {MD}")
+    print(f"recaptioned Extended Data Table 2 in {MD}")
 
 
 if __name__ == "__main__":

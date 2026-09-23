@@ -37,6 +37,11 @@ def main():
     nets = sorted(ex["networks"], key=lambda m: m["trained"])
     for m in nets:
         m["family"] = fam[m["tag"]]
+    gate = {g["tag"]: g for g in json.load(open("results/figures_v2/exemplar_gate.json"))["networks"]}
+    gs = json.load(open("results/figures_v2/exemplar_gate.json"))["summary"]["heldout"]
+    fu = json.load(open("results/figures_v2/exemplar_floors.json"))["units"]
+    for m in nets:                      # E1 under the gate measured on the same held-out bases (addendum C)
+        m["hg"] = gate[m["tag"]]["heldout"]
     rk, n = ex["stats"]["ranking"], len(nets)
     im = [m for m in nets if m["group"] == "imagenet"]
 
@@ -48,7 +53,7 @@ def main():
     # ---- a
     ax_a.axvspan(*HUMAN, color="#E8E8E8", lw=0, zorder=0)
     for i, m in enumerate(nets):
-        col, e0, e1 = COL[m["group"]], m["spans"]["E0"], m["spans"]["E1"]
+        col, e0, e1 = COL[m["group"]], m["spans"]["E0"], m["hg"]
         ax_a.plot([e0["texture_end"], e0["shape_end"]], [i, i], color=SHARED, lw=5.0, solid_capstyle="butt", zorder=1)
         ax_a.plot([e1["texture_end"], e1["shape_end"]], [i, i], color=col, lw=2.6, solid_capstyle="butt", zorder=2)
         ax_a.plot(m["trained"], i, marker=MARK[m["family"]], ms=3.6, mfc="white", mec=col, mew=0.9, zorder=3)
@@ -67,29 +72,30 @@ def main():
                Line2D([], [], marker="o", ls="", mfc="white", mec=S.PUB, label="trained readout, convolutional"),
                Line2D([], [], marker="^", ls="", mfc="white", mec=S.PUB, label="trained readout, attention-based"),
                Line2D([], [], color=S.MATCH, lw=2.6, label="ResNet-50, V2 training recipe"),
-               Line2D([], [], color=S.HIGHSF, lw=2.6, label="Stylized-ImageNet ResNet-50s (Geirhos et al., 2019)")]
+               Line2D([], [], color=S.HIGHSF, lw=2.6, label="Stylized-ImageNet ResNet-50s (Geirhos et al., 2018a)")]
     fig.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.5, 0.004), ncol=3, fontsize=5.8, frameon=False, columnspacing=1.6)
     ax_a.text(-0.42, 1.0, "a", transform=ax_a.transAxes, fontsize=10, fontweight="bold", va="bottom")
 
     # ---- b
     for m in nets:
-        ax_b.plot(m["trained"], m["spans"]["E1"]["gated"], marker=MARK[m["family"]], ms=4, ls="",
+        ax_b.plot(m["trained"], m["hg"]["gated_span"], marker=MARK[m["family"]], ms=4, ls="",
                   mfc=COL[m["group"]] if m["group"] != "imagenet" else "white", mec=COL[m["group"]], mew=0.9)
     ax_b.axhline(0.20, color=S.RULE, lw=0.7, ls="--", zorder=0)
     ax_b.set_xlabel("trained rate")
     ax_b.set_ylabel("gated span, exemplars held out")
     ax_b.set_xlim(0, 1); ax_b.set_ylim(0, 0.5)
-    g = np.array([m["spans"]["E1"]["gated"] for m in im]); tr = np.array([m["trained"] for m in im])
+    g = np.array([m["hg"]["gated_span"] for m in im]); tr = np.array([m["trained"] for m in im])
     rho = spearmanr(g, tr)[0]
-    fl = rk["floor_primary"]
+    fi, ft = fu["image"], fu["texture_exemplar"]
     ax_b.text(0.98, 0.97, f"ImageNet-trained, n = {len(im)}\nspan {g.min():.2f}–{g.max():.2f} (median {np.median(g):.2f}); "
-              f"ρ(span, rate) {rho:+.2f}\nτ(trained, shape-end rank) {rk['tau_trained_vs_E1_shape_end']:.2f}\n"
-              f"{100 * rk['E1_frac_reversed']:.0f}% of pairs reverse order\n(resampling floor {100 * fl['mean']:.1f}% "
-              f"[{100 * fl['ci'][0]:.1f}, {100 * fl['ci'][1]:.1f}])",
+              f"ρ(span, rate) {rho:+.2f}\nτ(trained, shape-end rank) {gs['tau']:.2f}\n"
+              f"{100 * gs['frac_reversed']:.0f}% of pairs reverse (floor {100 * fi['floor_all']:.1f}% images,\n"
+              f"{100 * ft['floor_all']:.1f}% texture exemplars); resolved pairs:\n"
+              f"{ft['observed']['heldout_gate']['n_resolved_reversed']}/{ft['n_resolved']} reverse (floor {100 * ft['floor_resolved']:.2f}%)",
               transform=ax_b.transAxes, fontsize=5.5, va="top", ha="right", color=S.MUTED)
     ax_b.text(-0.32, 1.0, "b", transform=ax_b.transAxes, fontsize=10, fontweight="bold", va="bottom")
     print(f"  (b) n={len(im)} E1 gated {g.min():.3f}-{g.max():.3f} median {np.median(g):.3f} n>=0.20 {(g >= 0.2).sum()} "
-          f"rho {rho:+.3f} tau {rk['tau_trained_vs_E1_shape_end']:.3f} reversed {rk['E1_frac_reversed']:.3f}")
+          f"rho {rho:+.3f} tau {gs['tau']:.3f} reversed {gs['frac_reversed']:.3f}")
 
     # ---- c
     ax_c.axhline(0, color=S.RULE, lw=0.7, zorder=0)

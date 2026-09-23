@@ -8,7 +8,7 @@ keeps every image: for each image compare the logit of the shape category with
 the logit of the texture category and score which is larger. Both estimators are
 reported; the forced one is the referees' request (NMI review v2, major 5).
 
-Writes results/figures_v2/forced_choice.json and appends Extended Data Table 10
+Writes results/figures_v2/forced_choice.json and appends Supplementary Table S9
 to results/figures_v2/ed_tables.md.
 
 Usage: PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/forced_choice.py
@@ -75,7 +75,7 @@ ROWS = [
 
 def main():
     res = {}
-    lines = ["**Extended Data Table 10 | Cue-conflict shape bias under the forced two-way estimator.** The primary estimator (Methods 4.3) restricts the logits to the 16 categories, takes the argmax, and scores shape against texture over the images decided as one of the two, so images decided as a third category drop out of the denominator (“decided”). The forced estimator keeps all 1,200 images and scores, per image, whether the logit of the shape category exceeds the logit of the texture category. Mean over seeds [range]. Source: the stored per-image logits in `results/cue_conflict*/`.", "",
+    lines = ["**Supplementary Table S9 | Cue-conflict shape bias under the forced two-way estimator.** The primary estimator (Methods 4.3) restricts the logits to the 16 categories, takes the argmax, and scores shape against texture over the images decided as one of the two, so images decided as a third category drop out of the denominator (“decided”). The forced estimator keeps all 1,200 images and scores, per image, whether the logit of the shape category exceeds the logit of the texture category. Mean over seeds [range]. Source: the stored per-image logits in `results/cue_conflict*/`.", "",
              "| model / readout | restricted (primary) | decided / 1,200 | forced two-way | seeds |", "|---|---|---|---|---|"]
     for lab, pat, cond in ROWS:
         rows = arm(pat, cond)
@@ -101,13 +101,13 @@ def main():
     import re as _re
     md = open("results/figures_v2/ed_tables.md", encoding="utf8").read()
     block = "\n".join(lines).strip() + "\n"
-    pat = _re.compile(r"\*\*Extended Data Table 10 \|.*?(?=\n\*\*Extended Data Table|\Z)", _re.S)
+    pat = _re.compile(r"\*\*Supplementary Table S9 \|.*?(?=\n\*\*Extended Data Table|\Z)", _re.S)
     if pat.search(md):
         md = pat.sub(lambda m: block, md, count=1)
     else:
         md = md.rstrip() + "\n\n" + block
     open("results/figures_v2/ed_tables.md", "w", encoding="utf8").write(md)
-    print("upserted Extended Data Table 10")
+    print("upserted Supplementary Table S9")
 
 
 if __name__ == "__main__":

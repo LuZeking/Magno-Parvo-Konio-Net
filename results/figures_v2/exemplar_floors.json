@@ -1,0 +1,82 @@
+{
+ "plan": "docs/PLAN_EXEMPLAR_2026-09-21.md addendum C (post hoc)",
+ "n_networks": 38,
+ "n_pairs": 703,
+ "n_draws": 2000,
+ "source": "/scratch/byrong/mpk/exemplar/results/2026-09-21_exemplar",
+ "units": {
+  "image": {
+   "n_clusters": 1200,
+   "floor_all": 0.08886770981507823,
+   "floor_all_ci": [
+    0.059743954480796585,
+    0.12233285917496443
+   ],
+   "n_resolved": 490,
+   "floor_resolved": 0.003329591836734694,
+   "observed": {
+    "allimage_gate": {
+     "all": 0.18634423897581792,
+     "n_all": 131,
+     "resolved": 0.0836734693877551,
+     "n_resolved_reversed": 41
+    },
+    "heldout_gate": {
+     "all": 0.18634423897581792,
+     "n_all": 131,
+     "resolved": 0.07959183673469387,
+     "n_resolved_reversed": 39
+    }
+   }
+  },
+  "object_exemplar": {
+   "n_clusters": 160,
+   "floor_all": 0.09073968705547654,
+   "floor_all_ci": [
+    0.059743954480796585,
+    0.12660028449502134
+   ],
+   "n_resolved": 486,
+   "floor_resolved": 0.0034218106995884774,
+   "observed": {
+    "allimage_gate": {
+     "all": 0.18634423897581792,
+     "n_all": 131,
+     "resolved": 0.08024691358024691,
+     "n_resolved_reversed": 39
+    },
+    "heldout_gate": {
+     "all": 0.18634423897581792,
+     "n_all": 131,
+     "resolved": 0.07613168724279835,
+     "n_resolved_reversed": 37
+    }
+   }
+  },
+  "texture_exemplar": {
+   "n_clusters": 48,
+   "floor_all": 0.13611877667140826,
+   "floor_all_ci": [
+    0.08250355618776671,
+    0.20910384068278806
+   ],
+   "n_resolved": 389,
+   "floor_resolved": 0.00472107969151671,
+   "observed": {
+    "allimage_gate": {
+     "all": 0.18634423897581792,
+     "n_all": 131,
+     "resolved": 0.033419023136246784,
+     "n_resolved_reversed": 13
+    },
+    "heldout_gate": {
+     "all": 0.18634423897581792,
+     "n_all": 131,
+     "resolved": 0.030848329048843187,
+     "n_resolved_reversed": 12
+    }
+   }
+  }
+ },
+ "read_from_copy": "byte-identical local copies (Lustre stalled on the day); same files"
+}

@@ -7,7 +7,7 @@ subject; arms are diet (dkl_bcs) and no diet (dkl_base), final checkpoints.
 Behaviour: w*_trial per human observer (trial-fit, diet final checkpoints, 3 seeds) and
 the shape-bias-rate sweep over w (results/fusion_sweep).
 
-Writes results/figures_v2/readout_w_cortex.json, appends Extended Data Table 12 to
+Writes results/figures_v2/readout_w_cortex.json, appends Extended Data Table 2 to
 results/figures_v2/ed_tables.md and draws results/figures_v2/figE5_readout_w.{pdf,png}.
 Usage: PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/readout_w_cortex.py
 """
@@ -34,7 +34,7 @@ ARM_OF = {"dkl_bcs": "diet", "dkl_base": "no diet"}
 
 
 def caption12(out):
-    """Extended Data Table 12's caption, built from the aggregated result so a rerun reproduces it.
+    """Extended Data Table 2's caption, built from the aggregated result so a rerun reproduces it.
 
     The concatenation is a reference, not a bound: every mixture is a linear map of it, but the two
     models are regularised separately, so the fitted concatenation can be beaten. How often, and by
@@ -61,7 +61,7 @@ def caption12(out):
     n_d, n_nd = len(sd["delta_ext_minus_v1"]), len(snd["delta_ext_minus_v1"])
     mi = "\u2212"
     return (
-        "**Extended Data Table 12 | The readout weight cortex prefers against the one behaviour prefers.** "
+        "**Extended Data Table 2 | The readout weight cortex prefers against the one behaviour prefers.** "
         "For each mixing weight w the classifier's own input z(w) = w\u00b7y\u2081 + (1 \u2212 w)\u00b7y\u2082 "
         "(y\u2081 magno stream output, y\u2082 parvo stream output, 512-d each) is the design of a ridge encoding "
         "model of every nsdgeneral voxel (same split, folds and alpha grid as the banded model; Methods 4.5). "
@@ -221,8 +221,8 @@ def main():
     lines[0] = caption12(out)
     json.dump(out, open("results/figures_v2/readout_w_cortex.json", "w"), indent=1)
     md = open("results/figures_v2/ed_tables.md", encoding="utf8").read()
-    if "Extended Data Table 12" in md:
-        md = md[:md.index("**Extended Data Table 12")]
+    if "Extended Data Table 2" in md:
+        md = md[:md.index("**Extended Data Table 2")]
     open("results/figures_v2/ed_tables.md", "w", encoding="utf8").write(md.rstrip() + "\n\n" + "\n".join(lines) + "\n")
     print("\n".join(lines))
 
