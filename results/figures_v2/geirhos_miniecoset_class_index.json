@@ -1,0 +1,22 @@
+{
+ "source": "texture2shape_miniecoset_256px.h5",
+ "note": "Geirhos category -> MiniEcoset class index; written by load_class_index() from the MiniEcoset HDF5 so that the claim verifier needs no dataset",
+ "class_index": {
+  "airplane": 89,
+  "bear": 103,
+  "bicycle": 93,
+  "bird": 20,
+  "boat": 104,
+  "bottle": 105,
+  "car": 106,
+  "cat": 7,
+  "chair": 102,
+  "clock": 64,
+  "dog": 5,
+  "elephant": 4,
+  "keyboard": 100,
+  "knife": 72,
+  "oven": 101,
+  "truck": 87
+ }
+}

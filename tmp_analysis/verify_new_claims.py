@@ -24,6 +24,19 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scipy.stats import spearmanr, wilcoxon
 
 FAILS: list[str] = []
+SKIPS: list[tuple[str, str]] = []
+
+# Inputs that are not in the repository (2026-09-23; v8 review, R3). A clean clone has none of them, so the blocks
+# that need them are skipped and listed, never passed: the NSD-derived per-voxel encoding arrays
+# (results/encoding*/*.npz, git-ignored, to be deposited at the DOI of the Data availability statement).
+NSD_ARRAYS = "NSD-derived per-voxel encoding arrays (results/encoding/, results/encoding_cc/; not redistributed here)"
+
+
+def _have(name: str) -> bool:
+    if name == NSD_ARRAYS:
+        files = glob.glob("results/encoding_cc/*.npz") + glob.glob("results/encoding/*.npz")
+        return bool(files) and all(os.path.exists(f) for f in files)
+    raise KeyError(name)
 
 
 def chk(name: str, got: float, want: float, tol: float) -> None:
@@ -578,7 +591,9 @@ def check_untrained_anchor() -> None:
                 FAILS.append(f"{name}: {k} missing or shape-mismatched")
     if worst != 0.0:
         FAILS.append(f"directories diverge: max|r2 diff| = {worst:.3e}")
-    print(f"  {'OK' if worst == 0.0 else 'FAIL'}  {len(both)} shared files, "
+    if not both:
+        FAILS.append("cross-directory identity: no shared files to compare")
+    print(f"  {'OK' if worst == 0.0 and both else 'FAIL'}  {len(both)} shared files, "
           f"max |r2 diff| = {worst:.3e}")
 
 
@@ -619,8 +634,9 @@ def check_ood() -> None:
         chk(f"clean acc {lab}", float(c), want, 0.0005)
 
 
-PERIMAGE_DIR = ("/scratch/byrong/mpk/perimage_behavior/results/"
-                "2026-09-07_geirhos_perimage")
+# the summary JSONs of the per-image run (/scratch/byrong/mpk/perimage_behavior/results/2026-09-07_geirhos_perimage/),
+# copied into the repository on 2026-09-23 so that the verifier reads no private path
+PERIMAGE_DIR = os.environ.get("PERIMAGE_DIR", "results/perimage_behavior")
 
 
 def check_perimage() -> None:
@@ -972,8 +988,14 @@ def _class_index() -> dict:
     stored logits below and must equal the stored JSON, which validates it."""
     global _CI
     if _CI is None:
-        from src.analysis.behavior.cue_conflict import load_class_index
-        _CI = load_class_index()
+        # the 16-entry mapping, written from the MiniEcoset h5 by load_class_index() on 2026-09-23 and committed,
+        # so a clean clone needs no dataset; recomputed from the h5 where it is present, and the two must agree
+        _CI = json.load(open("results/figures_v2/geirhos_miniecoset_class_index.json"))["class_index"]
+        from src.analysis.behavior.cue_conflict import MINIECOSET_H5
+        if os.path.exists(MINIECOSET_H5):
+            from src.analysis.behavior.cue_conflict import load_class_index
+            if load_class_index() != _CI:
+                FAILS.append("committed class index differs from the MiniEcoset h5")
     return _CI
 
 
@@ -1424,7 +1446,7 @@ RW_KAST = {"ventral (VO, PHC)": [8, 9, 10, 11], "lateral (LO, TO)": [12, 13, 14,
 
 
 def check_readout_w() -> None:
-    """Results 2.4 'Cortex and behaviour prefer different readout weights' / ED Fig. 5 /
+    """Results 2.4 'The readout weight cortex prefers descends the hierarchy' / ED Fig. 5 /
     ED Table 12, from results/figures_v2/readout_w_cortex.json. The per-subject fits it
     aggregates (READOUT_W_DIR, outside the repository) are re-reduced when present and
     must give the same w*; the behaviour side is recomputed from results/fit_w_observers
@@ -1475,8 +1497,17 @@ def check_readout_w() -> None:
     chk("behaviour w* median", np.median(bw), 0.67, T2); chk("behaviour w* min", bw.min(), 0.49, T2); chk("behaviour w* max", bw.max(), 0.89, T2)
     ext = np.array(S_["w_extrastriate"])
     chk("cortex w* extrastriate min", ext.min(), 0.27, T2); chk("cortex w* extrastriate max", ext.max(), 0.40, T2)
-    from scipy.stats import mannwhitneyu
-    chk("exact Mann-Whitney p, cortex vs behaviour (x1e5)", 1e5 * mannwhitneyu(ext, bw, alternative="two-sided", method="exact").pvalue, 4.6, 0.05)
+    # the behaviour-optimal weight is not identified (v8 review, 2026-09-23): per-fit bootstrap intervals,
+    # coverage of the extrastriate optimum and the label-permutation null, over the 30 diet observer-runs
+    widths, cov, sig = [], 0, 0
+    for dd in _jsons("results/fit_w_observers/dkl_bcs_seed?_final_wfit.json"):
+        for o in dd["observers"].values():
+            lo, hi = o["trial_fit"]["boot_ci"]; widths.append(hi - lo); cov += lo <= 0.33 <= hi
+            sig += o["permutation_null"]["p_perm"] < 0.05
+    chk("behaviour w*: observer-runs", float(len(widths)), 30, 0)
+    chk("behaviour w*: mean bootstrap CI width", float(np.mean(widths)), 0.69, T2)
+    chk("behaviour w*: CIs covering 0.33 (of 30)", float(cov), 23, 0)
+    chk("behaviour w*: fits beating the permutation null (of 30)", float(sig), 2, 0)
     cvb = W["stats"]["cortex_vs_behaviour"]
     if cvb.get("mannwhitney_method") != "exact" or abs(cvb["mannwhitney_p"] - 4.570592805886923e-05) > 1e-12:
         FAILS.append("readout_w_cortex.json: Mann-Whitney p not the exact value")
@@ -1485,7 +1516,6 @@ def check_readout_w() -> None:
         sw = sorted(json.load(open(f))["sweep"], key=lambda r: r["w"]); sweeps.append([p["shape_bias"] for p in sw])
     sw_w = np.array([p["w"] for p in sw]); rate = np.mean(sweeps, 0)
     chk("rate at the cortex weight", float(np.interp(np.median(ext), sw_w, rate)), 0.56, T2)
-    chk("rate at the behaviour weight", float(np.interp(np.median(bw), sw_w, rate)), 0.78, T2)
     B = W["arms"]["no diet"]
     chk("no-diet w* V1", B["V1"]["w_star_median"], 0.65, T2)
     nb = [B[k]["w_star_median"] for k in ext_names]
@@ -1569,9 +1599,16 @@ def check_prf_input_null() -> None:
     for phrase in ("the dissociation is something training installs",
                    "so training amplifies a dissociation", "and neither is present without the diet",
                    "the ceiling any mixture can reach", "the ceiling for any mixture",
-                   "Mann–Whitney p = .0004", "can be moved past the trained rate of every other"):
+                   "Mann–Whitney p = .0004", "can be moved past the trained rate of every other",
+                   "Cortex and behaviour prefer different readout weights", "is not the one best predicting human choices",
+                   "Mann–Whitney p = .000046", "the magno-heavy end when fitted to human choices",
+                   "the weight behaviour prefers"):
         if phrase in note:
             FAILS.append(f"withdrawn wording still in the paper: '{phrase}'")
+    cap5 = open("results/figures_v2/figE5_readout_w_caption.md", encoding="utf8").read()
+    for phrase in ("Mann–Whitney p = .0004", "optima do not overlap"):
+        if phrase in cap5:
+            FAILS.append(f"withdrawn wording still in the ED Fig. 5 caption: '{phrase}'")
 
 
 def check_misc() -> None:
@@ -1973,11 +2010,18 @@ def check_exemplar_figures() -> None:
             FAILS.append(f"{f} caption still describes the exemplar-shared drawing: '{phrase}'")
 
 
+def _run(fn, needs=()) -> None:
+    missing = [n for n in needs if not _have(n)]
+    if missing:
+        print(f"\n[SKIP] {fn.__name__}: needs {'; '.join(missing)}")
+        SKIPS.append((fn.__name__, "; ".join(missing)))
+        return
+    fn()
+
+
 def main() -> int:
-    check_recovery()
-    check_production_statistic()
-    check_effect_size()
-    check_untrained_anchor()
+    for fn in (check_recovery, check_production_statistic, check_effect_size, check_untrained_anchor):
+        _run(fn, needs=(NSD_ARRAYS,))
     check_ood()
     check_perimage()
     check_generality()
@@ -1986,7 +2030,7 @@ def main() -> int:
     check_subspace_cortex()
     check_table1()
     check_two_by_two()
-    check_gradient_extras()
+    _run(check_gradient_extras, needs=(NSD_ARRAYS,))
     check_readout_ladder()
     check_readout_w()
     check_prf_input_null()
@@ -1997,6 +2041,10 @@ def main() -> int:
     check_span_model()
     check_exemplar()
     check_exemplar_figures()
+    if SKIPS:
+        print(f"\nSKIPPED {len(SKIPS)} blocks for inputs not in the repository:")
+        for fn, need in SKIPS:
+            print(f"  {fn}: {need}")
     print("\nFAILURES:", FAILS if FAILS else "none")
     return 1 if FAILS else 0
 

@@ -38,7 +38,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from src.analysis.encoding import dkl_frontend, features
+# dkl_frontend and features pull in the training stack (dvd_scale_free); they are imported where the
+# model is run, so the scoring helpers (shape_bias, load_class_index, GEIRHOS_CLASSES) import without it.
 
 
 def stream_in_channels(args) -> tuple[int, int]:
@@ -59,7 +60,8 @@ CUE_CONFLICT_DIR = os.environ.get(
     "/scratch/byrong/encoding/datasets/geirhos_cue_conflict/stimuli/"
     "style-transfer-preprocessed-512",
 )
-MINIECOSET_H5 = dkl_frontend.MINIECOSET_H5
+MINIECOSET_H5 = os.environ.get(   # the same default as dkl_frontend.MINIECOSET_H5
+    "MINIECOSET_H5", "/scratch/byrong/VST_data/VST_datasets/texture2shape_miniecoset_256px.h5")
 GEIRHOS_CLASSES = [
     "airplane", "bear", "bicycle", "bird", "boat", "bottle", "car", "cat",
     "chair", "clock", "dog", "elephant", "keyboard", "knife", "oven", "truck",
@@ -282,6 +284,7 @@ def write_report(logits, shapes, textures, class_index, args) -> None:
 
 
 def main():
+    from src.analysis.encoding import dkl_frontend, features
     p = argparse.ArgumentParser()
     p.add_argument("--checkpoint", default=None)
     p.add_argument("--model-name", required=True)

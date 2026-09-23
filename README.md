@@ -40,13 +40,25 @@ pip install -r requirements.txt
 PYTHONPATH=.:tmp_analysis python tmp_analysis/verify_new_claims.py
 ```
 
-Expected final line:
+Expected final lines from a clean clone:
 
 ```
+SKIPPED 5 blocks for inputs not in the repository:
+  check_recovery: NSD-derived per-voxel encoding arrays ...
+  ...
 FAILURES: none
 ```
 
-637 checks, about 95 seconds and 1.5 GB of memory on four CPU cores. If it takes
+From a clean clone the verifier runs 616 checks in about 40 seconds on four CPU
+cores, with no dataset, no GPU and no private path (tested with the authors'
+`/scratch` masked and `dvd_scale_free` not installed; 2026-09-23, job 26521631).
+That includes every exemplar-held-out number of Results 2.2 and 2.4, Figs. 2 and 6
+and Extended Data Fig. 6. Five blocks (142 checks: the cortical anchor, the
+production statistic, effect sizes, the recovery simulation and the gradient
+extras) need the NSD-derived per-voxel encoding arrays, which are not
+redistributed here; they are skipped and listed, never passed. With those arrays
+in `results/encoding/` and `results/encoding_cc/` all 758 checks run (65 s).
+A check that finds no input files fails rather than passing. If it takes
 tens of minutes instead, the cost is almost certainly not the arithmetic: one
 check imports `shape_bias`, and that module chain imports `torch` at module
 level, so a slow or contended filesystem under the interpreter turns a pure-numpy
@@ -56,7 +68,7 @@ otherwise fast filesystem before concluding anything about the analysis.
 It checks, among others: the §2.3 untrained cortical anchor (−0.544 normalised,
 −0.120 raw, 8/8 subjects at the exact Wilcoxon floor p = .0078); that
 `results/encoding/` and `results/encoding_cc/` are numerically identical across
-the 40 files they share (max |Δr²| = 0.000e+00); the §2.5 out-of-distribution
+the 40 files they share (max |Δr²| = 0.000e+00; needs the NSD arrays); the §2.5 out-of-distribution
 relative-accuracy AUCs and per-image human-correspondence percentages; that no
 effect size exceeds the |dz| = 6.60 the manuscript calls its largest; and, from
 `results/figures_v2/generality_behaviour.json` and `generality_cortex.json`, the
