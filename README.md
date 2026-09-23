@@ -49,7 +49,7 @@ SKIPPED 5 blocks for inputs not in the repository:
 FAILURES: none
 ```
 
-From a clean clone the verifier runs 616 checks in about 40 seconds on four CPU
+From a clean clone the verifier runs 673 checks in about 40 seconds on four CPU
 cores, with no dataset, no GPU and no private path (tested with the authors'
 `/scratch` masked and `dvd_scale_free` not installed; 2026-09-23, job 26521631).
 That includes every exemplar-held-out number of Results 2.2 and 2.4, Figs. 2 and 6
@@ -57,7 +57,7 @@ and Extended Data Fig. 6. Five blocks (142 checks: the cortical anchor, the
 production statistic, effect sizes, the recovery simulation and the gradient
 extras) need the NSD-derived per-voxel encoding arrays, which are not
 redistributed here; they are skipped and listed, never passed. With those arrays
-in `results/encoding/` and `results/encoding_cc/` all 758 checks run (65 s).
+in `results/encoding/` and `results/encoding_cc/` all 815 checks run (65 s).
 A check that finds no input files fails rather than passing. If it takes
 tens of minutes instead, the cost is almost certainly not the arithmetic: one
 check imports `shape_bias`, and that module chain imports `torch` at module
