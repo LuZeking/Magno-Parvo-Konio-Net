@@ -426,3 +426,20 @@ Magno-stream probe, seed means:
 - **Direction.** The control is no weaker on held-out exemplars; it closes slightly less of the gap.
 
 **Where it is reported:** Fig. 2e, its caption, and Results 2.2 (`results/figures_v2/exemplar_matched.json`).
+
+## Addendum C, after the v8 referee simulation (2026-09-23; nothing above changed)
+
+**Status: post hoc.** The v8 referees (`docs/NMI_REVIEW_v8_2026-09-22.md`, weaknesses 3–5) raised three points, and R1 had already computed versions of the first two outside the repository. Their numbers are therefore known before this addendum; it fixes the definitions that the manuscript will report, so that the repository, not a referee's script, carries them. No prediction is registered and every outcome is reported.
+
+1. **Accuracy gate on the held-out bases** (weakness 3). Array C (`slurm/exemplar_gate.sh`, `src/analysis/generality/exemplar_gate.py`) runs over the 42 zoo networks. For each network it recomputes the E1 curves with the same folds and seeds as array A (reproduction check: the mean curve must equal the stored one). For every one of the 30 fold bases (10 repetitions × 3 folds) it also computes top-1 on the same ILSVRC-2012 validation subset over the 21 values of w.
+   - **Primary gate:** the w-range over which the mean of the 30 fold-basis top-1 curves stays within 5 points of the trained top-1. This is the rule of Methods 4.8 with the bases the spans use.
+   - **Strict variant:** every fold basis stays within 5 points.
+   - **Reported under each gate:** the gated span (range, median, number ≥ 0.20), the reversal against the trained ranking, and Kendall τ. The manuscript's zoo numbers switch to the primary gate. The all-image-basis gate is given beside it.
+   - **Not covered: our 12 trunk runs.** Their gate is on MiniEcoset top-1, and the MiniEcoset validation features were not stored, so their gate stays on the all-image bases and the text says so.
+2. **Reversal floors by resampling unit** (weakness 4). The aggregator `tmp_analysis/figs_v2/exemplar_floors.py` works from the per-image decisions of array A and uses 2,000 draws per unit, seed 0. It gives the trained ranking's test–retest floor by three resampling units:
+   - images (the existing 8.9%);
+   - object-exemplar clusters;
+   - texture-exemplar clusters.
+
+   Pairs count as **resolved** when the 95% interval of the trained-rate difference excludes zero. Resolved pairs, and the observed reversal among them, are given under each unit. The manuscript reports all of them beside the all-pairs figure.
+3. **Probe preprocessing** (weakness 5). No new computation. Q1 stays the primary probe and the reporting standard names its preprocessing: exemplar-balanced leave-one-exemplar-out folds, PCA to 256 dimensions and standardisation fitted inside the folds, logistic regression with C = 1 untuned. The spread over the held-out variants already computed (Q1b, Q2, S64, S256n) is reported beside every probe value that the standard's argument uses.
