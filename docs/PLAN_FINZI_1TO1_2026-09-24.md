@@ -139,3 +139,17 @@ Code `src/analysis/finzi_1to1/`, Slurm `slurm/finzi_1to1_*.sh`, results
 `results/finzi_1to1/`. Caches and intermediates under `/scratch/byrong/TSN/finzi_1to1/`.
 Any change to this file after results exist is recorded as a dated amendment below and never
 edited in place.
+
+## Amendments
+
+**Amendment 1 — 2026-09-25, before any real beta, feature or correlation was computed.**
+The LOSO group statistic of §7 is changed from a unit's *mean* train r over a stream's voxels to
+the *90th percentile* of its train r over that stream's voxels (d_u = P90(r_u, dorsal) −
+P90(r_u, ventral)). Reason: the synthetic end-to-end check
+(`python -m src.analysis.finzi_1to1.synthetic`, then `mapping` and `stats`) planted a clean
+dorsal/ventral preference in half of each network's units. There the mean-r grouping gave
+Δ_PC = −0.03 (TDANN) and −0.02 (TSN), because units' loadings on voxel features have mixed signs
+and the mean cancels. The P90 grouping gave +1.00 and +1.00. The magno/parvo primary recovered its
+planted +0.42 and a null network gave NO PREFERENCE (90 % interval [+0.004, +0.031]); NEG passed
+([−0.014, +0.013]). The gate uses P90. The registered mean-r grouping is still computed and
+reported beside it, labelled descriptive. Nothing else changes.
