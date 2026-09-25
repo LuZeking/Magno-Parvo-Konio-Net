@@ -104,8 +104,10 @@ def unit_prefs(d: dict) -> dict[str, np.ndarray]:
     return out
 
 
-def assign(C_tr: np.ndarray, C_te: np.ndarray, rows_a: np.ndarray, rows_b: np.ndarray):
-    """Hungarian assignment; returns per-voxel group (1 = A, 0 = B, -1 none) and test r."""
+def assign(C_tr: np.ndarray, C_te: np.ndarray, rows_a: np.ndarray, rows_b: np.ndarray,
+           return_rows: bool = False):
+    """Hungarian assignment; returns per-voxel group (1 = A, 0 = B, -1 none) and test r,
+    plus (``return_rows``) the row of `C_tr` each voxel was assigned (-1 none)."""
     rows = np.r_[rows_a, rows_b]
     is_a = np.r_[np.ones(len(rows_a), np.int8), np.zeros(len(rows_b), np.int8)]
     r, c = linear_sum_assignment(1.0 - C_tr[rows].astype(np.float64))
@@ -114,6 +116,10 @@ def assign(C_tr: np.ndarray, C_te: np.ndarray, rows_a: np.ndarray, rows_b: np.nd
     grp[c] = is_a[r]
     r_test = np.full(n_vox, np.nan)
     r_test[c] = C_te[rows[r], c]
+    if return_rows:
+        row_of_vox = np.full(n_vox, -1, np.int64)
+        row_of_vox[c] = rows[r]
+        return grp, r_test, row_of_vox
     return grp, r_test
 
 
@@ -177,7 +183,11 @@ def run_main(d: dict, network: str, draws: int, draws_unforced: int) -> dict:
         n_vox = C_tr.shape[1]
         if is_tdann:
             t = time.time()
-            grp, r_test = assign(C_tr, C_te, rows, rows[:0])
+            grp, r_test, row = assign(C_tr, C_te, rows, rows[:0], return_rows=True)
+            # flat unit id (index into the feature columns) that won each voxel, for
+            # the magno-likeness probe (PLAN_TDANN_MAGNO_PROBE_2026-09-25)
+            res.setdefault("unit_of_vox", {})[h] = np.where(
+                row >= 0, d["unit_id"][np.maximum(row, 0)], -1)
             s = summarize(grp, r_test, lab, nc)
             s.update(hemi=h, seconds=round(time.time() - t, 1))
             res["finzi_all_units"].append(s)
@@ -271,6 +281,11 @@ def main() -> None:
         np.savez(stem + "_prefs.tmp.npz", **unit_prefs(d))
         os.replace(stem + "_prefs.tmp.npz", stem + "_prefs.npz")
         res = run_main(d, args.network, args.draws, args.draws_unforced)
+        units = res.pop("unit_of_vox", None)
+        if units is not None:
+            np.savez(stem + "_assign.tmp.npz", unit_lh=units[0], unit_rh=units[1],
+                     vox_lh=d["vox"][0], vox_rh=d["vox"][1])
+            os.replace(stem + "_assign.tmp.npz", stem + "_assign.npz")
     else:
         res = run_pc(d, args.network, args.subject, max(1, args.draws // 2))
     res.update(network=args.network, subject=args.subject, mode=args.mode,

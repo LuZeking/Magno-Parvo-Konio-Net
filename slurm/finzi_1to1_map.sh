@@ -15,7 +15,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=12G
 #SBATCH --time=06:00:00
-#SBATCH --array=0-16%10
+#SBATCH --array=0-20%10
 #SBATCH --exclude=c025
 #SBATCH --output=slurm/logs/f1to1_map_%A_%a.out
 
@@ -24,10 +24,11 @@ unset SLURM_CPU_BIND SLURM_CPU_BIND_LIST SLURM_CPU_BIND_TYPE SLURM_CPU_BIND_VERB
 export OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4
 
 MODE=${MODE:-main}
-NETS=${NETS:-"tdann_a025_s0 diet_s0 tdann_a0_s0 diet_s1 diet_s2 nodiet_s0 nodiet_s1 nodiet_s2 swap_s0 swap_s1 swap_s2 untrained_diet_s0 untrained_diet_s1 untrained_diet_s2 untrained_nodiet_s0 untrained_nodiet_s1 untrained_nodiet_s2"}
+NETS=${NETS:-"tdann_a025_s0 diet_s0 tdann_a0_s0 diet_s1 diet_s2 nodiet_s0 nodiet_s1 nodiet_s2 swap_s0 swap_s1 swap_s2 untrained_diet_s0 untrained_diet_s1 untrained_diet_s2 untrained_nodiet_s0 untrained_nodiet_s1 untrained_nodiet_s2 tdann_a025_s1 tdann_a025_s2 tdann_a025_s3 tdann_a025_s4"}
 read -r -a NET_ARR <<< "$NETS"
 NET=${NET_ARR[$SLURM_ARRAY_TASK_ID]}
-PY=/scratch/byrong/anaconda3/envs/mpk/bin/python
+# Home copy of the mpk env (same pins); the /scratch copy stalls at import on compute nodes.
+PY=/home/byrong/anaconda3/envs/mpk/bin/python
 cd "$SLURM_SUBMIT_DIR"
 for SUBJECT in ${SUBJECTS:-1 2 3 4 5 6 7 8}; do
   echo "[f1to1_map] mode=$MODE net=$NET subject=$SUBJECT host=$(hostname) start=$(date -Is)"

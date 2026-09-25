@@ -52,6 +52,10 @@ def network_registry() -> dict[str, dict]:
         reg[f"untrained_nodiet_s{k}"] = dict(kind="tsn", run=None, seed=k, fe="base")
     reg["tdann_a025_s0"] = dict(kind="tdann", ckpt="simclr_a025_seed0.torch")
     reg["tdann_a0_s0"] = dict(kind="tdann", ckpt="simclr_a0_seed0.torch")
+    # Seeds 1-4 of the same alpha = 0.25 SimCLR TDANN (Margalit et al. OSF 64qv3,
+    # isoswap_3_seed_<k>), for the magno-likeness probe (PLAN_TDANN_MAGNO_PROBE).
+    for k in range(1, 5):
+        reg[f"tdann_a025_s{k}"] = dict(kind="tdann", ckpt=f"simclr_a025_seed{k}.torch")
     return reg
 
 

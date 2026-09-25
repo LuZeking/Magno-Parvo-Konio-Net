@@ -9,7 +9,7 @@
 #SBATCH --qos=inefficient
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=24G
-#SBATCH --time=03:00:00
+#SBATCH --time=04:00:00
 #SBATCH --exclude=c025
 #SBATCH --output=slurm/logs/f1to1_extract_cpu_%A_%a.out
 
@@ -19,8 +19,10 @@ export OMP_NUM_THREADS=16 MKL_NUM_THREADS=16 OPENBLAS_NUM_THREADS=16
 export MPLCONFIGDIR="${TMPDIR:-/tmp}/mpl_$SLURM_JOB_ID"
 
 SUBJECT=$(( SLURM_ARRAY_TASK_ID + 1 ))
-PY=/scratch/byrong/anaconda3/envs/mpk/bin/python
+# Home copy of the mpk env (same pins): the /scratch copy spent up to ~2.5 h
+# page-faulting its CUDA .so files at import on 2026-09-25 (task 26530341_1).
+PY=/home/byrong/anaconda3/envs/mpk/bin/python
 cd "$SLURM_SUBMIT_DIR"
 echo "[f1to1_extract_cpu] subject=$SUBJECT host=$(hostname) start=$(date -Is)"
-$PY -m src.analysis.finzi_1to1.extract --subject "$SUBJECT"
+$PY -m src.analysis.finzi_1to1.extract --subject "$SUBJECT" --networks "${NETWORKS:-all}"
 echo "[f1to1_extract_cpu] done $(date -Is)"
