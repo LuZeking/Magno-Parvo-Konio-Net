@@ -30,6 +30,8 @@ from src.analysis.encoding import dkl_frontend, features, nsd_data
 from src.analysis.finzi_1to1 import OUT_ROOT, features_path
 
 RUNS = "/scratch/byrong/VST_data/mpk_runs"
+# TDANN spatial-loss pilot runs (docs/PLAN_TSN_SPATIAL_PILOT_2026-09-25.md)
+PILOT_RUNS = "/scratch/byrong/TSN/spatial_pilot/runs"
 TDANN_DIR = "/scratch/byrong/TSN/finzi_1to1/cache/tdann_ckpt"  # OSF 64qv3 / qy32x
 LAYER4_CHILD = 7
 GRID_TSN = 8
@@ -56,7 +58,37 @@ def network_registry() -> dict[str, dict]:
     # isoswap_3_seed_<k>), for the magno-likeness probe (PLAN_TDANN_MAGNO_PROBE).
     for k in range(1, 5):
         reg[f"tdann_a025_s{k}"] = dict(kind="tdann", ckpt=f"simclr_a025_seed{k}.torch")
+    # Spatial-loss pilot: magno/parvo trunks merged after layer2, shared layer4.1
+    # sheet; all units, Finzi's all-units assignment (PLAN_TSN_SPATIAL_PILOT §2).
+    reg["fused_a0"] = dict(kind="fused", run="dkl_bcs_fused_a0_seed0", fe="diet")
+    reg["fused_a2p5"] = dict(kind="fused", run="dkl_bcs_fused_a2p5_seed0", fe="diet")
     return reg
+
+
+def fused_unit_table() -> dict[str, np.ndarray]:
+    """All 512 x 8 x 8 layer4.1 units of the fused network, flat CHW order."""
+    n = 512 * GRID_TSN * GRID_TSN
+    flat = np.arange(n)
+    return dict(stream=np.zeros(n, np.int8), pos=(flat % (GRID_TSN * GRID_TSN)).astype(np.int16),
+                chan=(flat // (GRID_TSN * GRID_TSN)).astype(np.int16), flat=flat)
+
+
+def build_fused(run: str, device: str):
+    """Pilot network from its final checkpoint (plan §1: never chosen by val accuracy)."""
+    from src.models.fused_two_stream import FusedTwoStreamNetwork
+
+    path = os.path.join(PILOT_RUNS, run, "checkpoint_final.pt")
+    ck = torch.load(path, map_location="cpu", weights_only=False)
+    if not ck["config"].get("fused"):
+        raise RuntimeError(f"{path}: not a fused-network checkpoint")
+    m = FusedTwoStreamNetwork(num_classes=112, in_channels=tuple(ck["config"]["in_channels"]))
+    m.load_state_dict(ck["state_dict"])
+    return m.eval().to(device), path
+
+
+@torch.no_grad()
+def fused_layer4(m, x_m: torch.Tensor, x_p: torch.Tensor) -> torch.Tensor:
+    return m.layer4(m.layer3(m.trunks(x_m, x_p)))
 
 
 def tsn_superset() -> np.ndarray:
@@ -154,6 +186,7 @@ def main() -> None:
 
     ch_min, ch_max = dkl_frontend.compute_dkl_channel_minmax()
     tsn_units, tdann_units = tsn_unit_table(), tdann_unit_table()
+    fused_units = fused_unit_table()
     gather = torch.from_numpy(tsn_units["flat"]).to(device)
     s1 = torch.from_numpy(tsn_units["stream"] == 0).to(device)
 
@@ -169,6 +202,10 @@ def main() -> None:
                                              device=device)
             n_units = len(tsn_units["flat"])
             prov[n] = dict(spec, checkpoint=ckpt)
+        elif spec["kind"] == "fused":
+            models[n], ckpt = build_fused(spec["run"], device)
+            n_units = len(fused_units["flat"])
+            prov[n] = dict(spec, checkpoint=ckpt)
         else:
             ckpt = os.path.join(TDANN_DIR, spec["ckpt"])
             models[n] = build_tdann(ckpt, device)
@@ -177,7 +214,7 @@ def main() -> None:
         feats[n] = np.zeros((len(all_ids), n_units), dtype=np.float16)
     print(f"[extract] models built in {time.time() - t0:.0f}s", flush=True)
 
-    fes = sorted({reg[n]["fe"] for n in todo if reg[n]["kind"] == "tsn"})
+    fes = sorted({reg[n]["fe"] for n in todo if reg[n]["kind"] in ("tsn", "fused")})
     for start in range(0, len(all_ids), args.chunk):
         stop = min(start + args.chunk, len(all_ids))
         rgb = dkl_frontend.load_nsd_images(all_ids[start:stop])
@@ -185,6 +222,12 @@ def main() -> None:
             x_m, x_p = dkl_frontend.magno_parvo_inputs(
                 rgb, ch_min, ch_max, device=device, **FRONT_ENDS[fe])
             for n in todo:
+                if reg[n]["kind"] == "fused" and reg[n]["fe"] == fe:
+                    y = fused_layer4(models[n], x_m, x_p)
+                    if y.shape[1:] != (512, GRID_TSN, GRID_TSN):
+                        raise RuntimeError(f"fused layer4 shape {tuple(y.shape)}")
+                    feats[n][start:stop] = y.flatten(1).half().cpu().numpy()
+                    continue
                 if reg[n]["kind"] != "tsn" or reg[n]["fe"] != fe:
                     continue
                 m = models[n]
@@ -204,7 +247,7 @@ def main() -> None:
         print(f"[extract] {stop}/{len(all_ids)} images {time.time() - t0:.0f}s", flush=True)
 
     for n in todo:
-        units = tdann_units if reg[n]["kind"] == "tdann" else tsn_units
+        units = {"tdann": tdann_units, "fused": fused_units}.get(reg[n]["kind"], tsn_units)
         f = feats[n]
         if not np.isfinite(f).all():
             raise RuntimeError(f"{n}: non-finite features")

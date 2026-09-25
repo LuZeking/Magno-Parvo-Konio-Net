@@ -37,6 +37,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 
+from src.models import topographic
+from src.models.fused_two_stream import FusedTwoStreamNetwork, depth_of
 from src.models.pytorch_models import TwoStreamNetwork
 
 # --------------------------------------------------------------------------
@@ -90,6 +92,17 @@ CONDITIONS = {
     # this class of collision).
     "dkl_bcs_single34": dict(input_mode="dkl", blur=True, cs=True,
                              single_stream=True, like_resnet="resnet34"),
+    # TDANN spatial-loss pilot (docs/PLAN_TSN_SPATIAL_PILOT_2026-09-25.md):
+    # magno/parvo trunks through layer2, shared layer3-layer4
+    # (FusedTwoStreamNetwork), TDANN relative spatial loss on all 8 ResNet-18
+    # depths with weight `spatial_alpha` per depth (Finzi et al.'s supervised
+    # optimum, TDANN config lwx10 = 2.5). alpha = 0 builds the same sheets and
+    # logs their loss without training on it. Architecture and alpha live in
+    # the condition name for the reason given above dkl_bcs_single34.
+    "dkl_bcs_fused_a0":   dict(input_mode="dkl", blur=True, cs=True,
+                               fused=True, spatial_alpha=0.0),
+    "dkl_bcs_fused_a2p5": dict(input_mode="dkl", blur=True, cs=True,
+                               fused=True, spatial_alpha=2.5),
 }
 
 
@@ -247,6 +260,57 @@ def patch_stream_input_channels(model: TwoStreamNetwork, c1: int, c2: int):
             )
 
 
+def setup_sheets(model, train_ds, out_dir: str, seed: int, device: str):
+    """Cortical sheets for every `model.sheet_modules()` output + capture hooks.
+
+    Layer shapes come from one dummy forward at the dataset's image size. On a
+    resumed run the saved sheets are reloaded and checked against a rebuild, so
+    a resumed run can never train against a different sheet.
+    """
+    capture = topographic.SheetCapture(model.sheet_modules())
+    _, h, w = train_ds[0][0].shape
+    was_training = model.training
+    model.eval()
+    capture.active = True
+    with torch.no_grad():
+        model(torch.zeros(1, 1, h, w, device=device),
+              torch.zeros(1, 1, h, w, device=device))
+    capture.active = False
+    dims = {n: tuple(f.shape[1:]) for n, f in capture.feats.items()}
+    capture.clear()
+    model.train(was_training)
+
+    sheet_dir = os.path.join(out_dir, "sheets")
+    area = lambda n: topographic.RESNET18_AREA[depth_of(n)]  # noqa: E731
+    sheets = topographic.build_model_sheets(dims, area, seed)
+    if os.path.isdir(sheet_dir):
+        for s in sheets:
+            old = topographic.LayerSheet.from_npz(
+                os.path.join(sheet_dir, f"{s.name}.npz"))
+            if not (np.array_equal(old.coordinates, s.coordinates)
+                    and np.array_equal(old.neighborhoods, s.neighborhoods)):
+                raise RuntimeError(f"saved sheet {s.name} differs from rebuild")
+    else:
+        os.makedirs(sheet_dir + ".tmp", exist_ok=True)
+        for s in sheets:
+            s.to_npz(os.path.join(sheet_dir + ".tmp", f"{s.name}.npz"))
+        os.replace(sheet_dir + ".tmp", sheet_dir)
+    for s in sheets:
+        print(f"  sheet {s.name} dims={s.dims} neighbourhoods="
+              f"{s.neighborhoods.shape} width={s.neighborhood_width} mm",
+              flush=True)
+    return capture, topographic.SheetLoss(sheets).to(device)
+
+
+def depth_losses(sl: dict) -> dict:
+    """Per-sheet SL -> per-depth SL (trunk depths average magno and parvo), so
+    alpha weights each of TDANN's 8 ResNet-18 depths once."""
+    by_depth: dict = {}
+    for name, v in sl.items():
+        by_depth.setdefault(depth_of(name), []).append(v)
+    return {d: torch.stack(v).mean() for d, v in by_depth.items()}
+
+
 @torch.no_grad()
 def evaluate(model, builder, loader, device, max_batches=None, amp=False):
     model.eval()
@@ -339,22 +403,38 @@ def main():
 
     c1, c2 = in_channels_for(cfg)
     single = cfg.get("single_stream", False)
-    model = TwoStreamNetwork(
-        num_classes=args.num_classes,
-        like_resnet=arch,
-        seperate_from_layer=0,
-        # baseline=True builds ONE trunk (stream2_block1 = None) and takes the
-        # x_2=None forward path; combined_color makes its stem 2-channel so the
-        # single stream can receive both DKL channels.
-        baseline=single,
-        combined_color=single,
-        dvd_strategy="dkl" if cfg["input_mode"] == "dkl" else "dvd",
-        stream_concat=cfg.get("stream_concat", False),
-        stream1_weight=cfg.get("stream1_weight", 0.5),
-        legacy_asymmetric_mixing=False,  # corrected symmetric 75/25
-    )
-    patch_stream_input_channels(model, c1, c2)
+    if cfg.get("fused"):
+        model = FusedTwoStreamNetwork(num_classes=args.num_classes,
+                                      in_channels=(c1, c2))
+        arch = "fused_resnet18_after_layer2"
+    else:
+        model = TwoStreamNetwork(
+            num_classes=args.num_classes,
+            like_resnet=arch,
+            seperate_from_layer=0,
+            # baseline=True builds ONE trunk (stream2_block1 = None) and takes
+            # the x_2=None forward path; combined_color makes its stem
+            # 2-channel so the single stream can receive both DKL channels.
+            baseline=single,
+            combined_color=single,
+            dvd_strategy="dkl" if cfg["input_mode"] == "dkl" else "dvd",
+            stream_concat=cfg.get("stream_concat", False),
+            stream1_weight=cfg.get("stream1_weight", 0.5),
+            legacy_asymmetric_mixing=False,  # corrected symmetric 75/25
+        )
+        patch_stream_input_channels(model, c1, c2)
     model = model.to(device)
+
+    # Spatial-loss conditions: sheets are built (or reloaded on resume) before
+    # the first step and saved next to the checkpoints; they are a pure
+    # function of the layer shapes and the seed, so both pilot arms of a seed
+    # share them.
+    spatial = "spatial_alpha" in cfg
+    alpha = float(cfg.get("spatial_alpha", 0.0))
+    capture = sheet_loss = None
+    if spatial:
+        capture, sheet_loss = setup_sheets(model, train_ds, out_dir, args.seed,
+                                           device)
 
     amp = (not args.no_amp) and device == "cuda" and torch.cuda.is_bf16_supported()
     if amp:
@@ -373,7 +453,12 @@ def main():
         json.dump({**vars(args), "condition_cfg": cfg,
                    "like_resnet_resolved": arch,
                    "n_trunk_params": sum(p.numel() for p in model.parameters()),
-                   "in_channels": [c1, c2]}, f, indent=2)
+                   "in_channels": [c1, c2],
+                   "spatial": ({"alpha_per_depth": alpha,
+                                "sheets": sheet_loss.names,
+                                "sheet_seed": args.seed,
+                                "neighborhoods_per_step": 1}
+                               if spatial else None)}, f, indent=2)
 
     print(f"[{run}] train={len(train_ds)} val={len(val_ds)} device={device} "
           f"arch={arch} params={sum(p.numel() for p in model.parameters()):,} "
@@ -398,6 +483,7 @@ def main():
 
     for epoch in range(start_epoch, args.epochs):
         t0, running, seen = time.time(), 0.0, 0
+        running_ce, running_sl, n_steps = 0.0, {}, 0
         for x, y in train_loader:
             x = x.to(device, non_blocking=True).float() / 255.0
             y = y.to(device, non_blocking=True)
@@ -408,13 +494,30 @@ def main():
                 x1 = x1.contiguous(memory_format=torch.channels_last)
                 if x2 is not None:
                     x2 = x2.contiguous(memory_format=torch.channels_last)
+            if spatial:
+                capture.active = True
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
                 loss = criterion(model(x1, x2), y)
+            ce = loss
+            if spatial:
+                # Outside autocast: the correlations are computed in fp32.
+                capture.active = False
+                with torch.set_grad_enabled(alpha > 0):
+                    sl = depth_losses(sheet_loss(capture.feats))
+                capture.clear()
+                if alpha > 0:
+                    loss = ce + alpha * torch.stack(list(sl.values())).sum()
+                # Accumulated on the GPU: an .item() here would sync before
+                # the backward pass is queued.
+                for d, v in sl.items():
+                    running_sl[d] = running_sl.get(d, 0.0) + v.detach()
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
             optimizer.step()
             running += loss.item() * y.numel()
+            running_ce += ce.detach() * y.numel()
             seen += y.numel()
+            n_steps += 1
             step += 1
             if args.max_steps is not None and step >= args.max_steps:
                 break
@@ -422,6 +525,10 @@ def main():
                            max_batches=args.val_batches, amp=amp)
         rec = {"epoch": epoch, "train_loss": running / max(seen, 1),
                "val_top1": val_acc, "sec": round(time.time() - t0, 1)}
+        if spatial:
+            rec["train_ce"] = float(running_ce) / max(seen, 1)
+            rec["train_sl"] = {d: float(v) / max(n_steps, 1)
+                               for d, v in running_sl.items()}
         history.append(rec)
         print(f"[{run}] {rec}", flush=True)
         with open(os.path.join(out_dir, "history.json"), "w") as f:

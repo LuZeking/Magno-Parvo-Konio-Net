@@ -176,7 +176,9 @@ def run_main(d: dict, network: str, draws: int, draws_unforced: int) -> dict:
     res = {"draws": [], "unforced": [], "finzi_all_units": []}
     rows = np.arange(len(d["unit_id"]))
     n_pos = len(np.unique(d["unit_pos"]))
-    is_tdann = network.startswith("tdann")
+    # Finzi's all-units rectangular assignment: TDANN, and the spatial-loss pilot's
+    # fused networks (PLAN_TSN_SPATIAL_PILOT §2), whose units mix both pathways.
+    is_tdann = network.startswith(("tdann", "fused"))
     for h in (0, 1):
         lab, nc = d["label"][d["vox"][h]], d["nc"][d["vox"][h]]
         C_tr, C_te = d["C_train"][h], d["C_test"][h]
