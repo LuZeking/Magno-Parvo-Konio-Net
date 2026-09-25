@@ -390,7 +390,60 @@ def stats(out_dir: str) -> dict:
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "magno_probe_stats.json"), "w") as f:
         json.dump(res, f, indent=1)
+    with open(os.path.join(out_dir, "MAGNO_PROBE_REPORT.md"), "w") as f:
+        f.write(render_md(res))
     return res
+
+
+def render_md(r: dict) -> str:
+    def row(name: str, d: dict) -> str:
+        if "mean" not in d:
+            return f"| {name} | {d['label']} | | | | |"
+        lo, hi = d["ci90"]
+        return (f"| {name} | **{d['label']}** | {d['mean']:+.3f} | [{lo:+.3f}, {hi:+.3f}] | "
+                f"{d['wilcoxon_p']:.4f} | {d['n_positive']}/{d['n']} subj, "
+                f"{d.get('seeds_same_sign', '-')} seeds |")
+
+    g = r["instrument"]
+    s = r["stimuli"]
+    out = ["# TDANN magno-likeness probe: result", "",
+           f"Plan: `{r['plan']}`. Units of the index: SD over TDANN units "
+           f"(SESOI {r['delta_sd']}). Positive = the stream's units are more magno-like "
+           "than ventral-stream units.", "",
+           f"**Spatial-loss trigger (this check): {r['spatial_loss_trigger']}**", "",
+           "## Instrument gates (TSN)", "",
+           f"- G1 ACH isolates the channels: magno median {g['G1_ACH_streams']['magno_median']:.3f}, "
+           f"parvo median {g['G1_ACH_streams']['parvo_median']:.3f} -> **{g['G1_ACH_streams']['gate']}**",
+           f"- G2 blur raises magno LSF (diet vs nodiet): d = {g['G2_LSF_blur_magno']['d']:+.2f} "
+           f"-> **{g['G2_LSF_blur_magno']['gate']}**",
+           f"- G2 blur raises parvo LSF (swap vs nodiet): d = {g['G2_LSF_blur_parvo']['d']:+.2f} "
+           f"-> **{g['G2_LSF_blur_parvo']['gate']}**", ""]
+    for tag, title in (("primary", "Primary (position-residualised), TDANN alpha = 0.25, 5 seeds"),
+                       ("raw_index", "Secondary (raw index), same networks")):
+        out += [f"## {title}", ""]
+        for c, cname in (("DV", "dorsal - ventral"), ("LV", "lateral - ventral")):
+            out += [f"**{cname}: {r[tag][c]['verdict']}**", "",
+                    "| index | label | mean | 90% CI | Wilcoxon p | consistency |",
+                    "|---|---|---|---|---|---|",
+                    row("ACH (luminance > isoluminant)", r[tag][c]["ACH"]),
+                    row("LSF (low > high SF)", r[tag][c]["LSF"]), ""]
+    out += ["## Descriptive: alpha = 0 (no spatial loss), seed 0", "",
+            "| contrast | index | label | mean | 90% CI | Wilcoxon p | consistency |",
+            "|---|---|---|---|---|---|---|"]
+    for c in ("DV", "LV"):
+        for k in ("ACH", "LSF"):
+            out.append(f"| {c} " + row(k, r["alpha0_descriptive"][c][k]))
+    out += ["", "## Unit level (no brain data)", "",
+            "| network | median ACH | median LSF | Spearman rho(ACH, LSF), residualised | units |",
+            "|---|---|---|---|---|"]
+    for n, u in r["unit_level"].items():
+        out.append(f"| {n} | {u['ach_median']:.3f} | {u['lsf_median']:.3f} | "
+                   f"{u['rho_ach_lsf_residualised']:+.3f} | {u['n_units']} |")
+    out += ["", "## Stimuli", "",
+            f"- 515 shared images; isoluminant chroma scale {s.get('chroma_scale')} "
+            f"(clipped pixels {s.get('clip_frac', {}).get('iso')})",
+            f"- checks: `{json.dumps(s.get('checks', {}))}`", ""]
+    return "\n".join(out)
 
 
 def main() -> None:
