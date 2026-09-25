@@ -163,3 +163,60 @@ None of these enter the decision:
    same way.
 5. **Per-unit shape bias, floated earlier, is dropped.** It has no unit-level definition
    without a readout.
+
+## Amendments
+
+### Amendment 2 (2026-09-25, before any decision statistic)
+Registered while no assignment file existed: `results/` was empty and the mapping job was
+still waiting on extraction. The dorsal/lateral-vs-ventral statistics that G1 gates
+therefore did not exist and could not have been seen. (Amendment 1 is the idea-1 plan's; the
+numbering follows the branch.)
+
+**What fired.** G1 as registered FAILED on the first probe run:
+
+| unit set in diet_s0 | median ACH | registered threshold | result |
+|---|---|---|---|
+| magno | 0.981 | >= 0.95 | pass |
+| parvo | 0.199 | <= 0.05 | FAIL |
+
+G2 passed: d = +2.87 (magno) and +2.48 (parvo).
+
+**Diagnosis.** It uses TSN and the stimuli only; no brain data and no TDANN result were read.
+
+- **Where grey lands.** In TSN's uint8-quantised rg channel, mid-grey falls at exactly 127.5,
+  the rounding boundary. The 1e-6 term in the cone-contrast denominator
+  (`convert_rgb_to_dkl_numpy`) rounds grey pixels up to 128 when they are brighter than
+  mid-grey (mean lum 0.69) and down to 127 when darker (0.18).
+- **What that does to the parvo input.** On luminance-only images, the quantised parvo input
+  therefore carries a 1-bit luminance map.
+- **Causal test.** Same 128 images, same network, with only the uint8 step removed:
+
+  | TSN front end | parvo median ACH | magno median ACH |
+  |---|---|---|
+  | quantised, as trained | 0.194 | 0.981 |
+  | float | 0.000 | 0.989 |
+
+- **Conclusion.** The stimuli isolate luminance and L-M as intended. G1 fired on TSN's
+  quantiser.
+
+**Repair.**
+1. G1 is scored on TSN responses computed with float DKL channels (`magno_probe.float_dkl`).
+   The thresholds are unchanged. The quantised (as-trained) medians are reported next to it.
+   G2 stays as registered (as trained).
+2. Luminance-only images are made exactly grey: the channel mean after rendering. Before,
+   ~3e-4 channel differences left some pixels 1/255 off grey.
+
+The probe extraction is re-run for every network. The first run's files are kept in
+`magno_probe/superseded_amend2/`.
+
+**Why this is not gate-shopping.**
+- G1's registered purpose (section 7) is to validate the stimuli. The float path measures
+  exactly that.
+- The repair cannot see or move the TDANN decision statistic: G1 carries no sign, and no
+  assignment existed.
+- The change to the luminance-only images applies to every network equally.
+
+**Side finding, for the TSN manuscript rather than this probe.** As trained, TSN's parvo
+("L-M only") input carries a 1-bit luminance-sign signal at achromatic pixels, the same way
+here as in the uint8 DKL training set. Claims that parvo is luminance-blind should be scoped
+accordingly.

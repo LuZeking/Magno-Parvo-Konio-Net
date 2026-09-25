@@ -106,7 +106,10 @@ def render(rgb_u8: np.ndarray, chroma_scale: float) -> tuple[dict, dict]:
     lum_cc, iso_cc = decompose(rgb_to_cc(x))
     s = sf_sigma(x.shape[2])
     low = gaussian_filter(x, sigma=(0, s, s, 0), mode="reflect")
-    imgs = {"orig": x, "lum": cc_to_rgb(lum_cc), "iso": cc_to_rgb(iso_cc * chroma_scale),
+    # achromatic in cone contrast means R = G = B; take the channel mean so the rendered
+    # image is exactly grey (the inverse leaves ~3e-4 channel differences; amendment 2)
+    lum = cc_to_rgb(lum_cc).mean(-1, keepdims=True).repeat(3, -1)
+    imgs = {"orig": x, "lum": lum, "iso": cc_to_rgb(iso_cc * chroma_scale),
             "low": low, "high": x - low + x.mean(axis=(1, 2), keepdims=True)}
     return ({k: _u8(v) for k, v in imgs.items()}, {k: _clip_frac(v) for k, v in imgs.items()})
 
@@ -184,6 +187,42 @@ def probe_path(network: str) -> str:
     return os.path.join(PROBE_ROOT, f"{network}.npz")
 
 
+def _rgb_to_dkl3_float(rgb_uint8, ch_min, ch_max, image_size=256):
+    """dkl_frontend.rgb_to_dkl3 without its final uint8 quantisation of the DKL channels.
+
+    Amendment 2: mid-grey lands at exactly 127.5 on the uint8 rg scale, and the 1e-6
+    term in the cone-contrast denominator makes grey pixels round to 128 when brighter
+    than mid-grey and 127 when darker, so the quantised parvo input carries a 1-bit
+    luminance map at achromatic pixels. G1 checks the stimuli, so it reads TSN through
+    this float path; everything else about the front end is unchanged.
+    """
+    import torch
+    import torch.nn.functional as F
+
+    from src.utils.helpers import convert_rgb_to_dkl_numpy
+
+    t = torch.from_numpy(np.ascontiguousarray(rgb_uint8)).permute(0, 3, 1, 2).to(torch.float32)
+    if t.shape[-1] != image_size:
+        t = F.interpolate(t, size=(image_size, image_size), mode="bilinear", antialias=True,
+                          align_corners=False)
+    rgb = t.clamp(0, 255).round().permute(0, 2, 3, 1).numpy().astype(np.uint8)
+    dkl = (convert_rgb_to_dkl_numpy(rgb) - ch_min) / ((ch_max - ch_min) + 1e-12)
+    return torch.from_numpy(np.clip(dkl, 0.0, 1.0).astype(np.float32)).permute(0, 3, 1, 2)
+
+
+class float_dkl:
+    """Context manager: TSN front end with float (unquantised) DKL channels."""
+
+    def __enter__(self):
+        from src.analysis.encoding import dkl_frontend
+
+        self._mod, self._orig = dkl_frontend, dkl_frontend.rgb_to_dkl3
+        dkl_frontend.rgb_to_dkl3 = _rgb_to_dkl3_float
+
+    def __exit__(self, *exc):
+        self._mod.rgb_to_dkl3 = self._orig
+
+
 def extract(networks: list[str], chunk: int = 64) -> None:
     import torch
 
@@ -231,16 +270,24 @@ def extract(networks: list[str], chunk: int = 64) -> None:
                 y1 = tsn_layer4(m.stream1_block1, x_m).flatten(1)
                 y2 = tsn_layer4(m.stream2_block1, x_p).flatten(1)
                 return torch.where(s1[None, :], y1[:, gather], y2[:, gather])
-        sd = np.zeros((len(CONDS), len(units["flat"])), np.float32)
-        mu = np.zeros_like(sd)
-        for ci, c in enumerate(CONDS):
-            f = np.concatenate([run(stim[c][i:i + chunk]).float().cpu().numpy()
-                                for i in range(0, len(ids), chunk)])
-            if not np.isfinite(f).all():
-                raise RuntimeError(f"{n} {c}: non-finite features")
-            sd[ci], mu[ci] = f.std(0), f.mean(0)
+        def sd_mean():
+            sd = np.zeros((len(CONDS), len(units["flat"])), np.float32)
+            mu = np.zeros_like(sd)
+            for ci, c in enumerate(CONDS):
+                f = np.concatenate([run(stim[c][i:i + chunk]).float().cpu().numpy()
+                                    for i in range(0, len(ids), chunk)])
+                if not np.isfinite(f).all():
+                    raise RuntimeError(f"{n} {c}: non-finite features")
+                sd[ci], mu[ci] = f.std(0), f.mean(0)
+            return sd, mu
+
+        sd, mu = sd_mean()
+        extra = {}
+        if spec["kind"] == "tsn":  # amendment 2: G1 reads TSN through float DKL channels
+            with float_dkl():
+                extra["sd_float"], _ = sd_mean()
         out = probe_path(n)
-        np.savez(out + ".tmp.npz", sd=sd, mean=mu, conds=np.array(CONDS), image_ids=ids,
+        np.savez(out + ".tmp.npz", sd=sd, mean=mu, conds=np.array(CONDS), image_ids=ids, **extra,
                  unit_stream=units["stream"], unit_pos=units["pos"], unit_chan=units["chan"],
                  provenance=json.dumps(dict(spec, checkpoint=ckpt, stimuli=meta)))
         os.replace(out + ".tmp.npz", out)
@@ -248,10 +295,10 @@ def extract(networks: list[str], chunk: int = 64) -> None:
 
 
 # ----------------------------------------------------------------------------- statistics
-def load_indices(network: str) -> dict:
+def load_indices(network: str, field: str = "sd") -> dict:
     p = np.load(probe_path(network))
     c = [str(x) for x in p["conds"]]
-    sd = p["sd"].astype(np.float64)
+    sd = p[field].astype(np.float64)
 
     def ratio(a: str, b: str) -> np.ndarray:
         num, den = sd[c.index(a)], sd[c.index(a)] + sd[c.index(b)]
@@ -298,9 +345,14 @@ def instrument_gates() -> dict:
     ix = {n: load_indices(n) for n in TSN_INSTRUMENT}
     mag = ix["diet_s0"]["stream"] == 0
     g = {}
-    ach_m = float(np.nanmedian(ix["diet_s0"]["ACH"][mag]))
-    ach_p = float(np.nanmedian(ix["diet_s0"]["ACH"][~mag]))
-    g["G1_ACH_streams"] = dict(magno_median=ach_m, parvo_median=ach_p,
+    # amendment 2: G1 reads TSN through float DKL channels (the uint8 step injects a
+    # luminance bit into rg at grey pixels); the quantised value is reported alongside
+    fl = load_indices("diet_s0", "sd_float")
+    ach_m = float(np.nanmedian(fl["ACH"][mag]))
+    ach_p = float(np.nanmedian(fl["ACH"][~mag]))
+    g["G1_ACH_streams"] = dict(magno_median=ach_m, parvo_median=ach_p, path="float DKL",
+                               quantised_magno_median=float(np.nanmedian(ix["diet_s0"]["ACH"][mag])),
+                               quantised_parvo_median=float(np.nanmedian(ix["diet_s0"]["ACH"][~mag])),
                                gate="PASS" if ach_m >= 0.95 and ach_p <= 0.05 else "FAIL")
     d_m = cohens_d(ix["diet_s0"]["LSF"][mag], ix["nodiet_s0"]["LSF"][mag])
     d_p = cohens_d(ix["swap_s0"]["LSF"][~mag], ix["nodiet_s0"]["LSF"][~mag])
@@ -412,8 +464,11 @@ def render_md(r: dict) -> str:
            "than ventral-stream units.", "",
            f"**Spatial-loss trigger (this check): {r['spatial_loss_trigger']}**", "",
            "## Instrument gates (TSN)", "",
-           f"- G1 ACH isolates the channels: magno median {g['G1_ACH_streams']['magno_median']:.3f}, "
-           f"parvo median {g['G1_ACH_streams']['parvo_median']:.3f} -> **{g['G1_ACH_streams']['gate']}**",
+           f"- G1 ACH isolates the channels (float DKL, amendment 2): magno median "
+           f"{g['G1_ACH_streams']['magno_median']:.3f}, parvo median "
+           f"{g['G1_ACH_streams']['parvo_median']:.3f} -> **{g['G1_ACH_streams']['gate']}** "
+           f"(as trained, uint8 DKL: magno {g['G1_ACH_streams'].get('quantised_magno_median', float('nan')):.3f}, "
+           f"parvo {g['G1_ACH_streams'].get('quantised_parvo_median', float('nan')):.3f})",
            f"- G2 blur raises magno LSF (diet vs nodiet): d = {g['G2_LSF_blur_magno']['d']:+.2f} "
            f"-> **{g['G2_LSF_blur_magno']['gate']}**",
            f"- G2 blur raises parvo LSF (swap vs nodiet): d = {g['G2_LSF_blur_parvo']['d']:+.2f} "
