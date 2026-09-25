@@ -173,14 +173,21 @@ and LSF as in the probe.
 ## 10. Budget and where it runs
 - **Two single-GPU runs on g017 (B200).** On 2026-09-25 another user's ~190-task array
   holds every agcichy A5000 at 6x our fairshare priority, and g016's H100s are allocated.
-- **g017 has no /scratch**, and compute nodes cannot ssh to the login node. So:
-  - the 59 GB dataset is staged on `/home/byrong/_staging/TSN/spatial_pilot_data`
-    (`slurm/spatial_pilot_stage_data.sh`, checked byte for byte with `cmp`) and cached in
-    RAM (`--cache-ram`);
-  - outputs are staged under `/home/byrong/_staging/TSN/spatial_pilot/runs`;
-  - a chained `main` job (`slurm/spatial_pilot_migrate.sh`) moves them to
-    `/scratch/byrong/TSN/spatial_pilot/runs` with a per-file manifest check, then deletes
-    both staged copies.
+- **g017 has no /scratch, and compute nodes cannot ssh to the login node.**
+- **First route (abandoned).** The dataset was staged on /home. The first training launch
+  (26532868) died before its first step with `EDQUOT`: /home carries a hidden ~400G
+  quota, and the 59 GB copy exceeded it. The copy was deleted at once. No training step
+  ran, so nothing about the design changes.
+- **Route used.** An rsync daemon runs on a `main` node that mounts /scratch
+  (`slurm/spatial_pilot_gateway.sh`). It uses password auth and accepts connections from
+  g017 only. It serves the dataset read-only and `/scratch/byrong/TSN/spatial_pilot`
+  read-write. Each training task:
+  1. pulls the dataset to g017's local NVMe (rsync verifies every transfer by whole-file
+     checksum) and caches it in RAM;
+  2. writes its run to local NVMe;
+  3. pushes the run to `/scratch/byrong/TSN/spatial_pilot/runs` every 15 min and at the end;
+  4. fails unless a `--checksum` dry run then finds no difference.
+- The gateway and the node-local copy are removed by jobs chained `afterany` on training.
 - **Smoke test 26532505 (g017, 2 x 150 steps per arm, with a resume in between):**
   - both arms exit 0, with no NaN or inf values;
   - the resume restarts at epoch 1, and the saved sheets reload and match a rebuild;
