@@ -7,15 +7,19 @@
 # (slurm/spatial_pilot_stage_data.sh) into RAM (--cache-ram), and outputs are staged
 # under /home/byrong/_staging; slurm/spatial_pilot_migrate.sh (chained, main) moves
 # them to /scratch/byrong/TSN/spatial_pilot/runs and removes both staged copies.
-# --mem is sized from the smoke test's MaxRSS (sl_smoke job) plus ~25 %.
+# --mem: smoke test 26532505 (both arms, incl. resume) peaked at MaxRSS = its 72G
+# request, i.e. the cgroup also counted the NFS page cache from reading the dataset
+# into RAM (48.2 GiB train + 1.0 GiB val cache, ~6 GiB process). 80G adds headroom
+# over the reclaimable cache; g017 is exempt from the 64G cap, fair share ~258G/GPU.
+# Smoke speed: ~0.43 s/step -> ~440 s/epoch -> ~18.5 h for 150 epochs.
 #SBATCH --job-name=sl_train
 #SBATCH --partition=agcichy
 #SBATCH --qos=standard
 #SBATCH --nodelist=g017
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=12
-#SBATCH --mem=72G
-#SBATCH --time=3-00:00:00
+#SBATCH --mem=80G
+#SBATCH --time=2-00:00:00
 #SBATCH --array=0-1
 #SBATCH --output=slurm/logs/sl_train_%A_%a.out
 

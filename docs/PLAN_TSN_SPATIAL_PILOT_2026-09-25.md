@@ -181,8 +181,19 @@ and LSF as in the probe.
   - a chained `main` job (`slurm/spatial_pilot_migrate.sh`) moves them to
     `/scratch/byrong/TSN/spatial_pilot/runs` with a per-file manifest check, then deletes
     both staged copies.
-- Wall-clock per run is measured in the smoke test and recorded below before launch. The
-  reference is 26.9 h on an A5000 for the 22.4M-parameter `dkl_bcs`.
+- **Smoke test 26532505 (g017, 2 x 150 steps per arm, with a resume in between):**
+  - both arms exit 0, with no NaN or inf values;
+  - the resume restarts at epoch 1, and the saved sheets reload and match a rebuild;
+  - the final checkpoints load into `FusedTwoStreamNetwork` with every key matched;
+  - A0 and A1 sheets are identical;
+  - by step 300, A1's SL has fallen at every depth (`layer3.1` 0.50 -> 0.31,
+    `layer4.1` 0.50 -> 0.40), while A0's stays at 0.50;
+  - A1's CE falls more slowly early on (4.60 vs 4.15 at step 300; val top-1 0.017 vs
+    0.046). G-train judges this at epoch 150, not here.
+- **Speed:** ~0.43 s/step, i.e. ~440 s/epoch and **~18.5 h per run** (both in parallel).
+  The reference is 26.9 h on an A5000 for the 22.4M-parameter `dkl_bcs`.
+- **Memory:** peak MaxRSS equalled the 72G request, because the cgroup also counts the page
+  cache from reading the dataset into RAM. Training requests 80G.
 - Then about 1 day of CPU analysis: extraction for 8 subjects x 2 networks, mapping, probe
   (`src/analysis/finzi_1to1/spatial_pilot.py`).
 
