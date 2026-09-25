@@ -28,5 +28,5 @@ mv "$DST.partial" "$DST"
 echo "verified: $(stat -c %s "$DST") bytes, cmp identical"
 /home/byrong/anaconda3/envs/mpk/bin/python -c "
 import h5py; f = h5py.File('$DST', 'r')
-print({k: f[k]['data'].shape for k in f})"
+print({k: (f[k]['data'].shape if isinstance(f[k], h5py.Group) else f[k].shape) for k in f})"
 echo "total $(( $(date +%s) - t0 )) s"
