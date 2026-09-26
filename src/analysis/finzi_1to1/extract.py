@@ -252,6 +252,7 @@ def main() -> None:
         if not np.isfinite(f).all():
             raise RuntimeError(f"{n}: non-finite features")
         out = features_path(n, args.subject)
+        os.makedirs(os.path.dirname(out), exist_ok=True)
         tmp = out + ".tmp.npz"
         np.savez(tmp, train_feats=f[:n_train], test_feats=f[n_train:],
                  train_image_ids=train_ids, test_image_ids=test_ids,
