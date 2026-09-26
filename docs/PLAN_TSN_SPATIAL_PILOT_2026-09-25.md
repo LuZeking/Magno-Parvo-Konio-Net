@@ -206,3 +206,9 @@ and LSF as in the probe.
 
 ## Amendments
 (none)
+
+## Outcome (2026-09-26)
+All gates PASS. Primary A1 DV **NOT MAGNO-LIKE** (ACH −0.072, LSF −0.165 SD, both SMALL,
+anti-magno); not SL-AMPLIFIED (A1 − A0 ACH −0.147). Topography formed (T2 z +20.5 vs +2.3).
+§5 row 4 applies: **stop**. Readout `results/finzi_1to1/SPATIAL_PILOT_REPORT.md`, paragraph
+`results/finzi_1to1/IDEA1_SUPPLEMENT.md`.
