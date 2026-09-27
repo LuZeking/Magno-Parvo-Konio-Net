@@ -1,6 +1,7 @@
 # Training × diet: registration stopped at the attainability check
 
-Written 2026-09-27 on branch `finzi-1to1`. **Status: not registered, no compute launched.**
+Written 2026-09-27 on branch `finzi-1to1`. **Status: not registered, no compute launched.
+Decision 2026-09-27: option 1 (report §4 post hoc; paragraph in `results/finzi_1to1/IDEA1_SUPPLEMENT.md`).**
 Numbers: `python -m src.analysis.finzi_1to1.seed_subject_split` (reads the idea-1 mapping outputs).
 
 ## 1. Origin (post hoc)

@@ -44,3 +44,25 @@ shared layers does not recreate it and even dilutes it.
 - The architecture is not the manuscript TSN.
 
 Per plan section 5 this line stops here; no seed-1 run.
+
+## Post hoc: training sets the direction (2026-09-27)
+
+Not pre-registered. Numbers: `python -m src.analysis.finzi_1to1.seed_subject_split`; reasoning
+in `docs/NOTE_TRAINING_X_DIET_2026-09-27.md`.
+
+About half of the idea-1 magno -> dorsal preference is present before training (untrained net,
+diet front end, +0.064). Splitting the registered diet - no-diet contrast (+0.160) into the
+effects of training shows that training moves the magno stream in opposite directions depending
+on the front end:
+- With the diet front end, training moves it toward dorsal: +0.087 / +0.042 / +0.054 in seeds
+  0 / 1 / 2 (subject level +0.061 [-0.001, +0.122], 7/8).
+- Without it, training moves it away: -0.069 / -0.076 / -0.066 (subject level -0.070
+  [-0.136, -0.004], 1/8 > 0).
+- Before training, the two front ends differ by only +0.030 (7/8).
+
+As a property of the networks this is consistent in 3/3 seeds (seed SD <= 0.023). The front end
+sets the direction in which learning moves the magno stream; it both adds to and protects the
+input-given lean. As a statement about human cortex it holds in 7/8 subjects for each effect,
+with one exception that repeats in every seed (subject 8 without the diet, subject 4 with it).
+With 8 NSD subjects, more seeds cannot resolve the subject-level tests (exact Wilcoxon p = .078
+and .195), so no confirmatory run was made.
