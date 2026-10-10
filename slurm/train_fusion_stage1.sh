@@ -13,7 +13,8 @@
 #   10-11 A4   fs1_{cs,b2cs}_add_w070     diet dose: CS only, sigma 2 + CS
 #
 # Code: runs from a `git archive` of the submitted commit under
-# /scratch/byrong/TSN/fusion_stage1/code/<sha> (CODE), so edits to the
+# /home/byrong/projects/TSN/fusion_stage1_code/<sha> (CODE; /home, because
+# extracting 1,388 small files onto /scratch ran at ~2 s/file), so edits to the
 # worktree while tasks wait in the queue cannot change what trains.
 #
 # Checkpoints go to node-local $TMPDIR, not straight to /scratch: in the smoke
@@ -32,7 +33,7 @@
 # kept (~fair share of a 95 GB / 4-GPU node). 36 h covers the slowest case
 # twice. QOS `standard`.
 #
-#   env -u TMPDIR sbatch --export=ALL,CODE=/scratch/byrong/TSN/fusion_stage1/code/<sha> \
+#   env -u TMPDIR sbatch --export=ALL,CODE=/home/byrong/projects/TSN/fusion_stage1_code/<sha> \
 #       slurm/train_fusion_stage1.sh
 #SBATCH --job-name=fs1_train
 #SBATCH --partition=agcichy
