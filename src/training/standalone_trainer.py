@@ -26,7 +26,9 @@ Smoke test:
 from __future__ import annotations
 
 import argparse
+import copy
 import json
+import math
 import os
 import time
 
@@ -39,6 +41,8 @@ from torch.utils.data import DataLoader, Dataset
 
 from src.models import topographic
 from src.models.fused_two_stream import FusedTwoStreamNetwork, depth_of
+from src.models.late_fusion import (LateFusionNetwork,
+                                    make_magno_stem64)
 from src.models.pytorch_models import TwoStreamNetwork
 
 # --------------------------------------------------------------------------
@@ -104,6 +108,50 @@ CONDITIONS = {
     "dkl_bcs_fused_a2p5": dict(input_mode="dkl", blur=True, cs=True,
                                fused=True, spatial_alpha=2.5),
 }
+
+# Fusion Stage 1 (TSN_FUSION_PROPOSAL_2026-10-09.md §4): 50-epoch pilots of a
+# late-fusion readout on the two ResNet-18 trunks (src/models/late_fusion.py),
+# all under one recipe: AdamW + cosine decay + EMA, and per-stream auxiliary CE
+# heads (weight 0.3 each) so neither trunk is gradient-starved by the joint
+# head. The recipe lives in the condition for the reason given above
+# dkl_bcs_single34: run directories carry only the condition name, so a
+# recipe set by CLI flag could be resumed under a different one.
+# Weight decay: the proposal's 5e-5 is an L2-style coefficient. Decoupled
+# AdamW multiplies it by the lr (1e-4 x 5e-5 = 5e-9 shrink per step), which is
+# a no-op, so the pilots use the standard AdamW pairing of lr 1e-3 with wd
+# 0.05, no decay on biases and norm parameters, 2 warm-up epochs.
+STAGE1_RECIPE = dict(optimizer="adamw", lr=1e-3, weight_decay=0.05,
+                     schedule="cosine", warmup_epochs=2, ema_decay=0.9995,
+                     aux_weight=0.3)
+
+
+def _stage1(fusion: str, *, highsf: bool = False, blur: bool = True,
+            **kw) -> dict:
+    return dict(input_mode="dkl", blur=blur, cs=True, parvo_highsf=highsf,
+                fusion=fusion, recipe=STAGE1_RECIPE, **kw)
+
+
+CONDITIONS.update({
+    # A0: the current tied average head, new recipe + aux heads
+    "fs1_bcs_avg":         _stage1("average"),
+    # A1: untied additive evidence z = w z_M + (1 - w) z_P, dieted input
+    "fs1_bcs_add_w050":    _stage1("additive", w=0.5),
+    "fs1_bcs_add_w070":    _stage1("additive", w=0.7),
+    "fs1_bcs_add_w085":    _stage1("additive", w=0.85),
+    # A1': the same on the parvo_highsf input
+    "fs1_hsf_add_w050":    _stage1("additive", w=0.5, highsf=True),
+    "fs1_hsf_add_w070":    _stage1("additive", w=0.7, highsf=True),
+    "fs1_hsf_add_w085":    _stage1("additive", w=0.85, highsf=True),
+    # A2: coarse-to-fine hinge z = z_P + lam min(0, z_M - z_M,(k))
+    "fs1_hsf_hinge_k3_l2": _stage1("hinge", k=3, lam=2.0, highsf=True),
+    "fs1_hsf_hinge_k3_l4": _stage1("hinge", k=3, lam=4.0, highsf=True),
+    # A3: A1 w = 0.7 with the magno trunk at 64 px (3x3/1 stem, no max-pool)
+    "fs1_bcs_add_w070_mstem64": _stage1("additive", w=0.7, magno_stem64=True),
+    # A4: A1 w = 0.7 at two lighter diet doses
+    "fs1_cs_add_w070":     _stage1("additive", w=0.7, blur=False),
+    "fs1_b2cs_add_w070":   _stage1("additive", w=0.7, blur_sigma=2.0),
+})
+STAGE1_CONDITIONS = [c for c in CONDITIONS if c.startswith("fs1_")]
 
 
 class H5ImageDataset(Dataset):
@@ -199,6 +247,9 @@ class StreamInputBuilder:
         self.age_months = age_months
         self.input_mode = cfg["input_mode"]
         self.blur, self.cs = cfg["blur"], cfg["cs"]
+        # None keeps dkl_frontend.BLUR_SIGMA (4), the diet of every run
+        # before the Stage-1 dose arm.
+        self.blur_sigma = cfg.get("blur_sigma")
         self.target = cfg.get("transform_target", "magno")
         self.parvo_highsf = cfg.get("parvo_highsf", False)
         self.single_stream = cfg.get("single_stream", False)
@@ -220,7 +271,8 @@ class StreamInputBuilder:
         lum, rg = x[:, 0:1], x[:, 1:2]
         tgt = lum if self.target == "magno" else rg
         if self.blur:
-            tgt = apply_gaussian_blur(tgt)
+            tgt = (apply_gaussian_blur(tgt) if self.blur_sigma is None
+                   else apply_gaussian_blur(tgt, sigma=self.blur_sigma))
         if self.cs:
             tgt = apply_scale_free_contrast(tgt, self.age_months)
         if self.target == "magno":
@@ -333,6 +385,145 @@ def evaluate(model, builder, loader, device, max_batches=None, amp=False):
     return correct / max(total, 1)
 
 
+# ---------------------------- fusion Stage 1 ------------------------------
+
+@torch.no_grad()
+def ema_update(ema: nn.Module, model: nn.Module, decay: float, n: int) -> None:
+    """EMA of parameters and float buffers (BN running statistics, as in
+    timm's ModelEma), with the usual short-run warm-up of the decay; integer
+    buffers (num_batches_tracked) are copied."""
+    d = min(decay, (1.0 + n) / (10.0 + n))
+    e_t, m_t = [], []
+    for e, m in zip(list(ema.parameters()) + list(ema.buffers()),
+                    list(model.parameters()) + list(model.buffers())):
+        if e.dtype.is_floating_point:
+            e_t.append(e)
+            m_t.append(m.detach())
+        else:
+            e.copy_(m)
+    torch._foreach_mul_(e_t, d)
+    torch._foreach_add_(e_t, m_t, alpha=1.0 - d)
+
+
+def load_cue_conflict(path: str) -> dict:
+    """Cue-conflict cache (scripts/fusion_stage1_cue_conflict_cache.py):
+    x (N, H, W, 3) uint8 DKL exactly as the training h5 stores it, the shape
+    and texture labels, and the MiniEcoset columns of the 16 Geirhos classes."""
+    z = np.load(path, allow_pickle=False)
+    return {"x": torch.from_numpy(z["x"]), "shapes": z["shapes"].astype(str),
+            "textures": z["textures"].astype(str),
+            "classes": z["classes"].astype(str),
+            "cols": torch.from_numpy(z["cols"].astype(np.int64))}
+
+
+def cue_conflict_scores(logits: torch.Tensor, cc: dict) -> dict:
+    """16-way restricted decision -> shape bias and coverage."""
+    dec = cc["classes"][logits[:, cc["cols"]].argmax(1).numpy()]
+    n_s = int((dec == cc["shapes"]).sum())
+    n_t = int((dec == cc["textures"]).sum())
+    n = len(cc["shapes"])
+    return {"sb": n_s / max(n_s + n_t, 1), "cover": (n_s + n_t) / n,
+            "n_shape": n_s, "n_texture": n_t, "n": n}
+
+
+def _heads(model, builder, x, amp):
+    x1, x2 = builder(x)
+    if amp:
+        x1 = x1.contiguous(memory_format=torch.channels_last)
+        x2 = x2.contiguous(memory_format=torch.channels_last)
+    with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
+        return model.forward_heads(x1, x2)
+
+
+@torch.no_grad()
+def evaluate_fusion(ema, raw, builder, loader, cc, device, amp,
+                    max_batches=None) -> tuple[dict, dict]:
+    """One pass over val (and the cue-conflict set) for a late-fusion network.
+
+    The EMA weights are the model of record: every head is scored, and the
+    two component logits are swept as w z_M + (1 - w) z_P (for `average` the
+    tied head's own w-sweep, which is the A0 frontier of the decision rule,
+    and the aux heads' sweep). The raw weights get joint top-1 only.
+    Returns (metrics, logits) with logits on the CPU for the final dump.
+    """
+    ema.eval()
+    raw.eval()
+    keep: dict[str, list] = {}
+    ys, raw_correct = [], 0
+    for i, (x, y) in enumerate(loader):
+        if max_batches is not None and i >= max_batches:
+            break
+        x = x.to(device, non_blocking=True).float() / 255.0
+        y = y.to(device, non_blocking=True)
+        for k, v in _heads(ema, builder, x, amp).items():
+            keep.setdefault(f"val_{k}", []).append(v.cpu())
+        raw_correct += (_heads(raw, builder, x, amp)["joint"].argmax(1)
+                        == y).sum().item()
+        ys.append(y.cpu())
+    if cc is not None:
+        bs = loader.batch_size
+        n_cc = len(cc["x"]) if max_batches is None else min(
+            len(cc["x"]), max_batches * bs)
+        for s in range(0, n_cc, bs):
+            x = cc["x"][s:min(s + bs, n_cc)].to(device).permute(0, 3, 1, 2)
+            x = x.float() / 255.0
+            for k, v in _heads(ema, builder, x, amp).items():
+                keep.setdefault(f"cc_{k}", []).append(v.cpu())
+    raw.train()
+    ema.eval()
+    logits = {k: torch.cat(v) for k, v in keep.items()}
+    y = torch.cat(ys)
+    logits["val_y"] = y
+
+    def top1(z):
+        return float((z.argmax(1) == y).float().mean())
+
+    heads = [k[4:] for k in logits if k.startswith("val_") and k != "val_y"]
+    m = {"val": {h: top1(logits[f"val_{h}"]) for h in heads},
+         "val_top1_raw": raw_correct / max(len(y), 1)}
+    sub = None
+    if cc is not None:
+        sub = {**cc, "shapes": cc["shapes"][:len(logits["cc_joint"])],
+               "textures": cc["textures"][:len(logits["cc_joint"])]}
+        m["cc"] = {h: cue_conflict_scores(logits[f"cc_{h}"], sub)
+                   for h in heads}
+    pairs = [("untied", "magno", "parvo")]
+    if "val_tied_magno" in logits:
+        pairs.insert(0, ("tied", "tied_magno", "tied_parvo"))
+    m["sweep"] = {}
+    for name, a, b in pairs:
+        rows = []
+        for w in [i / 10 for i in range(11)]:
+            r = {"w": w, "val_top1": top1(w * logits[f"val_{a}"]
+                                          + (1 - w) * logits[f"val_{b}"])}
+            if sub is not None:
+                s = cue_conflict_scores(w * logits[f"cc_{a}"]
+                                        + (1 - w) * logits[f"cc_{b}"], sub)
+                r.update(sb=s["sb"], cover=s["cover"])
+            rows.append(r)
+        m["sweep"][name] = rows
+    return m, logits
+
+
+def build_stage1_optimizer(model, recipe, steps_per_epoch, epochs):
+    decay = [p for p in model.parameters() if p.ndim > 1]
+    no_decay = [p for p in model.parameters() if p.ndim <= 1]
+    optimizer = torch.optim.AdamW(
+        [{"params": decay, "weight_decay": recipe["weight_decay"]},
+         {"params": no_decay, "weight_decay": 0.0}],
+        lr=recipe["lr"], betas=(0.9, 0.999))
+    total = epochs * steps_per_epoch
+    warm = recipe["warmup_epochs"] * steps_per_epoch
+
+    def lr_lambda(s):
+        if s < warm:
+            return (s + 1) / warm
+        t = min(1.0, (s - warm) / max(1, total - warm))
+        return 0.5 * (1.0 + math.cos(math.pi * t))
+
+    return optimizer, torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--dataset", required=True)
@@ -365,9 +556,20 @@ def main():
     p.add_argument("--cache-ram", action="store_true",
                    help="load the whole dataset into RAM (~48 GB train); "
                         "big-memory nodes only")
+    p.add_argument("--cue-conflict-npz", default=None,
+                   help="Stage-1 conditions: score cue-conflict shape bias "
+                        "every epoch from this cache "
+                        "(scripts/fusion_stage1_cue_conflict_cache.py)")
     args = p.parse_args()
 
     cfg = CONDITIONS[args.condition]
+    # Stage-1 conditions carry their own optimizer recipe; --lr is ignored
+    # for them (config.json records the recipe that was used).
+    recipe = cfg.get("recipe")
+    fusion = cfg.get("fusion")
+    if fusion is not None and not recipe:
+        raise ValueError(f"{args.condition}: late fusion needs the Stage-1 "
+                         "recipe (EMA weights are what it evaluates)")
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -423,6 +625,12 @@ def main():
             legacy_asymmetric_mixing=False,  # corrected symmetric 75/25
         )
         patch_stream_input_channels(model, c1, c2)
+        if cfg.get("magno_stem64"):
+            make_magno_stem64(model.stream1_block1, c1)
+        if fusion is not None:
+            model = LateFusionNetwork(model, fusion, w=cfg.get("w", 0.5),
+                                      k=cfg.get("k", 3),
+                                      lam=cfg.get("lam", 0.0))
     model = model.to(device)
 
     # Spatial-loss conditions: sheets are built (or reloaded on resume) before
@@ -442,8 +650,19 @@ def main():
 
     builder = StreamInputBuilder(cfg, age_months=args.age_months)
     augment = build_augmentations(cfg["input_mode"]).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr,
-                                 betas=(0.9, 0.999))
+    scheduler = ema = cc = None
+    if recipe:
+        optimizer, scheduler = build_stage1_optimizer(
+            model, recipe, len(train_loader), args.epochs)
+        ema = copy.deepcopy(model).eval()
+        for q in ema.parameters():
+            q.requires_grad_(False)
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr,
+                                     betas=(0.9, 0.999))
+    if fusion is not None and args.cue_conflict_npz:
+        cc = load_cue_conflict(args.cue_conflict_npz)
+        print(f"  cue-conflict cache: {len(cc['x'])} images", flush=True)
     criterion = nn.CrossEntropyLoss()
 
     with open(os.path.join(out_dir, "config.json"), "w") as f:
@@ -475,15 +694,32 @@ def main():
         ck = torch.load(last_path, map_location=device, weights_only=False)
         model.load_state_dict(ck["state_dict"])
         optimizer.load_state_dict(ck["optimizer"])
+        if scheduler is not None:
+            scheduler.load_state_dict(ck["scheduler"])
+        if ema is not None:
+            ema.load_state_dict(ck["ema_state_dict"])
         start_epoch = ck["epoch"] + 1
         history = ck.get("history", [])
         step = ck.get("step", 0)
         print(f"[{run}] resumed from epoch {ck['epoch']} "
               f"-> starting at {start_epoch}", flush=True)
 
+    def snapshot(epoch):
+        """For Stage-1 arms `state_dict` is the EMA network (the one every
+        logged metric scores) and the raw weights ride along."""
+        snap = {"epoch": epoch, "config": {**cfg, "in_channels": [c1, c2]}}
+        if ema is not None:
+            snap.update(state_dict=ema.state_dict(), weights="ema",
+                        state_dict_raw=model.state_dict())
+        else:
+            snap["state_dict"] = model.state_dict()
+        return snap
+
+    logits = None
     for epoch in range(start_epoch, args.epochs):
         t0, running, seen = time.time(), 0.0, 0
         running_ce, running_sl, n_steps = 0.0, {}, 0
+        running_parts = torch.zeros(3, device=device)
         for x, y in train_loader:
             x = x.to(device, non_blocking=True).float() / 255.0
             y = y.to(device, non_blocking=True)
@@ -497,7 +733,14 @@ def main():
             if spatial:
                 capture.active = True
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
-                loss = criterion(model(x1, x2), y)
+                if fusion is not None:
+                    out = model.forward_heads(x1, x2)
+                    ce_parts = torch.stack([criterion(out[h], y) for h in
+                                            ("joint", "magno", "parvo")])
+                    loss = ce_parts[0] + recipe["aux_weight"] * ce_parts[1:].sum()
+                    running_parts = running_parts + ce_parts.detach() * y.numel()
+                else:
+                    loss = criterion(model(x1, x2), y)
             ce = loss
             if spatial:
                 # Outside autocast: the correlations are computed in fp32.
@@ -514,6 +757,10 @@ def main():
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
             optimizer.step()
+            if scheduler is not None:
+                scheduler.step()
+            if ema is not None:
+                ema_update(ema, model, recipe["ema_decay"], step)
             running += loss.item() * y.numel()
             running_ce += ce.detach() * y.numel()
             seen += y.numel()
@@ -521,10 +768,23 @@ def main():
             step += 1
             if args.max_steps is not None and step >= args.max_steps:
                 break
-        val_acc = evaluate(model, builder, val_loader, device,
-                           max_batches=args.val_batches, amp=amp)
+        if fusion is not None:
+            # val_top1 is the EMA network's joint decision, the model of
+            # record for the Stage-1 arms; the raw weights are logged beside.
+            m, logits = evaluate_fusion(ema, model, builder, val_loader, cc,
+                                        device, amp,
+                                        max_batches=args.val_batches)
+            val_acc = m["val"]["joint"]
+        else:
+            val_acc = evaluate(model, builder, val_loader, device,
+                               max_batches=args.val_batches, amp=amp)
         rec = {"epoch": epoch, "train_loss": running / max(seen, 1),
                "val_top1": val_acc, "sec": round(time.time() - t0, 1)}
+        if fusion is not None:
+            rec["lr"] = scheduler.get_last_lr()[0]
+            rec["train_ce"] = dict(zip(("joint", "magno", "parvo"),
+                                       (running_parts / max(seen, 1)).tolist()))
+            rec.update(m)
         if spatial:
             rec["train_ce"] = float(running_ce) / max(seen, 1)
             rec["train_sl"] = {d: float(v) / max(n_steps, 1)
@@ -538,23 +798,31 @@ def main():
         # than to ckpt_every. Written to a temp path first so a kill during
         # the write cannot leave a truncated file as the only resume point.
         tmp_path = last_path + ".tmp"
-        torch.save({"epoch": epoch, "step": step, "history": history,
-                    "state_dict": model.state_dict(),
-                    "optimizer": optimizer.state_dict(),
-                    "config": {**cfg, "in_channels": [c1, c2]}}, tmp_path)
+        state = {"epoch": epoch, "step": step, "history": history,
+                 "state_dict": model.state_dict(),
+                 "optimizer": optimizer.state_dict(),
+                 "config": {**cfg, "in_channels": [c1, c2]}}
+        if ema is not None:
+            state["ema_state_dict"] = ema.state_dict()
+            state["scheduler"] = scheduler.state_dict()
+        torch.save(state, tmp_path)
         os.replace(tmp_path, last_path)
+        snap = snapshot(epoch)
         if (epoch + 1) % args.ckpt_every == 0 or epoch + 1 == args.epochs:
-            torch.save(
-                {"epoch": epoch, "state_dict": model.state_dict(),
-                 "config": {**cfg, "in_channels": [c1, c2]}},
-                os.path.join(out_dir, f"checkpoint_{epoch + 1:03d}.pt"),
-            )
+            torch.save(snap, os.path.join(out_dir,
+                                          f"checkpoint_{epoch + 1:03d}.pt"))
+        if fusion is not None and val_acc >= max(h["val_top1"] for h in history):
+            torch.save(snap, os.path.join(out_dir, "checkpoint_best.pt"))
         if args.max_steps is not None and step >= args.max_steps:
             break
 
-    torch.save({"state_dict": model.state_dict(),
-                "config": {**cfg, "in_channels": [c1, c2]}},
+    torch.save({k: v for k, v in snapshot(None).items() if k != "epoch"},
                os.path.join(out_dir, "checkpoint_final.pt"))
+    if logits is not None:
+        # Per-image logits of the final EMA network (val + cue-conflict), so
+        # frontiers and bootstraps need no GPU re-run.
+        np.savez_compressed(os.path.join(out_dir, "final_logits.npz"),
+                            **{k: v.numpy() for k, v in logits.items()})
     print(f"[{run}] done -> {out_dir}", flush=True)
 
 
