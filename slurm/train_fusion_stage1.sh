@@ -87,12 +87,20 @@ $PY -m src.training.standalone_trainer \
     --epochs 50 --batch-size 256 --num-workers 8 \
     --ckpt-every 10 --resume --cue-conflict-npz "$CC"
 rc=$?
-kill "$PUSHER" 2>/dev/null
+# Stop the pusher and any rsync it has in flight. Killing only the subshell left
+# an orphaned rsync that landed stale files after the final push (26608893_2).
+kids=$(pgrep -P "$PUSHER")
+kill "$PUSHER" $kids 2>/dev/null
+wait "$PUSHER" 2>/dev/null
+for p in $kids; do
+    for _ in $(seq 60); do kill -0 "$p" 2>/dev/null || break; sleep 1; done
+done
 echo "trainer exit $rc $(date -Is); final push"
 
 push "$OUT" || { echo "final push failed"; rc=1; }
-diffs=$(rsync -a --dry-run --checksum --itemize-changes --exclude='*.tmp' \
-        "$LOCAL/$RUN/" "$OUT/$RUN/" | grep -v '^\.' | grep -v '^$')
+check=$(rsync -a --dry-run --checksum --itemize-changes --exclude='*.tmp' \
+        "$LOCAL/$RUN/" "$OUT/$RUN/") || { echo "verify could not run"; rc=1; }
+diffs=$(printf '%s\n' "$check" | grep -v '^\.' | grep -v '^$')
 if [ -n "$diffs" ]; then
     echo "remote copy differs:"; echo "$diffs" | head
     mkdir -p "$OUT_FALLBACK/$RUN"
