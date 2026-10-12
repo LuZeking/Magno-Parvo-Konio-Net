@@ -41,6 +41,13 @@
 #
 #   env -u TMPDIR sbatch --array=1-2 \
 #       --export=ALL,CODE=<code dir>,SEEDS_OF=fs1_bcs_avg slurm/train_fusion_stage1.sh
+#
+# Another list of conditions at seed 0 (Stage 2, single objective): COND_LIST
+# is a space-separated condition list indexed by the array index; OUT_DIR
+# overrides the run root (fallback = OUT_DIR_fallback):
+#
+#   env -u TMPDIR sbatch --array=0-4 --export=ALL,CODE=<code dir>,OUT_DIR=<dir>,COND_LIST="a b c d e" \
+#       slurm/train_fusion_stage1.sh
 #SBATCH --job-name=fs1_train
 #SBATCH --partition=agcichy
 #SBATCH --qos=standard
@@ -62,8 +69,8 @@ export PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$CODE"
 PY=/home/byrong/anaconda3/envs/mpk/bin/python
 DKL=/scratch/byrong/VST_data/VST_datasets/miniecoset_256px_dkl_uint8.h5
 CC=/scratch/byrong/TSN/fusion_stage1/cache/cue_conflict_dkl_u8_v1.npz
-OUT=/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-10_pilot
-OUT_FALLBACK=/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-10_pilot_fallback
+OUT=${OUT_DIR:-/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-10_pilot}
+OUT_FALLBACK=${OUT}_fallback
 LOCAL=$TMPDIR/runs
 
 CONDS=(fs1_bcs_avg
@@ -75,6 +82,10 @@ CONDS=(fs1_bcs_avg
 if [ -n "${SEEDS_OF:-}" ]; then
     COND=$SEEDS_OF
     SEED=$SLURM_ARRAY_TASK_ID
+elif [ -n "${COND_LIST:-}" ]; then
+    read -r -a LIST <<< "$COND_LIST"
+    COND=${LIST[$SLURM_ARRAY_TASK_ID]}
+    SEED=0
 else
     COND=${CONDS[$SLURM_ARRAY_TASK_ID]}
     SEED=0

@@ -153,6 +153,37 @@ CONDITIONS.update({
 })
 STAGE1_CONDITIONS = [c for c in CONDITIONS if c.startswith("fs1_")]
 
+# Fusion Stage 2 (2026-10-12): the new main TSN keeps the BA's single
+# objective -- one cross-entropy on the network output. The per-stream heads
+# are trained on detached features (detach_aux), so they are linear readouts
+# of each stream (thesis Fig. 7) and send no gradient into the trunks. Every
+# arm uses the BA's tied average head with magno weight w in training and at
+# test time (the thesis's M-heavy variant is w = 0.9; stream1_weight records
+# it for TwoStreamNetwork-based tools).
+STAGE2_RECIPE = dict(STAGE1_RECIPE, aux_weight=1.0, label_smoothing=0.0)
+
+
+def _stage2(w: float = 0.5, *, highsf: bool = False,
+            label_smoothing: float = 0.0) -> dict:
+    return dict(_stage1("average", highsf=highsf, w=w),
+                stream1_weight=w, detach_aux=True,
+                recipe=dict(STAGE2_RECIPE, label_smoothing=label_smoothing))
+
+
+CONDITIONS.update({
+    # the BA's TSN under the new optimiser, single objective: main candidate
+    "fs2_bcs_avg_w050":    _stage2(0.5),
+    # more magno weight in training and test: shape bias up
+    "fs2_bcs_avg_w070":    _stage2(0.7),
+    "fs2_bcs_avg_w090":    _stage2(0.9),
+    # accuracy lever: label smoothing 0.1
+    "fs2_bcs_avg_w050_ls": _stage2(0.5, label_smoothing=0.1),
+    # accuracy lever: parvo also gets full-acuity luminance; magno-heavy w
+    # to hold shape bias
+    "fs2_hsf_avg_w085":    _stage2(0.85, highsf=True),
+})
+STAGE2_CONDITIONS = [c for c in CONDITIONS if c.startswith("fs2_")]
+
 
 class H5ImageDataset(Dataset):
     """Lazily-opened HDF5 image/label dataset (worker-safe).
@@ -630,7 +661,8 @@ def main():
         if fusion is not None:
             model = LateFusionNetwork(model, fusion, w=cfg.get("w", 0.5),
                                       k=cfg.get("k", 3),
-                                      lam=cfg.get("lam", 0.0))
+                                      lam=cfg.get("lam", 0.0),
+                                      detach_aux=cfg.get("detach_aux", False))
     model = model.to(device)
 
     # Spatial-loss conditions: sheets are built (or reloaded on resume) before
@@ -663,7 +695,8 @@ def main():
     if fusion is not None and args.cue_conflict_npz:
         cc = load_cue_conflict(args.cue_conflict_npz)
         print(f"  cue-conflict cache: {len(cc['x'])} images", flush=True)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(
+        label_smoothing=(recipe or {}).get("label_smoothing", 0.0))
 
     with open(os.path.join(out_dir, "config.json"), "w") as f:
         # `like_resnet` in vars(args) is None whenever the condition supplied
