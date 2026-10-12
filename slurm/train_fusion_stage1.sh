@@ -35,6 +35,12 @@
 #
 #   env -u TMPDIR sbatch --export=ALL,CODE=/home/byrong/projects/TSN/fusion_stage1_code/<sha> \
 #       slurm/train_fusion_stage1.sh
+#
+# Extra seeds of one condition: set SEEDS_OF=<condition>; the array index is
+# then the seed (2026-10-12: fs1_bcs_avg, the new main TSN, seeds 1-2):
+#
+#   env -u TMPDIR sbatch --array=1-2 \
+#       --export=ALL,CODE=<code dir>,SEEDS_OF=fs1_bcs_avg slurm/train_fusion_stage1.sh
 #SBATCH --job-name=fs1_train
 #SBATCH --partition=agcichy
 #SBATCH --qos=standard
@@ -66,10 +72,16 @@ CONDS=(fs1_bcs_avg
        fs1_hsf_hinge_k3_l2 fs1_hsf_hinge_k3_l4
        fs1_bcs_add_w070_mstem64
        fs1_cs_add_w070 fs1_b2cs_add_w070)
-COND=${CONDS[$SLURM_ARRAY_TASK_ID]}
-RUN=${COND}_seed0
+if [ -n "${SEEDS_OF:-}" ]; then
+    COND=$SEEDS_OF
+    SEED=$SLURM_ARRAY_TASK_ID
+else
+    COND=${CONDS[$SLURM_ARRAY_TASK_ID]}
+    SEED=0
+fi
+RUN=${COND}_seed${SEED}
 
-echo "task $SLURM_ARRAY_TASK_ID -> $COND seed 0 on $(hostname) $(date -Is) code $(cat "$CODE/COMMIT")"
+echo "task $SLURM_ARRAY_TASK_ID -> $COND seed $SEED on $(hostname) $(date -Is) code $(cat "$CODE/COMMIT")"
 nvidia-smi --query-gpu=name --format=csv,noheader
 df -h "$TMPDIR" | tail -1
 [ -s "$CC" ] || { echo "missing cue-conflict cache $CC"; exit 1; }
@@ -83,7 +95,7 @@ push() { rsync -a --exclude='*.tmp' "$LOCAL/$RUN/" "$1/$RUN/"; }
 PUSHER=$!
 
 $PY -m src.training.standalone_trainer \
-    --dataset "$DKL" --condition "$COND" --seed 0 --out-dir "$LOCAL" \
+    --dataset "$DKL" --condition "$COND" --seed "$SEED" --out-dir "$LOCAL" \
     --epochs 50 --batch-size 256 --num-workers 8 \
     --ckpt-every 10 --resume --cue-conflict-npz "$CC"
 rc=$?
