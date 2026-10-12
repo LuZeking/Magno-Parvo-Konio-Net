@@ -1,0 +1,124 @@
+20/20 results; missing: none
+
+GATE 1 (paper models: stratified reproduces stored JSON to +-0.005)
+  untrained_blur_cs                      max |diff| 0.0000  PASS
+  dkl_bcs_seed0_trained                  max |diff| 0.0000  PASS
+  dkl_bcs_seed1_trained                  max |diff| 0.0000  PASS
+  dkl_bcs_seed2_trained                  max |diff| 0.0000  PASS
+  dkl_bcs_parvo_highsf_seed0_trained     max |diff| 0.0000  PASS
+  dkl_bcs_parvo_highsf_seed1_trained     max |diff| 0.0000  PASS
+  dkl_bcs_parvo_highsf_seed2_trained     max |diff| 0.0000  PASS
+  dkl_bcs_thesis_trained                 max |diff| 0.0000  PASS
+
+GATE 2 (Stage-1: 16-way decision agreement with logged logits >= 0.98)
+  fs1_bcs_avg_seed0              magno 0.9742 (max|d| 1.304)  parvo 0.9217 (max|d| 3.411)  FAIL
+  fs1_bcs_add_w050_seed0         magno 0.9758 (max|d| 1.532)  parvo 0.9467 (max|d| 3.793)  FAIL
+  fs1_bcs_add_w070_seed0         magno 0.9717 (max|d| 1.204)  parvo 0.9183 (max|d| 6.126)  FAIL
+  fs1_bcs_add_w085_seed0         magno 0.9625 (max|d| 1.433)  parvo 0.9075 (max|d| 9.090)  FAIL
+  fs1_hsf_add_w050_seed0         magno 0.9808 (max|d| 1.564)  parvo 0.9908 (max|d| 0.936)  PASS
+  fs1_hsf_add_w070_seed0         magno 0.9717 (max|d| 1.129)  parvo 0.9817 (max|d| 0.857)  FAIL
+  fs1_hsf_add_w085_seed0         magno 0.9700 (max|d| 1.165)  parvo 0.9875 (max|d| 1.543)  FAIL
+  fs1_hsf_hinge_k3_l2_seed0      magno 0.9833 (max|d| 0.695)  parvo 0.9900 (max|d| 0.537)  PASS
+  fs1_hsf_hinge_k3_l4_seed0      magno 0.9817 (max|d| 0.474)  parvo 0.9858 (max|d| 0.491)  PASS
+  fs1_bcs_add_w070_mstem64_seed0 magno 0.9375 (max|d| 3.351)  parvo 0.9350 (max|d| 5.762)  FAIL
+  fs1_cs_add_w070_seed0          magno 0.9392 (max|d| 2.807)  parvo 0.9208 (max|d| 4.810)  FAIL
+  fs1_b2cs_add_w070_seed0        magno 0.9425 (max|d| 2.743)  parvo 0.9133 (max|d| 4.629)  FAIL
+
+TABLE [pca]  shape/texture (bias) per stream: m=magno p=parvo b=both
+  untrained_blur_cs                    strat m 0.98/0.18(+0.80) p 0.33/0.41(-0.09) b 0.96/0.35(+0.61)  per_l m 0.24/0.09(+0.15) p 0.13/0.16(-0.03) b 0.24/0.12(+0.13)  doubl m 0.22/0.14(+0.09) p 0.14/0.17(-0.03) b 0.23/0.18(+0.05)
+  dkl_bcs_seed0_trained                strat m 0.97/0.16(+0.81) p 0.45/0.94(-0.48) b 0.96/0.89(+0.07)  per_l m 0.26/0.08(+0.18) p 0.32/0.35(-0.03) b 0.39/0.29(+0.11)  doubl m 0.24/0.14(+0.11) p 0.27/0.34(-0.07) b 0.34/0.35(-0.01)
+  dkl_bcs_seed1_trained                strat m 0.97/0.15(+0.82) p 0.39/0.94(-0.55) b 0.97/0.92(+0.05)  per_l m 0.27/0.08(+0.19) p 0.26/0.29(-0.03) b 0.35/0.25(+0.10)  doubl m 0.26/0.13(+0.13) p 0.21/0.29(-0.08) b 0.31/0.33(-0.02)
+  dkl_bcs_seed2_trained                strat m 0.97/0.15(+0.82) p 0.42/0.95(-0.52) b 0.96/0.91(+0.05)  per_l m 0.25/0.08(+0.18) p 0.30/0.33(-0.02) b 0.35/0.27(+0.08)  doubl m 0.23/0.15(+0.09) p 0.25/0.31(-0.05) b 0.30/0.32(-0.02)
+  dkl_bcs_parvo_highsf_seed0_trained   strat m 0.98/0.15(+0.83) p 0.69/0.97(-0.28) b 0.99/0.92(+0.06)  per_l m 0.27/0.07(+0.20) p 0.36/0.37(-0.01) b 0.41/0.30(+0.11)  doubl m 0.25/0.12(+0.12) p 0.30/0.37(-0.07) b 0.36/0.37(-0.01)
+  dkl_bcs_parvo_highsf_seed1_trained   strat m 0.98/0.13(+0.85) p 0.71/0.97(-0.26) b 0.99/0.93(+0.05)  per_l m 0.28/0.09(+0.19) p 0.40/0.39(+0.02) b 0.44/0.29(+0.15)  doubl m 0.26/0.14(+0.12) p 0.34/0.40(-0.06) b 0.38/0.38(+0.00)
+  dkl_bcs_parvo_highsf_seed2_trained   strat m 0.99/0.14(+0.85) p 0.70/0.97(-0.27) b 0.98/0.93(+0.05)  per_l m 0.29/0.07(+0.21) p 0.38/0.40(-0.01) b 0.43/0.32(+0.11)  doubl m 0.26/0.13(+0.13) p 0.33/0.42(-0.09) b 0.36/0.40(-0.04)
+  dkl_bcs_thesis_trained               strat m 0.98/0.15(+0.83) p 0.44/0.95(-0.51) b 0.97/0.90(+0.07)  per_l m 0.26/0.07(+0.20) p 0.30/0.33(-0.04) b 0.37/0.25(+0.13)  doubl m 0.23/0.13(+0.10) p 0.25/0.31(-0.06) b 0.33/0.29(+0.04)
+  fs1_bcs_avg_seed0                    strat m 0.97/0.18(+0.79) p 0.46/0.91(-0.44) b 0.97/0.85(+0.12)  per_l m 0.30/0.10(+0.20) p 0.34/0.35(-0.02) b 0.41/0.30(+0.10)  doubl m 0.28/0.15(+0.12) p 0.27/0.36(-0.09) b 0.36/0.37(-0.01)
+  fs1_bcs_add_w050_seed0               strat m 0.97/0.19(+0.78) p 0.48/0.94(-0.46) b 0.96/0.88(+0.08)  per_l m 0.27/0.10(+0.17) p 0.30/0.36(-0.06) b 0.39/0.29(+0.10)  doubl m 0.24/0.15(+0.10) p 0.26/0.36(-0.11) b 0.33/0.36(-0.04)
+  fs1_bcs_add_w070_seed0               strat m 0.97/0.18(+0.79) p 0.46/0.92(-0.46) b 0.97/0.87(+0.10)  per_l m 0.28/0.09(+0.19) p 0.32/0.34(-0.02) b 0.42/0.28(+0.14)  doubl m 0.25/0.15(+0.10) p 0.27/0.34(-0.08) b 0.36/0.34(+0.03)
+  fs1_bcs_add_w085_seed0               strat m 0.97/0.18(+0.79) p 0.43/0.89(-0.45) b 0.97/0.85(+0.12)  per_l m 0.29/0.10(+0.19) p 0.31/0.31(+0.01) b 0.40/0.29(+0.11)  doubl m 0.27/0.16(+0.11) p 0.26/0.30(-0.05) b 0.33/0.34(-0.01)
+  fs1_hsf_add_w050_seed0               strat m 0.97/0.18(+0.80) p 0.65/0.96(-0.31) b 0.97/0.91(+0.06)  per_l m 0.28/0.09(+0.19) p 0.38/0.40(-0.02) b 0.44/0.33(+0.11)  doubl m 0.27/0.15(+0.12) p 0.33/0.42(-0.09) b 0.39/0.41(-0.01)
+  fs1_hsf_add_w070_seed0               strat m 0.98/0.21(+0.77) p 0.57/0.95(-0.38) b 0.97/0.92(+0.05)  per_l m 0.28/0.10(+0.18) p 0.36/0.42(-0.06) b 0.43/0.33(+0.09)  doubl m 0.27/0.15(+0.11) p 0.33/0.40(-0.07) b 0.39/0.41(-0.02)
+  fs1_hsf_add_w085_seed0               strat m 0.98/0.21(+0.77) p 0.56/0.95(-0.39) b 0.98/0.90(+0.08)  per_l m 0.28/0.10(+0.18) p 0.37/0.42(-0.04) b 0.43/0.33(+0.09)  doubl m 0.26/0.16(+0.10) p 0.30/0.42(-0.12) b 0.37/0.40(-0.03)
+  fs1_hsf_hinge_k3_l2_seed0            strat m 0.97/0.23(+0.74) p 0.67/0.95(-0.29) b 0.97/0.92(+0.06)  per_l m 0.29/0.10(+0.19) p 0.40/0.40(+0.01) b 0.45/0.32(+0.13)  doubl m 0.27/0.17(+0.10) p 0.34/0.41(-0.07) b 0.39/0.40(-0.01)
+  fs1_hsf_hinge_k3_l4_seed0            strat m 0.98/0.25(+0.73) p 0.68/0.95(-0.27) b 0.98/0.92(+0.06)  per_l m 0.29/0.11(+0.18) p 0.40/0.43(-0.03) b 0.44/0.34(+0.10)  doubl m 0.26/0.17(+0.09) p 0.36/0.45(-0.08) b 0.38/0.41(-0.03)
+  fs1_bcs_add_w070_mstem64_seed0       strat m 0.97/0.19(+0.77) p 0.44/0.90(-0.46) b 0.96/0.86(+0.10)  per_l m 0.28/0.10(+0.19) p 0.30/0.34(-0.04) b 0.41/0.29(+0.12)  doubl m 0.25/0.16(+0.09) p 0.28/0.34(-0.06) b 0.36/0.37(-0.00)
+  fs1_cs_add_w070_seed0                strat m 0.94/0.36(+0.57) p 0.46/0.89(-0.44) b 0.93/0.86(+0.07)  per_l m 0.31/0.18(+0.13) p 0.32/0.35(-0.03) b 0.44/0.34(+0.10)  doubl m 0.29/0.23(+0.06) p 0.26/0.34(-0.08) b 0.39/0.38(+0.00)
+  fs1_b2cs_add_w070_seed0              strat m 0.94/0.30(+0.64) p 0.44/0.91(-0.46) b 0.94/0.86(+0.08)  per_l m 0.32/0.14(+0.18) p 0.31/0.34(-0.03) b 0.41/0.30(+0.11)  doubl m 0.28/0.20(+0.08) p 0.26/0.32(-0.05) b 0.35/0.36(-0.00)
+
+TABLE [readout]  shape/texture (bias) per stream: m=magno p=parvo b=both
+  untrained_blur_cs                    strat m 0.93/0.23(+0.70) p 0.25/0.63(-0.38) b 0.85/0.64(+0.21)  per_l m 0.39/0.12(+0.26) p 0.13/0.25(-0.12) b 0.39/0.22(+0.17)  doubl m 0.38/0.15(+0.23) p 0.13/0.25(-0.13) b 0.39/0.24(+0.15)
+  dkl_bcs_seed0_trained                strat m 0.91/0.20(+0.71) p 0.38/0.95(-0.58) b 0.88/0.93(-0.05)  per_l m 0.57/0.13(+0.44) p 0.32/0.47(-0.15) b 0.61/0.46(+0.15)  doubl m 0.56/0.17(+0.40) p 0.25/0.48(-0.23) b 0.60/0.48(+0.12)
+  dkl_bcs_seed1_trained                strat m 0.92/0.21(+0.71) p 0.33/0.97(-0.64) b 0.88/0.94(-0.06)  per_l m 0.57/0.13(+0.44) p 0.26/0.43(-0.17) b 0.59/0.41(+0.18)  doubl m 0.57/0.17(+0.40) p 0.19/0.43(-0.23) b 0.57/0.43(+0.14)
+  dkl_bcs_seed2_trained                strat m 0.91/0.19(+0.72) p 0.34/0.96(-0.62) b 0.89/0.94(-0.05)  per_l m 0.57/0.12(+0.45) p 0.30/0.47(-0.16) b 0.60/0.44(+0.16)  doubl m 0.57/0.14(+0.43) p 0.25/0.46(-0.21) b 0.58/0.46(+0.12)
+  dkl_bcs_parvo_highsf_seed0_trained   strat m 0.93/0.17(+0.75) p 0.53/0.96(-0.44) b 0.91/0.95(-0.04)  per_l m 0.54/0.08(+0.46) p 0.42/0.53(-0.11) b 0.61/0.54(+0.07)  doubl m 0.55/0.13(+0.42) p 0.33/0.54(-0.21) b 0.58/0.54(+0.04)
+  dkl_bcs_parvo_highsf_seed1_trained   strat m 0.92/0.16(+0.77) p 0.53/0.98(-0.44) b 0.91/0.95(-0.04)  per_l m 0.53/0.10(+0.42) p 0.43/0.55(-0.12) b 0.59/0.55(+0.04)  doubl m 0.53/0.14(+0.39) p 0.35/0.55(-0.21) b 0.57/0.55(+0.02)
+  dkl_bcs_parvo_highsf_seed2_trained   strat m 0.93/0.15(+0.77) p 0.55/0.98(-0.43) b 0.92/0.96(-0.05)  per_l m 0.55/0.09(+0.46) p 0.44/0.56(-0.12) b 0.60/0.54(+0.06)  doubl m 0.55/0.11(+0.44) p 0.36/0.56(-0.21) b 0.59/0.55(+0.04)
+  dkl_bcs_thesis_trained               strat m 0.95/0.18(+0.77) p 0.35/0.97(-0.62) b 0.92/0.95(-0.03)  per_l m 0.63/0.10(+0.53) p 0.32/0.48(-0.17) b 0.65/0.46(+0.19)  doubl m 0.63/0.14(+0.49) p 0.25/0.48(-0.23) b 0.64/0.47(+0.17)
+  fs1_bcs_avg_seed0                    strat m 0.91/0.23(+0.68) p 0.38/0.95(-0.56) b 0.90/0.92(-0.02)  per_l m 0.59/0.13(+0.46) p 0.34/0.50(-0.16) b 0.63/0.47(+0.16)  doubl m 0.58/0.15(+0.43) p 0.29/0.50(-0.20) b 0.61/0.48(+0.12)
+  fs1_bcs_add_w050_seed0               strat m 0.92/0.23(+0.69) p 0.42/0.94(-0.53) b 0.89/0.93(-0.04)  per_l m 0.61/0.14(+0.47) p 0.37/0.50(-0.13) b 0.64/0.50(+0.15)  doubl m 0.60/0.18(+0.43) p 0.29/0.50(-0.21) b 0.62/0.51(+0.11)
+  fs1_bcs_add_w070_seed0               strat m 0.90/0.22(+0.67) p 0.40/0.95(-0.55) b 0.89/0.93(-0.03)  per_l m 0.61/0.13(+0.48) p 0.33/0.50(-0.17) b 0.65/0.49(+0.15)  doubl m 0.61/0.17(+0.45) p 0.29/0.51(-0.22) b 0.64/0.50(+0.13)
+  fs1_bcs_add_w085_seed0               strat m 0.92/0.22(+0.70) p 0.38/0.94(-0.56) b 0.89/0.90(-0.01)  per_l m 0.62/0.13(+0.49) p 0.33/0.43(-0.10) b 0.62/0.43(+0.19)  doubl m 0.60/0.16(+0.44) p 0.28/0.44(-0.15) b 0.61/0.44(+0.17)
+  fs1_hsf_add_w050_seed0               strat m 0.92/0.22(+0.69) p 0.52/0.96(-0.44) b 0.90/0.95(-0.05)  per_l m 0.62/0.14(+0.49) p 0.42/0.59(-0.16) b 0.66/0.55(+0.11)  doubl m 0.61/0.17(+0.44) p 0.36/0.59(-0.23) b 0.65/0.57(+0.07)
+  fs1_hsf_add_w070_seed0               strat m 0.91/0.24(+0.66) p 0.47/0.97(-0.50) b 0.89/0.96(-0.07)  per_l m 0.59/0.14(+0.45) p 0.39/0.60(-0.21) b 0.63/0.57(+0.06)  doubl m 0.59/0.18(+0.41) p 0.33/0.61(-0.27) b 0.61/0.59(+0.02)
+  fs1_hsf_add_w085_seed0               strat m 0.91/0.24(+0.67) p 0.49/0.97(-0.48) b 0.89/0.95(-0.06)  per_l m 0.60/0.14(+0.46) p 0.40/0.58(-0.17) b 0.65/0.54(+0.11)  doubl m 0.61/0.17(+0.44) p 0.34/0.58(-0.24) b 0.63/0.56(+0.07)
+  fs1_hsf_hinge_k3_l2_seed0            strat m 0.92/0.26(+0.66) p 0.49/0.96(-0.47) b 0.90/0.95(-0.05)  per_l m 0.65/0.15(+0.51) p 0.41/0.56(-0.16) b 0.67/0.53(+0.13)  doubl m 0.64/0.17(+0.46) p 0.36/0.58(-0.22) b 0.63/0.54(+0.09)
+  fs1_hsf_hinge_k3_l4_seed0            strat m 0.92/0.26(+0.66) p 0.50/0.96(-0.46) b 0.89/0.95(-0.06)  per_l m 0.62/0.15(+0.47) p 0.42/0.60(-0.18) b 0.64/0.55(+0.09)  doubl m 0.62/0.20(+0.42) p 0.36/0.60(-0.25) b 0.63/0.57(+0.06)
+  fs1_bcs_add_w070_mstem64_seed0       strat m 0.91/0.23(+0.68) p 0.38/0.95(-0.57) b 0.87/0.93(-0.06)  per_l m 0.60/0.12(+0.48) p 0.32/0.50(-0.18) b 0.61/0.47(+0.14)  doubl m 0.59/0.17(+0.42) p 0.27/0.49(-0.23) b 0.60/0.49(+0.11)
+  fs1_cs_add_w070_seed0                strat m 0.85/0.43(+0.42) p 0.37/0.93(-0.55) b 0.85/0.92(-0.07)  per_l m 0.61/0.23(+0.39) p 0.33/0.47(-0.13) b 0.64/0.48(+0.15)  doubl m 0.60/0.24(+0.36) p 0.27/0.47(-0.20) b 0.61/0.48(+0.13)
+  fs1_b2cs_add_w070_seed0              strat m 0.88/0.33(+0.55) p 0.40/0.93(-0.53) b 0.87/0.92(-0.05)  per_l m 0.63/0.18(+0.45) p 0.34/0.45(-0.11) b 0.65/0.47(+0.18)  doubl m 0.61/0.20(+0.41) p 0.28/0.47(-0.18) b 0.61/0.48(+0.14)
+
+READING 2 (parvo pca bias < 0 under per_label AND double, all 3 dkl_bcs seeds)
+  stratified parvo bias seeds [-0.482, -0.548, -0.525]  mean -0.518
+  per_label  parvo bias seeds [-0.033, -0.033, -0.024]  mean -0.030
+  double     parvo bias seeds [-0.072, -0.077, -0.053]  mean -0.067
+  -> SURVIVES (sign)
+
+READING 3 (bias(magno) - bias(parvo) > 0 under both grouped splits, all 3 seeds)
+  stratified contrast seeds [1.292, 1.373, 1.349]  mean +1.338
+  per_label  contrast seeds [0.215, 0.228, 0.201]  mean +0.214
+  double     contrast seeds [0.177, 0.21, 0.14]  mean +0.176
+  -> SURVIVES
+
+READING 4 (decision rule probe part). MoR magno bias stratified 0.8194, per_label 0.1847; r = 0.9763; restated per_label threshold = 0.1803
+  fs1_bcs_avg_seed0              stratified 0.788 FAIL   per_label 0.201 PASS
+  fs1_bcs_add_w050_seed0         stratified 0.777 FAIL   per_label 0.173 FAIL
+  fs1_bcs_add_w070_seed0         stratified 0.791 FAIL   per_label 0.185 PASS
+  fs1_bcs_add_w085_seed0         stratified 0.788 FAIL   per_label 0.189 PASS
+  fs1_hsf_add_w050_seed0         stratified 0.798 FAIL   per_label 0.189 PASS
+  fs1_hsf_add_w070_seed0         stratified 0.766 FAIL   per_label 0.179 FAIL
+  fs1_hsf_add_w085_seed0         stratified 0.772 FAIL   per_label 0.181 PASS
+  fs1_hsf_hinge_k3_l2_seed0      stratified 0.738 FAIL   per_label 0.188 PASS
+  fs1_hsf_hinge_k3_l4_seed0      stratified 0.728 FAIL   per_label 0.182 PASS
+  fs1_bcs_add_w070_mstem64_seed0 stratified 0.772 FAIL   per_label 0.190 PASS
+  fs1_cs_add_w070_seed0          stratified 0.573 FAIL   per_label 0.128 FAIL
+  fs1_b2cs_add_w070_seed0        stratified 0.639 FAIL   per_label 0.177 FAIL
+
+READING 5 (pca/both: retains texture = double texture >= 0.1875; texture-dominant = t > s under both grouped splits)
+  untrained_blur_cs                    double texture 0.177 below 3x chance  not texture-dominant
+  dkl_bcs_seed0_trained                double texture 0.352 retains  not texture-dominant
+  dkl_bcs_seed1_trained                double texture 0.326 retains  not texture-dominant
+  dkl_bcs_seed2_trained                double texture 0.323 retains  not texture-dominant
+  dkl_bcs_parvo_highsf_seed0_trained   double texture 0.367 retains  not texture-dominant
+  dkl_bcs_parvo_highsf_seed1_trained   double texture 0.378 retains  not texture-dominant
+  dkl_bcs_parvo_highsf_seed2_trained   double texture 0.398 retains  not texture-dominant
+  dkl_bcs_thesis_trained               double texture 0.295 retains  not texture-dominant
+  fs1_bcs_avg_seed0                    double texture 0.374 retains  not texture-dominant
+  fs1_bcs_add_w050_seed0               double texture 0.362 retains  not texture-dominant
+  fs1_bcs_add_w070_seed0               double texture 0.338 retains  not texture-dominant
+  fs1_bcs_add_w085_seed0               double texture 0.342 retains  not texture-dominant
+  fs1_hsf_add_w050_seed0               double texture 0.405 retains  not texture-dominant
+  fs1_hsf_add_w070_seed0               double texture 0.415 retains  not texture-dominant
+  fs1_hsf_add_w085_seed0               double texture 0.397 retains  not texture-dominant
+  fs1_hsf_hinge_k3_l2_seed0            double texture 0.396 retains  not texture-dominant
+  fs1_hsf_hinge_k3_l4_seed0            double texture 0.411 retains  not texture-dominant
+  fs1_bcs_add_w070_mstem64_seed0       double texture 0.366 retains  not texture-dominant
+  fs1_cs_add_w070_seed0                double texture 0.384 retains  not texture-dominant
+  fs1_b2cs_add_w070_seed0              double texture 0.357 retains  not texture-dominant
+
+READING 6 (learning contributes: dkl_bcs seed0 - untrained_blur_cs, pca bias)
+  stratified magno +0.014  parvo -0.395   (untrained: magno +0.796, parvo -0.087)
+  per_label  magno +0.028  parvo -0.004   (untrained: magno +0.154, parvo -0.028)
+  double     magno +0.018  parvo -0.042   (untrained: magno +0.087, parvo -0.029)
+
+wrote /scratch/byrong/TSN/fusion_stage1/results/2026-10-11_grouped_probe/summary.json

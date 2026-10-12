@@ -1,0 +1,13 @@
+<section id="next" data-transition="fade" style="background:#FAF9F5;color:#1B2333;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.15;color:#1B2333">Next analyses, ranked</h2>
+<table style="font-size:26px;color:#1B2333;font-family:'IBM Plex Sans', Arial, sans-serif">
+<tr style="background:#EFEDE6"><th style="width:5%">#</th><th style="width:37%">Analysis</th><th style="width:40%">What it decides</th><th style="width:18%">Cost</th></tr>
+<tr><td>1</td><td>Retrain single34, DVD ResNet-50 and RGB ResNet-50 with our recipe</td><td>Is the +20 pp specific to TSN? The fair "did we beat the baseline" test</td><td>3 runs · ~9 h wall on g017</td></tr>
+<tr><td>2</td><td>Leak-free probe as the new Table 1, with baselines and an untrained row</td><td>Replaces a leaky table; is texture at 7–9× chance unusual for a CNN?</td><td>CPU · ~2 h after #1</td></tr>
+<tr><td>3</td><td>Model-vs-human suite: silhouettes, edges, sketches, stylised; error consistency</td><td>Does the w dial move behaviour toward humans beyond cue-conflict?</td><td>~½ day setup + 2 GPU-h</td></tr>
+<tr><td>4</td><td>Main figure: shape bias and accuracy as w varies, from logged sweeps</td><td>One scalar sets shape bias; the magno head stays at SB 0.91</td><td>No compute · ~1 h</td></tr>
+<tr><td>5</td><td>Seeds 1–2 for A0, A1 w = 0.7 and hsf w = 0.5</td><td>Confidence intervals for the ±2 pp rule effect</td><td>6 runs · ~14 h wall on 2 B200s</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7179">Costs from Stage-1 timings: 50 epochs ≈ 4.6 h on a B200 (g017), ≈ 10 h on an A5000</p>
+<aside>1 is the must-do. The BA models trained 150 epochs on the old recipe, ours 50 on the new one, so "+20 pp" and "matches RGB ResNet-50" both carry a recipe confound until the baselines get the same recipe. If the DVD baseline also gains about 20 pp, the paper claims parity in accuracy with an interpretable two-stream readout, not a win. 2 is cheap and fixes a validity problem reviewers will find: the published Table 1 probe leaks repeated photos and textures. 3 is the step that raises the story: if moving w moves error consistency with humans, the dial is a behavioural claim, not a cue-conflict number. 4 needs no compute; the sweeps are already in history.json. 5 is last on purpose: seeds only matter if the +2 pp rule effect becomes a headline; otherwise report the rule effect as small.</aside>
+</section>

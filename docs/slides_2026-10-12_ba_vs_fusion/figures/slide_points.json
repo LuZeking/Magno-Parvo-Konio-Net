@@ -1,0 +1,17 @@
+{
+ "_source": "fs1_decide_all.py output printed 2026-10-11 (final epoch 49, seed 0; top-1 3 dp, SB/cov 2 dp); history.json reads stalled on Lustre 2026-10-12",
+ "fs1_bcs_avg": {"top1": 0.666, "sb": 0.70, "cover": 0.51,
+  "sweep": {"tied": [
+   {"w": 0.0, "top1": 0.625, "sb": 0.46}, {"w": 0.1, "top1": 0.640, "sb": 0.48},
+   {"w": 0.2, "top1": 0.649, "sb": 0.52}, {"w": 0.3, "top1": 0.662, "sb": 0.59},
+   {"w": 0.4, "top1": 0.669, "sb": 0.64}, {"w": 0.5, "top1": 0.666, "sb": 0.70},
+   {"w": 0.6, "top1": 0.653, "sb": 0.75}, {"w": 0.7, "top1": 0.619, "sb": 0.81},
+   {"w": 0.8, "top1": 0.549, "sb": 0.86}, {"w": 0.9, "top1": 0.432, "sb": 0.88},
+   {"w": 1.0, "top1": 0.296, "sb": 0.91}]}},
+ "fs1_bcs_add_w050": {"top1": 0.673, "sb": 0.69, "cover": 0.51},
+ "fs1_bcs_add_w070": {"top1": 0.663, "sb": 0.77, "cover": 0.52},
+ "fs1_bcs_add_w085": {"top1": 0.630, "sb": 0.81, "cover": 0.52},
+ "fs1_hsf_add_w050": {"top1": 0.755, "sb": 0.49, "cover": 0.62},
+ "fs1_hsf_add_w070": {"top1": 0.751, "sb": 0.56, "cover": 0.64},
+ "fs1_hsf_add_w085": {"top1": 0.719, "sb": 0.64, "cover": 0.64}
+}
