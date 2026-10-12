@@ -1,0 +1,15 @@
+<section id="fig67" data-transition="fade" style="background:#FAF9F5;color:#1B2333;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.15;color:#1B2333">BA Figs. 6–7, updated: behaviour and streams</h2>
+<div style="display:flex;gap:48px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<img src="/_blob/5150d3d7401cc151acb4ba65e39c6d8a" alt="Scatter of shape bias against shape accuracy on cue-conflict images. Grey squares are the other BA models. The BA TSN (orange outline square) and the new TSN (blue dot) sit on the same point, shape accuracy 0.36, shape bias 0.70, between the RGB models near 0.5 and the DVD models near 0.8." style="width:808px;height:600px;object-fit:contain">
+<p style="font-size:28px;line-height:1.35;color:#4A5568"><b>Shape bias unchanged</b> (0.697 → 0.700): the accuracy gain cost no shape bias.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<img src="/_blob/eddadd31652deaf99ac5796a1bd48ec1" alt="Grouped bars of per-stream linear readout accuracy with a line for the whole TSN. RGB TSN streams 0.70 and 0.70, whole 0.72. DVD TSN 0.66 and 0.66, whole 0.67. BA TSN magno 0.24, parvo 0.46, whole 0.47. New TSN magno 0.34, parvo 0.63, whole 0.67." style="width:808px;height:600px;object-fit:contain">
+<p style="font-size:28px;line-height:1.35;color:#4A5568"><b>Both streams read out better</b> (magno 0.24 → 0.34, parvo 0.46 → 0.63); the split is the BA's.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7179">Fig. 6: BA and new TSN on our 1,200 images; grey = thesis values · Fig. 7: thesis = frozen 1-epoch readout; new = each stream's own head</p>
+<aside>Left, the thesis's Fig. 6: on the same 1,200 cue-conflict images the BA TSN and the new TSN are indistinguishable, shape bias 0.697 against 0.700 and shape accuracy 0.360 against 0.355. The 20-point gain is on natural images; cue-conflict decisions did not change. That is what backs the BA story: the behaviour the thesis reported was not an artefact of an undertrained model. Right, the thesis's Fig. 7: each stream read out by a linear classifier on its last convolutional layer. Both streams of the new TSN carry more category information, and the pattern the thesis described survives: the parvo stream is the more predictive one, the magno stream the shape-biased one. The readouts differ in one respect: the thesis trained a fresh linear classifier for one epoch on frozen features, while ours is the head each stream was trained with; a frozen 1-epoch readout on the new TSN would make the comparison exact.</aside>
+</section>

@@ -1,0 +1,17 @@
+<section id="newtsn" data-transition="fade" style="background:#FAF9F5;color:#1B2333;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 160px;display:flex;flex-direction:column;gap:28px">
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.15;color:#1B2333">The new main TSN against the BA TSN</h2>
+<table style="font-size:26px;color:#1B2333;font-family:'IBM Plex Sans', Arial, sans-serif">
+<tr style="background:#EFEDE6"><th style="width:46%"></th><th style="width:27%">BA TSN (thesis)</th><th style="width:27%">New TSN</th></tr>
+<tr><td>Network at test time</td><td>2 × ResNet-18, averaged, one head</td><td>Identical</td></tr>
+<tr><td>Top-1, MiniEcoset val</td><td>0.469</td><td><b>0.666</b> (+20 pp)</td></tr>
+<tr><td>Accuracy during training</td><td>Unstable (thesis Fig. 5)</td><td>Smooth; best 0.681 at epoch 26</td></tr>
+<tr><td>Shape bias, whole TSN</td><td>0.697</td><td>0.700</td></tr>
+<tr><td>Shape bias, magno alone / parvo alone</td><td>0.91 / 0.41</td><td>0.91 / 0.46</td></tr>
+<tr><td>Probe magno / parvo, as in the BA</td><td>+0.83 / −0.51</td><td>+0.79 / −0.44</td></tr>
+<tr><td>Probe magno / parvo, held-out exemplars</td><td>+0.49 / −0.23</td><td>+0.43 / −0.20</td></tr>
+<tr><td>Seeds</td><td>1</td><td>1; seeds 1–2 training</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.35;color:#4A5568"><b>Why this run:</b> of the 12 Stage-1 runs it is the only one that is the BA's network at test time. The others change the readout, the inputs or the diet (backup slide).</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6A7179">Both models on one instrument: our 1,200-image cue-conflict set and the paper's linear probe · thesis checkpoint dkl_blur_cs_dvd_trans</p>
+<aside>Every behavioural and representational number is measured the same way for both models: the BA thesis checkpoint scored by our cue-conflict pipeline (results/cue_conflict/thesis_dvd_trans.json), the new TSN by the Stage-1 evaluation, whose front end matches that pipeline exactly. On that common footing the thesis TSN's shape bias is 0.697, slightly above the 0.678 the thesis reported on its 1,280-image set. "Magno alone" and "parvo alone" read each stream through the shared head, the BA's own readout. The probe rows are shape minus texture decoding accuracy; "as in the BA" shares exemplars between training and test folds like the thesis's Table 1, "held-out exemplars" keeps test photos and textures unseen. The new TSN is seed 0 of the Stage-1 averaging arm; seeds 1 and 2 are queued on the agcichy A5000s (array 26627723, about 10 hours each once they start).</aside>
+</section>

@@ -2,12 +2,14 @@
   "v": 4,
   "createdOnFiles": {"v": 1, "at": "2026-10-12T16:40:00Z"},
   "lists": "css",
-  "title": "TSN Fusion vs BA",
-  "order": ["cover", "figures", "fusion", "next"],
+  "title": "New TSN vs BA",
+  "order": ["cover", "newtsn", "arch", "train", "fig45", "fig67", "fig8", "next", "figures"],
   "sections": {
-    "s1": {"description": "What the fusion work improved over the BA", "start": "cover"},
-    "s2": {"description": "How our fusion differs from the BA's TSN", "start": "fusion"},
-    "s3": {"description": "Next analyses to strengthen the paper", "start": "next"}
+    "s1": {"description": "The new main TSN against the BA's TSN", "start": "cover"},
+    "s2": {"description": "What changed from the BA TSN", "start": "arch"},
+    "s3": {"description": "The BA's result figures, redrawn with the new TSN", "start": "fig45"},
+    "s4": {"description": "Next steps", "start": "next"},
+    "s5": {"description": "Backup: all Stage-1 arms", "start": "figures"}
   },
   "faces": {
     "source-serif-4": {"family": "Source Serif 4", "href": "https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&display=swap"},
