@@ -50,8 +50,13 @@ for run in sorted(os.listdir(out)):
     ck = torch.load(os.path.join(out, run, "checkpoint_last.pt"), map_location="cpu", weights_only=False)
     print(f"{run:<26} epochs {[x['epoch'] for x in h]} val_top1 {r['val_top1']:.3f}"
           f" | joint SB {r['cc']['joint']['sb']:.2f} | heads {sorted(r['val'])}"
-          f" | train_ce {r.get('train_ce')} | step {ck['step']}")
+          f" | train_ce {r.get('train_ce')} | step {ck['step']}"
+          + (f" | ogm {r['ogm']}" if "ogm" in r else ""))
 EOF
-mkdir -p "$OUT"
-rsync -a "$LOCAL/" "$OUT/" && echo "copied to $OUT"
+# SMOKE_NO_COPY=1 skips the /scratch copy (10-13: Lustre writes hung for hours;
+# the printed checks above are the result).
+if [ -z "${SMOKE_NO_COPY:-}" ]; then
+    mkdir -p "$OUT"
+    rsync -a "$LOCAL/" "$OUT/" && echo "copied to $OUT"
+fi
 echo "smoke OK $(date -Is)"

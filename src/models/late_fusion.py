@@ -118,5 +118,16 @@ class LateFusionNetwork(nn.Module):
                                 w=self.w, k=self.k, lam=self.lam)
         return out
 
+    def stream_contributions(self, out: dict[str, torch.Tensor]):
+        """Each stream's share of the `average` decision, as OGM-GE scores a
+        modality (Peng et al., CVPR 2022, concat fusion: the modality's block
+        of the fused classifier plus half the bias):
+        c_M = w W h_M + b / 2, c_P = (1 - w) W h_P + b / 2, so c_M + c_P is
+        the joint logit. `out` is a forward_heads() result."""
+        b = self.classifier[-1].bias.float()
+        c_m = self.w * (out["tied_magno"] - b) + 0.5 * b
+        c_p = (1.0 - self.w) * (out["tied_parvo"] - b) + 0.5 * b
+        return c_m, c_p
+
     def forward(self, x_1, x_2):
         return self.forward_heads(x_1, x_2)["joint"]

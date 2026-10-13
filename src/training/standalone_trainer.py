@@ -164,10 +164,21 @@ STAGE2_RECIPE = dict(STAGE1_RECIPE, aux_weight=1.0, label_smoothing=0.0)
 
 
 def _stage2(w: float = 0.5, *, highsf: bool = False,
-            label_smoothing: float = 0.0) -> dict:
+            label_smoothing: float = 0.0, ogm: dict | None = None) -> dict:
+    recipe = dict(STAGE2_RECIPE, label_smoothing=label_smoothing)
+    if ogm:
+        recipe["ogm"] = ogm
     return dict(_stage1("average", highsf=highsf, w=w),
-                stream1_weight=w, detach_aux=True,
-                recipe=dict(STAGE2_RECIPE, label_smoothing=label_smoothing))
+                stream1_weight=w, detach_aux=True, recipe=recipe)
+
+
+# Stage 2b (2026-10-13): fs2_bcs_avg_w050 learns most of the task in the
+# parvo trunk (alone: parvo 0.62, magno 0.25 top-1 at epoch 49), so the
+# shape-biased magno stream barely shapes the decision. OGM-GE (class OGMGE
+# below) slows the dominant trunk while it dominates, with the loss unchanged.
+# alpha = 0.1 and modulation over the first half of training (epochs 0-25 of
+# 50) are the reference defaults (0.1 for VGGSound; epochs 0-50 of 100).
+OGM_DEFAULT = dict(alpha=0.1, start=0, end=25, ge=True)
 
 
 CONDITIONS.update({
@@ -181,6 +192,8 @@ CONDITIONS.update({
     # accuracy lever: parvo also gets full-acuity luminance; magno-heavy w
     # to hold shape bias
     "fs2_hsf_avg_w085":    _stage2(0.85, highsf=True),
+    # Stage 2b: the main candidate with balanced stream learning (OGM-GE)
+    "fs2_bcs_avg_w050_ogm": _stage2(0.5, ogm=OGM_DEFAULT),
 })
 STAGE2_CONDITIONS = [c for c in CONDITIONS if c.startswith("fs2_")]
 
@@ -539,10 +552,21 @@ def evaluate_fusion(ema, raw, builder, loader, cc, device, amp,
 def build_stage1_optimizer(model, recipe, steps_per_epoch, epochs):
     decay = [p for p in model.parameters() if p.ndim > 1]
     no_decay = [p for p in model.parameters() if p.ndim <= 1]
-    optimizer = torch.optim.AdamW(
-        [{"params": decay, "weight_decay": recipe["weight_decay"]},
-         {"params": no_decay, "weight_decay": 0.0}],
-        lr=recipe["lr"], betas=(0.9, 0.999))
+    groups = [{"params": decay, "weight_decay": recipe["weight_decay"]},
+              {"params": no_decay, "weight_decay": 0.0}]
+    if recipe.get("ogm"):
+        # OGM-GE sets each trunk's conv-weight lr per step, so those weights
+        # get their own groups. Same hyperparameters as the decay group and
+        # AdamW is per-parameter, so at k = 1 the optimisation is unchanged.
+        conv = {name: [p for p in getattr(model, block).parameters()
+                       if p.ndim == 4]
+                for name, block in (("magno_conv", "stream1_block1"),
+                                    ("parvo_conv", "stream2_block1"))}
+        moved = {id(p) for ps in conv.values() for p in ps}
+        groups[0]["params"] = [p for p in decay if id(p) not in moved]
+        groups += [{"params": ps, "weight_decay": recipe["weight_decay"],
+                    "name": name} for name, ps in conv.items()]
+    optimizer = torch.optim.AdamW(groups, lr=recipe["lr"], betas=(0.9, 0.999))
     total = epochs * steps_per_epoch
     warm = recipe["warmup_epochs"] * steps_per_epoch
 
@@ -553,6 +577,77 @@ def build_stage1_optimizer(model, recipe, steps_per_epoch, epochs):
         return 0.5 * (1.0 + math.cos(math.pi * t))
 
     return optimizer, torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+
+
+class OGMGE:
+    """On-the-fly gradient modulation with generalisation enhancement (Peng et
+    al., CVPR 2022; github.com/GeWu-Lab/OGM-GE_CVPR2022) for the `average`
+    head. Each step, s_M and s_P are the summed softmax probabilities of the
+    true class under each stream's share of the decision
+    (LateFusionNetwork.stream_contributions); with r = s_P / s_M, the
+    dominant stream gets k = 1 - tanh(alpha * r) (r > 1: parvo) or
+    1 - tanh(alpha / r) (else: magno), the other stream 1.
+
+    Two departures from the reference code, both forced by AdamW:
+      - k scales the dominant trunk's conv-weight learning rate for the step
+        instead of its gradient. Adam's update m / sqrt(v) does not change
+        when a gradient is rescaled, so the reference's SGD form would do
+        almost nothing here; under SGD the two are the same.
+      - GE as in the reference: Gaussian noise with the gradient tensor's own
+        std is added to every conv-weight gradient of both trunks.
+    Active for epochs start..end inclusive (the reference's convention). The
+    loss is unchanged: one cross-entropy on the network output.
+    """
+
+    def __init__(self, optimizer, cfg: dict):
+        self.alpha = float(cfg["alpha"])
+        self.start, self.end = int(cfg["start"]), int(cfg["end"])
+        self.ge = bool(cfg.get("ge", True))
+        self.groups = {g["name"]: g for g in optimizer.param_groups
+                       if g.get("name") in ("magno_conv", "parvo_conv")}
+        assert sorted(self.groups) == ["magno_conv", "parvo_conv"]
+        self.reset()
+
+    def reset(self) -> None:
+        self.n, self.n_active, self.sums = 0, 0, [0.0, 0.0, 0.0]
+
+    @torch.no_grad()
+    def modulate(self, model, out, y, epoch: int):
+        """Between backward() and optimizer.step(); returns the learning rates
+        to restore after the step (None outside the window)."""
+        c_m, c_p = model.stream_contributions(out)
+        s_m = F.softmax(c_m, dim=1).gather(1, y[:, None]).sum()
+        s_p = F.softmax(c_p, dim=1).gather(1, y[:, None]).sum()
+        r = float(s_p / s_m.clamp_min(1e-12))
+        k_m, k_p = ((1.0, 1.0 - math.tanh(self.alpha * r)) if r > 1
+                    else (1.0 - math.tanh(self.alpha / r), 1.0))
+        self.n += 1
+        for i, v in enumerate((r, k_m, k_p)):
+            self.sums[i] += v
+        if not self.start <= epoch <= self.end:
+            return None
+        self.n_active += 1
+        if self.ge:
+            for g in self.groups.values():
+                for p in g["params"]:
+                    if p.grad is not None:
+                        p.grad.add_(torch.randn_like(p.grad)
+                                    * (p.grad.std() + 1e-8))
+        saved = {name: g["lr"] for name, g in self.groups.items()}
+        self.groups["magno_conv"]["lr"] *= k_m
+        self.groups["parvo_conv"]["lr"] *= k_p
+        return saved
+
+    def restore(self, saved) -> None:
+        if saved:
+            for name, lr in saved.items():
+                self.groups[name]["lr"] = lr
+
+    def summary(self) -> dict:
+        n = max(self.n, 1)
+        return {"ratio_parvo_over_magno": self.sums[0] / n,
+                "k_magno": self.sums[1] / n, "k_parvo": self.sums[2] / n,
+                "active_steps": self.n_active, "steps": self.n}
 
 
 def main():
@@ -692,6 +787,11 @@ def main():
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=args.lr,
                                      betas=(0.9, 0.999))
+    ogm = None
+    if recipe and recipe.get("ogm"):
+        if fusion != "average":
+            raise ValueError("OGM-GE is implemented for the average head only")
+        ogm = OGMGE(optimizer, recipe["ogm"])
     if fusion is not None and args.cue_conflict_npz:
         cc = load_cue_conflict(args.cue_conflict_npz)
         print(f"  cue-conflict cache: {len(cc['x'])} images", flush=True)
@@ -753,6 +853,8 @@ def main():
         t0, running, seen = time.time(), 0.0, 0
         running_ce, running_sl, n_steps = 0.0, {}, 0
         running_parts = torch.zeros(3, device=device)
+        if ogm is not None:
+            ogm.reset()
         for x, y in train_loader:
             x = x.to(device, non_blocking=True).float() / 255.0
             y = y.to(device, non_blocking=True)
@@ -789,7 +891,11 @@ def main():
                     running_sl[d] = running_sl.get(d, 0.0) + v.detach()
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
+            saved_lr = (ogm.modulate(model, out, y, epoch)
+                        if ogm is not None else None)
             optimizer.step()
+            if ogm is not None:
+                ogm.restore(saved_lr)
             if scheduler is not None:
                 scheduler.step()
             if ema is not None:
@@ -818,6 +924,8 @@ def main():
             rec["train_ce"] = dict(zip(("joint", "magno", "parvo"),
                                        (running_parts / max(seen, 1)).tolist()))
             rec.update(m)
+        if ogm is not None:
+            rec["ogm"] = ogm.summary()
         if spatial:
             rec["train_ce"] = float(running_ce) / max(seen, 1)
             rec["train_sl"] = {d: float(v) / max(n_steps, 1)
