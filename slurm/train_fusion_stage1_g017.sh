@@ -29,6 +29,12 @@
 #
 #   env -u TMPDIR sbatch --export=ALL,CODE=/home/byrong/projects/TSN/fusion_stage1_code/<sha> \
 #       slurm/train_fusion_stage1_g017.sh
+#
+# Another list of conditions at seed 0 (as COND_LIST in slurm/train_fusion_stage1.sh):
+# COND_LIST is indexed by the array index; OUT_DIR is the run root relative to the
+# gateway's fs1 module (= /scratch/byrong/TSN/fusion_stage1), fallback OUT_DIR_fallback.
+# 2026-10-13: Stage-2 task 4 (fs2_hsf_avg_w085), queued on agcichy behind ~6 days of
+# another user's arrays, moved here with --array=4 and OUT_DIR=fs1/checkpoints/2026-10-12_stage2.
 #SBATCH --job-name=fs1_g017
 #SBATCH --partition=agcichy
 #SBATCH --qos=standard
@@ -54,8 +60,8 @@ H5=miniecoset_256px_dkl_uint8.h5
 CCN=cue_conflict_dkl_u8_v1.npz
 SHARED=/localscratch2/groupdata/byrong/tsn_fs1
 LOCAL=$SHARED/runs
-OUT=fs1/checkpoints/2026-10-10_pilot
-OUT_FALLBACK=fs1/checkpoints/2026-10-10_pilot_fallback
+OUT=${OUT_DIR:-fs1/checkpoints/2026-10-10_pilot}
+OUT_FALLBACK=${OUT}_fallback
 
 CONDS=(fs1_bcs_avg
        fs1_bcs_add_w050 fs1_bcs_add_w070 fs1_bcs_add_w085
@@ -63,7 +69,12 @@ CONDS=(fs1_bcs_avg
        fs1_hsf_hinge_k3_l2 fs1_hsf_hinge_k3_l4
        fs1_bcs_add_w070_mstem64
        fs1_cs_add_w070 fs1_b2cs_add_w070)
-COND=${CONDS[$SLURM_ARRAY_TASK_ID]}
+if [ -n "${COND_LIST:-}" ]; then
+    read -r -a LIST <<< "$COND_LIST"
+    COND=${LIST[$SLURM_ARRAY_TASK_ID]}
+else
+    COND=${CONDS[$SLURM_ARRAY_TASK_ID]}
+fi
 RUN=${COND}_seed0
 
 echo "task $SLURM_ARRAY_TASK_ID -> $COND seed 0 on $(hostname) $(date -Is) code $(cat "$CODE/COMMIT")"
