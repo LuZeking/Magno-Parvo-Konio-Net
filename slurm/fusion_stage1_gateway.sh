@@ -10,6 +10,11 @@
 # slurm/fusion_stage1_g017_finish.sh cancels it (chained after the g017 array).
 # The daemon runs as a waited-on child, not exec'd, so the EXIT trap still
 # removes $TMPDIR when the job is cancelled.
+#
+# GW_LOG_DIR moves the rsyncd log. 2026-10-13: gateway 26633398 never started its
+# script: slurmstepd sat in D creating the --output log on /scratch. Resubmitted with
+# --output and GW_LOG_DIR on /home/byrong/_staging/TSN/fusion_stage1/logs, which the
+# finish job moves to /scratch.
 #SBATCH --job-name=fs1_gateway
 #SBATCH --partition=main
 #SBATCH --qos=standard
@@ -33,7 +38,7 @@ use chroot = no
 max connections = 16
 pid file = $TMPDIR/rsyncd.pid
 lock file = $TMPDIR/rsyncd.lock
-log file = /scratch/byrong/TSN/fusion_stage1/logs/gateway_${SLURM_JOB_ID}_rsyncd.log
+log file = ${GW_LOG_DIR:-/scratch/byrong/TSN/fusion_stage1/logs}/gateway_${SLURM_JOB_ID}_rsyncd.log
 reverse lookup = yes
 hosts allow = 160.45.4.200 g017 g017.* g017-*
 hosts deny = *
