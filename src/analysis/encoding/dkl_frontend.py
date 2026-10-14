@@ -236,6 +236,33 @@ def apply_scale_free_contrast(
     return dvdt(x, age_months)
 
 
+def apply_dvd_diet(x: torch.Tensor, age_months: float) -> torch.Tensor:
+    """DVD acuity blur, then the same scale-free CS cut, both at ``age_months``.
+
+    The progressive magno diet of the Stage-2e TSN arms: unlike the thesis
+    diet (fixed ``BLUR_SIGMA`` 4, about a 3-month-old's DVD acuity, plus CS at
+    48 months) both stages take one age. Blur sigma is DVD's acuity at that
+    age scaled to the image width (0.50 px at 48 months for 256 px). The CS
+    stage is identical to ``apply_scale_free_contrast``.
+    """
+    from dvd_scale_free.dvd_scale_free.development import (  # noqa: WPS433
+        DVDConfig,
+        DVDTransformer,
+    )
+
+    dvdt = DVDTransformer(
+        DVDConfig(
+            apply_blur=1,
+            apply_color=0,
+            apply_contrast=1,
+            cs_logspan_start=CS_LOGSPAN_START,
+            image_size=IMAGE_SIZE,
+            decomposition_mode="keep",
+        )
+    )
+    return dvdt(x, age_months)
+
+
 def magno_parvo_inputs(
     rgb_uint8: np.ndarray,
     ch_min: np.ndarray,

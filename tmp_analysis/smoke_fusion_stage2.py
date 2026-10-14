@@ -9,6 +9,9 @@
 4-7. OGM-GE (Stage 2b).
 8. norm_scale (Stage 2d): both stream features have norm s, and scaling a
    trunk's output leaves the decision unchanged (it does change it without).
+9. Progressive DVD diet (Stage 2e): the arms differ from fs2_bcs_avg_w050_ls
+   only in dvd_end_months; the evaluation input is DVD blur + CS at the end
+   age; parvo input is unchanged; the magno input sharpens with age.
 """
 
 import torch
@@ -68,7 +71,7 @@ for c in STAGE2_CONDITIONS:
     r = cfg["recipe"]
     print(f"3. {c:<24} w={cfg['w']} in={c1},{c2} aux={r['aux_weight']} detach={cfg['detach_aux']} "
           f"ls={r['label_smoothing']} lr={r['lr']} epochs={r.get('epochs', '-')} "
-          f"norm={cfg.get('norm_scale')} params={n:,}")
+          f"norm={cfg.get('norm_scale')} dvd_end={cfg.get('dvd_end_months')} params={n:,}")
 
 # --- Stage 2b: OGM-GE (fs2_bcs_avg_w050_ogm) -------------------------------
 import copy  # noqa: E402
@@ -159,4 +162,43 @@ for s in (cfg["norm_scale"], None):
     else:
         print(f"8b. without norm_scale, parvo trunk x3 changes the joint by {d:.2e}")
         assert d > 1e-3
+
+# --- Stage 2e: progressive (DVD) magno diet (fs2_dvd*_avg_w050_ls) -----------
+from dvd_scale_free.dvd_scale_free.development import DVDConfig, DVDTransformer  # noqa: E402
+
+from src.analysis.encoding.dkl_frontend import (apply_gaussian_blur,  # noqa: E402
+                                                apply_scale_free_contrast)
+from src.training.standalone_trainer import StreamInputBuilder  # noqa: E402
+
+base = CONDITIONS["fs2_bcs_avg_w050_ls"]
+for c in ("fs2_dvd48_avg_w050_ls", "fs2_dvd300_avg_w050_ls"):
+    diff = {k for k in set(base) | set(CONDITIONS[c]) if base.get(k) != CONDITIONS[c].get(k)}
+    print(f"9a. {c} differs from fs2_bcs_avg_w050_ls only in {sorted(diff)}")
+    assert diff == {"dvd_end_months"}
+torch.manual_seed(1)
+img = torch.rand(4, 3, 256, 256)
+b48 = StreamInputBuilder(CONDITIONS["fs2_dvd48_avg_w050_ls"])
+m48, p48 = b48(img)
+mf, pf = StreamInputBuilder(base)(img)
+sig48 = DVDTransformer(DVDConfig()).get_early_visual_acuity(48) * 256 / 224
+ref = apply_scale_free_contrast(apply_gaussian_blur(img[:, 0:1], sigma=sig48), 48)
+d_end = float((m48 - ref).abs().max())
+d_age = float((b48(img, age=48.0)[0] - m48).abs().max())
+print(f"9b. dvd48 eval input == blur(sigma {sig48:.3f}) + CS48: max |diff| {d_end:.1e}; "
+      f"age=48 call == default call: {d_age:.1e}")
+assert d_end < 1e-5 and d_age == 0
+print(f"9c. parvo input unchanged: {torch.equal(p48, pf)}; magno vs the fixed diet "
+      f"mean |diff| {float((m48 - mf).abs().mean()):.3f}")
+assert torch.equal(p48, pf)
+
+
+def hf_energy(t):
+    return float((t - apply_gaussian_blur(t, sigma=2.0)).pow(2).mean())
+
+
+ages = [0.0, 3.0, 12.0, 48.0, 300.0]
+b300 = StreamInputBuilder(CONDITIONS["fs2_dvd300_avg_w050_ls"])
+e = [hf_energy(b300(img, age=a)[0]) for a in ages]
+print("9d. magno high-SF energy by age: " + ", ".join(f"{a:g} mo {v:.2e}" for a, v in zip(ages, e)))
+assert all(u < v for u, v in zip(e, e[1:]))
 print("all stage-2 model checks passed")

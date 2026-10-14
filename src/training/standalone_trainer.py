@@ -165,7 +165,8 @@ STAGE2_RECIPE = dict(STAGE1_RECIPE, aux_weight=1.0, label_smoothing=0.0)
 
 def _stage2(w: float = 0.5, *, highsf: bool = False,
             label_smoothing: float = 0.0, ogm: dict | None = None,
-            epochs: int | None = None, norm: bool = False) -> dict:
+            epochs: int | None = None, norm: bool = False,
+            dvd_end: float | None = None) -> dict:
     recipe = dict(STAGE2_RECIPE, label_smoothing=label_smoothing)
     if ogm:
         recipe["ogm"] = ogm
@@ -175,6 +176,8 @@ def _stage2(w: float = 0.5, *, highsf: bool = False,
                stream1_weight=w, detach_aux=True, recipe=recipe)
     if norm:
         cfg["norm_scale"] = NORM_SCALE
+    if dvd_end is not None:
+        cfg["dvd_end_months"] = dvd_end
     return cfg
 
 
@@ -233,6 +236,23 @@ CONDITIONS.update({
 CONDITIONS.update({
     "fs2_bcs_navg_w050_ls_e25": _stage2(0.5, label_smoothing=0.1, epochs=25, norm=True),
     "fs2_bcs_navg_w070_ls_e25": _stage2(0.7, label_smoothing=0.1, epochs=25, norm=True),
+})
+
+# Stage 2e (2026-10-14, user: "Keep A and Try B"): a progressive (DVD) magno
+# diet. Under the fixed diet all eleven single-objective arms above sit at
+# top-1 0.64-0.67, SB 0.59-0.65 (main candidate fs2_bcs_avg_w050_ls). The
+# BA diet mixes two ages: blur sigma 4 is DVD's acuity at ~3 months, its CS
+# a 48-month-old's. Here both stages follow the DVD developmental curves at
+# one age (dkl_frontend.apply_dvd_diet; no colour stage on the single
+# luminance channel). The age grows linearly with the training step from 0
+# to dvd_end_months, as DVD's generate_age_months_curve, and every
+# evaluation uses dvd_end_months. Parvo input, architecture, single
+# objective and recipe are those of fs2_bcs_avg_w050_ls.
+#   dvd48:  ends at the BA's age (test input: sigma 0.50 px + CS at 48 months)
+#   dvd300: DVD's adult endpoint (test input: ~ clean luminance)
+CONDITIONS.update({
+    "fs2_dvd48_avg_w050_ls":  _stage2(0.5, label_smoothing=0.1, dvd_end=48.0),
+    "fs2_dvd300_avg_w050_ls": _stage2(0.5, label_smoothing=0.1, dvd_end=300.0),
 })
 STAGE2_CONDITIONS = [c for c in CONDITIONS if c.startswith("fs2_")]
 
@@ -336,9 +356,15 @@ class StreamInputBuilder:
         self.target = cfg.get("transform_target", "magno")
         self.parvo_highsf = cfg.get("parvo_highsf", False)
         self.single_stream = cfg.get("single_stream", False)
+        # Progressive (DVD) diet of the Stage-2e arms: blur and CS at one
+        # age, `age` on a training call, else the end age.
+        self.dvd_end = cfg.get("dvd_end_months")
+        if self.dvd_end is not None and self.input_mode != "dkl":
+            raise ValueError("dvd_end_months needs input_mode 'dkl'")
 
-    def __call__(self, x: torch.Tensor):
+    def __call__(self, x: torch.Tensor, age: float | None = None):
         from src.analysis.encoding.dkl_frontend import (
+            apply_dvd_diet,
             apply_gaussian_blur,
             apply_scale_free_contrast,
         )
@@ -353,11 +379,14 @@ class StreamInputBuilder:
 
         lum, rg = x[:, 0:1], x[:, 1:2]
         tgt = lum if self.target == "magno" else rg
-        if self.blur:
-            tgt = (apply_gaussian_blur(tgt) if self.blur_sigma is None
-                   else apply_gaussian_blur(tgt, sigma=self.blur_sigma))
-        if self.cs:
-            tgt = apply_scale_free_contrast(tgt, self.age_months)
+        if self.dvd_end is not None:
+            tgt = apply_dvd_diet(tgt, self.dvd_end if age is None else age)
+        else:
+            if self.blur:
+                tgt = (apply_gaussian_blur(tgt) if self.blur_sigma is None
+                       else apply_gaussian_blur(tgt, sigma=self.blur_sigma))
+            if self.cs:
+                tgt = apply_scale_free_contrast(tgt, self.age_months)
         if self.target == "magno":
             lum = tgt
         else:
@@ -894,6 +923,14 @@ def main():
             snap["state_dict"] = model.state_dict()
         return snap
 
+    total_steps = args.epochs * len(train_loader)
+
+    def dvd_age(s):
+        """Stage-2e diet age at global step s: 0 -> dvd_end_months, linear."""
+        if builder.dvd_end is None:
+            return None
+        return builder.dvd_end * min(s / total_steps, 1.0)
+
     logits = None
     for epoch in range(start_epoch, args.epochs):
         t0, running, seen = time.time(), 0.0, 0
@@ -906,7 +943,7 @@ def main():
             y = y.to(device, non_blocking=True)
             with torch.no_grad():
                 x = augment(x)
-            x1, x2 = builder(x)
+            x1, x2 = builder(x, age=dvd_age(step))
             if amp:
                 x1 = x1.contiguous(memory_format=torch.channels_last)
                 if x2 is not None:
@@ -972,6 +1009,8 @@ def main():
             rec.update(m)
         if ogm is not None:
             rec["ogm"] = ogm.summary()
+        if builder.dvd_end is not None:
+            rec["dvd_age"] = dvd_age(step)
         if spatial:
             rec["train_ce"] = float(running_ce) / max(seen, 1)
             rec["train_sl"] = {d: float(v) / max(n_steps, 1)
