@@ -200,7 +200,8 @@ def stage1_model_and_inputs(run_dir: str, cc_npz: str | None = None):
     if cfg.get("magno_stem64"):
         make_magno_stem64(trunk.stream1_block1, c1)
     net = LateFusionNetwork(trunk, cfg["fusion"], w=cfg.get("w", 0.5),
-                            k=cfg.get("k", 3), lam=cfg.get("lam", 0.0))
+                            k=cfg.get("k", 3), lam=cfg.get("lam", 0.0),
+                            norm_scale=cfg.get("norm_scale"))
     net.load_state_dict(ck["state_dict"])  # strict: a lookalike fails loudly
     net.eval()
 

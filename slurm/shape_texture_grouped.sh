@@ -52,6 +52,18 @@ for r in fs1_bcs_avg fs1_bcs_add_w050 fs1_bcs_add_w070 fs1_bcs_add_w085 \
          fs1_bcs_add_w070_mstem64 fs1_cs_add_w070 fs1_b2cs_add_w070; do
   CONFIG+=("${r}_seed0|--stage1-run $S1/${r}_seed0 --cue-conflict-npz $CC")
 done
+# 2026-10-15: other late-fusion runs (Stage 2: the main TSN's seeds, the DVD
+# diet arms). RUN_LIST="<run> ..." under RUN_ROOT replaces the list above and
+# the results go to RES_DIR / FEAT_DIR; same probe, same loader.
+if [ -n "${RUN_LIST:-}" ]; then
+  : "${RUN_ROOT:?}" "${RES_DIR:?}" "${FEAT_DIR:?}"
+  RES=$RES_DIR FEAT=$FEAT_DIR
+  mkdir -p "$RES" "$FEAT"
+  CONFIG=()
+  for r in $RUN_LIST; do
+    CONFIG+=("$r|--stage1-run $RUN_ROOT/$r --cue-conflict-npz $CC")
+  done
+fi
 
 IFS='|' read -r NAME ARGS <<< "${CONFIG[$SLURM_ARRAY_TASK_ID]}"
 echo "[$SLURM_ARRAY_TASK_ID] $NAME  args=$ARGS  code=$CODE  host=$(hostname)"
