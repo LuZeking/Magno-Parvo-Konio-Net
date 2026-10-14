@@ -20,6 +20,15 @@ on detached features, so they are linear readouts of each stream (the
 thesis's Fig. 7) that send no gradient into the trunks; only the joint
 cross-entropy trains the network.
 
+Without per-stream losses nothing pins a stream's feature scale, and the
+trunks undo w: across Stage-2 w = 0.5 / 0.7 / 0.9 the parvo tied-logit spread
+grew 8.3 / 12.2 / 29.1 (magno 4.3 / 3.4 / 2.9), so the effective magno:parvo
+ratio moved 0.52 / 0.65 / 0.89 against a nominal 1 / 2.3 / 9. `norm_scale`
+(Stage 2d) pins it without a loss or a parameter: each pooled stream feature
+is rescaled to the same L2 norm, h <- s h / |h|, before the tied head, so w
+weighs feature directions of equal length and only what a stream encodes,
+not how loudly, sets its share of the decision.
+
 `magno_stem64` (A3): the magno trunk reads its dieted 256-px input average-
 pooled to 64 px (the sigma = 4 blur leaves < 1 % amplitude at the 64-px
 Nyquist frequency, so the pooling discards almost nothing), through a 3x3
@@ -31,6 +40,7 @@ from __future__ import annotations
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from src.models.pytorch_models import TwoStreamNetwork
 
@@ -67,7 +77,8 @@ def make_magno_stem64(block: nn.Sequential, in_channels: int) -> None:
 
 class LateFusionNetwork(nn.Module):
     def __init__(self, trunk: TwoStreamNetwork, fusion: str, w: float = 0.5,
-                 k: int = 3, lam: float = 0.0, detach_aux: bool = False):
+                 k: int = 3, lam: float = 0.0, detach_aux: bool = False,
+                 norm_scale: float | None = None):
         super().__init__()
         if fusion not in FUSIONS:
             raise ValueError(f"fusion must be one of {FUSIONS}, got {fusion!r}")
@@ -78,6 +89,7 @@ class LateFusionNetwork(nn.Module):
                              "components unless fusion is 'average'")
         self.fusion, self.w, self.k, self.lam = fusion, float(w), int(k), float(lam)
         self.detach_aux = bool(detach_aux)
+        self.norm_scale = float(norm_scale) if norm_scale else None
         self.stream1_block1 = trunk.stream1_block1
         self.stream2_block1 = trunk.stream2_block1
         # classifier = [AdaptiveAvgPool2d, Flatten, Linear]; only `average`
@@ -90,8 +102,12 @@ class LateFusionNetwork(nn.Module):
         self.head_p = nn.Linear(n_feat, n_cls)
 
     def features(self, x_1, x_2):
-        return (self.pool(self.stream1_block1(x_1)),
-                self.pool(self.stream2_block1(x_2)))
+        h_m = self.pool(self.stream1_block1(x_1))
+        h_p = self.pool(self.stream2_block1(x_2))
+        if self.norm_scale:
+            h_m, h_p = (self.norm_scale * F.normalize(h.float(), dim=1).to(h.dtype)
+                        for h in (h_m, h_p))
+        return h_m, h_p
 
     def forward_heads(self, x_1, x_2) -> dict[str, torch.Tensor]:
         """{'joint', 'magno', 'parvo'} logits in fp32 (the rule runs in fp32

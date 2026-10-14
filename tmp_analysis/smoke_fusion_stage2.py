@@ -6,6 +6,9 @@
 2. detach_aux: the per-stream readout heads' loss sends no gradient into
    either trunk or the tied head; the joint loss does.
 3. Every fs2_ condition builds, with its recipe and parameter count.
+4-7. OGM-GE (Stage 2b).
+8. norm_scale (Stage 2d): both stream features have norm s, and scaling a
+   trunk's output leaves the decision unchanged (it does change it without).
 """
 
 import torch
@@ -59,11 +62,13 @@ for c in STAGE2_CONDITIONS:
     cfg = CONDITIONS[c]
     c1, c2 = in_channels_for(cfg)
     m = LateFusionNetwork(trunk(c1, c2, w=cfg["stream1_weight"]), cfg["fusion"],
-                          w=cfg["w"], detach_aux=cfg["detach_aux"])
+                          w=cfg["w"], detach_aux=cfg["detach_aux"],
+                          norm_scale=cfg.get("norm_scale"))
     n = sum(p.numel() for p in m.parameters())
     r = cfg["recipe"]
-    print(f"3. {c:<22} w={cfg['w']} in={c1},{c2} aux={r['aux_weight']} detach={cfg['detach_aux']} "
-          f"ls={r['label_smoothing']} lr={r['lr']} params={n:,}")
+    print(f"3. {c:<24} w={cfg['w']} in={c1},{c2} aux={r['aux_weight']} detach={cfg['detach_aux']} "
+          f"ls={r['label_smoothing']} lr={r['lr']} epochs={r.get('epochs', '-')} "
+          f"norm={cfg.get('norm_scale')} params={n:,}")
 
 # --- Stage 2b: OGM-GE (fs2_bcs_avg_w050_ogm) -------------------------------
 import copy  # noqa: E402
@@ -133,4 +138,25 @@ assert all(torch.equal(p.grad, g_before[id(p)]) for p in net.parameters() if p.g
 print("6c. lr restored after the step; epoch 26 (outside 0-25): no lr change, no noise")
 print(f"7. {'fs2_bcs_avg_w050_ogm'} recipe ogm={cfg['recipe']['ogm']} aux={cfg['recipe']['aux_weight']} "
       f"detach={cfg['detach_aux']} (the trunks see only the joint CE)")
+
+# --- Stage 2d: scale-pinned average (fs2_bcs_navg_*) -------------------------
+cfg = CONDITIONS["fs2_bcs_navg_w070_ls_e25"]
+for s in (cfg["norm_scale"], None):
+    net = LateFusionNetwork(trunk(w=0.7), "average", w=0.7, detach_aux=True,
+                            norm_scale=s).eval()
+    with torch.no_grad():
+        h_m, h_p = net.features(x1, x2)
+        ref = net.forward_heads(x1, x2)["joint"]
+        hook = net.stream2_block1.register_forward_hook(lambda mod, i, o: 3.0 * o)
+        louder = net.forward_heads(x1, x2)["joint"]
+        hook.remove()
+    d = float((louder - ref).abs().max())
+    if s:
+        nm, npv = float(h_m.norm(dim=1).sub(s).abs().max()), float(h_p.norm(dim=1).sub(s).abs().max())
+        print(f"8a. norm_scale {s:.3f}: | |h| - s | magno {nm:.1e}, parvo {npv:.1e}; "
+              f"parvo trunk x3 changes the joint by {d:.1e}")
+        assert nm < 1e-3 and npv < 1e-3 and d < 1e-4
+    else:
+        print(f"8b. without norm_scale, parvo trunk x3 changes the joint by {d:.2e}")
+        assert d > 1e-3
 print("all stage-2 model checks passed")

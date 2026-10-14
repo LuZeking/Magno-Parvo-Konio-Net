@@ -165,14 +165,23 @@ STAGE2_RECIPE = dict(STAGE1_RECIPE, aux_weight=1.0, label_smoothing=0.0)
 
 def _stage2(w: float = 0.5, *, highsf: bool = False,
             label_smoothing: float = 0.0, ogm: dict | None = None,
-            epochs: int | None = None) -> dict:
+            epochs: int | None = None, norm: bool = False) -> dict:
     recipe = dict(STAGE2_RECIPE, label_smoothing=label_smoothing)
     if ogm:
         recipe["ogm"] = ogm
     if epochs:
         recipe["epochs"] = epochs
-    return dict(_stage1("average", highsf=highsf, w=w),
-                stream1_weight=w, detach_aux=True, recipe=recipe)
+    cfg = dict(_stage1("average", highsf=highsf, w=w),
+               stream1_weight=w, detach_aux=True, recipe=recipe)
+    if norm:
+        cfg["norm_scale"] = NORM_SCALE
+    return cfg
+
+
+# Stage 2d: L2 norm every pooled 512-d stream feature is rescaled to before
+# the tied head (LateFusionNetwork.norm_scale): sqrt(512), i.e. unit RMS per
+# feature.
+NORM_SCALE = 512 ** 0.5
 
 
 # Stage 2b (2026-10-13): fs2_bcs_avg_w050 learns most of the task in the
@@ -212,6 +221,18 @@ CONDITIONS.update({
     "fs2_bcs_avg_w070_ls":     _stage2(0.7, label_smoothing=0.1),
     "fs2_bcs_avg_w050_ls_e25": _stage2(0.5, label_smoothing=0.1, epochs=25),
     "fs2_bcs_avg_w070_ls_e25": _stage2(0.7, label_smoothing=0.1, epochs=25),
+})
+
+# Stage 2d (2026-10-14): the 25-epoch schedule was neutral (w050_ls_e25 0.661
+# @ SB 0.642 vs 0.669 @ 0.630 at 50 epochs). The binding constraint is that
+# the trunks undo w (late_fusion.py docstring: effective magno:parvo ratio
+# 0.52 / 0.65 / 0.89 at nominal w 0.5 / 0.7 / 0.9). The same two arms with
+# both stream features rescaled to one fixed norm before the tied average, so
+# w is the stream weighting it names; nothing else changes (no parameter, one
+# loss, same diet).
+CONDITIONS.update({
+    "fs2_bcs_navg_w050_ls_e25": _stage2(0.5, label_smoothing=0.1, epochs=25, norm=True),
+    "fs2_bcs_navg_w070_ls_e25": _stage2(0.7, label_smoothing=0.1, epochs=25, norm=True),
 })
 STAGE2_CONDITIONS = [c for c in CONDITIONS if c.startswith("fs2_")]
 
@@ -781,7 +802,8 @@ def main():
             model = LateFusionNetwork(model, fusion, w=cfg.get("w", 0.5),
                                       k=cfg.get("k", 3),
                                       lam=cfg.get("lam", 0.0),
-                                      detach_aux=cfg.get("detach_aux", False))
+                                      detach_aux=cfg.get("detach_aux", False),
+                                      norm_scale=cfg.get("norm_scale"))
     model = model.to(device)
 
     # Spatial-loss conditions: sheets are built (or reloaded on resume) before
