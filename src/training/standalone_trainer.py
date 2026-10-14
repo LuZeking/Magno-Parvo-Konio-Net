@@ -164,10 +164,13 @@ STAGE2_RECIPE = dict(STAGE1_RECIPE, aux_weight=1.0, label_smoothing=0.0)
 
 
 def _stage2(w: float = 0.5, *, highsf: bool = False,
-            label_smoothing: float = 0.0, ogm: dict | None = None) -> dict:
+            label_smoothing: float = 0.0, ogm: dict | None = None,
+            epochs: int | None = None) -> dict:
     recipe = dict(STAGE2_RECIPE, label_smoothing=label_smoothing)
     if ogm:
         recipe["ogm"] = ogm
+    if epochs:
+        recipe["epochs"] = epochs
     return dict(_stage1("average", highsf=highsf, w=w),
                 stream1_weight=w, detach_aux=True, recipe=recipe)
 
@@ -194,6 +197,21 @@ CONDITIONS.update({
     "fs2_hsf_avg_w085":    _stage2(0.85, highsf=True),
     # Stage 2b: the main candidate with balanced stream learning (OGM-GE)
     "fs2_bcs_avg_w050_ogm": _stage2(0.5, ogm=OGM_DEFAULT),
+})
+
+# Stage 2c (2026-10-14): OGM-GE did not help (0.641 @ SB 0.61; magno alone
+# 0.25 as without it). In every 50-epoch arm the joint training CE falls to
+# ~0.1 through the parvo trunk (magno train CE stays ~2.5), and from epoch
+# ~22 val top-1, joint shape bias and the magno readout all decline together
+# (w050: 0.669 / 0.68 / 0.27 at epoch 20 -> 0.653 / 0.63 / 0.25 at 49).
+# Stage 2c combines the two levers that helped (label smoothing 0.1: +1.6 pp;
+# w = 0.7: +0.02 SB) and ends the cosine schedule at epoch 25, before the
+# memorisation phase. The schedule length is fixed in advance, not chosen on
+# the validation curve.
+CONDITIONS.update({
+    "fs2_bcs_avg_w070_ls":     _stage2(0.7, label_smoothing=0.1),
+    "fs2_bcs_avg_w050_ls_e25": _stage2(0.5, label_smoothing=0.1, epochs=25),
+    "fs2_bcs_avg_w070_ls_e25": _stage2(0.7, label_smoothing=0.1, epochs=25),
 })
 STAGE2_CONDITIONS = [c for c in CONDITIONS if c.startswith("fs2_")]
 
@@ -692,6 +710,12 @@ def main():
     # Stage-1 conditions carry their own optimizer recipe; --lr is ignored
     # for them (config.json records the recipe that was used).
     recipe = cfg.get("recipe")
+    # A recipe that fixes its schedule length overrides --epochs, so the run
+    # directory (named by condition only) cannot be resumed under another one.
+    if recipe and recipe.get("epochs") and recipe["epochs"] != args.epochs:
+        print(f"{args.condition}: recipe sets epochs = {recipe['epochs']} "
+              f"(--epochs {args.epochs} ignored)", flush=True)
+        args.epochs = recipe["epochs"]
     fusion = cfg.get("fusion")
     if fusion is not None and not recipe:
         raise ValueError(f"{args.condition}: late fusion needs the Stage-1 "
