@@ -35,6 +35,7 @@
 # gateway's fs1 module (= /scratch/byrong/TSN/fusion_stage1), fallback OUT_DIR_fallback.
 # 2026-10-13: Stage-2 task 4 (fs2_hsf_avg_w085), queued on agcichy behind ~6 days of
 # another user's arrays, moved here with --array=4 and OUT_DIR=fs1/checkpoints/2026-10-12_stage2.
+# 2026-10-14: SEED_LIST (e.g. COND_LIST="c c" SEED_LIST="1 2") for further seeds of one condition.
 #SBATCH --job-name=fs1_g017
 #SBATCH --partition=agcichy
 #SBATCH --qos=standard
@@ -75,9 +76,15 @@ if [ -n "${COND_LIST:-}" ]; then
 else
     COND=${CONDS[$SLURM_ARRAY_TASK_ID]}
 fi
-RUN=${COND}_seed0
+# SEED_LIST (optional) is indexed like COND_LIST; without it every task is seed 0.
+SEED=0
+if [ -n "${SEED_LIST:-}" ]; then
+    read -r -a SEEDS <<< "$SEED_LIST"
+    SEED=${SEEDS[$SLURM_ARRAY_TASK_ID]}
+fi
+RUN=${COND}_seed${SEED}
 
-echo "task $SLURM_ARRAY_TASK_ID -> $COND seed 0 on $(hostname) $(date -Is) code $(cat "$CODE/COMMIT")"
+echo "task $SLURM_ARRAY_TASK_ID -> $COND seed $SEED on $(hostname) $(date -Is) code $(cat "$CODE/COMMIT")"
 nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
 
 for _ in $(seq 60); do [ -s "$GW_FILE" ] && break; sleep 30; done
@@ -115,7 +122,7 @@ push() { "${RS[@]}" -a --exclude='*.tmp' "$LOCAL/$RUN/" "$R/$1/$RUN/"; }
 PUSHER=$!
 
 $PY -m src.training.standalone_trainer \
-    --dataset "$SHARED/$H5" --condition "$COND" --seed 0 --out-dir "$LOCAL" \
+    --dataset "$SHARED/$H5" --condition "$COND" --seed "$SEED" --out-dir "$LOCAL" \
     --epochs 50 --batch-size 256 --num-workers 0 --cache-ram \
     --ckpt-every 10 --resume --cue-conflict-npz "$SHARED/$CCN"
 rc=$?
