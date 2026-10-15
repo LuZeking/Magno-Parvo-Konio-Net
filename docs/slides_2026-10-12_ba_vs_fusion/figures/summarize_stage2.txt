@@ -1,4 +1,4 @@
-5/5 stage-2 results; missing: none
+8/8 stage-2 results; missing: none
 
 GATE 2 (16-way decision agreement with logged logits; 10-11: fails by bf16 precision)
   fs2_bcs_avg_w050_ls_seed0        magno 0.9925  parvo 0.9417
@@ -6,6 +6,9 @@ GATE 2 (16-way decision agreement with logged logits; 10-11: fails by bf16 preci
   fs2_bcs_avg_w050_ls_seed2        magno 0.9950  parvo 0.9367
   fs2_dvd48_avg_w050_ls_seed0      magno 0.9925  parvo 0.9108
   fs2_dvd300_avg_w050_ls_seed0     magno 0.9950  parvo 0.9125
+  fs2_dvd300_avg_w050_ls_seed1     magno 0.9933  parvo 0.9300
+  fs2_dvd300_avg_w050_ls_seed2     magno 0.9975  parvo 0.9500
+  fs2_dvdfix300_avg_w050_ls_seed0  magno 0.9917  parvo 0.9550
 
 TABLE [pca]  shape/texture (bias) per stream: m=magno p=parvo b=both
   dkl_bcs_thesis_trained               strat m 0.98/0.15(+0.83) p 0.44/0.95(-0.51) b 0.97/0.90(+0.07)  per_l m 0.26/0.07(+0.20) p 0.30/0.33(-0.04) b 0.37/0.25(+0.13)  doubl m 0.23/0.13(+0.10) p 0.25/0.31(-0.06) b 0.33/0.29(+0.04)
@@ -14,6 +17,9 @@ TABLE [pca]  shape/texture (bias) per stream: m=magno p=parvo b=both
   fs2_bcs_avg_w050_ls_seed2            strat m 0.97/0.17(+0.80) p 0.42/0.89(-0.47) b 0.97/0.85(+0.12)  per_l m 0.30/0.09(+0.21) p 0.33/0.37(-0.04) b 0.42/0.28(+0.14)  doubl m 0.25/0.15(+0.11) p 0.27/0.36(-0.09) b 0.35/0.34(+0.02)
   fs2_dvd48_avg_w050_ls_seed0          strat m 0.97/0.21(+0.76) p 0.47/0.91(-0.45) b 0.97/0.87(+0.10)  per_l m 0.29/0.10(+0.18) p 0.33/0.35(-0.03) b 0.43/0.31(+0.12)  doubl m 0.27/0.16(+0.11) p 0.28/0.34(-0.06) b 0.38/0.37(+0.01)
   fs2_dvd300_avg_w050_ls_seed0         strat m 0.95/0.37(+0.58) p 0.47/0.92(-0.45) b 0.95/0.90(+0.05)  per_l m 0.32/0.17(+0.14) p 0.32/0.38(-0.07) b 0.43/0.35(+0.08)  doubl m 0.30/0.24(+0.06) p 0.27/0.37(-0.10) b 0.40/0.41(-0.01)
+  fs2_dvd300_avg_w050_ls_seed1         strat m 0.95/0.39(+0.56) p 0.47/0.92(-0.45) b 0.96/0.91(+0.04)  per_l m 0.33/0.19(+0.14) p 0.33/0.38(-0.05) b 0.43/0.33(+0.10)  doubl m 0.31/0.25(+0.06) p 0.28/0.37(-0.09) b 0.36/0.40(-0.05)
+  fs2_dvd300_avg_w050_ls_seed2         strat m 0.96/0.37(+0.59) p 0.45/0.91(-0.46) b 0.96/0.91(+0.05)  per_l m 0.34/0.16(+0.18) p 0.32/0.35(-0.03) b 0.44/0.35(+0.09)  doubl m 0.32/0.24(+0.07) p 0.28/0.34(-0.06) b 0.38/0.40(-0.01)
+  fs2_dvdfix300_avg_w050_ls_seed0      strat m 0.63/0.92(-0.29) p 0.46/0.87(-0.41) b 0.70/0.98(-0.28)  per_l m 0.39/0.42(-0.03) p 0.27/0.26(+0.01) b 0.42/0.43(-0.01)  doubl m 0.33/0.42(-0.09) p 0.24/0.26(-0.02) b 0.38/0.43(-0.06)
 
 TABLE [readout]  shape/texture (bias) per stream: m=magno p=parvo b=both
   dkl_bcs_thesis_trained               strat m 0.95/0.18(+0.77) p 0.35/0.97(-0.62) b 0.92/0.95(-0.03)  per_l m 0.63/0.10(+0.53) p 0.32/0.48(-0.17) b 0.65/0.46(+0.19)  doubl m 0.63/0.14(+0.49) p 0.25/0.48(-0.23) b 0.64/0.47(+0.17)
@@ -22,6 +28,9 @@ TABLE [readout]  shape/texture (bias) per stream: m=magno p=parvo b=both
   fs2_bcs_avg_w050_ls_seed2            strat m 0.92/0.16(+0.76) p 0.35/0.91(-0.56) b 0.90/0.87(+0.02)  per_l m 0.57/0.11(+0.46) p 0.30/0.48(-0.18) b 0.62/0.45(+0.17)  doubl m 0.57/0.14(+0.44) p 0.25/0.48(-0.23) b 0.59/0.46(+0.13)
   fs2_dvd48_avg_w050_ls_seed0          strat m 0.90/0.22(+0.69) p 0.35/0.92(-0.56) b 0.88/0.89(-0.00)  per_l m 0.57/0.13(+0.44) p 0.32/0.48(-0.16) b 0.60/0.46(+0.14)  doubl m 0.57/0.15(+0.42) p 0.26/0.47(-0.20) b 0.59/0.46(+0.12)
   fs2_dvd300_avg_w050_ls_seed0         strat m 0.87/0.38(+0.49) p 0.33/0.93(-0.60) b 0.86/0.91(-0.05)  per_l m 0.61/0.19(+0.42) p 0.28/0.48(-0.20) b 0.63/0.48(+0.14)  doubl m 0.60/0.22(+0.37) p 0.25/0.49(-0.24) b 0.61/0.49(+0.11)
+  fs2_dvd300_avg_w050_ls_seed1         strat m 0.86/0.37(+0.49) p 0.36/0.93(-0.57) b 0.84/0.91(-0.06)  per_l m 0.58/0.22(+0.37) p 0.30/0.50(-0.20) b 0.60/0.46(+0.15)  doubl m 0.56/0.24(+0.32) p 0.25/0.50(-0.25) b 0.56/0.48(+0.09)
+  fs2_dvd300_avg_w050_ls_seed2         strat m 0.85/0.38(+0.47) p 0.33/0.92(-0.59) b 0.85/0.90(-0.05)  per_l m 0.58/0.22(+0.36) p 0.29/0.47(-0.18) b 0.61/0.45(+0.16)  doubl m 0.57/0.26(+0.31) p 0.24/0.47(-0.23) b 0.57/0.46(+0.12)
+  fs2_dvdfix300_avg_w050_ls_seed0      strat m 0.46/0.89(-0.43) p 0.25/0.88(-0.64) b 0.51/0.97(-0.46)  per_l m 0.39/0.54(-0.15) p 0.22/0.31(-0.09) b 0.46/0.59(-0.13)  doubl m 0.35/0.54(-0.19) p 0.19/0.31(-0.12) b 0.36/0.59(-0.23)
 
 MAIN TSN mean over 3 seed(s): bias magno / parvo / magno - parvo
   pca      stratified +0.810 / -0.454 / +1.264
@@ -31,6 +40,14 @@ MAIN TSN mean over 3 seed(s): bias magno / parvo / magno - parvo
   readout  per_label  +0.459 / -0.172 / +0.631
   readout  double     +0.429 / -0.215 / +0.644
 
+DVD300 mean over 3 seed(s): bias magno / parvo / magno - parvo
+  pca      stratified +0.578 / -0.454 / +1.032
+  pca      per_label  +0.154 / -0.047 / +0.201
+  pca      double     +0.064 / -0.083 / +0.146
+  readout  stratified +0.486 / -0.587 / +1.073
+  readout  per_label  +0.382 / -0.191 / +0.573
+  readout  double     +0.334 / -0.240 / +0.574
+
 READING 5 (pca/both: retains texture = double texture >= 0.1875; texture-dominant = t > s under both grouped splits)
   dkl_bcs_thesis_trained               double texture 0.295 retains  not texture-dominant
   fs2_bcs_avg_w050_ls_seed0            double texture 0.350 retains  not texture-dominant
@@ -38,3 +55,6 @@ READING 5 (pca/both: retains texture = double texture >= 0.1875; texture-dominan
   fs2_bcs_avg_w050_ls_seed2            double texture 0.338 retains  not texture-dominant
   fs2_dvd48_avg_w050_ls_seed0          double texture 0.368 retains  not texture-dominant
   fs2_dvd300_avg_w050_ls_seed0         double texture 0.410 retains  not texture-dominant
+  fs2_dvd300_avg_w050_ls_seed1         double texture 0.403 retains  not texture-dominant
+  fs2_dvd300_avg_w050_ls_seed2         double texture 0.398 retains  not texture-dominant
+  fs2_dvdfix300_avg_w050_ls_seed0      double texture 0.432 retains  TEXTURE-DOMINANT

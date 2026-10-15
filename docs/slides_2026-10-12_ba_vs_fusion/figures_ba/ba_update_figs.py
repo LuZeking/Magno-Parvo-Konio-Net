@@ -10,6 +10,12 @@ detached features), trained with AdamW + cosine + EMA and label smoothing
 seed range / SD.
 BA TSN = thesis DKL B&CS, checkpoint dkl_blur_cs_dvd_trans (epoch 147).
 
+`python3 ba_update_figs.py dvd300` draws the candidate main TSN
+fs2_dvd300_avg_w050_ls instead (same recipe, magno diet = DVD acuity + contrast
+age growing linearly 0 -> 300 months over training) into ba_fig*_dvd300.*;
+Fig 6 then adds the no-trajectory control fs2_dvdfix300_avg_w050_ls (the same
+adult diet from the first step, seed 0).
+
 Sources, all in the repo or next to this script:
 - thesis per-model values: Fig. 4 top-1 (thesis text), Fig. 7 per-stream
   readouts (thesis text), Fig. 6 shape bias / shape accuracy
@@ -25,6 +31,7 @@ import csv
 import json
 import os
 import re
+import sys
 
 import matplotlib
 matplotlib.use('Agg')
@@ -34,6 +41,9 @@ from matplotlib.patches import Patch  # noqa: E402
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 PERF = os.path.join(REPO, 'src/analysis/neuroai/raw-data/performances')
+VARIANT = sys.argv[1] if len(sys.argv) > 1 else 'main'
+RUN_STEM, PROBE_BLOCK, SUFFIX = {'main': ('fs2_bcs_avg_w050_ls', 'MAIN TSN mean', ''),
+                                 'dvd300': ('fs2_dvd300_avg_w050_ls', 'DVD300 mean', '_dvd300')}[VARIANT]
 
 INK, MUTED, GRID, BG = '#1B2333', '#4A5568', '#E4E2DC', '#FAF9F5'
 NEW, BA, CTX = '#2A5C9A', '#C66A1B', '#A9AFB8'
@@ -47,6 +57,7 @@ plt.rcParams.update({
 
 
 def save(fig, name):
+    name += SUFFIX
     for ext in ('png', 'pdf'):
         fig.savefig(f'{HERE}/{name}.{ext}', dpi=250, bbox_inches='tight', pad_inches=0.08)
     plt.close(fig)
@@ -77,7 +88,7 @@ def perf(name):
     return out
 
 
-NEW_RUNS = [f'fs2_bcs_avg_w050_ls_seed{i}' for i in range(3)]
+NEW_RUNS = [f'{RUN_STEM}_seed{i}' for i in range(3)]
 new_hs = [json.load(open(f'{HERE}/{r}__history.json')) for r in NEW_RUNS]
 finals = [h[-1] for h in new_hs]
 
@@ -173,10 +184,17 @@ ax.scatter(b['shape_accuracy'], b['shape_bias'], marker='s', s=420, facecolor='n
 ax.errorbar(new_beh['joint']['acc'], new_beh['joint']['sb'], xerr=new_beh_sd['joint']['acc'],
             yerr=new_beh_sd['joint']['sb'], fmt='o', ms=10, color=NEW, mec=BG, mew=1.2,
             elinewidth=1.6, capsize=0, zorder=5, label='New TSN (mean ± SD, 3 seeds)')
+if VARIANT == 'dvd300':
+    ctl = json.load(open(f'{HERE}/fs2_dvdfix300_avg_w050_ls_seed0__history.json'))[-1]['cc']['joint']
+    cx, cy = ctl['n_shape'] / ctl['n'], ctl['sb']
+    ax.scatter(cx, cy, s=100, facecolor='none', edgecolor=NEW, lw=2, zorder=5)
+    ax.text(cx + 0.008, cy - 0.03, 'Adult diet from the start (control)', ha='left', va='center',
+            fontsize=12, color=NEW)
+    print(f"control dvdfix300: SB {ctl['sb']:.3f} shape-acc {ctl['n_shape'] / ctl['n']:.3f}")
 ax.set_xlabel('Shape accuracy (cue-conflict)')
 ax.set_ylabel('Shape bias (cue-conflict)')
 ax.set_xlim(0.18, 0.54)
-ax.set_ylim(0.38, 0.98)
+ax.set_ylim(0.30 if VARIANT == 'dvd300' else 0.38, 0.98)
 ax.legend(loc='upper left', fontsize=12, frameon=False, markerscale=0.8)
 save(fig, 'ba_fig6_shape_bias')
 
@@ -222,12 +240,12 @@ def probe(space, model, split):
 
 
 txt2 = open(os.path.join(HERE, '..', 'figures', 'summarize_stage2.txt')).read()
-assert 'MAIN TSN mean over 3 seed(s)' in txt2, 'stage-2 probe summary lacks 3 seeds'
+assert f'{PROBE_BLOCK} over 3 seed(s)' in txt2, 'stage-2 probe summary lacks 3 seeds'
 
 
 def probe_mean(space, split):
     """New TSN: seed-mean magno / parvo bias from summarize_stage2.txt."""
-    main = txt2.split('MAIN TSN mean')[1].split('\n\n')[0]
+    main = txt2.split(PROBE_BLOCK)[1].split('\n\n')[0]
     m = re.search(rf'^\s+{space}\s+{split}\s+([+-][\d.]+) / ([+-][\d.]+)', main, re.M)
     return float(m.group(1)), float(m.group(2))
 
