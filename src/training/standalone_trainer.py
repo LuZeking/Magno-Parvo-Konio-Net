@@ -166,7 +166,7 @@ STAGE2_RECIPE = dict(STAGE1_RECIPE, aux_weight=1.0, label_smoothing=0.0)
 def _stage2(w: float = 0.5, *, highsf: bool = False,
             label_smoothing: float = 0.0, ogm: dict | None = None,
             epochs: int | None = None, norm: bool = False,
-            dvd_end: float | None = None) -> dict:
+            dvd_end: float | None = None, dvd_fixed: bool = False) -> dict:
     recipe = dict(STAGE2_RECIPE, label_smoothing=label_smoothing)
     if ogm:
         recipe["ogm"] = ogm
@@ -178,6 +178,8 @@ def _stage2(w: float = 0.5, *, highsf: bool = False,
         cfg["norm_scale"] = NORM_SCALE
     if dvd_end is not None:
         cfg["dvd_end_months"] = dvd_end
+    if dvd_fixed:
+        cfg["dvd_fixed"] = True
     return cfg
 
 
@@ -253,6 +255,16 @@ CONDITIONS.update({
 CONDITIONS.update({
     "fs2_dvd48_avg_w050_ls":  _stage2(0.5, label_smoothing=0.1, dvd_end=48.0),
     "fs2_dvd300_avg_w050_ls": _stage2(0.5, label_smoothing=0.1, dvd_end=300.0),
+})
+
+# Stage 2f (2026-10-15): seed 0 of dvd300 beat the main TSN on both axes
+# (0.682 @ SB 0.703 vs 0.665 +- 0.003 @ 0.620 +- 0.013 over 3 seeds; magno
+# readout 0.39 vs 0.23), dvd48 did not (0.664 @ 0.637). The control: the
+# same diet held at the adult endpoint for the whole run (dvd_fixed), so the
+# test input and everything else match dvd300 and only the trajectory is gone.
+CONDITIONS.update({
+    "fs2_dvdfix300_avg_w050_ls": _stage2(0.5, label_smoothing=0.1, dvd_end=300.0,
+                                         dvd_fixed=True),
 })
 STAGE2_CONDITIONS = [c for c in CONDITIONS if c.startswith("fs2_")]
 
@@ -926,9 +938,12 @@ def main():
     total_steps = args.epochs * len(train_loader)
 
     def dvd_age(s):
-        """Stage-2e diet age at global step s: 0 -> dvd_end_months, linear."""
+        """Stage-2e diet age at global step s: 0 -> dvd_end_months, linear
+        (held at dvd_end_months throughout for the dvd_fixed control)."""
         if builder.dvd_end is None:
             return None
+        if cfg.get("dvd_fixed"):
+            return builder.dvd_end
         return builder.dvd_end * min(s / total_steps, 1.0)
 
     logits = None

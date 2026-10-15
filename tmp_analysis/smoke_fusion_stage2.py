@@ -201,4 +201,8 @@ b300 = StreamInputBuilder(CONDITIONS["fs2_dvd300_avg_w050_ls"])
 e = [hf_energy(b300(img, age=a)[0]) for a in ages]
 print("9d. magno high-SF energy by age: " + ", ".join(f"{a:g} mo {v:.2e}" for a, v in zip(ages, e)))
 assert all(u < v for u, v in zip(e, e[1:]))
+a, b = CONDITIONS["fs2_dvd300_avg_w050_ls"], CONDITIONS["fs2_dvdfix300_avg_w050_ls"]
+diff = {k for k in set(a) | set(b) if a.get(k) != b.get(k)}
+print(f"9e. fs2_dvdfix300_avg_w050_ls differs from fs2_dvd300_avg_w050_ls only in {sorted(diff)}")
+assert diff == {"dvd_fixed"}
 print("all stage-2 model checks passed")
