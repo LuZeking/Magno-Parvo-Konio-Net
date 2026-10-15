@@ -11,7 +11,8 @@ import sys
 J2, J1, OUT = sys.argv[1:4]
 SPLITS = ('stratified', 'per_label', 'double')
 MAIN = [f'fs2_bcs_avg_w050_ls_seed{i}' for i in range(3)]
-DVD = ['fs2_dvd48_avg_w050_ls_seed0', 'fs2_dvd300_avg_w050_ls_seed0']
+DVD300 = [f'fs2_dvd300_avg_w050_ls_seed{i}' for i in range(3)]
+DVD = ['fs2_dvd48_avg_w050_ls_seed0'] + DVD300 + ['fs2_dvdfix300_avg_w050_ls_seed0']
 REF = 'dkl_bcs_thesis_trained'
 
 R = {}
@@ -45,9 +46,11 @@ for space in ('pca', 'readout'):
         if n in R:
             lines.append(f'  {n:36s} {row(n, space)}')
 
-have = [n for n in MAIN if n in R]
-if have:
-    lines += ['', f'MAIN TSN mean over {len(have)} seed(s): bias magno / parvo / magno - parvo']
+for label, runs in (('MAIN TSN', MAIN), ('DVD300', DVD300)):
+    have = [n for n in runs if n in R]
+    if not have:
+        continue
+    lines += ['', f'{label} mean over {len(have)} seed(s): bias magno / parvo / magno - parvo']
     for space in ('pca', 'readout'):
         for sp in SPLITS:
             b = {st: sum(R[n]['splits'][space][sp][st]['bias'] for n in have) / len(have)

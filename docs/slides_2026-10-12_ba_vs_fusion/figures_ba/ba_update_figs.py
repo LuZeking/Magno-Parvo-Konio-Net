@@ -1,9 +1,13 @@
 """The BA's result figures (Manocchio thesis Figs 4-8) redrawn with the new main
 TSN next to the BA TSN.
 
-New main TSN = Stage-1 arm fs1_bcs_avg (seed 0): the BA's architecture and
-averaging readout at inference, trained with the Stage-1 recipe (AdamW +
-cosine + EMA, 50 epochs, per-stream auxiliary CE 0.3).
+New main TSN = fs2_bcs_avg_w050_ls, seeds 0-2 (2026-10-15; replaces the
+Stage-1 arm fs1_bcs_avg, which trained each stream with its own loss): the
+BA's architecture, diet, averaging readout and single objective (one
+cross-entropy on the network output; the per-stream heads are readouts on
+detached features), trained with AdamW + cosine + EMA and label smoothing
+0.1 for 50 epochs. Values are seed means; whiskers / error bars show the
+seed range / SD.
 BA TSN = thesis DKL B&CS, checkpoint dkl_blur_cs_dvd_trans (epoch 147).
 
 Sources, all in the repo or next to this script:
@@ -11,10 +15,11 @@ Sources, all in the repo or next to this script:
   readouts (thesis text), Fig. 6 shape bias / shape accuracy
   (src/analysis/neuroai/raw-data/performances/*.csv, the thesis pipeline);
 - BA TSN and new TSN on one instrument: results/cue_conflict/thesis_dvd_trans.json
-  (our 1,200-image pipeline) and the Stage-1 history (same front end, parity 0);
+  (our 1,200-image pipeline) and the Stage-2 histories (same front end, parity 0);
 - BA-recipe trajectories: the paper's 150-epoch dkl_bcs re-runs, seeds 0 and 2
   (seed 1's history could not be read off Lustre on 2026-10-12);
-- stream probes: ../figures/summarize_all20.txt (grouped-probe summary).
+- stream probes: ../figures/summarize_all20.txt (BA TSN) and
+  ../figures/summarize_stage2.txt (new TSN, seed mean); same grouped probe.
 """
 import csv
 import json
@@ -72,12 +77,32 @@ def perf(name):
     return out
 
 
-new_h = json.load(open(f'{HERE}/fs1_bcs_avg_seed0__history.json'))
-new = new_h[-1]
+NEW_RUNS = [f'fs2_bcs_avg_w050_ls_seed{i}' for i in range(3)]
+new_hs = [json.load(open(f'{HERE}/{r}__history.json')) for r in NEW_RUNS]
+finals = [h[-1] for h in new_hs]
+
+
+def mean(xs):
+    return sum(xs) / len(xs)
+
+
+def sd(xs):
+    m = mean(xs)
+    return (sum((x - m) ** 2 for x in xs) / (len(xs) - 1)) ** 0.5
+
+
+new_top1 = [f['val_top1'] for f in finals]
+new = {'epoch': finals[0]['epoch'], 'val_top1': mean(new_top1),
+       'val': {k: mean([f['val'][k] for f in finals]) for k in finals[0]['val']}}
 ba_cc = json.load(open(f'{REPO}/results/cue_conflict/thesis_dvd_trans.json'))['conditions']
-N = new['cc']['joint']['n']
-new_beh = {k: dict(sb=new['cc'][k]['sb'], acc=new['cc'][k]['n_shape'] / N)
-           for k in ('joint', 'tied_magno', 'tied_parvo', 'magno', 'parvo')}
+N = finals[0]['cc']['joint']['n']
+HEADS = ('joint', 'tied_magno', 'tied_parvo', 'magno', 'parvo')
+beh_seeds = [{k: dict(sb=f['cc'][k]['sb'], acc=f['cc'][k]['n_shape'] / N) for k in HEADS}
+             for f in finals]
+new_beh = {k: {m: mean([s[k][m] for s in beh_seeds]) for m in ('sb', 'acc')} for k in HEADS}
+new_beh_sd = {k: {m: sd([s[k][m] for s in beh_seeds]) for m in ('sb', 'acc')} for k in HEADS}
+print('new TSN per seed: top-1 ' + ' '.join(f'{v:.3f}' for v in new_top1)
+      + '  SB ' + ' '.join(f"{s['joint']['sb']:.3f}" for s in beh_seeds))
 ba_beh = {'joint': ba_cc['full'], 'magno': ba_cc['magno_only'], 'parvo': ba_cc['parvo_only']}
 print(f"new TSN epoch {new['epoch']}: top-1 {new['val_top1']:.3f}  val heads "
       + ' '.join(f"{k} {v:.3f}" for k, v in new['val'].items()))
@@ -92,8 +117,10 @@ rows = [('New TSN (ours)', new['val_top1'])] + [(n, a) for n, _, a in THESIS]
 for i, (n, a) in enumerate(rows):
     col = NEW if i == 0 else BA if n == BA_NAME else CTX
     ax.barh(i, a, height=0.68, color=col, edgecolor=BG, lw=1.5, zorder=3)
-    ax.text(a + 0.008, i, f'{a:.3f}', va='center', fontsize=12.5,
-            color=INK, fontweight='bold' if col != CTX else 'normal')
+    if i == 0:
+        ax.plot([min(new_top1), max(new_top1)], [0, 0], color=INK, lw=1.6, zorder=4)
+    ax.text(max(a, max(new_top1) if i == 0 else a) + 0.008, i, f'{a:.3f}', va='center',
+            fontsize=12.5, color=INK, fontweight='bold' if col != CTX else 'normal')
 ax.set_yticks(range(len(rows)))
 ax.set_yticklabels([n for n, _ in rows], fontsize=12.5, color=INK)
 ax.invert_yaxis()
@@ -113,8 +140,9 @@ for s, ls in ((0, '-'), (2, (0, (5, 2)))):
             label=f'BA TSN recipe, re-run seed {s}')
 ax.scatter([148], [0.469], marker='s', s=80, color=BA, edgecolor=BG, lw=1.5, zorder=4,
            label='BA TSN as published (ep 148)')
-ax.plot([e['epoch'] + 1 for e in new_h], [e['val_top1'] for e in new_h], color=NEW, lw=2.4,
-        label='New TSN (50 epochs)')
+for i, h in enumerate(new_hs):
+    ax.plot([e['epoch'] + 1 for e in h], [e['val_top1'] for e in h], color=NEW, lw=1.8,
+            label='New TSN, seeds 0-2 (50 epochs)' if i == 0 else None)
 ax.set_xlim(0, 152)
 ax.set_ylim(0, 0.75)
 ax.set_xlabel('Epoch')
@@ -142,12 +170,9 @@ ax.scatter([], [], marker='s', s=60, color=CTX, label='Other BA models (thesis v
 b = ba_beh['joint']
 ax.scatter(b['shape_accuracy'], b['shape_bias'], marker='s', s=420, facecolor='none', edgecolor=BA,
            lw=2.5, zorder=4, label='BA TSN')
-ax.scatter(new_beh['joint']['acc'], new_beh['joint']['sb'], marker='o', s=110, color=NEW,
-           edgecolor=BG, lw=1.2, zorder=5, label='New TSN')
-ax.annotate('BA TSN and New TSN\nland on the same point',
-            xy=(b['shape_accuracy'] - 0.006, b['shape_bias'] + 0.012), xytext=(0.215, 0.80),
-            fontsize=12.5, color=INK, va='center',
-            arrowprops=dict(arrowstyle='-', color=MUTED, lw=1))
+ax.errorbar(new_beh['joint']['acc'], new_beh['joint']['sb'], xerr=new_beh_sd['joint']['acc'],
+            yerr=new_beh_sd['joint']['sb'], fmt='o', ms=10, color=NEW, mec=BG, mew=1.2,
+            elinewidth=1.6, capsize=0, zorder=5, label='New TSN (mean ± SD, 3 seeds)')
 ax.set_xlabel('Shape accuracy (cue-conflict)')
 ax.set_ylabel('Shape bias (cue-conflict)')
 ax.set_xlim(0.18, 0.54)
@@ -196,8 +221,19 @@ def probe(space, model, split):
     return float(m.group(1)), float(m.group(2))
 
 
+txt2 = open(os.path.join(HERE, '..', 'figures', 'summarize_stage2.txt')).read()
+assert 'MAIN TSN mean over 3 seed(s)' in txt2, 'stage-2 probe summary lacks 3 seeds'
+
+
+def probe_mean(space, split):
+    """New TSN: seed-mean magno / parvo bias from summarize_stage2.txt."""
+    main = txt2.split('MAIN TSN mean')[1].split('\n\n')[0]
+    m = re.search(rf'^\s+{space}\s+{split}\s+([+-][\d.]+) / ([+-][\d.]+)', main, re.M)
+    return float(m.group(1)), float(m.group(2))
+
+
 P = {'BA TSN': (probe('pca', 'dkl_bcs_thesis_trained', 'strat'), probe('readout', 'dkl_bcs_thesis_trained', 'doubl')),
-     'New TSN': (probe('pca', 'fs1_bcs_avg_seed0', 'strat'), probe('readout', 'fs1_bcs_avg_seed0', 'doubl'))}
+     'New TSN': (probe_mean('pca', 'stratified'), probe_mean('readout', 'double'))}
 STREAM_SB = {'BA TSN': (ba_beh['magno']['shape_bias'], ba_beh['joint']['shape_bias'], ba_beh['parvo']['shape_bias']),
              'New TSN': (new_beh['tied_magno']['sb'], new_beh['joint']['sb'], new_beh['tied_parvo']['sb'])}
 print('probe', P)
