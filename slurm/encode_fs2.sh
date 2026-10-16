@@ -1,0 +1,54 @@
+#!/bin/bash
+# NSD encoding of the Stage-2 fusion TSNs (2026-10-16): PAPER_v2 Results 2.3 /
+# Fig. 3 on the candidate main TSN fs2_dvd300_avg_w050_ls (3 seeds), its
+# no-trajectory control fs2_dvdfix300_avg_w050_ls (seed 0) and the current main
+# TSN fs2_bcs_avg_w050_ls (3 seeds). Same instrument as the paper's controls
+# (slurm/encode_cc_controls.sh: --ridge-batched --cue-conflict).
+# Front end = the run's own config: the DVD arms get --dvd-age-months 300
+# (their dvd_end_months), the bcs arm the fixed blur + CS48;
+# run_encoding.check_frontend_matches_checkpoint refuses any mismatch.
+# checkpoint_final.pt holds the EMA network, the one every logged metric scores.
+#
+#   PRE=$(env -u TMPDIR sbatch --parsable slurm/encode_fs2_preflight.sh)
+#   env -u TMPDIR sbatch --dependency=afterok:$PRE slurm/encode_fs2.sh
+#
+# 7 models x 8 subjects = 56 tasks; CPU (himalaya on torch CPU). --mem from the
+# batched fits with in-job features (konioseeds 26496697, MaxRSS 21-34.7 GB)
+# plus 25%; those took 3-8 h per subject.
+#SBATCH --job-name=mpk_enc_fs2
+#SBATCH --partition=main
+#SBATCH --qos=standard
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=44G
+#SBATCH --time=14:00:00
+#SBATCH --array=0-55%24
+#SBATCH --output=/scratch/byrong/mpk/encoding/logs/2026-10-16_fs2/enc_%A_%a.out
+
+set -euo pipefail
+trap '[[ ${TMPDIR:-unset} == unset ]] || rm -rf $TMPDIR' EXIT
+export OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
+
+TASK=$SLURM_ARRAY_TASK_ID
+SUBJECT=$(( TASK % 8 + 1 ))
+GROUP=$(( TASK / 8 ))
+case $GROUP in
+  0|1|2) RUN=fs2_dvd300_avg_w050_ls_seed$GROUP ; FRONTEND="--dvd-age-months 300" ;;
+  3)     RUN=fs2_dvdfix300_avg_w050_ls_seed0   ; FRONTEND="--dvd-age-months 300" ;;
+  4|5|6) RUN=fs2_bcs_avg_w050_ls_seed$(( GROUP - 4 )) ; FRONTEND="" ;;
+  *) echo "bad group $GROUP" >&2; exit 1 ;;
+esac
+
+CKPT=/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-12_stage2/$RUN/checkpoint_final.pt
+PY=/scratch/byrong/anaconda3/envs/mpk/bin/python
+OUT=/scratch/byrong/mpk/encoding/results/2026-10-16_fs2
+CACHE=/scratch/byrong/mpk/encoding/cache/2026-10-16_fs2/${RUN}_subj$(printf %02d "$SUBJECT").npz
+
+echo "[enc_fs2] task=$TASK run=$RUN subj=$SUBJECT frontend='${FRONTEND:-blur+CS48}' $(date -Is) $(hostname)"
+[[ -f "$CKPT" ]] || { echo "FATAL: checkpoint missing: $CKPT" >&2; exit 1; }
+mkdir -p "$OUT"
+cd "$SLURM_SUBMIT_DIR"
+$PY -m src.analysis.encoding.run_encoding \
+    --subject "$SUBJECT" --model-name "$RUN" --out-dir "$OUT" \
+    --feature-cache "$CACHE" --checkpoint "$CKPT" \
+    --cue-conflict --ridge-batched $FRONTEND
+echo "[enc_fs2] done $RUN subj$SUBJECT $(date -Is)"

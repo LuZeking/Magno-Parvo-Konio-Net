@@ -41,6 +41,11 @@ def parse_args():
     p.add_argument("--no-lum-blur", action="store_true")
     p.add_argument("--no-lum-cs", action="store_true")
     p.add_argument("--age-months", type=int, default=48)
+    p.add_argument("--dvd-age-months", type=float, default=None,
+                   help="progressive (DVD) magno diet of the fs2_dvd* runs, "
+                        "evaluated at this age (the run's dvd_end_months): "
+                        "dkl_frontend.apply_dvd_diet replaces the fixed blur "
+                        "and CS cut, so --no-lum-blur/--no-lum-cs are implied")
     p.add_argument("--transform-target", default="magno",
                    choices=("magno", "parvo"),
                    help="channel-swap control: put the developmental blur and "
@@ -111,7 +116,52 @@ def parse_args():
         default=None,
         help="npz path to cache per-image stream features",
     )
-    return p.parse_args()
+    args = p.parse_args()
+    if args.dvd_age_months is not None:
+        # Recorded as such in the provenance, so a DVD-diet cache can never
+        # pass for a blur+CS one.
+        args.no_lum_blur = args.no_lum_cs = True
+    return args
+
+
+def check_frontend_matches_checkpoint(args) -> None:
+    """Refuse a front end that is not the one the checkpoint was trained with.
+
+    Stage-1/2 fusion checkpoints carry their condition config. Their DVD-diet
+    arms are evaluated through ``apply_dvd_diet`` at ``dvd_end_months``, which
+    no combination of the blur/CS flags expresses, so encoding such a
+    checkpoint with the default flags would silently feed it the thesis diet.
+    Older checkpoints carry no config and are left to the caller's flags.
+    """
+    state = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
+    cfg = state.get("config") if isinstance(state, dict) else None
+    if not isinstance(cfg, dict) or "input_mode" not in cfg:
+        return
+    dvd = cfg.get("dvd_end_months")
+    want = {
+        "dvd_age_months": None if dvd is None else float(dvd),
+        "lum_blur": False if dvd is not None else bool(cfg["blur"]),
+        "lum_cs": False if dvd is not None else bool(cfg["cs"]),
+        "transform_target": cfg.get("transform_target", "magno"),
+        "parvo_highsf": bool(cfg.get("parvo_highsf", False)),
+    }
+    got = {
+        "dvd_age_months": args.dvd_age_months,
+        "lum_blur": not args.no_lum_blur,
+        "lum_cs": not args.no_lum_cs,
+        # readout_w_cortex has neither flag; it only builds the default arm
+        "transform_target": getattr(args, "transform_target", "magno"),
+        "parvo_highsf": getattr(args, "parvo_highsf", False),
+    }
+    bad = {k: (got[k], want[k]) for k in want if got[k] != want[k]}
+    if cfg.get("blur_sigma") is not None:
+        bad["blur_sigma"] = (None, cfg["blur_sigma"])
+    if bad:
+        raise ValueError(
+            f"front end does not match {args.checkpoint} (requested, trained): "
+            f"{bad}"
+        )
+    print(f"[frontend] matches checkpoint config: {want}", flush=True)
 
 
 def build_extractor(args, device: str):
@@ -160,6 +210,7 @@ def features_from_rgb(args, rgb_uint8, ch_min, ch_max, model, device: str):
             parvo_highsf=args.parvo_highsf,
             chroma_channel=args.chroma_channel,
             chroma_rescale=args.chroma_rescale,
+            dvd_age=args.dvd_age_months,
         )
         if args.features == "gabor":
             f = input_bands.extract_input_features(
@@ -189,6 +240,9 @@ def cache_provenance(args) -> dict[str, np.ndarray]:
         "prov_lum_blur": np.asarray(not args.no_lum_blur),
         "prov_lum_cs": np.asarray(not args.no_lum_cs),
         "prov_age_months": np.asarray(args.age_months),
+        # -1 = no DVD diet (the fixed blur/CS front end above applies)
+        "prov_dvd_age_months": np.asarray(
+            -1.0 if args.dvd_age_months is None else float(args.dvd_age_months)),
         "prov_features": np.asarray(args.features),
         # Recorded because a .npz that does not name its front end cannot be
         # told apart from another condition's afterwards -- exactly how the
@@ -223,6 +277,9 @@ BACKFILL_DEFAULTS = {
     # already on disk.
     "prov_chroma_channel": "rg",
     "prov_chroma_rescale": "none",
+    # `--dvd-age-months` did not exist until 2026-10-16; every earlier cache
+    # used the fixed blur/CS front end.
+    "prov_dvd_age_months": -1.0,
 }
 
 
@@ -294,6 +351,8 @@ def get_features_for_images(args, image_ids: np.ndarray, device: str):
 
 def main():
     args = parse_args()
+    if args.checkpoint:
+        check_frontend_matches_checkpoint(args)
     _t0 = time.time()
 
     def stage(msg: str) -> None:

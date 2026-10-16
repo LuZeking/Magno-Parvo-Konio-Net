@@ -37,7 +37,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from src.analysis.encoding import banded_ridge, dkl_frontend, features, nsd_data
+from src.analysis.encoding import (banded_ridge, dkl_frontend, features, nsd_data,
+                                   run_encoding)
 
 
 def parse_args():
@@ -52,13 +53,19 @@ def parse_args():
     p.add_argument("--no-lum-blur", action="store_true")
     p.add_argument("--no-lum-cs", action="store_true")
     p.add_argument("--age-months", type=int, default=48)
+    p.add_argument("--dvd-age-months", type=float, default=None,
+                   help="DVD magno diet of the fs2_dvd* runs at this age "
+                        "(their dvd_end_months); implies --no-lum-blur --no-lum-cs")
     p.add_argument("--n-w", type=int, default=21)
     p.add_argument("--n-splits", type=int, default=3)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument("--quick", action="store_true",
                    help="smoke test: 2 sessions, 3 grid points, 500 voxels")
-    return p.parse_args()
+    args = p.parse_args()
+    if args.dvd_age_months is not None:
+        args.no_lum_blur = args.no_lum_cs = True
+    return args
 
 
 @torch.no_grad()
@@ -71,6 +78,7 @@ def stream_outputs(model, rgb_uint8, ch_min, ch_max, args, device):
             rgb_uint8[start:start + 512], ch_min, ch_max,
             lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs,
             age_months=args.age_months, device=device,
+            dvd_age=args.dvd_age_months,
         )
         for b in range(0, x_m.shape[0], args.batch_size):
             y1 = model.stream1_block1(x_m[b:b + args.batch_size].to(device))
@@ -134,6 +142,7 @@ def fit_r2(X_img, tr_rows, te_rows, Y_train, Y_test, splits, alphas):
 
 def main():
     args = parse_args()
+    run_encoding.check_frontend_matches_checkpoint(args)
     t0 = time.time()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     torch.set_num_threads(max(1, int(os.environ.get("OMP_NUM_THREADS", "8"))))
@@ -204,7 +213,9 @@ def main():
         rois[f"roi_{name}"] = lab[vox] if args.quick else lab
     np.savez(out_path, subject=s, model_name=args.model_name, grid=grid, r2=r2, r2_concat=r2_concat,
              noise_ceiling=nc, n_train_trials=len(split["train_trials"]), n_test_images=len(split["test_image_ids"]),
-             lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs, checkpoint=args.checkpoint, **rois)
+             lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs,
+             dvd_age_months=-1.0 if args.dvd_age_months is None else args.dvd_age_months,
+             checkpoint=args.checkpoint, **rois)
     print(f"[+{time.time()-t0:6.0f}s] wrote {out_path}", flush=True)
 
 

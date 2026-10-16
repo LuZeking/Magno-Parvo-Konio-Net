@@ -276,11 +276,19 @@ def magno_parvo_inputs(
     rgb_mode: bool = False,
     chroma_channel: str = "rg",
     chroma_rescale: str = "none",
+    dvd_age: float | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Full front end: RGB uint8 -> (magno input, parvo input).
 
     Defaults correspond to the DKL B&CS family (blur + contrast on lum,
     rg untouched). Set both flags False for DKL Base.
+
+    ``dvd_age`` is the progressive (DVD) diet of the Stage-2e/2f arms
+    (``fs2_dvd*``): the target gets ``apply_dvd_diet`` at that age -- the
+    run's ``dvd_end_months``, which is what every evaluation of those runs
+    uses -- exactly as ``standalone_trainer.StreamInputBuilder`` does. It
+    replaces the fixed blur + CS cut, so it refuses ``lum_blur``/``lum_cs``
+    rather than silently ignoring them.
 
     ``transform_target="parvo"`` is the channel-swap control: the blur and
     contrast-sensitivity cut are applied to the rg channel instead, which
@@ -363,6 +371,11 @@ def magno_parvo_inputs(
     raw_lum, raw_rg = x_lum, x_rg
 
     target = x_lum if transform_target == "magno" else x_rg
+    if dvd_age is not None:
+        if lum_blur or lum_cs:
+            raise ValueError("dvd_age replaces the fixed blur and CS cut; "
+                             "pass lum_blur=False, lum_cs=False")
+        target = apply_dvd_diet(target, dvd_age)
     if lum_blur:
         target = apply_gaussian_blur(target)
     if lum_cs:

@@ -96,7 +96,12 @@ def build_model(
         patch_stream_input_channels(model, in_channels[0], in_channels[1])
     if checkpoint is not None:
         state = torch.load(checkpoint, map_location="cpu", weights_only=False)
-        if "state_dict" in state:
+        # Fusion runs score the EMA network; their checkpoint_last.pt keeps
+        # the raw weights under `state_dict` and the EMA ones beside them
+        # (checkpoint_final/best.pt store the EMA network as `state_dict`).
+        if "ema_state_dict" in state:
+            state = state["ema_state_dict"]
+        elif "state_dict" in state:
             state = state["state_dict"]
         # Two checkpoint dialects reach this function: Lightning wraps the
         # network under a `network.` prefix, while standalone_trainer.py
@@ -122,6 +127,14 @@ def build_model(
             raise RuntimeError(
                 f"checkpoint {checkpoint} loaded 0 of "
                 f"{len(missing)} parameters -- key format not recognised"
+            )
+        # The features come from the trunks alone, so a trunk key left at
+        # its random init is a wrong network, not a warning.
+        trunk_missing = [k for k in missing if k.startswith("stream")]
+        if trunk_missing:
+            raise RuntimeError(
+                f"checkpoint {checkpoint} leaves {len(trunk_missing)} trunk "
+                f"keys unloaded, e.g. {trunk_missing[:3]}"
             )
     model.eval()
     return model.to(device)
