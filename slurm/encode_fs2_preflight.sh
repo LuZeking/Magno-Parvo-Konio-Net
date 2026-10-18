@@ -4,7 +4,12 @@
 # model loader reproduce what the trainer scored for every fs2 run. Exits 1 on
 # any failure, so the two arrays are submitted with --dependency=afterok on it.
 #
-#   env -u TMPDIR sbatch slurm/encode_fs2_preflight.sh
+#   env -u TMPDIR sbatch --export=ALL,CODE=/home/byrong/projects/TSN/fusion_stage1_code/<sha> \
+#       slurm/encode_fs2_preflight.sh
+#
+# Python is the /home env (as slurm/shape_texture_grouped.sh): the first
+# submission (26654758, /scratch env) sat silent until its 1.5 h limit, the
+# known hang of a torch import page-faulting its CUDA libraries off Lustre.
 #SBATCH --job-name=mpk_fs2_pre
 #SBATCH --partition=main
 #SBATCH --qos=standard
@@ -15,8 +20,9 @@
 
 set -euo pipefail
 trap '[[ ${TMPDIR:-unset} == unset ]] || rm -rf $TMPDIR' EXIT
+: "${CODE:?pass --export=ALL,CODE=<pinned code dir>}"
 export OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4
-cd "$SLURM_SUBMIT_DIR"
-export PYTHONPATH=$SLURM_SUBMIT_DIR
-echo "[fs2_pre] $(date -Is) $(hostname) $(git rev-parse --short HEAD)"
-/scratch/byrong/anaconda3/envs/mpk/bin/python tmp_analysis/fs2_encoding_preflight.py
+export PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$CODE"
+cd "$CODE"
+echo "[fs2_pre] $(date -Is) $(hostname) $(cat COMMIT)"
+/home/byrong/anaconda3/envs/mpk/bin/python tmp_analysis/fs2_encoding_preflight.py

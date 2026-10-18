@@ -5,7 +5,8 @@
 # in slurm/readout_w_cortex.sh. For the fs2 average head the classifier mixes
 # the same pooled 512-d trunk outputs, z(w) = w h_M + (1 - w) h_P.
 #
-#   env -u TMPDIR sbatch --dependency=afterok:$PRE slurm/readout_w_fs2.sh
+#   env -u TMPDIR sbatch $E --dependency=afterok:$PRE slurm/readout_w_fs2.sh
+# ($E and $PRE as in slurm/encode_fs2.sh; Python = the /home env.)
 #
 # 7 models x 8 subjects = 56 tasks; CPU. --mem from readout_w 26476097
 # (MaxRSS 17-31 GB) plus 25%; those took 2-3.5 h per subject.
@@ -20,7 +21,9 @@
 
 set -euo pipefail
 trap '[[ ${TMPDIR:-unset} == unset ]] || rm -rf $TMPDIR' EXIT
+: "${CODE:?pass --export=ALL,CODE=<pinned code dir>}"
 export OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
+export PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$CODE"
 
 TASK=$SLURM_ARRAY_TASK_ID
 SUBJECT=$(( TASK % 8 + 1 ))
@@ -33,13 +36,13 @@ case $GROUP in
 esac
 
 CKPT=/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-12_stage2/$RUN/checkpoint_final.pt
-PY=/scratch/byrong/anaconda3/envs/mpk/bin/python
+PY=/home/byrong/anaconda3/envs/mpk/bin/python
 OUT=/scratch/byrong/mpk/readout_w/results/2026-10-16_fs2_w21
 FEAT=/scratch/byrong/mpk/readout_w/features
 
-echo "[rw_fs2] task=$TASK run=$RUN subj=$SUBJECT frontend='${FRONTEND:-blur+CS48}' $(date -Is) $(hostname)"
+echo "[rw_fs2] task=$TASK run=$RUN subj=$SUBJECT frontend='${FRONTEND:-blur+CS48}' $(date -Is) $(hostname) code=$(cat "$CODE/COMMIT")"
 [[ -f "$CKPT" ]] || { echo "FATAL: checkpoint missing: $CKPT" >&2; exit 1; }
-cd "$SLURM_SUBMIT_DIR"
+cd "$CODE"
 $PY -m src.analysis.encoding.readout_w_cortex \
     --subject "$SUBJECT" --checkpoint "$CKPT" --model-name "$RUN" \
     --out-dir "$OUT" --feature-dir "$FEAT" $FRONTEND

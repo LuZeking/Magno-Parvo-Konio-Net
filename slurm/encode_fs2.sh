@@ -9,8 +9,10 @@
 # run_encoding.check_frontend_matches_checkpoint refuses any mismatch.
 # checkpoint_final.pt holds the EMA network, the one every logged metric scores.
 #
-#   PRE=$(env -u TMPDIR sbatch --parsable slurm/encode_fs2_preflight.sh)
-#   env -u TMPDIR sbatch --dependency=afterok:$PRE slurm/encode_fs2.sh
+#   E=--export=ALL,CODE=/home/byrong/projects/TSN/fusion_stage1_code/<sha>
+#   PRE=$(env -u TMPDIR sbatch --parsable $E slurm/encode_fs2_preflight.sh)
+#   env -u TMPDIR sbatch $E --dependency=afterok:$PRE slurm/encode_fs2.sh
+# Python = the /home env (see slurm/encode_fs2_preflight.sh).
 #
 # 7 models x 8 subjects = 56 tasks; CPU (himalaya on torch CPU). --mem from the
 # batched fits with in-job features (konioseeds 26496697, MaxRSS 21-34.7 GB)
@@ -26,7 +28,9 @@
 
 set -euo pipefail
 trap '[[ ${TMPDIR:-unset} == unset ]] || rm -rf $TMPDIR' EXIT
+: "${CODE:?pass --export=ALL,CODE=<pinned code dir>}"
 export OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
+export PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$CODE"
 
 TASK=$SLURM_ARRAY_TASK_ID
 SUBJECT=$(( TASK % 8 + 1 ))
@@ -39,14 +43,14 @@ case $GROUP in
 esac
 
 CKPT=/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-12_stage2/$RUN/checkpoint_final.pt
-PY=/scratch/byrong/anaconda3/envs/mpk/bin/python
+PY=/home/byrong/anaconda3/envs/mpk/bin/python
 OUT=/scratch/byrong/mpk/encoding/results/2026-10-16_fs2
 CACHE=/scratch/byrong/mpk/encoding/cache/2026-10-16_fs2/${RUN}_subj$(printf %02d "$SUBJECT").npz
 
-echo "[enc_fs2] task=$TASK run=$RUN subj=$SUBJECT frontend='${FRONTEND:-blur+CS48}' $(date -Is) $(hostname)"
+echo "[enc_fs2] task=$TASK run=$RUN subj=$SUBJECT frontend='${FRONTEND:-blur+CS48}' $(date -Is) $(hostname) code=$(cat "$CODE/COMMIT")"
 [[ -f "$CKPT" ]] || { echo "FATAL: checkpoint missing: $CKPT" >&2; exit 1; }
 mkdir -p "$OUT"
-cd "$SLURM_SUBMIT_DIR"
+cd "$CODE"
 $PY -m src.analysis.encoding.run_encoding \
     --subject "$SUBJECT" --model-name "$RUN" --out-dir "$OUT" \
     --feature-cache "$CACHE" --checkpoint "$CKPT" \
