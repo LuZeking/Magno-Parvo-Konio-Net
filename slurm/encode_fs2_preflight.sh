@@ -13,15 +13,15 @@
 #SBATCH --job-name=mpk_fs2_pre
 #SBATCH --partition=main
 #SBATCH --qos=standard
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=8
 #SBATCH --mem=16G
-#SBATCH --time=01:30:00
+#SBATCH --time=03:00:00
 #SBATCH --output=/scratch/byrong/mpk/encoding/logs/2026-10-16_fs2/preflight_%j.out
 
 set -euo pipefail
 trap '[[ ${TMPDIR:-unset} == unset ]] || rm -rf $TMPDIR' EXIT
 : "${CODE:?pass --export=ALL,CODE=<pinned code dir>}"
-export OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4
+export OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
 export PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$CODE"
 cd "$CODE"
 echo "[fs2_pre] $(date -Is) $(hostname) $(cat COMMIT)"

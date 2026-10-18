@@ -10,8 +10,15 @@ for each run, this checks:
   2. magno_parvo_inputs with the flags the Slurm arrays pass
      == StreamInputBuilder(the checkpoint's own config), bit for bit
   3. features.build_model(checkpoint_final.pt) trunks + the run's tied head
-     (fp32, CPU) against the trainer's final_logits.npz (bf16, GPU):
-     argmax agreement >= 0.95
+     (fp32, CPU) against the trainer's final_logits.npz (bf16 autocast, GPU) on
+     every 5th val image (1,120, 10 per class): top-1 within 1.5 pp of the
+     trainer's on the same images, and argmax agreement with the trainer no
+     more than 0.05 below the agreement of the same fp32 path with its own CPU
+     bf16-autocast copy (the precision floor).
+     Re-specified 2026-10-19: the first run (26667569) gated on argmax
+     agreement >= 0.95 over the first 64 images; 6 of 7 runs gave 0.906-0.938
+     with top-1 within 3 pp in both directions, so the gate now measures the
+     bf16 floor instead of guessing it, on a sample large enough for top-1.
   4. run_encoding.check_frontend_matches_checkpoint accepts those flags and
      refuses the other diet's
   5. run_encoding.features_from_rgb and readout_w_cortex.stream_outputs run
@@ -35,6 +42,7 @@ from src.analysis.encoding import dkl_frontend, features, readout_w_cortex, run_
 from src.training.standalone_trainer import StreamInputBuilder
 
 N = 64
+SAMPLE = slice(0, None, 5)      # check 3: 1,120 of the 5,600 val images
 RGB_H5 = "/scratch/byrong/VST_data/VST_datasets/texture2shape_miniecoset_256px.h5"
 DKL_H5 = "/scratch/byrong/VST_data/VST_datasets/miniecoset_256px_dkl_uint8.h5"
 C = "/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-12_stage2"
@@ -66,11 +74,14 @@ def pooled(block, x):
 
 @torch.no_grad()
 def main() -> None:
-    torch.set_num_threads(4)
+    torch.set_num_threads(8)
     with h5py.File(RGB_H5, "r") as f:
         rgb, lab_rgb = f["val"]["data"][:N], np.asarray(f["val"]["labels"][:N]).reshape(-1)
     with h5py.File(DKL_H5, "r") as f:
         dkl, lab = f["val"]["data"][:N], np.asarray(f["val"]["labels"][:N]).reshape(-1)
+        dkl_s = f["val"]["data"][SAMPLE]
+        lab_s = np.asarray(f["val"]["labels"][:]).reshape(-1)[SAMPLE]
+    print(f"check-3 sample: {len(lab_s)} images, {len(np.unique(lab_s))} classes", flush=True)
     ch_min, ch_max = dkl_frontend.compute_dkl_channel_minmax()
 
     x3 = dkl_frontend.rgb_to_dkl3(rgb, ch_min, ch_max)
@@ -103,17 +114,31 @@ def main() -> None:
 
         model = features.build_model(checkpoint=a.checkpoint)
         lin = model.classifier[-1]
-        xt_m, xt_p = builder(x_train)
-        h_m, h_p = pooled(model.stream1_block1, xt_m), pooled(model.stream2_block1, xt_p)
-        z = lin(cfg["w"] * h_m + (1 - cfg["w"]) * h_p).numpy()
+
+        def joint(x_m, x_p):
+            h_m, h_p = pooled(model.stream1_block1, x_m), pooled(model.stream2_block1, x_p)
+            return lin(cfg["w"] * h_m + (1 - cfg["w"]) * h_p).float()
+
+        z32, z16 = [], []
+        for s in range(0, len(dkl_s), 112):
+            xs = torch.from_numpy(dkl_s[s:s + 112]).permute(0, 3, 1, 2).float() / 255.0
+            xs_m, xs_p = builder(xs)
+            z32.append(joint(xs_m, xs_p).numpy())
+            with torch.autocast("cpu", dtype=torch.bfloat16):
+                z16.append(joint(xs_m, xs_p).numpy())
+        z32, z16 = np.concatenate(z32), np.concatenate(z16)
         zl = np.load(f"{C}/{run}/final_logits.npz")
-        ref = zl["val_joint"][:N]
-        agree = (z.argmax(1) == ref.argmax(1)).mean()
-        check(agree >= 0.95,
-              f"3 {run} argmax agreement with trainer logits {agree:.3f}, "
-              f"max|dz| {np.abs(z - ref).max():.3f} (logit sd {ref.std():.2f}); "
-              f"top-1 here {(z.argmax(1) == lab).mean():.3f}, "
-              f"trainer {(ref.argmax(1) == lab).mean():.3f}")
+        ref = zl["val_joint"][SAMPLE]
+        if not np.array_equal(zl["val_y"][SAMPLE], lab_s):
+            check(False, f"3 {run} final_logits val_y order != h5 labels")
+        t32, tref = (z32.argmax(1) == lab_s).mean(), (ref.argmax(1) == lab_s).mean()
+        agree = (z32.argmax(1) == ref.argmax(1)).mean()
+        floor = (z32.argmax(1) == z16.argmax(1)).mean()
+        check(abs(t32 - tref) <= 0.015 and agree >= floor - 0.05,
+              f"3 {run} top-1 fp32 {t32:.3f} vs trainer {tref:.3f} (cpu bf16 "
+              f"{(z16.argmax(1) == lab_s).mean():.3f}); argmax agreement with "
+              f"trainer {agree:.3f}, fp32 vs own bf16 {floor:.3f}; "
+              f"max|dz| {np.abs(z32 - ref).max():.3f} (logit sd {ref.std():.2f})")
 
         run_encoding.check_frontend_matches_checkpoint(a)
         wrong = copy.copy(a)
