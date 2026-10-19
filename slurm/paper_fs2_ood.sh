@@ -11,12 +11,15 @@
 # Writes $RES_REPO/results/ood/<run>.json (the BA's final-checkpoint directory;
 # the figures read results/ood_bestep).
 # SMOKE=1: 32 images, output under /scratch/byrong/mpk/ood/smoke/2026-10-19_fs2.
+# Time: the BA's runs took ~2 h (26413592); the smoke (26671324) took ~6 s per
+# batch with the DVD diet, ~3x the BA's per-batch cost, so 3,608 batches need
+# up to ~9 h -- 24 h leaves room.
 #SBATCH --job-name=fs2_ood
 #SBATCH --partition=main
 #SBATCH --qos=standard
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32G
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --array=0-3
 #SBATCH --output=/scratch/byrong/mpk/ood/logs/2026-10-19_fs2/ood_%A_%a.out
 
