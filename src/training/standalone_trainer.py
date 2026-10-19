@@ -266,6 +266,17 @@ CONDITIONS.update({
     "fs2_dvdfix300_avg_w050_ls": _stage2(0.5, label_smoothing=0.1, dvd_end=300.0,
                                          dvd_fixed=True),
 })
+
+# Stage 2g (2026-10-19, user-approved): the channel swap of the paper's 2 x 2
+# (dkl_bcs_swap) for the developmental diet. The same 0 -> 300-month ramp is
+# applied to the L-M channel (stream 2) instead of luminance, which stream 1
+# now receives untransformed. With dvd300 (achromatic + ramp), its parvo
+# stream (chromatic, no ramp) and dvdfix300 (achromatic, adult diet from the
+# start) it completes the carrier x trajectory cells.
+CONDITIONS.update({
+    "fs2_dvd300swap_avg_w050_ls": dict(
+        _stage2(0.5, label_smoothing=0.1, dvd_end=300.0), transform_target="parvo"),
+})
 STAGE2_CONDITIONS = [c for c in CONDITIONS if c.startswith("fs2_")]
 
 
