@@ -1,0 +1,15 @@
+<section id="order" data-transition="fade" style="background:#1B2333;color:#F3F1EA;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.15;color:#F3F1EA">The control: the order of the diet, not its endpoint</h2>
+<p style="font-size:30px;line-height:1.4;color:#C9D2DE;max-width:1560px">Same network, recipe and test input. The control sees the adult diet from the first step instead of growing into it.</p>
+<table style="font-size:28px;color:#F3F1EA;font-family:'IBM Plex Sans', Arial, sans-serif">
+<tr style="background:#2B3548"><th style="width:40%"></th><th style="width:30%">New TSN: newborn → adult</th><th style="width:30%">Control: adult from the start</th></tr>
+<tr><td>Top-1, MiniEcoset val</td><td>0.683</td><td>0.761</td></tr>
+<tr><td>Shape bias, whole TSN</td><td><b>0.687</b></td><td><b>0.371</b></td></tr>
+<tr><td>Probe magno / parvo, held out</td><td>+0.33 / −0.24</td><td>−0.19 / −0.12</td></tr>
+<tr><td>Cortex gradient hV4 − V1</td><td><b>−1.27</b></td><td><b>−0.06</b></td></tr>
+<tr><td>w*, V1 → extrastriate</td><td>0.64 → 0.32</td><td>0.51 → 0.76</td></tr>
+</table>
+<p style="font-size:30px;line-height:1.4;color:#9DB8DA;max-width:1560px">Without the developmental order both streams read texture and cortex looks like the BA's no-diet network. The shape bias is learned through the order of the input, not given by it.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#9AA6B6">Control = fs2_dvdfix300_avg_w050_ls, seed 0 · cortex: 8 NSD subjects, paired dvd300 − control gradient 8/8</p>
+<aside>This is the slide the story turns on. The control is identical to the new TSN in architecture, objective, recipe, seed and test input; the only difference is that its magno diet is held at 300 months from the first training step, so it never sees the blurred, low-contrast early input. It is the more accurate network (0.761, close to the RGB baseline's 0.757) and the least shape-biased one we have trained (0.371). Its magno stream reads texture on the held-out probe, and its joint features are the only ones of any run that are texture-dominant. In cortex its stream-dominance profile is flat and magno-dominated from V1 to hV4, and the readout weight that best predicts cortex rises from V1 to extrastriate, the pattern of the BA's no-diet network. So the thesis's claim that the diet gives the magno stream its shape bias survives, with a sharper mechanism: the shape bias comes from learning on coarse input first, which the network keeps after the input becomes adult. One seed so far; seeds 1 and 2 are the next GPU job.</aside>
+</section>

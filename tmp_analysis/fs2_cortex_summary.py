@@ -54,6 +54,7 @@ ARMS = {
 PAIRS = [("dvd300", "A"), ("dvd300", "control"), ("dvd300", "BA diet")]
 SUBJ = list(range(1, 9))
 OUT_MD = "docs/slides_2026-10-12_ba_vs_fusion/figures/fs2_cortex_summary.md"
+OUT_JSON = OUT_MD.replace(".md", ".json")     # a /home copy for the figure script
 
 
 def profile(z):
@@ -173,7 +174,10 @@ def main():
         prof = np.nanmean(np.nanmean(e["prof"], 0), 0)
         js["arms"][arm] = dict(n_subjects=n, grad_per_seed=g.tolist(), grad_seedmean_per_subject=np.nanmean(e["grad"], 0).tolist(),
                                rho_per_seed=r.tolist(), cc_per_seed=c.tolist(), r2nc_per_seed=q.tolist(),
-                               profile=prof.tolist(), um_ext=np.nanmean(e["um_ext"]).item(), up_ext=np.nanmean(e["up_ext"]).item())
+                               profile=prof.tolist(), um_ext=np.nanmean(e["um_ext"]).item(), up_ext=np.nanmean(e["up_ext"]).item(),
+                               profile_seedmean_per_subject=np.nanmean(e["prof"], 0).tolist(),
+                               cc_seedmean_per_subject=np.nanmean(e["cc"], 0).tolist(),
+                               r2nc_seedmean_per_subject=np.nanmean(e["r2nc"], 0).tolist())
     md += ["", "Profile V1v, V1d, V2v, V2d, V3v, V3d, hV4 (seed-mean, subject-mean):", ""]
     for arm, d in js["arms"].items():
         md.append(f"- {arm}: " + " ".join(fmt(x) for x in d["profile"]))
@@ -219,7 +223,8 @@ def main():
     os.makedirs(os.path.dirname(OUT_MD), exist_ok=True)
     open(OUT_MD, "w").write(text)
     os.makedirs(os.path.join(FS_ENC, "summary"), exist_ok=True)
-    json.dump(js, open(os.path.join(FS_ENC, "summary", "fs2_cortex_summary.json"), "w"), indent=1, default=float)
+    for path in (os.path.join(FS_ENC, "summary", "fs2_cortex_summary.json"), OUT_JSON):
+        json.dump(js, open(path, "w"), indent=1, default=float)
 
 
 if __name__ == "__main__":

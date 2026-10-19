@@ -15,6 +15,9 @@ fs2_dvd300_avg_w050_ls instead (same recipe, magno diet = DVD acuity + contrast
 age growing linearly 0 -> 300 months over training) into ba_fig*_dvd300.*;
 Fig 6 then adds the no-trajectory control fs2_dvdfix300_avg_w050_ls (the same
 adult diet from the first step, seed 0).
+Since 2026-10-19 the dvd300 set is the main TSN (user decision); the default
+'main' variant above (fs2_bcs_avg_w050_ls) is kept as the recipe-only
+comparison.
 
 Sources, all in the repo or next to this script:
 - thesis per-model values: Fig. 4 top-1 (thesis text), Fig. 7 per-stream
