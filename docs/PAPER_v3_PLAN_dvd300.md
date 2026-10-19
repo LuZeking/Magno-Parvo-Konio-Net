@@ -65,3 +65,17 @@ cortex, and behaviour is a readout over both. The one exception is error consist
 3. Rewrite Abstract, §1 last paragraph, §2.1–2.5, Discussion, Methods 4.1/4.2/4.7, Limitations.
 4. Verifier: every literal and every `dkl_bcs` glob in tmp_analysis/verify_new_claims.py
    moves to dvd300; the BA checks stay as a comparison block.
+
+## Status 2026-10-19 22:50
+
+Item 3 drafted: `docs/PAPER_v3.md` (Abstract 198 words; Results, Discussion, Limitations,
+Methods 4.1–4.7 rewritten; ED Tables 1–2 rewritten by hand; ED Table 3 gains the model's
+concatenation row). Numbers still open are marked ⟦PENDING …⟧ in the text: control seeds 1–2
+(26671132), swap seeds 0–2 (26671793) and the 2 × 2 interaction, untrained encoding 8/8
+(26671457), per-image correspondence, nuisance-axis controls (ED Fig. 3), compute accounting.
+Changes from the table above, found while writing: the profile crosses zero (V1 magno-explained);
+on the raw statistic training in order does not steepen the untrained gradient (−0.21 → −0.19),
+so §2.3 claims preservation, not steepening; the magno stream decodes held-out texture above
+chance (0.148), so "texture at chance" is dropped; κ re-led as planned (model 13.2% vs control
+10.3%, magno 17.3%; seven-model slope 0.020 [0.013, 0.028] over the span). Items 2 and 4
+(figure scripts, verifier) are next.
