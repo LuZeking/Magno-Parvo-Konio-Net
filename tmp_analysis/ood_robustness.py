@@ -158,8 +158,9 @@ def validate_frontend(n=64, tol=2.0):
 
 # ------------------------------------------------------------------- evaluation
 @torch.no_grad()
-def evaluate(model, rgb_u8, labels, ch_min, ch_max, args, device, bs=64):
-    """Top-1 over every family x severity. Returns {family: [acc per severity]}."""
+def evaluate(model, rgb_u8, labels, ch_min, ch_max, args, device, fe, bs=64):
+    """Top-1 over every family x severity. Returns {family: [acc per severity]}.
+    ``fe``: the magno_parvo_inputs kwargs (dkl_frontend.frontend_from_args)."""
     g = torch.Generator(device=device).manual_seed(args.seed)
     out = {}
     for name, fn, sevs, _counts in FAMILIES:
@@ -172,12 +173,7 @@ def evaluate(model, rgb_u8, labels, ch_min, ch_max, args, device, bs=64):
                 x = fn(x, s, g)
                 u8 = (x.permute(0, 2, 3, 1) * 255).round().clamp(0, 255).to(torch.uint8).cpu().numpy()
                 xm, xp = dkl_frontend.magno_parvo_inputs(
-                    u8, ch_min, ch_max,
-                    lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs,
-                    age_months=args.age_months, device=device,
-                    transform_target=args.transform_target,
-                    parvo_highsf=args.parvo_highsf,
-                )
+                    u8, ch_min, ch_max, device=device, **fe)
                 y1 = model.stream1_block1(xm.to(device))
                 y2 = model.stream2_block1(xp.to(device))
                 if model.stream_concat:
@@ -202,11 +198,16 @@ def main():
     p.add_argument("--transform-target", default="magno", choices=["magno", "parvo"])
     p.add_argument("--parvo-highsf", action="store_true")
     p.add_argument("--age-months", type=int, default=48)
+    p.add_argument("--dvd-age-months", type=float, default=None,
+                   help="DVD magno diet at this age instead of blur + CS "
+                        "(fs2_dvd* runs: 300)")
     p.add_argument("--stream-concat", action="store_true")
     p.add_argument("--stream1-weight", type=float, default=0.5)
     p.add_argument("--n-images", type=int, default=5600)
     p.add_argument("--seed", type=int, default=0)
     args = p.parse_args()
+    # --checkpoint may name a Stage-2 run; a wrong diet for it is refused
+    fe = dkl_frontend.frontend_from_args(args)
 
     ok = validate_frontend()
     if args.validate_frontend:
@@ -230,15 +231,16 @@ def main():
     ).eval()
 
     print(f"[{args.model_name}] device={device} n={len(rgb)}", flush=True)
-    accs = evaluate(model, rgb, labels, ch_min, ch_max, args, device)
+    accs = evaluate(model, rgb, labels, ch_min, ch_max, args, device, fe)
 
     os.makedirs(args.out_dir, exist_ok=True)
+    frontend = {k: fe[k] for k in ("lum_blur", "lum_cs", "transform_target",
+                                   "parvo_highsf", "age_months")}
+    if fe["dvd_age"] is not None:
+        frontend["dvd_age"] = fe["dvd_age"]
     rec = {"model_name": args.model_name, "checkpoint": str(args.checkpoint),
            "n_images": int(len(rgb)),
-           "frontend": {"lum_blur": not args.no_lum_blur, "lum_cs": not args.no_lum_cs,
-                        "transform_target": args.transform_target,
-                        "parvo_highsf": bool(args.parvo_highsf),
-                        "age_months": args.age_months},
+           "frontend": frontend,
            "families": {n: {"severities": [str(s) for s in sv],
                             "accuracy": accs[n], "counts": c}
                         for n, _f, sv, c in FAMILIES}}

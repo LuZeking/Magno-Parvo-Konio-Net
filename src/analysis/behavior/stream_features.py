@@ -8,6 +8,8 @@ it does not. Then Q1 (exemplar-balanced, PCA inside the folds), Q1b and Q2 per s
 
   python -m src.analysis.behavior.stream_features --model-name dkl_bcs_seed0_trained \
       --checkpoint RUNS/dkl_bcs_seed0/checkpoint_last.pt --feat-dir FEAT --out-dir OUT [front-end flags]
+  --checkpoint also takes a Stage-2 run name (fs2_dvd300_avg_w050_ls_seed0); its DVD-diet arms need
+  --dvd-age-months 300, and dkl_frontend.check_frontend refuses any other front end for them.
 """
 from __future__ import annotations
 
@@ -36,6 +38,9 @@ def main() -> None:
     p.add_argument("--stream1-weight", type=float, default=0.5)
     p.add_argument("--parvo-highsf", action="store_true")
     p.add_argument("--rgb-mode", action="store_true")
+    p.add_argument("--dvd-age-months", type=float, default=None,
+                   help="DVD magno diet at this age (fs2_dvd* runs: 300) instead of blur + CS; "
+                        "also the untrained anchor on that front end")
     p.add_argument("--pca-dim", type=int, default=256)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--batch-size", type=int, default=32)
@@ -43,6 +48,7 @@ def main() -> None:
     p.add_argument("--feat-dir", required=True)
     p.add_argument("--out-dir", required=True)
     args = p.parse_args()
+    fe = dkl_frontend.frontend_from_args(args)  # resolves an fs2 run name; refuses a wrong diet
     t0 = time.time()
     os.makedirs(args.feat_dir, exist_ok=True)
     os.makedirs(args.out_dir, exist_ok=True)
@@ -63,10 +69,7 @@ def main() -> None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         rgb = load_images(paths)
         ch_min, ch_max = dkl_frontend.compute_dkl_channel_minmax()
-        x_m, x_p = dkl_frontend.magno_parvo_inputs(
-            rgb, ch_min, ch_max, lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs,
-            transform_target=args.transform_target, device="cpu",
-            parvo_highsf=args.parvo_highsf, rgb_mode=args.rgb_mode)
+        x_m, x_p = dkl_frontend.magno_parvo_inputs(rgb, ch_min, ch_max, device="cpu", **fe)
         model = features.build_model(checkpoint=args.checkpoint, stream1_weight=args.stream1_weight,
                                      seed=args.seed, device=device, in_channels=stream_in_channels(args))
         model.eval()

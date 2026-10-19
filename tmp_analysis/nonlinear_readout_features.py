@@ -15,6 +15,9 @@ condition is not expressible.
 Usage: PYTHONPATH=.:tmp_analysis python tmp_analysis/nonlinear_readout_features.py \
            --run-dir .../dkl_bcs_seed0 --checkpoint-name checkpoint_125.pt \
            --tag dkl_bcs_seed0_best --out-dir ...
+--run-dir also takes a Stage-2 run name (fs2_dvd300_avg_w050_ls_seed0, with
+--checkpoint-name checkpoint_final.pt); the cue-conflict front end is
+dkl_frontend.checkpoint_frontend of the run's config (the DVD diet for those).
 """
 from __future__ import annotations
 
@@ -74,8 +77,11 @@ def main():
     p.add_argument("--train-limit", type=int, default=None)
     args = p.parse_args()
 
+    args.run_dir = dkl_frontend.resolve_run_dir(args.run_dir)  # or an fs2 run name
     cfg = json.load(open(os.path.join(args.run_dir, "config.json")))
     ccfg = cfg["condition_cfg"]
+    # The g017 runs name a node-local copy of the training h5.
+    cfg["dataset"] = dkl_frontend.run_dataset(cfg["dataset"])
     ckpt = os.path.join(args.run_dir, args.checkpoint_name)
     os.makedirs(args.out_dir, exist_ok=True)
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -83,7 +89,9 @@ def main():
           flush=True)
 
     model = features.build_model(
-        checkpoint=ckpt, like_resnet=cfg.get("like_resnet", "resnet18"),
+        # Stage-2 configs record like_resnet null and the arch as _resolved
+        checkpoint=ckpt, like_resnet=(cfg.get("like_resnet")
+                                      or cfg.get("like_resnet_resolved") or "resnet18"),
         stream_concat=False, stream1_weight=0.5, seed=cfg.get("seed", 0),
         device=device, in_channels=tuple(cfg["in_channels"]))
     model.eval()
@@ -105,13 +113,11 @@ def main():
     cf1, cf2 = [], []
     for s in range(0, len(paths), 128):
         rgb = load_images(paths[s:s + 128])
+        # The builder's front end as magno_parvo_inputs kwargs: a DVD-diet run
+        # keeps blur/cs = true beside dvd_end_months in its config.
         x_m, x_p = dkl_frontend.magno_parvo_inputs(
-            rgb, ch_min, ch_max,
-            lum_blur=ccfg.get("blur", True), lum_cs=ccfg.get("cs", True),
-            age_months=cfg.get("age_months", 48), device=device,
-            transform_target=ccfg.get("transform_target", "magno"),
-            parvo_highsf=ccfg.get("parvo_highsf", False),
-            rgb_mode=(ccfg.get("input_mode") == "rgb"))
+            rgb, ch_min, ch_max, device=device,
+            **dkl_frontend.checkpoint_frontend(cfg))
         a, b = stream_features(model, x_m, x_p, device=device)
         cf1.append(pooled(a.float()).cpu()); cf2.append(pooled(b.float()).cpu())
     cls = load_class_index()

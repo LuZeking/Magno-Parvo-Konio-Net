@@ -103,10 +103,15 @@ def main():
                    choices=["magno", "parvo"])
     p.add_argument("--parvo-highsf", action="store_true")
     p.add_argument("--age-months", type=int, default=48)
+    p.add_argument("--dvd-age-months", type=float, default=None,
+                   help="DVD magno diet at this age instead of blur + CS "
+                        "(fs2_dvd* runs: 300)")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--w-step", type=float, default=0.05)
     p.add_argument("--allow-partial", action="store_true")
     args = p.parse_args()
+    # --checkpoint may name a Stage-2 run; a wrong diet for it is refused
+    fe = dkl_frontend.frontend_from_args(args)
 
     features.assert_converged(args.checkpoint, args.allow_partial)
     os.makedirs(args.out_dir, exist_ok=True)
@@ -147,10 +152,7 @@ def main():
     for start in range(0, len(paths), 128):
         rgb = load_images(paths[start:start + 128])
         x_m, x_p = dkl_frontend.magno_parvo_inputs(
-            rgb, ch_min, ch_max, lum_blur=not args.no_lum_blur,
-            lum_cs=not args.no_lum_cs, age_months=args.age_months,
-            device=device, transform_target=args.transform_target,
-            parvo_highsf=args.parvo_highsf, rgb_mode=False)
+            rgb, ch_min, ch_max, device=device, **fe)
         a, b = stream_features(model, x_m, x_p, device=device)
         F1.append(a); F2.append(b)
     F1, F2 = torch.cat(F1), torch.cat(F2)

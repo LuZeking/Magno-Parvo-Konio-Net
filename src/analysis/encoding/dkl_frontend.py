@@ -20,8 +20,10 @@ src/models/lightning_two_stream_model.py):
 
 from __future__ import annotations
 
+import inspect
 import json
 import os
+import re
 
 import h5py
 import numpy as np
@@ -277,11 +279,16 @@ def magno_parvo_inputs(
     chroma_channel: str = "rg",
     chroma_rescale: str = "none",
     dvd_age: float | None = None,
+    blur_sigma: float | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Full front end: RGB uint8 -> (magno input, parvo input).
 
     Defaults correspond to the DKL B&CS family (blur + contrast on lum,
-    rg untouched). Set both flags False for DKL Base.
+    rg untouched). Set both flags False for DKL Base. ``blur_sigma`` None is
+    ``BLUR_SIGMA`` (4); the Stage-1 dose arm (``fs1_b2cs_*``) trained at 2.
+
+    ``checkpoint_frontend`` below derives every argument from a checkpoint's
+    own condition config, and ``check_frontend`` refuses flags that disagree.
 
     ``dvd_age`` is the progressive (DVD) diet of the Stage-2e/2f arms
     (``fs2_dvd*``): the target gets ``apply_dvd_diet`` at that age -- the
@@ -335,6 +342,8 @@ def magno_parvo_inputs(
         raise ValueError(f"chroma_channel={chroma_channel!r}")
     if chroma_rescale not in ("none", "match-rg"):
         raise ValueError(f"chroma_rescale={chroma_rescale!r}")
+    if blur_sigma is not None and (not lum_blur or rgb_mode):
+        raise ValueError("blur_sigma without the fixed blur would be ignored")
     if chroma_rescale == "match-rg" and chroma_channel == "rg":
         # Matching rg to rg is the identity. Refuse rather than accept a
         # flag that makes a run LOOK like the contrast-matched control while
@@ -377,7 +386,8 @@ def magno_parvo_inputs(
                              "pass lum_blur=False, lum_cs=False")
         target = apply_dvd_diet(target, dvd_age)
     if lum_blur:
-        target = apply_gaussian_blur(target)
+        target = (apply_gaussian_blur(target) if blur_sigma is None
+                  else apply_gaussian_blur(target, sigma=blur_sigma))
     if lum_cs:
         target = apply_scale_free_contrast(target, age_months)
     if transform_target == "magno":
@@ -387,3 +397,210 @@ def magno_parvo_inputs(
     if parvo_highsf:
         return x_lum, torch.cat([raw_lum, raw_rg], dim=1)
     return x_lum, x_rg
+
+
+# --------------------------------------------------------------------------
+# The front end a checkpoint was trained with
+# --------------------------------------------------------------------------
+# Stage-2 fusion runs (the paper's TSN of record, fs2_dvd300_avg_w050_ls_*).
+FS2_RUNS = os.environ.get(
+    "FS2_RUNS", "/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-12_stage2"
+)
+# The DKL training h5 on /scratch. The g017 runs recorded a node-local copy
+# of this same file in config.json["dataset"] (/localscratch2/...).
+MINIECOSET_DKL_H5 = os.environ.get(
+    "MINIECOSET_DKL_H5",
+    "/scratch/byrong/VST_data/VST_datasets/miniecoset_256px_dkl_uint8.h5",
+)
+FS2_RUN_NAME = re.compile(r"fs2_\w+_seed\d+")
+# magno_parvo_inputs' own defaults: what a caller that omits a kwarg gets.
+_FRONTEND_DEFAULTS = {
+    k: p.default
+    for k, p in inspect.signature(magno_parvo_inputs).parameters.items()
+    if p.default is not inspect.Parameter.empty and k != "device"
+}
+
+
+def resolve_run_dir(spec: str) -> str:
+    """A run directory, or a Stage-2 run name (``fs2_dvd300_avg_w050_ls_seed0``)
+    -> its directory under ``FS2_RUNS``. Anything else is returned unchanged."""
+    if os.path.exists(spec) or not FS2_RUN_NAME.fullmatch(spec):
+        return spec
+    run_dir = os.path.join(FS2_RUNS, spec)
+    if not os.path.isdir(run_dir):
+        raise FileNotFoundError(f"{spec}: no run directory {run_dir}")
+    return run_dir
+
+
+def resolve_checkpoint(spec: str | None) -> str | None:
+    """A checkpoint path, or a Stage-2 run name -> a checkpoint path.
+
+    A run name means ``FS2_RUNS/<run>/checkpoint_final.pt``, the EMA network
+    every logged Stage-2 metric scores; a seed still training has none and is
+    refused. Paths (and None, the untrained anchors) pass through unchanged.
+    """
+    if spec is None or os.path.exists(spec) or not FS2_RUN_NAME.fullmatch(spec):
+        return spec
+    path = os.path.join(resolve_run_dir(spec), "checkpoint_final.pt")
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"{spec}: no {path} -- still training?")
+    return path
+
+
+def run_dataset(path: str) -> str:
+    """config.json's ``dataset``, or its /scratch copy when the run recorded a
+    node-local path that is not mounted here (the g017 Stage-2 runs)."""
+    if (not os.path.exists(path)
+            and os.path.basename(path) == os.path.basename(MINIECOSET_DKL_H5)):
+        return MINIECOSET_DKL_H5
+    return path
+
+
+def _condition_config(source) -> tuple[dict | None, int | None, str]:
+    """(condition config, the run's age_months, a label) for ``source``.
+
+    ``source`` is a checkpoint path, a run directory or Stage-2 run name, a
+    loaded checkpoint (``{"config": ...}``), a run's config.json
+    (``{"condition_cfg": ..., "age_months": ...}``) or a condition config
+    itself. The trainer stores the condition config in every checkpoint it
+    writes; ``age_months`` (the fixed CS age) only in config.json.
+    """
+    label = "<config>"
+    age = None
+    if isinstance(source, str):
+        label = source = resolve_run_dir(source)
+        if os.path.isdir(source):
+            with open(os.path.join(source, "config.json")) as fh:
+                source = json.load(fh)
+        else:
+            run_cfg = os.path.join(os.path.dirname(source), "config.json")
+            if os.path.exists(run_cfg):
+                with open(run_cfg) as fh:
+                    age = json.load(fh).get("age_months")
+            source = torch.load(source, map_location="cpu", weights_only=False)
+    if not isinstance(source, dict):
+        return None, age, label
+    if "condition_cfg" in source:
+        age = source.get("age_months", age)
+        source = source["condition_cfg"]
+    elif "config" in source:
+        source = source["config"]
+    if not isinstance(source, dict) or "input_mode" not in source:
+        return None, age, label
+    return source, age, label
+
+
+def _frontend_from_cfg(cfg: dict, age: int | None) -> dict:
+    """``StreamInputBuilder(cfg, age)`` as ``magno_parvo_inputs`` kwargs."""
+    age = DEFAULT_AGE_MONTHS if age is None else int(age)
+    dvd = cfg.get("dvd_end_months")
+    kw = dict(_FRONTEND_DEFAULTS, age_months=age)
+    if cfg["input_mode"] == "rgb":
+        # StreamInputBuilder blurs stream 1 of rgb_tsn_blur; rgb_mode never
+        # does, so that condition is refused rather than fed the plain image.
+        if cfg.get("blur") or cfg.get("cs") or dvd is not None:
+            raise ValueError("an rgb-mode condition with a diet is not "
+                             "expressible by magno_parvo_inputs")
+        return dict(kw, lum_blur=False, lum_cs=False, rgb_mode=True)
+    if cfg["input_mode"] != "dkl":
+        raise ValueError(f"input_mode={cfg['input_mode']!r}")
+    fixed = dvd is None   # the DVD diet replaces the fixed blur and CS cut
+    blur = fixed and bool(cfg["blur"])
+    return dict(
+        kw,
+        lum_blur=blur,
+        lum_cs=fixed and bool(cfg["cs"]),
+        transform_target=cfg.get("transform_target", "magno"),
+        parvo_highsf=bool(cfg.get("parvo_highsf", False)),
+        dvd_age=None if fixed else float(dvd),
+        blur_sigma=cfg.get("blur_sigma") if blur else None,
+    )
+
+
+def checkpoint_frontend(source, age_months: int | None = None) -> dict | None:
+    """The ``magno_parvo_inputs`` kwargs a checkpoint was trained with.
+
+    Mirrors ``standalone_trainer.StreamInputBuilder`` at evaluation (the DVD
+    arms at ``dvd_end_months``), so ``magno_parvo_inputs(rgb, ch_min, ch_max,
+    **checkpoint_frontend(src))`` is that builder's input bit for bit. The
+    DVD arms keep ``blur: true, cs: true`` in their config beside
+    ``dvd_end_months``; reading blur/cs alone feeds them the thesis diet.
+    ``source``: see ``_condition_config``. ``age_months`` overrides the run's
+    fixed CS age (config.json; 48 when unknown).
+
+    None for a checkpoint without a condition config (the thesis Lightning
+    checkpoints): its front end stays the caller's flags. ``single_stream``
+    is not a front-end kwarg -- that caller stacks the two outputs, as the
+    trainer does.
+    """
+    cfg, age, _ = _condition_config(source)
+    if cfg is None:
+        return None
+    return _frontend_from_cfg(cfg, age if age_months is None else age_months)
+
+
+def check_frontend(source, **kwargs) -> dict | None:
+    """Refuse ``magno_parvo_inputs`` kwargs that disagree with ``source``'s
+    own condition config; returns that config's kwargs (None: no config).
+
+    Omitted kwargs take ``magno_parvo_inputs``' defaults, i.e. what the call
+    would actually do. The CS age is compared only where a fixed CS cut is
+    applied. For the fusion runs (fs1_*/fs2_*: ``fusion`` or
+    ``dvd_end_months`` in the config) any disagreement raises -- above all
+    blur/CS on a DVD-diet run. The BA runs before them are evaluated through
+    deliberately crossed front ends (slurm/perimage_logits_crossed.sh: diet
+    weights without the front end and vice versa), all expressible by the
+    flags, so for them a disagreement is reported and kept.
+    """
+    cfg, age, label = _condition_config(source)
+    if cfg is None:
+        return None
+    want = _frontend_from_cfg(cfg, age)
+    got = dict(_FRONTEND_DEFAULTS, **kwargs)
+    bad = {k: (got[k], v) for k, v in want.items()
+           if got[k] != v and not (k == "age_months" and not want["lum_cs"])}
+    if not bad:
+        print(f"[frontend] matches {label}", flush=True)
+        return want
+    msg = f"front end does not match {label} (requested, trained): {bad}"
+    if "fusion" in cfg or "dvd_end_months" in cfg:
+        hint = ("" if want["dvd_age"] is None else
+                f"; this is a DVD-diet run: pass --dvd-age-months "
+                f"{want['dvd_age']:g} (dvd_age={want['dvd_age']:g}, "
+                f"lum_blur=False, lum_cs=False)")
+        raise ValueError(msg + hint)
+    print(f"[frontend] crossed front end kept as requested: {msg}", flush=True)
+    return want
+
+
+def frontend_from_args(args) -> dict:
+    """The analysis scripts' front-end flags -> checked ``magno_parvo_inputs``
+    kwargs.
+
+    Resolves ``args.checkpoint`` in place (a Stage-2 run name -> its
+    checkpoint_final.pt), so call it before anything reads the path. Reads
+    whichever of --no-lum-blur, --no-lum-cs, --age-months, --transform-target,
+    --parvo-highsf, --rgb-mode, --dvd-age-months the script defines (absent
+    ones keep the defaults the script always used); --dvd-age-months implies
+    --no-lum-blur --no-lum-cs, as in run_encoding. With a checkpoint the
+    result goes through ``check_frontend``; without one (the untrained
+    anchors) the flags are the front end, so ``--dvd-age-months 300`` gives
+    an untrained network the dvd300 input.
+    """
+    if getattr(args, "checkpoint", None):
+        args.checkpoint = resolve_checkpoint(args.checkpoint)
+    dvd = getattr(args, "dvd_age_months", None)
+    # rgb_mode applies neither blur nor CS, whatever the flags say
+    fixed = dvd is None and not getattr(args, "rgb_mode", False)
+    kw = dict(
+        lum_blur=fixed and not getattr(args, "no_lum_blur", False),
+        lum_cs=fixed and not getattr(args, "no_lum_cs", False),
+        age_months=getattr(args, "age_months", DEFAULT_AGE_MONTHS),
+        transform_target=getattr(args, "transform_target", "magno"),
+        parvo_highsf=bool(getattr(args, "parvo_highsf", False)),
+        rgb_mode=bool(getattr(args, "rgb_mode", False)),
+        dvd_age=dvd,
+    )
+    if getattr(args, "checkpoint", None):
+        check_frontend(args.checkpoint, **kw)
+    return kw

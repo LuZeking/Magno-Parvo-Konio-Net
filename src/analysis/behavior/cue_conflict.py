@@ -24,6 +24,12 @@ Run:
     python -m src.analysis.behavior.cue_conflict \
         --checkpoint <ckpt.pt> --model-name dkl_bcs_seed0 \
         --out-dir results/cue_conflict
+    python -m src.analysis.behavior.cue_conflict \
+        --checkpoint fs2_dvd300_avg_w050_ls_seed0 --dvd-age-months 300 \
+        --model-name fs2_dvd300_avg_w050_ls_seed0 --out-dir results/cue_conflict
+
+(--checkpoint takes a Stage-2 run name; a DVD-diet run is refused without
+--dvd-age-months, see dkl_frontend.check_frontend.)
 """
 
 from __future__ import annotations
@@ -296,6 +302,9 @@ def main():
     p.add_argument("--transform-target", default="magno",
                    choices=["magno", "parvo"])
     p.add_argument("--age-months", type=int, default=48)
+    p.add_argument("--dvd-age-months", type=float, default=None,
+                   help="DVD magno diet at this age instead of blur + CS "
+                        "(fs2_dvd* runs: 300, their dvd_end_months)")
     p.add_argument("--baseline", action="store_true",
                    help="checkpoint is a single-stream ResNet baseline")
     # resnet18, not resnet50: every checkpoint in this project is resnet18
@@ -325,6 +334,9 @@ def main():
     p.add_argument("--allow-partial", action="store_true",
                    help="probe a still-training checkpoint on purpose")
     args = p.parse_args()
+    # An fs2 run name -> its checkpoint; refuses flags that are not the
+    # checkpoint's own front end (blur + CS on a DVD-diet run).
+    fe = dkl_frontend.frontend_from_args(args)
 
     # Same guard as stream_shape_texture.py: `checkpoint_last.pt` is
     # overwritten every epoch, so reading one mid-run yields a partially
@@ -380,12 +392,7 @@ def main():
     for start in range(0, len(paths), chunk):
         rgb = load_images(paths[start : start + chunk])
         x_m, x_p = dkl_frontend.magno_parvo_inputs(
-            rgb, ch_min, ch_max,
-            lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs,
-            age_months=args.age_months, device=device,
-            transform_target=args.transform_target,
-            parvo_highsf=args.parvo_highsf, rgb_mode=args.rgb_mode,
-        )
+            rgb, ch_min, ch_max, device=device, **fe)
         got = stream_logits(model, x_m, x_p, device=device)
         for k, v in got.items():
             all_logits.setdefault(k, []).append(v)

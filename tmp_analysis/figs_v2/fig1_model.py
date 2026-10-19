@@ -12,6 +12,7 @@ under a developmental visual diet.
       training; the checkpoints saved every 25 epochs are marked.
 
 Usage: PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/fig1_model.py [nsd_image_id]
+       FIG1_RUN=<run name or dir> ... renders (b) through that run's front end.
 """
 from __future__ import annotations
 
@@ -31,6 +32,10 @@ CONDS = [("diet", "dkl_bcs_seed{}", S.DIET),
          ("swap", "dkl_bcs_swap_seed{}", S.SWAP),
          ("parvo_highsf", "dkl_bcs_parvo_highsf_seed{}", S.HIGHSF)]
 IMG_ID = int(sys.argv[1]) if len(sys.argv) > 1 else -1
+# FIG1_RUN=fs2_dvd300_avg_w050_ls_seed0 renders panel (b)'s transform tiles
+# through that run's own front end (dkl_frontend.checkpoint_frontend) instead
+# of the BA's blur sigma 4 + CS at 48 months.
+FRONTEND_RUN = os.environ.get("FIG1_RUN")
 
 
 # ----------------------------------------------------------------- panel (b)
@@ -57,8 +62,17 @@ def stream_inputs(img_id: int):
     x3 = F.rgb_to_dkl3(rgb, cmin, cmax)                   # (1, 3, 256, 256)
     lum, rg = x3[:, 0:1], x3[:, 1:2]
     with torch.no_grad():
-        lum_t = F.apply_scale_free_contrast(F.apply_gaussian_blur(lum), 48)
-        rg_t = F.apply_scale_free_contrast(F.apply_gaussian_blur(rg), 48)
+        if FRONTEND_RUN:
+            # the run's own front end (the DVD diet at dvd_end_months for the
+            # fs2_dvd* runs), on luminance and, for the swap tile, on L-M
+            fe = F.checkpoint_frontend(FRONTEND_RUN)
+            lum_t, _ = F.magno_parvo_inputs(rgb, cmin, cmax, **fe)
+            _, rg_t = F.magno_parvo_inputs(
+                rgb, cmin, cmax, **dict(fe, transform_target="parvo"))
+            print(f"  transform tiles: {FRONTEND_RUN} front end {fe}")
+        else:
+            lum_t = F.apply_scale_free_contrast(F.apply_gaussian_blur(lum), 48)
+            rg_t = F.apply_scale_free_contrast(F.apply_gaussian_blur(rg), 48)
     to = lambda t: t[0, 0].cpu().numpy()
     return rgb[0], to(lum), to(rg), to(lum_t), to(rg_t)
 

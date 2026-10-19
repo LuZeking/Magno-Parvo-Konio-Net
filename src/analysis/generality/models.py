@@ -16,7 +16,10 @@ Specs
   concat:<run_name>[:<checkpoint>]  a two-stream run with y = [y1, y2] (1,024-d)
                                     and head [W/2, W/2], b -- the validation
                                     case, where the factorisation should recover
-                                    the streams.
+                                    the streams. A Stage-2 run name
+                                    (fs2_dvd300_avg_w050_ls_seed0) resolves under
+                                    dkl_frontend.FS2_RUNS, default checkpoint
+                                    checkpoint_final.pt (the EMA network).
   tv:<arch>[:<weights>]             torchvision ImageNet weights (IMAGENET1K_V1 unless
                                     named), Geirhos preprocessing (Resize 256, CenterCrop
                                     224; the weights' own sizes for networks not trained
@@ -65,7 +68,7 @@ class FrozenNet:
         if self.kind in ("run", "concat"):
             parts = rest.split(":")
             self.run = parts[0]
-            self.ckpt_name = parts[1] if len(parts) > 1 else "checkpoint_last.pt"
+            self.ckpt_name = parts[1] if len(parts) > 1 else None
             self._load_run()
         elif self.kind == "tv":
             parts = rest.split(":")
@@ -86,9 +89,18 @@ class FrozenNet:
         from src.models.pytorch_models import TwoStreamNetwork
         from src.training.standalone_trainer import patch_stream_input_channels
 
-        run_dir = os.path.join(MPK_RUNS, self.run)
+        fs2 = bool(dkl_frontend.FS2_RUN_NAME.fullmatch(self.run))
+        run_dir = (dkl_frontend.resolve_run_dir(self.run) if fs2
+                   else os.path.join(MPK_RUNS, self.run))
+        if self.ckpt_name is None:
+            self.ckpt_name = "checkpoint_final.pt" if fs2 else "checkpoint_last.pt"
         cfg = json.load(open(os.path.join(run_dir, "config.json")))
+        # The g017 runs name a node-local copy of the training h5.
+        cfg["dataset"] = dkl_frontend.run_dataset(cfg["dataset"])
         self.cfg, self.ccfg = cfg, cfg["condition_cfg"]
+        # The run's own front end: a DVD-diet run keeps blur/cs = true beside
+        # dvd_end_months, so reading blur/cs alone feeds it the thesis diet.
+        self.frontend = dkl_frontend.checkpoint_frontend(cfg)
         ckpt = os.path.join(run_dir, self.ckpt_name)
         features.assert_converged(ckpt)
         self.checkpoint = ckpt
@@ -129,6 +141,9 @@ class FrozenNet:
             raise RuntimeError(f"expected one Linear in the classifier, found {len(lin)}")
         W, b = lin[0].weight, lin[0].bias
         if self.kind == "concat":
+            if float(self.ccfg.get("w", 0.5)) != 0.5:
+                raise ValueError(f"{self.run}: trained at w = {self.ccfg['w']}; "
+                                 f"the concat head is [W/2, W/2]")
             self.W, self.b = torch.cat([0.5 * W, 0.5 * W], dim=1), b
             self.stream_of_unit = np.r_[np.zeros(W.shape[1], int), np.ones(W.shape[1], int)]
         else:
@@ -140,12 +155,8 @@ class FrozenNet:
     def _run_inputs_from_rgb(self, rgb_uint8: np.ndarray):
         from src.analysis.encoding import dkl_frontend
         x_m, x_p = dkl_frontend.magno_parvo_inputs(
-            rgb_uint8, self.ch_min, self.ch_max,
-            lum_blur=bool(self.ccfg.get("blur", True)), lum_cs=bool(self.ccfg.get("cs", True)),
-            age_months=self.age, device=self.device,
-            transform_target=self.ccfg.get("transform_target", "magno"),
-            parvo_highsf=bool(self.ccfg.get("parvo_highsf", False)),
-            rgb_mode=self.rgb_mode)
+            rgb_uint8, self.ch_min, self.ch_max, device=self.device,
+            **self.frontend)
         if self.single:
             # the trainer's StreamInputBuilder: one trunk, both channels stacked
             return torch.cat([x_m, x_p], dim=1), None

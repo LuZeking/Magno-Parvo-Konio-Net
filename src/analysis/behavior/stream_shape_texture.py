@@ -47,6 +47,12 @@ Usage:
       [--no-lum-blur] [--no-lum-cs] [--out results/shape_texture]
   python -m src.analysis.behavior.stream_shape_texture \
       --model-name fs1_bcs_avg_seed0 --stage1-run <run dir>
+  python -m src.analysis.behavior.stream_shape_texture \
+      --model-name fs2_dvd300_avg_w050_ls_seed0 \
+      --checkpoint fs2_dvd300_avg_w050_ls_seed0 --dvd-age-months 300
+
+--checkpoint takes a Stage-2 run name for its checkpoint_final.pt; a DVD-diet
+run probed without --dvd-age-months is refused (dkl_frontend.check_frontend).
 """
 
 from __future__ import annotations
@@ -245,6 +251,10 @@ def main() -> None:
                         "the identical 3-channel image, in_channels=(3,3). "
                         "Despite the name the channels are DKL lum/rg/by -- "
                         "every training condition read the DKL h5.")
+    p.add_argument("--dvd-age-months", type=float, default=None,
+                   help="DVD magno diet at this age instead of blur + CS: "
+                        "300 for the fs2_dvd* runs (their dvd_end_months) "
+                        "and for the untrained anchor on their front end")
     p.add_argument("--pca-dim", type=int, default=256)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--batch-size", type=int, default=32)
@@ -262,6 +272,9 @@ def main() -> None:
                    help="write the PCA and readout features + labels + "
                         "groups to this .npz")
     args = p.parse_args()
+    # An fs2 run name -> its checkpoint; flags that are not the checkpoint's
+    # own front end (blur + CS on a DVD-diet run) are refused here.
+    fe = dkl_frontend.frontend_from_args(args)
 
     # Before any compute: a mid-training checkpoint produces output that is
     # indistinguishable from a converged one (PAPER_PLAN §10.1).
@@ -289,11 +302,7 @@ def main() -> None:
         rgb = load_images(paths)
         ch_min, ch_max = dkl_frontend.compute_dkl_channel_minmax()
         x_m, x_p = dkl_frontend.magno_parvo_inputs(
-            rgb, ch_min, ch_max,
-            lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs,
-            transform_target=args.transform_target, device="cpu",
-            parvo_highsf=args.parvo_highsf, rgb_mode=args.rgb_mode,
-        )
+            rgb, ch_min, ch_max, device="cpu", **fe)
 
         model = features.build_model(
             checkpoint=args.checkpoint, stream1_weight=args.stream1_weight,
