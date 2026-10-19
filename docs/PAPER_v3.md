@@ -1,6 +1,6 @@
 # Shape bias is a readout property: a developmental two-stream model, frozen networks and human cortex
 
-> **Draft v3, 2026-10-19.** Model of record: `fs2_dvd300_avg_w050_ls` (seeds 0–2), replacing the BA network `dkl_bcs` of PAPER_v2, which is kept as the comparison. Plan and claim-by-claim evidence: `docs/PAPER_v3_PLAN_dvd300.md`. Numbers marked ⟦PENDING …⟧ wait on runs still in progress: control seeds 1–2 and the channel-swap seeds (training), the untrained-network encoding (4 of 8 subjects fitted). Figures, Supplementary Notes and Tables, and `tmp_analysis/verify_new_claims.py` still describe the BA network and are being regenerated; Extended Data Tables 1 and 2 are rewritten here by hand.
+> **Draft v3, 2026-10-19.** Model of record: `fs2_dvd300_avg_w050_ls` (seeds 0–2), replacing the BA network `dkl_bcs` of PAPER_v2, which is kept as the comparison. Plan and claim-by-claim evidence: `docs/PAPER_v3_PLAN_dvd300.md`. Numbers marked ⟦PENDING …⟧ wait on runs still in progress: control seeds 1–2 and the channel-swap seeds (training). Figures, Supplementary Notes and Tables, and `tmp_analysis/verify_new_claims.py` still describe the BA network and are being regenerated; Extended Data Tables 1 and 2 are rewritten here by hand.
 
 ## Abstract
 
@@ -57,7 +57,7 @@ The profile crosses zero, and only with the maturing input. In the model the ind
 
 Quantified as the contrast hV4 − mean(V1v, V1d) of the per-ROI median (Fig. 3b; Extended Data Table 1), the gradient is −1.259 to −1.291 across the three seeds against −0.062 for the control ⟦PENDING control seeds 1–2⟧, each comparison at the exact Wilcoxon floor for eight subjects (p = .0078, 8/8), with the same separation on the raw statistic U_m − U_p (−0.186 to −0.193 against −0.003). It is steeper than the BA network's −0.745 to −0.834 in 8/8 subjects (mean Δ −0.48, p = .0078). The per-subject Spearman ρ between hierarchical rank and stream preference is −0.964 to −0.973 in every seed, against −0.29 for the control (Fig. 3c).
 
-The trajectory does not create the gradient; it decides what training does to the one the input supplies. An untrained network on the same test input already descends (−0.512 normalised, −0.208 raw, mean of the four of eight subjects fitted so far ⟦PENDING 8/8⟧; −0.544 and −0.479 for untrained networks on the BA network's two front ends). Training on the maturing input steepens it on the normalised index (to −1.27) and holds it on the raw difference (−0.19), so under the rule that a cortical claim needs both statistics (Methods 4.7) we claim only that training on the maturing input preserves it; training on the adult input from the first step erases it on both (−0.062; −0.003).
+The trajectory does not create the gradient; it decides what training does to the one the input supplies. An untrained network on the same test input already descends (−0.480 normalised, −0.195 raw, 8/8 subjects, p = .0078 on both; −0.544 and −0.479 for untrained networks on the BA network's two front ends). Training on the maturing input steepens it on the normalised index (to −1.27) and holds it on the raw difference (−0.19), so under the rule that a cortical claim needs both statistics (Methods 4.7) we claim only that training on the maturing input preserves it; training on the adult input from the first step erases it on both (−0.062; −0.003).
 
 Pushed through models fitted on natural scenes only, the cue-conflict images give a predicted magno − parvo shape-bias difference of +1.32 to +1.34 in the model against +0.08 for the control (8/8 subjects, seed means; Fig. 3d), a test that needs neither probe nor readout. It is smaller than the BA network's +1.53 to +1.57 (8/8), in the direction of the two magno streams' own rates (0.850 against 0.878).
 
@@ -196,7 +196,7 @@ The authors declare no competing interests.
 |  | 1 | −0.193 | ⟦PENDING⟧ | −0.145 | 8/8 | 0.0078 |
 |  | 2 | −0.190 | ⟦PENDING⟧ | −0.153 | 8/8 | 0.0078 |
 | control alone, normalised / raw | 0 | | −0.062 / −0.003 | | 5/8 / 4/8 < 0 | 0.25 / 0.84 |
-| untrained, the model's front end, normalised / raw (4 of 8 subjects ⟦PENDING 8/8⟧) | — | −0.512 / −0.208 | | | 4/4 < 0 | 0.125 |
+| untrained, the model's front end, normalised / raw | — | −0.480 / −0.195 | | | 8/8 < 0 | 0.0078 |
 | untrained, BA diet front end, normalised / raw | — | | | −0.544 / −0.120 | 8/8 < 0 | 0.0078 |
 | untrained, no-diet front end, normalised | — | | | −0.479 | 8/8 < 0 | 0.0078 |
 
