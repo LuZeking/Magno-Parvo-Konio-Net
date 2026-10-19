@@ -1,0 +1,178 @@
+{
+  "model_name": "fs2_dvd300_avg_w050_ls_seed2",
+  "n_images": 1200,
+  "chance": 0.0625,
+  "pca_dim": 256,
+  "checkpoint": "/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-12_stage2/fs2_dvd300_avg_w050_ls_seed2/checkpoint_final.pt",
+  "stage1_run": null,
+  "streams": {
+    "magno": {
+      "shape_acc": 0.9583333333333334,
+      "texture_acc": 0.37,
+      "bias": 0.5883333333333334,
+      "shape_folds": [
+        0.975,
+        0.975,
+        0.9416666666666667,
+        0.9541666666666667,
+        0.9458333333333333
+      ],
+      "texture_folds": [
+        0.37083333333333335,
+        0.375,
+        0.3458333333333333,
+        0.38333333333333336,
+        0.375
+      ],
+      "n_components": 256
+    },
+    "parvo": {
+      "shape_acc": 0.45,
+      "texture_acc": 0.9133333333333333,
+      "bias": -0.4633333333333333,
+      "shape_folds": [
+        0.4666666666666667,
+        0.4125,
+        0.4625,
+        0.4666666666666667,
+        0.44166666666666665
+      ],
+      "texture_folds": [
+        0.925,
+        0.9166666666666666,
+        0.8916666666666667,
+        0.8958333333333334,
+        0.9375
+      ],
+      "n_components": 256
+    }
+  },
+  "groups": {
+    "n_content_photos": 160,
+    "n_texture_sources": 48,
+    "content_folds": 5,
+    "texture_source_folds": 3
+  },
+  "bias_magno_minus_parvo": 1.0516666666666667,
+  "fold_diffs": [
+    1.0625,
+    1.1041666666666665,
+    1.025,
+    1.0,
+    1.0666666666666667
+  ],
+  "splits": {
+    "pca": {
+      "stratified": {
+        "magno": {
+          "shape_acc": 0.9583333333333334,
+          "texture_acc": 0.37,
+          "bias": 0.5883333333333334
+        },
+        "parvo": {
+          "shape_acc": 0.45,
+          "texture_acc": 0.9133333333333333,
+          "bias": -0.4633333333333333
+        },
+        "both": {
+          "shape_acc": 0.9583333333333334,
+          "texture_acc": 0.9058333333333334,
+          "bias": 0.05249999999999999
+        },
+        "bias_magno_minus_parvo": 1.0516666666666667
+      },
+      "per_label": {
+        "magno": {
+          "shape_acc": 0.3425,
+          "texture_acc": 0.16416666666666666,
+          "bias": 0.17833333333333337
+        },
+        "parvo": {
+          "shape_acc": 0.3233333333333333,
+          "texture_acc": 0.3491666666666667,
+          "bias": -0.025833333333333375
+        },
+        "both": {
+          "shape_acc": 0.43833333333333335,
+          "texture_acc": 0.3475,
+          "bias": 0.09083333333333338
+        },
+        "bias_magno_minus_parvo": 0.20416666666666675
+      },
+      "double": {
+        "magno": {
+          "shape_acc": 0.315,
+          "texture_acc": 0.245,
+          "bias": 0.07
+        },
+        "parvo": {
+          "shape_acc": 0.2758333333333333,
+          "texture_acc": 0.3375,
+          "bias": -0.0616666666666667
+        },
+        "both": {
+          "shape_acc": 0.38333333333333336,
+          "texture_acc": 0.3983333333333333,
+          "bias": -0.014999999999999958
+        },
+        "bias_magno_minus_parvo": 0.1316666666666667
+      }
+    },
+    "readout": {
+      "stratified": {
+        "magno": {
+          "shape_acc": 0.8541666666666666,
+          "texture_acc": 0.3825,
+          "bias": 0.4716666666666666
+        },
+        "parvo": {
+          "shape_acc": 0.3275,
+          "texture_acc": 0.9225,
+          "bias": -0.595
+        },
+        "both": {
+          "shape_acc": 0.8483333333333334,
+          "texture_acc": 0.8975,
+          "bias": -0.04916666666666658
+        },
+        "bias_magno_minus_parvo": 1.0666666666666667
+      },
+      "per_label": {
+        "magno": {
+          "shape_acc": 0.5791666666666667,
+          "texture_acc": 0.22333333333333333,
+          "bias": 0.3558333333333334
+        },
+        "parvo": {
+          "shape_acc": 0.29333333333333333,
+          "texture_acc": 0.4741666666666667,
+          "bias": -0.18083333333333335
+        },
+        "both": {
+          "shape_acc": 0.6108333333333333,
+          "texture_acc": 0.45,
+          "bias": 0.16083333333333333
+        },
+        "bias_magno_minus_parvo": 0.5366666666666667
+      },
+      "double": {
+        "magno": {
+          "shape_acc": 0.5658333333333333,
+          "texture_acc": 0.255,
+          "bias": 0.3108333333333333
+        },
+        "parvo": {
+          "shape_acc": 0.24,
+          "texture_acc": 0.47,
+          "bias": -0.22999999999999998
+        },
+        "both": {
+          "shape_acc": 0.5741666666666667,
+          "texture_acc": 0.45916666666666667,
+          "bias": 0.11500000000000005
+        },
+        "bias_magno_minus_parvo": 0.5408333333333333
+      }
+    }
+  }
+}

@@ -1,0 +1,740 @@
+{
+  "model_name": "fs2_dvdfix300_avg_w050_ls_seed0_final",
+  "checkpoint": "/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-12_stage2/fs2_dvdfix300_avg_w050_ls_seed0/checkpoint_final.pt",
+  "w_step": 0.001,
+  "n_boot": 1000,
+  "n_splits": 200,
+  "n_perm": 1000,
+  "boot_seed": 20260910,
+  "human_shape_bias": 0.9575865902540501,
+  "human_human_ceiling": 0.23353042163323218,
+  "human_human_sd": 0.09617679263934274,
+  "own_ceilings": {
+    "subject-01": 0.20024798763551274,
+    "subject-02": 0.23460235026483328,
+    "subject-03": 0.28884160601569825,
+    "subject-04": 0.25557407095900203,
+    "subject-05": 0.24710328842115054,
+    "subject-06": 0.20185932892076416,
+    "subject-07": 0.26779181424546256,
+    "subject-08": 0.3021162760455801,
+    "subject-09": 0.11279533456483223,
+    "subject-10": 0.2243721592594855
+  },
+  "affine_identity_max_dev": 1.52587890625e-05,
+  "family_rate_min": 0.3636363744735718,
+  "family_rate_max": 0.4006849229335785,
+  "n_rate_attainable": 0,
+  "observers": {
+    "subject-01": {
+      "observer_rate": 0.9617169373549884,
+      "observer_decided": 862,
+      "own_ceiling": 0.20024798763551274,
+      "rate_fit": {
+        "attainable": false,
+        "w_hat": 0.049,
+        "w_index": 49,
+        "value_at_w_hat": 0.4006849229335785,
+        "target": 0.9617169373549884,
+        "residual": -0.5610320144214099,
+        "at_w_boundary": false,
+        "curve_min": 0.3636363744735718,
+        "curve_max": 0.4006849229335785,
+        "interior_estimate_exists": false,
+        "boot_ci": [
+          0.002,
+          0.854
+        ],
+        "boot_frac_attainable": 0.0
+      },
+      "trial_fit": {
+        "attainable": true,
+        "w_hat": 0.666,
+        "w_index": 666,
+        "value_at_w_hat": 0.011891510330410216,
+        "target": null,
+        "residual": null,
+        "at_w_boundary": false,
+        "curve_min": -0.07062899786780381,
+        "curve_max": 0.011891510330410216,
+        "interior_estimate_exists": true,
+        "pct_of_pooled_ceiling": 5.0920604892694685,
+        "pct_of_own_ceiling": 5.9383919263423,
+        "boot_ci": [
+          0.129,
+          0.995
+        ],
+        "boot_frac_at_boundary": 0.0
+      },
+      "cross_validation": {
+        "n_splits": 200,
+        "in_sample_mean": 0.014987881455911218,
+        "held_out_mean": 0.0018692406364674465,
+        "held_out_sd": 0.020957782120689696,
+        "no_fitting_floor_mean": 5.053990836879997e-05,
+        "held_out_pct_of_own_ceiling": 0.9334628819690313,
+        "floor_pct_of_own_ceiling": 0.025238659806555295,
+        "generalisation_gap": 0.013118640819443772,
+        "held_out_above_floor": 0.0018187007280986466
+      },
+      "permutation_null": {
+        "n_perm": 1000,
+        "null_max_mean": 0.019999007189959426,
+        "null_max_p95": 0.047342522377308814,
+        "null_max_max": 0.07927899186473113,
+        "observed_max": 0.011891510330410216,
+        "p_perm": 0.6903096903096904,
+        "excess_over_null_mean": -0.00810749685954921
+      },
+      "model_decided_at_w_trial": 675
+    },
+    "subject-02": {
+      "observer_rate": 0.9438085327783559,
+      "observer_decided": 961,
+      "own_ceiling": 0.23460235026483328,
+      "rate_fit": {
+        "attainable": false,
+        "w_hat": 0.049,
+        "w_index": 49,
+        "value_at_w_hat": 0.4006849229335785,
+        "target": 0.9438085327783559,
+        "residual": -0.5431236098447774,
+        "at_w_boundary": false,
+        "curve_min": 0.3636363744735718,
+        "curve_max": 0.4006849229335785,
+        "interior_estimate_exists": false,
+        "boot_ci": [
+          0.002,
+          0.854
+        ],
+        "boot_frac_attainable": 0.0
+      },
+      "trial_fit": {
+        "attainable": true,
+        "w_hat": 0.395,
+        "w_index": 395,
+        "value_at_w_hat": 0.0849439906580872,
+        "target": null,
+        "residual": null,
+        "at_w_boundary": false,
+        "curve_min": -0.03230697457429438,
+        "curve_max": 0.0849439906580872,
+        "interior_estimate_exists": true,
+        "pct_of_pooled_ceiling": 36.37384374336238,
+        "pct_of_own_ceiling": 36.20764692348448,
+        "boot_ci": [
+          0.12677500000000003,
+          0.968
+        ],
+        "boot_frac_at_boundary": 0.0
+      },
+      "cross_validation": {
+        "n_splits": 200,
+        "in_sample_mean": 0.09233885723565687,
+        "held_out_mean": 0.06661706870173384,
+        "held_out_sd": 0.019953738565782232,
+        "no_fitting_floor_mean": 0.06829872912243797,
+        "held_out_pct_of_own_ceiling": 28.39573799091632,
+        "floor_pct_of_own_ceiling": 29.11255110843444,
+        "generalisation_gap": 0.025721788533923026,
+        "held_out_above_floor": -0.0016816604207041258
+      },
+      "permutation_null": {
+        "n_perm": 1000,
+        "null_max_mean": 0.023115675117802863,
+        "null_max_p95": 0.054006171877263226,
+        "null_max_max": 0.08037694013303762,
+        "observed_max": 0.0849439906580872,
+        "p_perm": 0.000999000999000999,
+        "excess_over_null_mean": 0.06182831554028434
+      },
+      "model_decided_at_w_trial": 652
+    },
+    "subject-03": {
+      "observer_rate": 0.9673076923076923,
+      "observer_decided": 1040,
+      "own_ceiling": 0.28884160601569825,
+      "rate_fit": {
+        "attainable": false,
+        "w_hat": 0.049,
+        "w_index": 49,
+        "value_at_w_hat": 0.4006849229335785,
+        "target": 0.9673076923076923,
+        "residual": -0.5666227693741138,
+        "at_w_boundary": false,
+        "curve_min": 0.3636363744735718,
+        "curve_max": 0.4006849229335785,
+        "interior_estimate_exists": false,
+        "boot_ci": [
+          0.002,
+          0.854
+        ],
+        "boot_frac_attainable": 0.0
+      },
+      "trial_fit": {
+        "attainable": true,
+        "w_hat": 0.201,
+        "w_index": 201,
+        "value_at_w_hat": 0.0253214276362304,
+        "target": null,
+        "residual": null,
+        "at_w_boundary": false,
+        "curve_min": -0.004972144012460331,
+        "curve_max": 0.0253214276362304,
+        "interior_estimate_exists": true,
+        "pct_of_pooled_ceiling": 10.84288182205169,
+        "pct_of_own_ceiling": 8.766544399719963,
+        "boot_ci": [
+          0.002,
+          0.854
+        ],
+        "boot_frac_at_boundary": 0.007
+      },
+      "cross_validation": {
+        "n_splits": 200,
+        "in_sample_mean": 0.03020978489760463,
+        "held_out_mean": 0.01277575658535556,
+        "held_out_sd": 0.014668124527164539,
+        "no_fitting_floor_mean": 0.016534420801055577,
+        "held_out_pct_of_own_ceiling": 4.423101215086448,
+        "floor_pct_of_own_ceiling": 5.724390273663327,
+        "generalisation_gap": 0.01743402831224907,
+        "held_out_above_floor": -0.003758664215700017
+      },
+      "permutation_null": {
+        "n_perm": 1000,
+        "null_max_mean": 0.01707145015903967,
+        "null_max_p95": 0.04045404183545069,
+        "null_max_max": 0.06563163185524398,
+        "observed_max": 0.0253214276362304,
+        "p_perm": 0.24675324675324675,
+        "excess_over_null_mean": 0.00824997747719073
+      },
+      "model_decided_at_w_trial": 569
+    },
+    "subject-04": {
+      "observer_rate": 0.9190897597977244,
+      "observer_decided": 791,
+      "own_ceiling": 0.25557407095900203,
+      "rate_fit": {
+        "attainable": false,
+        "w_hat": 0.049,
+        "w_index": 49,
+        "value_at_w_hat": 0.4006849229335785,
+        "target": 0.9190897597977244,
+        "residual": -0.518404836864146,
+        "at_w_boundary": false,
+        "curve_min": 0.3636363744735718,
+        "curve_max": 0.4006849229335785,
+        "interior_estimate_exists": false,
+        "boot_ci": [
+          0.002,
+          0.854
+        ],
+        "boot_frac_attainable": 0.0
+      },
+      "trial_fit": {
+        "attainable": true,
+        "w_hat": 0.685,
+        "w_index": 685,
+        "value_at_w_hat": 0.0748612379681022,
+        "target": null,
+        "residual": null,
+        "at_w_boundary": false,
+        "curve_min": -0.051541266158435434,
+        "curve_max": 0.0748612379681022,
+        "interior_estimate_exists": true,
+        "pct_of_pooled_ceiling": 32.056310884272904,
+        "pct_of_own_ceiling": 29.2914056919769,
+        "boot_ci": [
+          0.118,
+          0.993
+        ],
+        "boot_frac_at_boundary": 0.0
+      },
+      "cross_validation": {
+        "n_splits": 200,
+        "in_sample_mean": 0.07917856055236863,
+        "held_out_mean": 0.058287712751299986,
+        "held_out_sd": 0.03158918502951913,
+        "no_fitting_floor_mean": 0.05505046780077137,
+        "held_out_pct_of_own_ceiling": 22.80658305147482,
+        "floor_pct_of_own_ceiling": 21.539926798600124,
+        "generalisation_gap": 0.020890847801068646,
+        "held_out_above_floor": 0.0032372449505286144
+      },
+      "permutation_null": {
+        "n_perm": 1000,
+        "null_max_mean": 0.03192827213529355,
+        "null_max_p95": 0.07687931117923752,
+        "null_max_max": 0.13184357541899433,
+        "observed_max": 0.0748612379681022,
+        "p_perm": 0.056943056943056944,
+        "excess_over_null_mean": 0.04293296583280866
+      },
+      "model_decided_at_w_trial": 681
+    },
+    "subject-05": {
+      "observer_rate": 0.9639810426540284,
+      "observer_decided": 1055,
+      "own_ceiling": 0.24710328842115054,
+      "rate_fit": {
+        "attainable": false,
+        "w_hat": 0.049,
+        "w_index": 49,
+        "value_at_w_hat": 0.4006849229335785,
+        "target": 0.9639810426540284,
+        "residual": -0.5632961197204499,
+        "at_w_boundary": false,
+        "curve_min": 0.3636363744735718,
+        "curve_max": 0.4006849229335785,
+        "interior_estimate_exists": false,
+        "boot_ci": [
+          0.002,
+          0.854
+        ],
+        "boot_frac_attainable": 0.0
+      },
+      "trial_fit": {
+        "attainable": true,
+        "w_hat": 0.208,
+        "w_index": 208,
+        "value_at_w_hat": 0.02164449818621525,
+        "target": null,
+        "residual": null,
+        "at_w_boundary": false,
+        "curve_min": -0.00944447703408235,
+        "curve_max": 0.02164449818621525,
+        "interior_estimate_exists": true,
+        "pct_of_pooled_ceiling": 9.26838483604877,
+        "pct_of_own_ceiling": 8.759291842901519,
+        "boot_ci": [
+          0.006,
+          0.8412999999999997
+        ],
+        "boot_frac_at_boundary": 0.0
+      },
+      "cross_validation": {
+        "n_splits": 200,
+        "in_sample_mean": 0.03217248516563572,
+        "held_out_mean": -0.00023656248862775813,
+        "held_out_sd": 0.020745676319283795,
+        "no_fitting_floor_mean": 0.014555359462714624,
+        "held_out_pct_of_own_ceiling": -0.09573425353392012,
+        "floor_pct_of_own_ceiling": 5.890394885359515,
+        "generalisation_gap": 0.03240904765426348,
+        "held_out_above_floor": -0.014791921951342383
+      },
+      "permutation_null": {
+        "n_perm": 1000,
+        "null_max_mean": 0.01863312220172564,
+        "null_max_p95": 0.041906236972549735,
+        "null_max_max": 0.0750919810275279,
+        "observed_max": 0.02164449818621525,
+        "p_perm": 0.4015984015984016,
+        "excess_over_null_mean": 0.003011375984489608
+      },
+      "model_decided_at_w_trial": 572
+    },
+    "subject-06": {
+      "observer_rate": 0.976,
+      "observer_decided": 1000,
+      "own_ceiling": 0.20185932892076416,
+      "rate_fit": {
+        "attainable": false,
+        "w_hat": 0.049,
+        "w_index": 49,
+        "value_at_w_hat": 0.4006849229335785,
+        "target": 0.976,
+        "residual": -0.5753150770664215,
+        "at_w_boundary": false,
+        "curve_min": 0.3636363744735718,
+        "curve_max": 0.4006849229335785,
+        "interior_estimate_exists": false,
+        "boot_ci": [
+          0.002,
+          0.854
+        ],
+        "boot_frac_attainable": 0.0
+      },
+      "trial_fit": {
+        "attainable": true,
+        "w_hat": 0.995,
+        "w_index": 995,
+        "value_at_w_hat": 0.02314015828440133,
+        "target": null,
+        "residual": null,
+        "at_w_boundary": false,
+        "curve_min": -0.019780219780219915,
+        "curve_max": 0.02314015828440133,
+        "interior_estimate_exists": true,
+        "pct_of_pooled_ceiling": 9.90884105058645,
+        "pct_of_own_ceiling": 11.463506991784628,
+        "boot_ci": [
+          0.111,
+          0.995
+        ],
+        "boot_frac_at_boundary": 0.0
+      },
+      "cross_validation": {
+        "n_splits": 200,
+        "in_sample_mean": 0.026042603474417426,
+        "held_out_mean": 0.014844029388448643,
+        "held_out_sd": 0.013016653291159233,
+        "no_fitting_floor_mean": 0.01693909622470847,
+        "held_out_pct_of_own_ceiling": 7.353650419731341,
+        "floor_pct_of_own_ceiling": 8.391534993836016,
+        "generalisation_gap": 0.011198574085968784,
+        "held_out_above_floor": -0.0020950668362598283
+      },
+      "permutation_null": {
+        "n_perm": 1000,
+        "null_max_mean": 0.013940581236398089,
+        "null_max_p95": 0.033802520946114696,
+        "null_max_max": 0.061057334326135616,
+        "observed_max": 0.02314015828440133,
+        "p_perm": 0.1928071928071928,
+        "excess_over_null_mean": 0.00919957704800324
+      },
+      "model_decided_at_w_trial": 676
+    },
+    "subject-07": {
+      "observer_rate": 0.940809968847352,
+      "observer_decided": 963,
+      "own_ceiling": 0.26779181424546256,
+      "rate_fit": {
+        "attainable": false,
+        "w_hat": 0.049,
+        "w_index": 49,
+        "value_at_w_hat": 0.4006849229335785,
+        "target": 0.940809968847352,
+        "residual": -0.5401250459137735,
+        "at_w_boundary": false,
+        "curve_min": 0.3636363744735718,
+        "curve_max": 0.4006849229335785,
+        "interior_estimate_exists": false,
+        "boot_ci": [
+          0.002,
+          0.854
+        ],
+        "boot_frac_attainable": 0.0
+      },
+      "trial_fit": {
+        "attainable": true,
+        "w_hat": 0.703,
+        "w_index": 703,
+        "value_at_w_hat": 0.018259801933072622,
+        "target": null,
+        "residual": null,
+        "at_w_boundary": false,
+        "curve_min": -0.0505270394133823,
+        "curve_max": 0.018259801933072622,
+        "interior_estimate_exists": true,
+        "pct_of_pooled_ceiling": 7.819024949884383,
+        "pct_of_own_ceiling": 6.818655747384188,
+        "boot_ci": [
+          0.041,
+          0.993
+        ],
+        "boot_frac_at_boundary": 0.0
+      },
+      "cross_validation": {
+        "n_splits": 200,
+        "in_sample_mean": 0.027441932215984975,
+        "held_out_mean": -0.0015480912173440552,
+        "held_out_sd": 0.025557839143068327,
+        "no_fitting_floor_mean": 0.009615513038070633,
+        "held_out_pct_of_own_ceiling": -0.5780950480902484,
+        "floor_pct_of_own_ceiling": 3.590667274563101,
+        "generalisation_gap": 0.02899002343332903,
+        "held_out_above_floor": -0.011163604255414688
+      },
+      "permutation_null": {
+        "n_perm": 1000,
+        "null_max_mean": 0.024088836965974636,
+        "null_max_p95": 0.05847172993556716,
+        "null_max_max": 0.08823529411764706,
+        "observed_max": 0.018259801933072622,
+        "p_perm": 0.5944055944055944,
+        "excess_over_null_mean": -0.005829035032902014
+      },
+      "model_decided_at_w_trial": 682
+    },
+    "subject-08": {
+      "observer_rate": 0.957688338493292,
+      "observer_decided": 969,
+      "own_ceiling": 0.3021162760455801,
+      "rate_fit": {
+        "attainable": false,
+        "w_hat": 0.049,
+        "w_index": 49,
+        "value_at_w_hat": 0.4006849229335785,
+        "target": 0.957688338493292,
+        "residual": -0.5570034155597136,
+        "at_w_boundary": false,
+        "curve_min": 0.3636363744735718,
+        "curve_max": 0.4006849229335785,
+        "interior_estimate_exists": false,
+        "boot_ci": [
+          0.002,
+          0.854
+        ],
+        "boot_frac_attainable": 0.0
+      },
+      "trial_fit": {
+        "attainable": true,
+        "w_hat": 0.993,
+        "w_index": 993,
+        "value_at_w_hat": 0.039719699918982256,
+        "target": null,
+        "residual": null,
+        "at_w_boundary": false,
+        "curve_min": -0.0038026686585406807,
+        "curve_max": 0.039719699918982256,
+        "interior_estimate_exists": true,
+        "pct_of_pooled_ceiling": 17.008362183049304,
+        "pct_of_own_ceiling": 13.147156597743104,
+        "boot_ci": [
+          0.025,
+          0.993
+        ],
+        "boot_frac_at_boundary": 0.0
+      },
+      "cross_validation": {
+        "n_splits": 200,
+        "in_sample_mean": 0.04322131978994774,
+        "held_out_mean": 0.025958127360440657,
+        "held_out_sd": 0.022653700644152033,
+        "no_fitting_floor_mean": 0.023091767836284808,
+        "held_out_pct_of_own_ceiling": 8.592098280903068,
+        "floor_pct_of_own_ceiling": 7.643337902391251,
+        "generalisation_gap": 0.017263192429507083,
+        "held_out_above_floor": 0.0028663595241558495
+      },
+      "permutation_null": {
+        "n_perm": 1000,
+        "null_max_mean": 0.01962869473856219,
+        "null_max_p95": 0.044221506713415556,
+        "null_max_max": 0.07707006369426744,
+        "observed_max": 0.039719699918982256,
+        "p_perm": 0.09090909090909091,
+        "excess_over_null_mean": 0.020091005180420066
+      },
+      "model_decided_at_w_trial": 676
+    },
+    "subject-09": {
+      "observer_rate": 0.9866028708133971,
+      "observer_decided": 1045,
+      "own_ceiling": 0.11279533456483223,
+      "rate_fit": {
+        "attainable": false,
+        "w_hat": 0.049,
+        "w_index": 49,
+        "value_at_w_hat": 0.4006849229335785,
+        "target": 0.9866028708133971,
+        "residual": -0.5859179478798187,
+        "at_w_boundary": false,
+        "curve_min": 0.3636363744735718,
+        "curve_max": 0.4006849229335785,
+        "interior_estimate_exists": false,
+        "boot_ci": [
+          0.002,
+          0.854
+        ],
+        "boot_frac_attainable": 0.0
+      },
+      "trial_fit": {
+        "attainable": true,
+        "w_hat": 0.031,
+        "w_index": 31,
+        "value_at_w_hat": -0.0028404170563580927,
+        "target": null,
+        "residual": null,
+        "at_w_boundary": false,
+        "curve_min": -0.02014297061159642,
+        "curve_max": -0.0028404170563580927,
+        "interior_estimate_exists": true,
+        "pct_of_pooled_ceiling": -1.2162942354547146,
+        "pct_of_own_ceiling": -2.51820438080751,
+        "boot_ci": [
+          0.0,
+          0.854
+        ],
+        "boot_frac_at_boundary": 0.066
+      },
+      "cross_validation": {
+        "n_splits": 200,
+        "in_sample_mean": 0.0021894689800520885,
+        "held_out_mean": -0.012521669362033973,
+        "held_out_sd": 0.008463460970502568,
+        "no_fitting_floor_mean": -0.008772238220847328,
+        "held_out_pct_of_own_ceiling": -11.101229860563778,
+        "floor_pct_of_own_ceiling": -7.777128597287188,
+        "generalisation_gap": 0.014711138342086061,
+        "held_out_above_floor": -0.003749431141186645
+      },
+      "permutation_null": {
+        "n_perm": 1000,
+        "null_max_mean": 0.009910493825164322,
+        "null_max_p95": 0.02420521947033522,
+        "null_max_max": 0.03922651933701657,
+        "observed_max": -0.0028404170563580927,
+        "p_perm": 0.948051948051948,
+        "excess_over_null_mean": -0.012750910881522415
+      },
+      "model_decided_at_w_trial": 260
+    },
+    "subject-10": {
+      "observer_rate": 0.9588607594936709,
+      "observer_decided": 948,
+      "own_ceiling": 0.2243721592594855,
+      "rate_fit": {
+        "attainable": false,
+        "w_hat": 0.049,
+        "w_index": 49,
+        "value_at_w_hat": 0.4006849229335785,
+        "target": 0.9588607594936709,
+        "residual": -0.5581758365600924,
+        "at_w_boundary": false,
+        "curve_min": 0.3636363744735718,
+        "curve_max": 0.4006849229335785,
+        "interior_estimate_exists": false,
+        "boot_ci": [
+          0.002,
+          0.854
+        ],
+        "boot_frac_attainable": 0.0
+      },
+      "trial_fit": {
+        "attainable": true,
+        "w_hat": 0.685,
+        "w_index": 685,
+        "value_at_w_hat": 0.012334693968345793,
+        "target": null,
+        "residual": null,
+        "at_w_boundary": false,
+        "curve_min": -0.027348394768133076,
+        "curve_max": 0.012334693968345793,
+        "interior_estimate_exists": true,
+        "pct_of_pooled_ceiling": 5.281836037498304,
+        "pct_of_own_ceiling": 5.497426244439164,
+        "boot_ci": [
+          0.04682500000000001,
+          0.995
+        ],
+        "boot_frac_at_boundary": 0.001
+      },
+      "cross_validation": {
+        "n_splits": 200,
+        "in_sample_mean": 0.016943579253290268,
+        "held_out_mean": -0.00675664002893816,
+        "held_out_sd": 0.023596772146578338,
+        "no_fitting_floor_mean": 0.004073699713688021,
+        "held_out_pct_of_own_ceiling": -3.0113540161300194,
+        "floor_pct_of_own_ceiling": 1.8155994607944221,
+        "generalisation_gap": 0.02370021928222843,
+        "held_out_above_floor": -0.01083033974262618
+      },
+      "permutation_null": {
+        "n_perm": 1000,
+        "null_max_mean": 0.019453339561563296,
+        "null_max_p95": 0.04459063672760179,
+        "null_max_max": 0.07198560287942425,
+        "observed_max": 0.012334693968345793,
+        "p_perm": 0.6853146853146853,
+        "excess_over_null_mean": -0.007118645593217503
+      },
+      "model_decided_at_w_trial": 681
+    }
+  },
+  "joint_permutation_null": {
+    "raw": {
+      "observed_best_of_ten": 0.0849439906580872,
+      "observed_winner": "subject-02",
+      "observed_winner_own_ceiling": 0.23460235026483328,
+      "null_mean": 0.04907876616668391,
+      "null_p95": 0.078414899052328,
+      "null_max": 0.13184357541899433,
+      "p_perm": 0.03196803196803197,
+      "excess_over_null_mean": 0.035865224491403294,
+      "null_winner_counts": {
+        "subject-01": 76,
+        "subject-02": 141,
+        "subject-03": 52,
+        "subject-04": 322,
+        "subject-05": 67,
+        "subject-06": 23,
+        "subject-07": 170,
+        "subject-08": 65,
+        "subject-09": 1,
+        "subject-10": 83
+      },
+      "null_wins_vs_inv_ceiling_r": -0.4238679719357448
+    },
+    "own_ceiling": {
+      "observed_best_of_ten": 0.3620764692348449,
+      "observed_winner": "subject-02",
+      "observed_winner_own_ceiling": 0.23460235026483328,
+      "null_mean": 0.20603885118315207,
+      "null_p95": 0.31976887080250227,
+      "null_max": 0.515872267183724,
+      "p_perm": 0.02197802197802198,
+      "excess_over_null_mean": 0.1560376180516928,
+      "null_winner_counts": {
+        "subject-01": 156,
+        "subject-02": 142,
+        "subject-03": 15,
+        "subject-04": 270,
+        "subject-05": 55,
+        "subject-06": 45,
+        "subject-07": 93,
+        "subject-08": 16,
+        "subject-09": 116,
+        "subject-10": 92
+      },
+      "null_wins_vs_inv_ceiling_r": 0.15923631189513948
+    }
+  },
+  "joint_cross_validation": {
+    "raw": {
+      "in_sample_mean": 0.09675483079933683,
+      "held_out_mean": 0.05466856950508951,
+      "held_out_sd": 0.028363015726668193,
+      "no_fitting_floor_mean": 0.019943735568725262,
+      "generalisation_gap": 0.04208626129424732,
+      "held_out_above_floor": 0.03472483393636425,
+      "observer_chosen_counts": {
+        "subject-01": 0,
+        "subject-02": 142,
+        "subject-03": 0,
+        "subject-04": 57,
+        "subject-05": 0,
+        "subject-06": 0,
+        "subject-07": 1,
+        "subject-08": 0,
+        "subject-09": 0,
+        "subject-10": 0
+      }
+    },
+    "own_ceiling": {
+      "in_sample_mean": 0.40424061645675835,
+      "held_out_mean": 0.24449589926167867,
+      "held_out_sd": 0.11018612308304987,
+      "no_fitting_floor_mean": 0.07595651276016158,
+      "generalisation_gap": 0.15974471719507968,
+      "held_out_above_floor": 0.1685393865015171,
+      "observer_chosen_counts": {
+        "subject-01": 0,
+        "subject-02": 164,
+        "subject-03": 0,
+        "subject-04": 36,
+        "subject-05": 0,
+        "subject-06": 0,
+        "subject-07": 0,
+        "subject-08": 0,
+        "subject-09": 0,
+        "subject-10": 0
+      }
+    }
+  }
+}

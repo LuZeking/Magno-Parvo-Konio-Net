@@ -1,0 +1,45 @@
+{
+  "model_name": "untrained_dvd300",
+  "checkpoint": "None",
+  "conditions": {
+    "full": {
+      "n_images": 1200,
+      "n_shape": 75,
+      "n_texture": 75,
+      "n_other": 1050,
+      "shape_bias": 0.5,
+      "shape_accuracy": 0.0625,
+      "texture_accuracy": 0.0625,
+      "shape_bias_ci95": [
+        0.41566069472695977,
+        0.5827952538631346
+      ]
+    },
+    "magno_only": {
+      "n_images": 1200,
+      "n_shape": 96,
+      "n_texture": 73,
+      "n_other": 1031,
+      "shape_bias": 0.5680473372781065,
+      "shape_accuracy": 0.08,
+      "texture_accuracy": 0.060833333333333336,
+      "shape_bias_ci95": [
+        0.4999277456647399,
+        0.6415210808292569
+      ]
+    },
+    "parvo_only": {
+      "n_images": 1200,
+      "n_shape": 76,
+      "n_texture": 75,
+      "n_other": 1049,
+      "shape_bias": 0.5033112582781457,
+      "shape_accuracy": 0.06333333333333334,
+      "texture_accuracy": 0.0625,
+      "shape_bias_ci95": [
+        0.41721854304635764,
+        0.5870967741935483
+      ]
+    }
+  }
+}
