@@ -53,7 +53,7 @@ def rng_str(v, fmt="{:.4f}"):
 
 def main():
     runs = {}
-    for p in sorted(glob.glob(os.path.join(FIT_DIR, "*_wfit.json"))):
+    for p in sorted(glob.glob(os.path.join(FIT_DIR, "dkl_*_wfit.json"))):   # the nine BA runs; fs2_* fits live beside them
         d = json.load(open(p))
         runs[d["model_name"]] = d
     if not runs:

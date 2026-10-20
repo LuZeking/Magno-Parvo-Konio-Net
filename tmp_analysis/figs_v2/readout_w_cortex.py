@@ -9,10 +9,14 @@ the shape-bias-rate sweep over w (results/fusion_sweep).
 
 Writes results/figures_v2/readout_w_cortex.json, appends Extended Data Table 2 to
 results/figures_v2/ed_tables.md and draws results/figures_v2/figE5_readout_w.{pdf,png}.
-Usage: PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/readout_w_cortex.py
+--set v3 does the same for PAPER_v3 into results/figures_v3/: the model of record
+(fs2_dvd300_avg_w050_ls) against its control (fs2_dvdfix300_avg_w050_ls, every seed with fits),
+from the fs2 fits (2026-10-16_fs2_w21) and the model's own fit-w and sweep files.
+Usage: PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/readout_w_cortex.py [--set v3]
 """
 from __future__ import annotations
 
+import argparse
 import glob
 import json
 import os
@@ -30,6 +34,16 @@ VIS = {"V1": [1, 2], "V2": [3, 4], "V3": [5, 6], "hV4": [7]}
 KAST = {"ventral (VO, PHC)": [8, 9, 10, 11], "lateral (LO, TO)": [12, 13, 14, 15], "dorsal (V3A/B, IPS0–2)": [16, 17, 18, 19, 20]}
 ROI_ORDER = list(VIS) + list(KAST)
 ARM_OF = {"dkl_bcs": "diet", "dkl_base": "no diet"}
+# (fits dir, run prefix -> arm, (primary, reference) arm, output dir, caption phrases)
+SETS = {
+    "v2": dict(res_dir=RES_DIR, arm_of=ARM_OF, pair=("diet", "no diet"), out="results/figures_v2",
+               reversed_in="reversed without the diet", beh="diet final checkpoints", net="the diet network"),
+    "v3": dict(res_dir="/scratch/byrong/mpk/readout_w/results/2026-10-16_fs2_w21",
+               arm_of={"fs2_dvd300_avg_w050_ls": "model", "fs2_dvdfix300_avg_w050_ls": "control"},
+               pair=("model", "control"), out="results/figures_v3",
+               reversed_in="reversed in the control", beh="the model's final checkpoints", net="the model"),
+}
+CFG = SETS["v2"]
 
 
 
@@ -55,9 +69,10 @@ def caption12(out):
         lo, hi = np.percentile([rng.choice(d, len(d), replace=True).mean() for _ in range(10000)], [2.5, 97.5])
         return d.mean(), lo, hi
 
-    dd, dlo, dhi = ci("diet")
-    nd, nlo, nhi = ci("no diet")
-    sd, snd = out["stats"]["diet"], out["stats"]["no diet"]
+    A, B = CFG["pair"]
+    dd, dlo, dhi = ci(A)
+    nd, nlo, nhi = ci(B)
+    sd, snd = out["stats"][A], out["stats"][B]
     n_d, n_nd = len(sd["delta_ext_minus_v1"]), len(snd["delta_ext_minus_v1"])
     mi = "\u2212"
     return (
@@ -77,21 +92,23 @@ def caption12(out):
         "is read as the location of an optimum and never as an R\u00b2 difference. What the table supports is the "
         f"ordinal contrast: extrastriate below V1 in {sd['delta_n_neg']}/{n_d} subjects (\u0394 = {mi}{abs(dd):.3f} "
         f"[{mi}{abs(dlo):.3f}, {mi}{abs(dhi):.3f}], 10,000-sample percentile bootstrap over subjects, exact Wilcoxon "
-        f"p = {str(round(sd['p_exact'], 4)).lstrip('0')}), reversed without the diet (+{nd:.3f} [+{nlo:.3f}, +{nhi:.3f}], "
+        f"p = {str(round(sd['p_exact'], 4)).lstrip('0')}), {CFG['reversed_in']} (+{nd:.3f} [+{nlo:.3f}, +{nhi:.3f}], "
         f"{n_nd - snd['delta_n_neg']}/{n_nd} positive, p = {str(round(snd['p_exact'], 3)).lstrip('0')}). "
         "\"Voxels magno / parvo\" is the fraction of the ROI's voxels whose own best w is \u2265 0.75 / \u2264 0.25. "
-        "The behaviour-optimal weight (trial fit to each of 10 human observers' cue-conflict choices, diet final "
-        "checkpoints, 3 seeds) is given in the last row for comparison, with the cue-conflict shape-bias rate the "
-        "diet network produces at each weight."
+        f"The behaviour-optimal weight (trial fit to each of 10 human observers' cue-conflict choices, {CFG['beh']}, "
+        "3 seeds) is given in the last row for comparison, with the cue-conflict shape-bias rate "
+        f"{CFG['net']} produces at each weight."
     )
 
 
 def load_all():
     out = {}
-    for f in sorted(glob.glob(os.path.join(RES_DIR, "*.npz"))):
+    for f in sorted(glob.glob(os.path.join(CFG["res_dir"], "*.npz"))):
         z = np.load(f, allow_pickle=True)
         m = str(z["model_name"]); s = int(z["subject"])
-        arm = ARM_OF["dkl_bcs" if m.startswith("dkl_bcs") else "dkl_base"]
+        arm = next((a for p, a in CFG["arm_of"].items() if m.startswith(p + "_")), None)
+        if arm is None:          # other runs fitted beside them (fs2_bcs_* in the fs2 directory)
+            continue
         seed = int(re.search(r"seed(\d)", m).group(1))
         out[(arm, seed, s)] = z
     return out
@@ -118,9 +135,17 @@ def curves(z):
 
 
 def main():
+    global CFG
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--set", choices=sorted(SETS), default="v2")
+    CFG = SETS[ap.parse_args().set]
+    S.OUT = CFG["out"]
+    os.makedirs(CFG["out"], exist_ok=True)
+    arm_a, arm_b = CFG["pair"]
+    pa, pb = list(CFG["arm_of"])           # run prefixes of A and B
     data = load_all()
     if not data:
-        raise SystemExit(f"no results in {RES_DIR}")
+        raise SystemExit(f"no results in {CFG['res_dir']}")
     grid = None
     per = {}  # (arm, subject) -> roi -> list over seeds of dicts
     for (arm, seed, s), z in data.items():
@@ -147,18 +172,18 @@ def main():
 
     # behaviour: trial-fit w per observer (diet, final ckpt, 3 seeds) and the rate sweep
     beh_w = {}
-    for f in sorted(glob.glob("results/fit_w_observers/dkl_bcs_seed?_final_wfit.json")):
+    for f in sorted(glob.glob(f"results/fit_w_observers/{pa}_seed?_final_wfit.json")):
         d = json.load(open(f))
         for obs, o in d["observers"].items():
             beh_w.setdefault(obs, []).append(o["trial_fit"]["w_hat"])
     beh_w = {k: float(np.mean(v)) for k, v in beh_w.items()}
     sweeps = []
-    for f in sorted(glob.glob("results/fusion_sweep/dkl_bcs_seed?_final_wsweep.json")):
+    for f in sorted(glob.glob(f"results/fusion_sweep/{pa}_seed?_final_wsweep.json")):
         sw = json.load(open(f))["sweep"]
         sweeps.append(([p["w"] for p in sw], [p["shape_bias"] for p in sw]))
     sw_w = np.array(sweeps[0][0]); sw_rate = np.mean([r for _, r in sweeps], 0)
     sweeps_nd = []
-    for f in sorted(glob.glob("results/fusion_sweep/dkl_base_seed?_final_wsweep.json")):
+    for f in sorted(glob.glob(f"results/fusion_sweep/{pb}_seed?_final_wsweep.json")):
         sw = json.load(open(f))["sweep"]
         sweeps_nd.append([p["shape_bias"] for p in sw])
     rate_at = lambda w: float(np.interp(w, sw_w, sw_rate))
@@ -185,9 +210,9 @@ def main():
                                           frac_parvo=[r["frac_parvo"] for r in rows], subjects=[r["subject"] for r in rows])
             lines.append(f"| {arm} | {roi} | {np.median(ws):.2f} [{ws.min():.2f}, {ws.max():.2f}] | {np.median(ratio):.3f} | {np.median(cur.max(1)):.4f} | "
                          f"{np.median([r['concat'] for r in rows]):.4f} | {np.mean([r['frac_magno'] for r in rows]):.2f} | {np.mean([r['frac_parvo'] for r in rows]):.2f} | "
-                         f"{rate_at(np.median(ws)) if arm == 'diet' else float('nan'):.2f} | {len(rows)} |")
+                         f"{rate_at(np.median(ws)) if arm == arm_a else float('nan'):.2f} | {len(rows)} |")
     bw = np.array(list(beh_w.values()))
-    lines.append(f"| behaviour (diet) | 10 human observers, trial fit | {np.median(bw):.2f} [{bw.min():.2f}, {bw.max():.2f}] | — | — | — | — | — | {rate_at(np.median(bw)):.2f} | 10 |")
+    lines.append(f"| behaviour ({arm_a}) | 10 human observers, trial fit | {np.median(bw):.2f} [{bw.min():.2f}, {bw.max():.2f}] | — | — | — | — | — | {rate_at(np.median(bw)):.2f} | 10 |")
     lines.append("")
     # ---------- paired statistics over subjects ----------
     stats = {}
@@ -211,19 +236,20 @@ def main():
                           p_exact=p_d, rho_v1_to_hv4=[float(x) for x in rho], rho_mean=float(np.mean(rho)))
         print(f"{arm}: w*(V1) {v1.mean():.3f}  w*(extrastriate) {ext.mean():.3f}  Δ {d.mean():+.3f} ({(d<0).sum()}/{len(d)} neg) exact p={p_d:.4f}; ρ(rank, w*) V1→hV4 mean {np.mean(rho):+.2f}, per subject {np.round(rho,2).tolist()}")
     bw = np.array(list(beh_w.values()))
-    if "diet" in stats:
-        ext = np.array(stats["diet"]["w_extrastriate"])
+    if arm_a in stats:
+        ext = np.array(stats[arm_a]["w_extrastriate"])
         stats["cortex_vs_behaviour"] = dict(extrastriate_range=[float(ext.min()), float(ext.max())], behaviour_range=[float(bw.min()), float(bw.max())],
                                             mannwhitney_p=float(sps.mannwhitneyu(ext, bw, alternative="two-sided", method="exact").pvalue), mannwhitney_method="exact",
                                             rate_at_cortex_w=rate_at(float(np.median(ext))), rate_at_behaviour_w=rate_at(float(np.median(bw))))
         print("cortex (extrastriate, diet) vs behaviour w*:", stats["cortex_vs_behaviour"])
     out["stats"] = stats
     lines[0] = caption12(out)
-    json.dump(out, open("results/figures_v2/readout_w_cortex.json", "w"), indent=1)
-    md = open("results/figures_v2/ed_tables.md", encoding="utf8").read()
+    json.dump(out, open(f"{CFG['out']}/readout_w_cortex.json", "w"), indent=1)
+    md_path = f"{CFG['out']}/ed_tables.md"
+    md = open(md_path, encoding="utf8").read() if os.path.exists(md_path) else ""
     if "Extended Data Table 2" in md:
         md = md[:md.index("**Extended Data Table 2")]
-    open("results/figures_v2/ed_tables.md", "w", encoding="utf8").write(md.rstrip() + "\n\n" + "\n".join(lines) + "\n")
+    open(md_path, "w", encoding="utf8").write(md.rstrip() + "\n\n" + "\n".join(lines) + "\n")
     print("\n".join(lines))
 
     # ---------- figure ----------
@@ -233,8 +259,10 @@ def main():
     # (a) R² curves, diet arm
     show = ["V1", "hV4", "ventral (VO, PHC)", "dorsal (V3A/B, IPS0–2)"]
     cols = {"V1": "#B0B0B0", "hV4": "#5A5A5A", "ventral (VO, PHC)": S.DIET, "dorsal (V3A/B, IPS0–2)": "#009E73"}
+    if arm_a == "model":     # v3: blue and vermillion mean networks, so the regions take a grey ramp
+        cols = {"V1": "#C8C8C8", "hV4": "#8C8C8C", "ventral (VO, PHC)": "#4D4D4D", "dorsal (V3A/B, IPS0–2)": "#1A1A1A"}
     for roi in show:
-        rows = agg["diet"].get(roi)
+        rows = agg[arm_a].get(roi)
         if not rows:
             continue
         cur = np.array([r["curve"] for r in rows])
@@ -244,12 +272,12 @@ def main():
     ax_a.set_xlabel("readout weight w (0 = parvo only, 1 = magno only)"); ax_a.set_ylabel("median R² / best over w")
     ax_a.set_xlim(0, 1); ax_a.set_ylim(0, 1.05)
     ax_a.legend(loc="lower left", ncol=1)
-    S.letter(ax_a, "a", title="diet: R² against w, by region")
+    S.letter(ax_a, "a", title=f"{arm_a}: R² against w, by region")
     # (b) w* per ROI per subject, both arms
     y = 0
     yt, yl = [], []
     for roi in ROI_ORDER:
-        for arm, c, dy in [("no diet", S.NODIET, 0.18), ("diet", S.DIET, -0.18)]:
+        for arm, c, dy in [(arm_b, S.NODIET, 0.18), (arm_a, S.DIET, -0.18)]:
             rows = agg.get(arm, {}).get(roi)
             if not rows:
                 continue
@@ -265,16 +293,17 @@ def main():
     S.refline(ax_b, x=0.5)
     ax_b.set_yticks(yt); ax_b.set_yticklabels(yl, fontsize=6.6)
     ax_b.set_xlim(-0.03, 1.03); ax_b.set_xlabel("optimal readout weight w*")
-    ax_b.plot([], [], "o", color=S.NODIET, ms=3, label="no diet"); ax_b.plot([], [], "o", color=S.DIET, ms=3, label="diet")
-    ax_b.legend(loc="upper left", ncol=1, handletextpad=0.3, borderaxespad=0.2)
+    ax_b.plot([], [], "o", color=S.NODIET, ms=3, label=arm_b); ax_b.plot([], [], "o", color=S.DIET, ms=3, label=arm_a)
+    ax_b.set_ylim(y - 0.6, 1.1)
+    ax_b.legend(loc="upper center", ncol=2, handletextpad=0.3, borderaxespad=0.1, columnspacing=1.2)
     S.letter(ax_b, "b", title="optimum by region")
     # (c) rate curve with both optima
-    ax_c.plot(sw_w, sw_rate, "-", color=S.DIET, lw=1.8, label="diet, shape-bias rate")
+    ax_c.plot(sw_w, sw_rate, "-", color=S.DIET, lw=1.8, label=f"{arm_a}, shape-bias rate")
     if sweeps_nd:
-        ax_c.plot(sw_w, np.mean(sweeps_nd, 0), "-", color=S.NODIET, lw=1.4, label="no diet")
+        ax_c.plot(sw_w, np.mean(sweeps_nd, 0), "-", color=S.NODIET, lw=1.4, label=arm_b)
     S.refline(ax_c, y=0.5)
-    ext = [r["w_star"] for roi in KAST for r in agg["diet"].get(roi, [])]
-    early = [r["w_star"] for roi in ("V1",) for r in agg["diet"].get(roi, [])]
+    ext = [r["w_star"] for roi in KAST for r in agg[arm_a].get(roi, [])]
+    early = [r["w_star"] for roi in ("V1",) for r in agg[arm_a].get(roi, [])]
     for vals, c, lab, yy, side in [(ext, S.DIET, "cortex w* (extrastriate)", 0.30, "right"), (early, "#B0B0B0", "cortex w* (V1)", 0.21, "right"), (list(beh_w.values()), S.HUMAN, "behaviour w* (10 observers)", 0.12, "left")]:
         if not vals:
             continue
@@ -283,7 +312,7 @@ def main():
         ax_c.plot([m], [rate_at(m)], "o", color=c, ms=5, mec="white", mew=0.7, zorder=6)
         ax_c.plot([m, m], [yy, rate_at(m)], ":", color=c, lw=0.8, zorder=3)
         ax_c.plot([], [], "|", color=c, ms=7, mew=1.1, label=lab)
-    ax_c.set_xlim(0, 1); ax_c.set_ylim(0.05, 1.0)
+    ax_c.set_xlim(0, 1); ax_c.set_ylim(0.05, 1.32); ax_c.set_yticks([0.2, 0.4, 0.6, 0.8, 1.0])
     ax_c.set_xlabel("readout weight w"); ax_c.set_ylabel("cue-conflict shape bias")
     ax_c.legend(loc="upper left", ncol=1, handletextpad=0.4, borderaxespad=0.2)
     S.letter(ax_c, "c", title="one axis: what cortex and behaviour want")

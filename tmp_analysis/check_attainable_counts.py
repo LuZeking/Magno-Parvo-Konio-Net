@@ -4,7 +4,7 @@ import numpy as np
 diet = ["dkl_bcs_seed0_best", "dkl_bcs_seed1_best", "dkl_bcs_seed2_best",
         "dkl_bcs_seed0_final", "dkl_bcs_seed1_final", "dkl_bcs_seed2_final"]
 runs = {}
-for p in glob.glob("results/fit_w_observers/*_wfit.json"):
+for p in glob.glob("results/fit_w_observers/dkl_*_wfit.json"):   # the BA runs only; fs2_* fits live beside them
     d = json.load(open(p)); runs[d["model_name"]] = d
 names = sorted(next(iter(runs.values()))["observers"])
 

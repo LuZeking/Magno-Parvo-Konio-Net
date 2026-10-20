@@ -15,12 +15,17 @@ Conventions are those of fig3_cortex.py / visualrois.py: nc > 0.1,
 Um + Up > 1e-3, >= 20 voxels per ROI per subject; seeds are averaged at the
 subject level; paired tests are exact Wilcoxon over the eight subjects.
 
-Writes results/figures_v2/ext_gradient.json and results/figures_v2/ext_gradient.md.
-Usage: PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/ext_gradient.py
+Writes results/figures_v2/ext_gradient.{json,md} (--set v2, the BA arms) or
+results/figures_v3/ext_gradient.{json,md} (--set v3: the model of record dvd300, its
+control, the untrained network on their test input and the BA arms).
+Usage: PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/ext_gradient.py [--set v3]
 """
 from __future__ import annotations
 
+import argparse
+import glob
 import json
+import os
 
 import numpy as np
 from scipy import stats as sps
@@ -49,6 +54,18 @@ ARMS = {
     "parvo_highsf": ("results/encoding", [f"dkl_bcs_parvo_highsf_seed{s}_trained" for s in range(3)]),
     "thesis": ("results/encoding_cc", ["thesis_dvd_trans"]),
 }
+# PAPER_v3: the BA fits live in the mpk-rewrite worktree, the fs2 fits on /scratch
+BA_ENC = "/home/byrong/projects/TSN/Magno-Parvo-Konio-Net/.claude/worktrees/mpk-rewrite/results/encoding_cc"
+FS_ENC = "/scratch/byrong/mpk/encoding/results/2026-10-16_fs2"
+ARMS_V3 = {
+    "untrained": (FS_ENC, ["untrained_dvd300_seed0"]),
+    "BA no diet": (BA_ENC, [f"dkl_base_seed{s}_trained" for s in range(3)]),
+    "control": (FS_ENC, [f"fs2_dvdfix300_avg_w050_ls_seed{s}" for s in range(3)]),   # seeds with fits
+    "BA": (BA_ENC, [f"dkl_bcs_seed{s}_trained" for s in range(3)]),
+    "model": (FS_ENC, [f"fs2_dvd300_avg_w050_ls_seed{s}" for s in range(3)]),
+}
+SETS = {"v2": (ARMS, ("diet", "no diet"), "results/figures_v2"),
+        "v3": (ARMS_V3, ("model", "control"), "results/figures_v3")}
 
 # regional groupings for the contrasts
 VENTRAL = ["VO1", "VO2", "PHC1", "PHC2"]
@@ -79,10 +96,18 @@ def roi_index(z, roi, lab):
     return float(np.median(r[np.isfinite(r)])), int(v.sum()), float(np.median(r2))
 
 
-def profile(arm):
-    out_dir, models = ARMS[arm]
+def fitted(out_dir, models):
+    """The models with stored fits (a control seed still training has none); refuses an arm with none."""
+    have = [m for m in models if glob.glob(os.path.join(out_dir, f"{m}_subj*.npz"))]
+    if not have:
+        raise SystemExit(f"no encoding fits for {models} in {out_dir}")
+    return have
+
+
+def profile(arm, arms=ARMS):
+    out_dir, models = arms[arm]
     per_model = []
-    for m in models:
+    for m in fitted(out_dir, models):
         res = load_results(out_dir, m)
         rows = {}
         for s in sorted(res):
@@ -156,47 +181,51 @@ def f(x, d=3):
 
 
 def main():
-    profs = {arm: profile(arm) for arm in ARMS}
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--set", choices=sorted(SETS), default="v2")
+    arms, (A, B), out = SETS[ap.parse_args().set]
+    os.makedirs(out, exist_ok=True)
+    profs = {arm: profile(arm, arms) for arm in arms}
     res = {"convention": dict(nc_min=NC_MIN, min_vox=MIN_VOX, index="(Um-Up)/(Um+Up) median over reliable voxels; seeds averaged per subject")}
     md = ["# Stream preference beyond hV4 (per-voxel index, median over reliable voxels; mean over 8 subjects, seeds averaged per subject)", ""]
     for atlas, names in [("Kastner2015", KASTNER), ("streams", STREAMS)] + list(FLOC.items()):
-        res[atlas] = {arm: table(profs[arm], atlas, names) for arm in ARMS}
-        md += [f"## {atlas}", "", "| ROI | " + " | ".join(ARMS) + " | median voxels (diet) |", "|---|" + "---|" * (len(ARMS) + 1)]
+        res[atlas] = {arm: table(profs[arm], atlas, names) for arm in arms}
+        md += [f"## {atlas}", "", "| ROI | " + " | ".join(arms) + f" | median voxels ({A}) |", "|---|" + "---|" * (len(arms) + 1)]
         for name in names.values():
             cells = []
-            for arm in ARMS:
+            for arm in arms:
                 t = res[atlas][arm][name]
                 cells.append("—" if t["mean"] is None else f"{f(t['mean'])} (n={t['n_subjects']})")
-            md.append(f"| {name} | " + " | ".join(cells) + f" | {res[atlas]['diet'][name]['median_vox']:.0f} |")
+            md.append(f"| {name} | " + " | ".join(cells) + f" | {res[atlas][A][name]['median_vox']:.0f} |")
         md.append("")
     # contrasts
-    con = {arm: contrasts(profs[arm]) for arm in ARMS}
+    con = {arm: contrasts(profs[arm]) for arm in arms}
     res["contrasts"] = {}
-    md += ["## Regional contrasts (per-subject, mean ± sd over 8 subjects; p = exact Wilcoxon against 0; last column = paired diet − no diet)", "",
-           "| contrast | " + " | ".join(ARMS) + " | diet − no diet (paired) |", "|---|" + "---|" * (len(ARMS) + 1)]
-    for k in con["diet"]:
+    md += ["## Regional contrasts (per-subject, mean ± sd over 8 subjects; p = exact Wilcoxon against 0; last column = paired " + f"{A} − {B})", "",
+           "| contrast | " + " | ".join(arms) + f" | {A} − {B} (paired) |", "|---|" + "---|" * (len(arms) + 1)]
+    for k in con[A]:
         cells = []
         res["contrasts"][k] = {}
-        for arm in ARMS:
+        for arm in arms:
             x = con[arm][k]
             p = wilcoxon(x)
             res["contrasts"][k][arm] = dict(per_subject=x.tolist(), mean=float(np.nanmean(x)), sd=float(np.nanstd(x, ddof=1)), p_exact=p,
                                             n_neg=int((x < 0).sum()), n=int(np.isfinite(x).sum()))
             cells.append(f"{f(np.nanmean(x))} ± {np.nanstd(x, ddof=1):.3f}" + (f", p={p:.4f}" if p is not None else "") + f" ({int((x<0).sum())}/{int(np.isfinite(x).sum())} neg)")
-        d = con["diet"][k] - con["no diet"][k]
+        d = con[A][k] - con[B][k]
         p = wilcoxon(d)
-        res["contrasts"][k]["paired diet - no diet"] = dict(per_subject=d.tolist(), mean=float(np.nanmean(d)), p_exact=p)
+        res["contrasts"][k][f"paired {A} - {B}"] = dict(per_subject=d.tolist(), mean=float(np.nanmean(d)), p_exact=p)
         cells.append(f"{f(np.nanmean(d))}" + (f", p={p:.4f}" if p is not None else "") + f" ({int((d<0).sum())}/{int(np.isfinite(d).sum())} neg)")
         md.append(f"| {k} | " + " | ".join(cells) + " |")
     md.append("")
     # components: is the saturation a parvo rise or a magno collapse?
     md += ["## Components on Kastner2015 (median over reliable voxels of the noise-ceiling-normalised unique variances Um, Up and of joint r²/NC; mean over subjects, seeds averaged)", "",
-           "| ROI | Um diet | Up diet | Um no diet | Up no diet | Um untrained | Up untrained | r²/NC diet | r²/NC no diet |", "|---|---|---|---|---|---|---|---|---|"]
+           f"| ROI | Um {A} | Up {A} | Um {B} | Up {B} | Um untrained | Up untrained | r²/NC {A} | r²/NC {B} |", "|---|---|---|---|---|---|---|---|---|"]
     comp = {}
-    for arm in ("diet", "no diet", "untrained"):
-        out_dir, models = ARMS[arm]
+    for arm in (A, B, "untrained"):
+        out_dir, models = arms[arm]
         acc = {}
-        for m in models:
+        for m in fitted(out_dir, models):
             rr = load_results(out_dir, m)
             for s in sorted(rr):
                 z = rr[s]
@@ -210,13 +239,13 @@ def main():
         comp[arm] = {k: np.mean(np.array(v), 0).tolist() for k, v in acc.items()}
     res["components"] = comp
     for name in KASTNER.values():
-        if name not in comp["diet"]:
+        if name not in comp[A]:
             continue
-        d, n, u = comp["diet"][name], comp["no diet"][name], comp["untrained"].get(name, [np.nan] * 3)
+        d, n, u = comp[A][name], comp[B][name], comp["untrained"].get(name, [np.nan] * 3)
         md.append(f"| {name} | {d[0]:.4f} | {d[1]:.4f} | {n[0]:.4f} | {n[1]:.4f} | {u[0]:.4f} | {u[1]:.4f} | {d[2]:.3f} | {n[2]:.3f} |")
     md.append("")
-    json.dump(res, open("results/figures_v2/ext_gradient.json", "w"), indent=1)
-    open("results/figures_v2/ext_gradient.md", "w", encoding="utf8").write("\n".join(md))
+    json.dump(res, open(f"{out}/ext_gradient.json", "w"), indent=1)
+    open(f"{out}/ext_gradient.md", "w", encoding="utf8").write("\n".join(md))
     print("\n".join(md))
 
 

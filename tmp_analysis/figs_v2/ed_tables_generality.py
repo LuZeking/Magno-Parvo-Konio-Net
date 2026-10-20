@@ -2,18 +2,23 @@
 
 Reads only the committed results/figures_v2/{subspace_behaviour,generality_behaviour,generality_cortex,subspace_cortex}.json;
 replaces or inserts the three tables in results/figures_v2/ed_tables.md (then run insert_ed_tables.py).
-Usage: python tmp_analysis/figs_v2/ed_tables_generality.py
+--dir results/figures_v3 reads and writes those files there instead (PAPER_v3: the same tables with the
+model of record's and its control's concatenated rows; the exemplar spans stay in results/figures_v2/exemplar_*.json).
+Usage: python tmp_analysis/figs_v2/ed_tables_generality.py [--dir results/figures_v3]
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
 
 import numpy as np
 
-ORDER = ["concat", "single34", "single18", "rgb_tsn", "vit_b_16", "resnet152", "convnext_base", "convnext_small", "resnet50", "vgg16"]
-LABEL = {"concat": "two-stream, diet, streams concatenated (validation)", "single34": "single ResNet-34, diet",
+ORDER = ["concat_dvd300", "concat_control", "concat", "single34", "single18", "rgb_tsn", "vit_b_16", "resnet152", "convnext_base",
+         "convnext_small", "resnet50", "vgg16"]
+LABEL = {"concat_dvd300": "two-stream model (dvd300), streams concatenated", "concat_control": "control (dvdfix300), streams concatenated",
+         "concat": "two-stream, diet, streams concatenated (validation)", "single34": "single ResNet-34, diet",
          "single18": "single ResNet-18, diet", "rgb_tsn": "single ResNet-18, no diet (`rgb_tsn`)",
          "vit_b_16": "ImageNet ViT-B/16", "resnet152": "ImageNet ResNet-152", "convnext_base": "ImageNet ConvNeXt-B",
          "convnext_small": "ImageNet ConvNeXt-S", "resnet50": "ImageNet ResNet-50", "vgg16": "ImageNet VGG-16"}
@@ -29,7 +34,9 @@ def fmt(x, d=2, sign=False):
     return f"{x:+.{d}f}" if sign else f"{x:.{d}f}"
 
 
-EXEMPLAR_TAGS = {"concat": [f"concat_dkl_bcs_seed{i}" for i in range(3)], "single34": [f"run_dkl_bcs_single34_seed{i}" for i in range(3)],
+EXEMPLAR_TAGS = {"concat_dvd300": [f"concat_fs2_dvd300_avg_w050_ls_seed{i}" for i in range(3)],
+                 "concat_control": [f"concat_fs2_dvdfix300_avg_w050_ls_seed{i}" for i in range(3)],
+                 "concat": [f"concat_dkl_bcs_seed{i}" for i in range(3)], "single34": [f"run_dkl_bcs_single34_seed{i}" for i in range(3)],
                  "single18": [f"run_dkl_bcs_single_seed{i}" for i in range(3)], "rgb_tsn": [f"run_rgb_tsn_seed{i}" for i in range(3)]}
 
 
@@ -38,10 +45,13 @@ def exemplar_span(key):
     if not os.path.exists("results/figures_v2/exemplar_zoo.json"):
         return "—"
     zoo = {r["tag"]: r["spans"]["E1"]["span"] for r in json.load(open("results/figures_v2/exemplar_zoo.json"))["networks"]}
-    tr = {t: v["spans"]["E1"]["span"] for t, v in json.load(open("results/figures_v2/exemplar_streams.json"))["trunks"].items()}
     tags = EXEMPLAR_TAGS.get(key, [f"tv_{key}"])
+    # only the requested trunks: exemplar_streams.json also holds the fs2 (PAPER_v3) trunks
+    tr = {t: v["spans"]["E1"]["span"] for t, v in json.load(open("results/figures_v2/exemplar_streams.json"))["trunks"].items() if t in tags}
     v = [zoo.get(t, tr.get(t)) for t in tags]
-    if any(x is None for x in v):
+    if key.startswith("concat_"):          # PAPER_v3 rows: the seeds that have finished training
+        v = [x for x in v if x is not None]
+    if not v or any(x is None for x in v):
         return "—"
     return f"{np.mean(v):.3f}" + (f" [{min(v):.2f}, {max(v):.2f}]" if len(v) > 1 else "")
 
@@ -211,19 +221,22 @@ def upsert(md, title_prefix, block):
 
 
 def main():
-    beh = json.load(open("results/figures_v2/generality_behaviour.json"))
-    sub = json.load(open("results/figures_v2/subspace_behaviour.json"))
-    md_path = "results/figures_v2/ed_tables.md"
-    md = open(md_path, encoding="utf8").read()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dir", default="results/figures_v2")
+    d = ap.parse_args().dir
+    beh = json.load(open(f"{d}/generality_behaviour.json"))
+    sub = json.load(open(f"{d}/subspace_behaviour.json"))
+    md_path = f"{d}/ed_tables.md"
+    md = open(md_path, encoding="utf8").read() if os.path.exists(md_path) else ""
     # one-time renumbering of the two older tables (13 -> 14 unit split, 14 -> 15 cortex): drop them and re-emit
     for old in ("Supplementary Table S11 | Cortex without a stream split: the shape- and texture-leaning halves",
                 "Extended Data Table 3 | The readout span without a stream split: fixed-head gain sweep on ten frozen"):
         md = re.sub(r"\*\*" + re.escape(old) + r".*?(?=\n\*\*Extended Data Table|\Z)", "", md, flags=re.S).rstrip("\n") + "\n"
     md = upsert(md, "Extended Data Table 3 |", table13(sub))
     md = upsert(md, "Supplementary Table S11 |", table14(beh))
-    if os.path.exists("results/figures_v2/generality_cortex.json"):
-        ctx = json.load(open("results/figures_v2/generality_cortex.json"))
-        sub_ctx = json.load(open("results/figures_v2/subspace_cortex.json")) if os.path.exists("results/figures_v2/subspace_cortex.json") else None
+    if os.path.exists(f"{d}/generality_cortex.json"):
+        ctx = json.load(open(f"{d}/generality_cortex.json"))
+        sub_ctx = json.load(open(f"{d}/subspace_cortex.json")) if os.path.exists(f"{d}/subspace_cortex.json") else None
         if ctx["families"]:
             md = upsert(md, "Supplementary Table S12 |", table15(ctx, sub_ctx))
     open(md_path, "w", encoding="utf8").write(md)

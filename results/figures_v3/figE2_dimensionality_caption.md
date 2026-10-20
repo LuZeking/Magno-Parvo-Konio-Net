@@ -1,0 +1,5 @@
+# Extended Data Figure 2 — caption
+
+**The trajectory decides which side of parity training ends on, not a level.** Magno/parvo ratio of the participation ratios of the two streams' features on 1,000 NSD images per subject (n = 8). Left: the untrained network (vertical bar: subject range); right: each training seed's mean over subjects, fanned from where it started. The model and its control start from the same untrained network on the same test input (1.63); the model ends above parity in every subject and seed (24/24; seed means 1.88–1.98), the control below it in every subject (0.89; 0/8 above). The BA network's two arms start from their own front ends and end on opposite sides (seed means 1.60–2.51 with the diet, 0.91–0.99 without). No level is labelled, because the within-arm seed range exceeds the between-arm gaps.
+
+Sources: `results/figures_v2/fs2_pr_ratio.json` (`tmp_analysis/fs2_pr_ratio.py`), `results/figures/fig1_data.npz` (BA arms); `tmp_analysis/figs_v2/figE2_dimensionality.py`.

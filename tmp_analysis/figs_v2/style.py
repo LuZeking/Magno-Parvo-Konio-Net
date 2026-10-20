@@ -1,10 +1,22 @@
-"""Shared style for the v2 manuscript figures (results/figures_v2/).
+"""Shared style for the manuscript figures.
 
 One palette, one type scale, one panel-letter convention, so the figures read
 as a set. Okabe–Ito colours throughout (colour-vision-deficiency safe).
 
-Conditions
-  DIET     dkl_bcs             luminance + developmental transform | L−M
+Since 2026-10-20 the scripts draw PAPER_v3 (model of record dvd300) into
+results/figures_v3/; the committed PAPER_v2 figures in results/figures_v2/ were
+drawn by these scripts at commit 7673c18. FIG_OUT overrides the output directory.
+
+PAPER_v3 networks (colour = network; the two blues hold a shape-biased magno stream)
+  MODEL    fs2_dvd300_avg_w050_ls     luminance + diet maturing 0 -> 300 mo | L−M
+  CONTROL  fs2_dvdfix300_avg_w050_ls  luminance + 300-mo diet from step 0  | L−M
+  BA       dkl_bcs                    luminance + blur σ 4 px + CS 48 mo    | L−M (thesis recipe)
+  BANODIET dkl_base                   luminance                             | L−M (thesis recipe)
+  FIXEDREC fs2_bcs_avg_w050_ls        the BA diet under the model's recipe
+  DVD48    fs2_dvd48_avg_w050_ls      diet maturing 0 -> 48 mo (one seed)
+
+PAPER_v2 conditions (the BA network)
+  DIET    dkl_bcs             luminance + developmental transform | L−M
   NODIET   dkl_base            luminance                            | L−M
   SWAP     dkl_bcs_swap        luminance                            | L−M + transform
   HIGHSF   dkl_bcs_parvo_highsf luminance + transform               | L−M + luminance
@@ -18,7 +30,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-OUT = "results/figures_v2"
+OUT = os.environ.get("FIG_OUT", "results/figures_v3")
 
 DIET = "#0072B2"      # blue
 DIETL = "#7FBDE3"     # light blue (second checkpoint policy / secondary diet arm)
@@ -35,6 +47,15 @@ MUTED = "#6F6F6F"
 RULE = "#C8C8C8"
 MAGNO = DIET
 PARVO = NODIET
+
+MODEL = "#0072B2"     # blue: dvd300, the model of record
+CONTROL = "#D55E00"   # vermillion: the adult diet from the first step
+BA = "#56B4E9"        # sky blue: the BA network (fixed diet, thesis recipe)
+BANODIET = "#E69F00"  # orange: the BA no-diet arm
+FIXEDREC = "#009E73"  # green: the BA diet under the model's recipe
+DVD48 = "#CC79A7"     # purple: the trajectory stopped at 48 months
+NET_LABEL = {"model": "model (diet maturing 0→300 mo)", "control": "control (adult diet from step 0)",
+             "BA": "BA network (fixed diet)", "BA no diet": "BA network, no diet"}
 
 COND_COLOUR = {"diet": DIET, "no diet": NODIET, "swap": SWAP, "parvo_highsf": HIGHSF}
 COND_LABEL = {"diet": "diet on luminance", "no diet": "no diet",

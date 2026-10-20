@@ -29,17 +29,23 @@ FAMILIES = [
     ("convnext_small", "ImageNet ConvNeXt-S", ["tv_convnext_small"]),
     ("convnext_base", "ImageNet ConvNeXt-B", ["tv_convnext_base"]),
 ]
+# PAPER_v3 (--set v3; slurm/paper_fs2_generality.sh): the model of record and its control, streams concatenated
+FAMILIES_V3 = FAMILIES + [
+    ("concat_dvd300", "two-stream model (dvd300), streams concatenated", [f"concat_fs2_dvd300_avg_w050_ls_seed{i}" for i in range(3)]),
+    ("concat_control", "control (dvdfix300), streams concatenated", [f"concat_fs2_dvdfix300_avg_w050_ls_seed{i}" for i in range(3)]),
+]
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run-id", default="2026-09-14_gen")
     ap.add_argument("--out", default="results/figures_v2/generality_behaviour.json")
+    ap.add_argument("--set", choices=["v2", "v3"], default="v2", help="v3 adds the PAPER_v3 concatenated rows")
     args = ap.parse_args()
     root = f"/scratch/byrong/mpk/generality/behaviour/{args.run_id}"
     out = {"run_id": args.run_id, "families": []}
     print(f"{'network':52s} {'trained':>8s} {'w=0':>6s} {'w=1':>6s} {'span':>14s} {'rho':>5s} {'forced span':>11s} {'S-lean':>6s} {'S from s1':>9s}")
-    for key, label, tags in FAMILIES:
+    for key, label, tags in (FAMILIES_V3 if args.set == "v3" else FAMILIES):
         rows = []
         for tag in tags:
             f = os.path.join(root, f"{tag}_unit_factor.json")

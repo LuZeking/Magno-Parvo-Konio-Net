@@ -184,7 +184,7 @@ P("**Supplementary Table S6 | Error consistency (Cohen's κ) with the ten human 
 P("")
 P("| run | shape bias at w = 0.5 | κ at w = 0.5 | % ceiling | κ at w = 1 (magno alone) | % ceiling | rate at w = 1 | best κ over w | % ceiling | w at best | rate at best |")
 P("|---|---|---|---|---|---|---|---|---|---|---|")
-for fp in sorted(glob.glob("results/sweep_error_consistency/*_kappa_sweep.json")):
+for fp in sorted(glob.glob("results/sweep_error_consistency/dkl_*_kappa_sweep.json")):   # BA runs; fs2_* sweeps live beside them
     r = json.load(open(fp)); ceil = r["human_human_ceiling"]
     sw = sorted(r["sweep"], key=lambda q: q["w"]); mid = [q for q in sw if abs(q["w"] - 0.5) < 1e-6][0]
     best = max(sw, key=lambda q: q["kappa_mean"]); top = [q for q in sw if abs(q["w"] - 1.0) < 1e-6][0]

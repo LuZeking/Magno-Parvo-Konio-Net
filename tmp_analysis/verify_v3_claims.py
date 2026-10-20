@@ -263,7 +263,8 @@ def check_streams() -> None:
     holds(f"model magno above parity after the first epoch ({ms[0]:.3f})", ms[0] > 0.5, p)
     m_top = float(np.mean([hist(r)[-1]["val_top1"] for r in MODEL]))
     r = min(C, key=lambda r: abs(r["val_top1"] - m_top))
-    said("control epoch whose top-1 matches the model's", r["epoch"], "matches the model's final 0.683 (epoch 6)")
+    # history epochs are 0-based; the text counts from 1
+    said("control epoch whose top-1 matches the model's", r["epoch"] + 1, "matches the model's final 0.683 (epoch 7 of 50)", "7")
     said("control magno shape bias at that epoch", r["cc"]["tied_magno"]["sb"], "its magno stream's shape bias is 0.41")
     said("control magno shape bias, highest epoch", max(xs), "and at no epoch does it exceed 0.45")
 
@@ -343,7 +344,7 @@ def check_cortex() -> None:
 
     at = {k.split("(")[0].split(" ")[0]: np.array(x) for k, x in m["atlas"].items()}
     p = ("relative to V1, hV4 sits at −1.12 and every extrastriate group lower — ventral (VO, PHC) −1.25, lateral (LO, TO) −1.27, "
-         "dorsal (V3A/B, IPS0–2) −1.22 — each in 8/8 subjects (p = .0078)")
+         "dorsal (V3A/B, IPS0–3) −1.22 — each in 8/8 subjects (p = .0078)")
     for k, lit in (("hV4", "−1.12"), ("ventral", "−1.25"), ("lateral", "−1.27"), ("dorsal", "−1.22")):
         said(f"atlas, {k} minus V1", at[k].mean(), p, lit)
         holds(f"atlas, {k} below V1 in {(at[k] < 0).sum()}/8, p {p_exact(at[k]):.4f}", (at[k] < 0).all() and p_exact(at[k]) < 0.0079, p)

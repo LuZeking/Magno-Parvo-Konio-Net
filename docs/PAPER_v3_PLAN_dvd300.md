@@ -79,3 +79,9 @@ so §2.3 claims preservation, not steepening; the magno stream decodes held-out 
 chance (0.148), so "texture at chance" is dropped; κ re-led as planned (model 13.2% vs control
 10.3%, magno 17.3%; seven-model slope 0.020 [0.013, 0.028] over the span). Items 2 and 4
 (figure scripts, verifier) are next.
+
+## Status 2026-10-20 11:25
+
+
+
+User "1 2 3 yes": PAPER_final_2026-10-20.md adopted as the route R-C paper of record; PAPER_v3 is the lead paper. Items 2 and 4 done: figures on the model in `results/figures_v3/` (style.py writes there by default, `FIG_OUT` overrides; v2 BA figures untouched), and `tmp_analysis/verify_v3_claims.py` (450 phrase-anchored checks, then the BA checker as the comparison block; both pass). The checker found 11 text errors, fixed (training-time ranges 0.72–0.92 / 0.32–0.45 and the first-epoch onset, control never above 0.45, epoch 7 of 50, BA −0.833, ventral −1.25, dorsal IPS0–3 in the atlas contrast, hV4 U_m 0.015, control sweep 0.37–0.39, 37–55%, control w* 6/8 + 1 tie, BOLD cost 0.026). Phase-B wrappers now accept the swap run (607378e). Remaining: item 1 (control seeds 1–2, swap; training ends ~22:00 10-20).

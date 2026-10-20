@@ -16,7 +16,7 @@ import os
 
 import numpy as np
 
-from tmp_analysis.figs_v2.generality_behaviour import FAMILIES  # noqa: E402  (same family definitions)
+from tmp_analysis.figs_v2.generality_behaviour import FAMILIES, FAMILIES_V3  # noqa: E402  (same family definitions)
 
 IMAGENET = ["resnet50", "resnet152", "vgg16", "vit_b_16", "convnext_small", "convnext_base"]
 OURS = ["rgb_tsn", "single18", "single34"]
@@ -35,12 +35,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run-id", default="2026-09-14_gen")
     ap.add_argument("--out", default="results/figures_v2/subspace_behaviour.json")
+    ap.add_argument("--base", default="results/figures_v2/generality_behaviour.json", help="generality_behaviour.py's output")
+    ap.add_argument("--set", choices=["v2", "v3"], default="v2", help="v3 adds the PAPER_v3 concatenated rows")
     args = ap.parse_args()
     root = f"/scratch/byrong/mpk/generality/behaviour/{args.run_id}"
-    base = {f["key"]: f for f in json.load(open("results/figures_v2/generality_behaviour.json"))["families"]}
+    base = {f["key"]: f for f in json.load(open(args.base))["families"]}
     out = {"run_id": args.run_id, "plan": "docs/PLAN_SUBSPACE_2026-09-15.md", "families": []}
     print(f"{'network':46s} {'trained':>7s} {'w=0':>6s} {'w=1':>6s} {'span':>6s} {'rho':>5s} {'gate':>10s} {'gated':>6s} {'unit-gated':>10s} {'S->s1':>6s}")
-    for key, label, tags in FAMILIES:
+    for key, label, tags in (FAMILIES_V3 if args.set == "v3" else FAMILIES):
         rows = []
         for tag in tags:
             f = os.path.join(root, f"{tag}_subspace.json")
