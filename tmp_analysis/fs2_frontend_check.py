@@ -278,17 +278,20 @@ def main() -> None:
 
     runs = ([f"fs2_dvd300_avg_w050_ls_seed{s}" for s in range(3)]
             + [f"fs2_dvdfix300_avg_w050_ls_seed{s}" for s in range(3)]
+            + [f"fs2_dvd300swap_avg_w050_ls_seed{s}" for s in range(3)]
             + ["fs2_bcs_avg_w050_ls_seed0"])
     for run in runs:
         ck = os.path.join(FS2, run, "checkpoint_final.pt")
         if not os.path.exists(ck):
-            if run.startswith("fs2_dvdfix300") and not run.endswith("seed0"):
+            if (run.startswith("fs2_dvdfix300") and not run.endswith("seed0")) or run.startswith("fs2_dvd300swap"):
                 print(f"SKIP {run}: no checkpoint_final.pt yet (training)", flush=True)
                 continue
         cfg = torch.load(ck, map_location="cpu", weights_only=False)["config"]
         age = json.load(open(os.path.join(FS2, run, "config.json")))["age_months"]
         dvd = cfg.get("dvd_end_months")
         right = ["--dvd-age-months", f"{dvd:g}"] if dvd is not None else []
+        if cfg.get("transform_target", "magno") != "magno":  # the channel swap
+            right += ["--transform-target", cfg["transform_target"]]
         wrong = [] if dvd is not None else ["--dvd-age-months", "300"]
         print(f"\n=== {run}: blur={cfg['blur']} cs={cfg['cs']} "
               f"dvd_end_months={dvd} age={age}; flags {right or '(none)'}", flush=True)

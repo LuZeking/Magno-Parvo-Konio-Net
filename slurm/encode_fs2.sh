@@ -39,6 +39,9 @@ case $GROUP in
   0|1|2) RUN=fs2_dvd300_avg_w050_ls_seed$GROUP ; FRONTEND="--dvd-age-months 300" ;;
   3)     RUN=fs2_dvdfix300_avg_w050_ls_seed0   ; FRONTEND="--dvd-age-months 300" ;;
   4|5|6) RUN=fs2_bcs_avg_w050_ls_seed$(( GROUP - 4 )) ; FRONTEND="" ;;
+  # 2026-10-20: the control's seeds 1-2 and the channel swap (--array=56-95)
+  7|8)   RUN=fs2_dvdfix300_avg_w050_ls_seed$(( GROUP - 6 )) ; FRONTEND="--dvd-age-months 300" ;;
+  9|10|11) RUN=fs2_dvd300swap_avg_w050_ls_seed$(( GROUP - 9 )) ; FRONTEND="--dvd-age-months 300 --transform-target parvo" ;;
   *) echo "bad group $GROUP" >&2; exit 1 ;;
 esac
 

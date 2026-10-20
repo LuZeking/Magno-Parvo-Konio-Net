@@ -38,7 +38,7 @@ if [[ $RUN =~ ^untrained_dvd([0-9]+)$ ]]; then
   FE=(--dvd-age-months "${BASH_REMATCH[1]}")
 else
   CK=(--checkpoint "$RUN")   # an fs2 run name -> its checkpoint_final.pt
-  if [[ $RUN =~ ^fs2_dvd(fix)?([0-9]+)_ ]]; then FE=(--dvd-age-months "${BASH_REMATCH[2]}"); fi
+  if [[ $RUN =~ ^fs2_dvd(fix)?([0-9]+)(swap)?_ ]]; then FE=(--dvd-age-months "${BASH_REMATCH[2]}"); if [[ ${BASH_REMATCH[3]} == swap ]]; then FE+=(--transform-target parvo); fi; fi
 fi
 
 FEAT=/scratch/byrong/mpk/exemplar/features/2026-09-21_streams

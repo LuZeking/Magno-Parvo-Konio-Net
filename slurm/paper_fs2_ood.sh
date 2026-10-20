@@ -34,7 +34,7 @@ PY=/home/byrong/anaconda3/envs/mpk/bin/python
 read -r -a RUNS <<< "${RUN_LIST:-fs2_dvd300_avg_w050_ls_seed0 fs2_dvd300_avg_w050_ls_seed1 fs2_dvd300_avg_w050_ls_seed2 fs2_dvdfix300_avg_w050_ls_seed0}"
 RUN=${RUNS[$SLURM_ARRAY_TASK_ID]}
 FE=()
-if [[ $RUN =~ ^fs2_dvd(fix)?([0-9]+)_ ]]; then FE=(--dvd-age-months "${BASH_REMATCH[2]}"); fi
+if [[ $RUN =~ ^fs2_dvd(fix)?([0-9]+)(swap)?_ ]]; then FE=(--dvd-age-months "${BASH_REMATCH[2]}"); if [[ ${BASH_REMATCH[3]} == swap ]]; then FE+=(--transform-target parvo); fi; fi
 
 OUT=$RES_REPO/results/ood
 EXTRA=()

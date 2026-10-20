@@ -56,6 +56,8 @@ def parse_args():
     p.add_argument("--dvd-age-months", type=float, default=None,
                    help="DVD magno diet of the fs2_dvd* runs at this age "
                         "(their dvd_end_months); implies --no-lum-blur --no-lum-cs")
+    p.add_argument("--transform-target", default="magno", choices=("magno", "parvo"),
+                   help="channel-swap control (fs2_dvd300swap): the diet on rg instead of lum")
     p.add_argument("--n-w", type=int, default=21)
     p.add_argument("--n-splits", type=int, default=3)
     p.add_argument("--seed", type=int, default=0)
@@ -78,7 +80,7 @@ def stream_outputs(model, rgb_uint8, ch_min, ch_max, args, device):
             rgb_uint8[start:start + 512], ch_min, ch_max,
             lum_blur=not args.no_lum_blur, lum_cs=not args.no_lum_cs,
             age_months=args.age_months, device=device,
-            dvd_age=args.dvd_age_months,
+            dvd_age=args.dvd_age_months, transform_target=args.transform_target,
         )
         for b in range(0, x_m.shape[0], args.batch_size):
             y1 = model.stream1_block1(x_m[b:b + args.batch_size].to(device))

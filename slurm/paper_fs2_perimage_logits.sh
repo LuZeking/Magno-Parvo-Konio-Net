@@ -31,7 +31,7 @@ read -r -a RUNS <<< "${RUN_LIST:-fs2_dvd300_avg_w050_ls_seed0 fs2_dvd300_avg_w05
 RUN=${RUNS[$SLURM_ARRAY_TASK_ID]}
 NAME=${RUN}_final
 FE=()
-if [[ $RUN =~ ^fs2_dvd(fix)?([0-9]+)_ ]]; then FE=(--dvd-age-months "${BASH_REMATCH[2]}"); fi
+if [[ $RUN =~ ^fs2_dvd(fix)?([0-9]+)(swap)?_ ]]; then FE=(--dvd-age-months "${BASH_REMATCH[2]}"); if [[ ${BASH_REMATCH[3]} == swap ]]; then FE+=(--transform-target parvo); fi; fi
 
 OUT=/scratch/byrong/mpk/perimage_behavior/results/2026-09-07_geirhos_perimage/logits
 if [[ ${SMOKE:-0} == 1 ]]; then OUT=/scratch/byrong/mpk/perimage_behavior/smoke/2026-10-19_fs2; fi
