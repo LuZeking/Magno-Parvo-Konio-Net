@@ -1395,7 +1395,8 @@ def check_readout_ladder() -> None:
     if not (r18 < r34 < both < magno and parvo < r18):
         FAILS.append("ladder ordering parvo < R18 < R34 < both < magno broken")
     # human observers, from the committed fit-w files (observer_rate is identical in every run file)
-    W = _jsons("results/fit_w_observers/*_wfit.json")
+    # the BA paper's nine runs; PAPER_v3's fs2 runs share the directory (tmp_analysis/verify_v3_claims.py)
+    W = [d for d in _jsons("results/fit_w_observers/*_wfit.json") if not d["model_name"].startswith("fs2_")]
     rates = np.array([[o["observer_rate"] for o in d["observers"].values()] for d in W])
     assert np.abs(rates - rates[0]).max() < 1e-12
     H = rates[0]
@@ -1625,7 +1626,8 @@ def check_misc() -> None:
     chk("params single ResNet-34 (M)", pc["dkl_bcs_single34"] / 1e6, 21.3, 0.051)
     chk("params single ResNet-18 (M)", pc["dkl_bcs_single"] / 1e6, 11.2, 0.051)
     # error consistency (Results 2.5; ED Table 7)
-    K = {os.path.basename(f)[:-len("_kappa_sweep.json")]: json.load(open(f)) for f in sorted(glob.glob("results/sweep_error_consistency/*_kappa_sweep.json"))}
+    K = {os.path.basename(f)[:-len("_kappa_sweep.json")]: json.load(open(f)) for f in sorted(glob.glob("results/sweep_error_consistency/*_kappa_sweep.json"))
+         if not os.path.basename(f).startswith("fs2_")}
     ceil = {r["human_human_ceiling"] for r in K.values()}
     assert len(ceil) == 1
     ceil = ceil.pop()

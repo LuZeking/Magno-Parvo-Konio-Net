@@ -178,7 +178,9 @@ def streams():
                                stream_probes={s: {k: {kk: vv for kk, vv in v.items() if kk != "bias_draws"} for k, v in sp.items()}
                                               for s, sp in e.get("stream_probes", {}).items()},
                                spans={k: dict(span=v["primary"]["span_mean"], gated=v["primary"]["gated_span"],
-                                              forced_span=v["forced"]["span_mean"]) for k, v in e["spans"].items()},
+                                              forced_span=v["forced"]["span_mean"],
+                                              ends=[v["primary"]["mean_curve"][0], v["primary"]["mean_curve"][-1]])
+                                      for k, v in e["spans"].items()},
                                gate=e["gate"], trained=e["trained"])
     q = lambda name, s, k="Q1": S[name][s][k]["bias"]
     diet = [f"dkl_bcs_seed{i}_trained" for i in range(3)]
@@ -204,10 +206,25 @@ def streams():
             add = m["chromatic_transform"] + m["achromatic_none"] - m["chromatic_none"]
             cells[est] = dict(cells=c, means=m, additive=add, interaction=m["achromatic_transform"] - add)
         pred["P-X16"] = dict(value=cells["Q1"]["interaction"], met=cells["Q1"]["interaction"] >= 0.20)
+    # PAPER_v3 (model of record fs2_dvd300, 2026-10-19): the same 2x2 with the developmental ramp as the transform and
+    # the adult-input control as "none"; descriptive, not pre-registered. Cells list the seeds present; the
+    # interaction needs all three seeds of every cell (the control's seeds 1-2 and the swap are still training).
+    spec3 = [("chromatic_none", "fs2_dvdfix300_avg_w050_ls_seed{}", "parvo"),
+             ("chromatic_transform", "fs2_dvd300swap_avg_w050_ls_seed{}", "parvo"),
+             ("achromatic_none", "fs2_dvdfix300_avg_w050_ls_seed{}", "magno"),
+             ("achromatic_transform", "fs2_dvd300_avg_w050_ls_seed{}", "magno")]
+    cells3 = {}
+    for est in ("Q0", "Q1"):
+        c = {name: [q(p.format(i), s, est) for i in range(3) if p.format(i) in S] for name, p, s in spec3}
+        m = {k: float(np.mean(v)) if v else None for k, v in c.items()}
+        full = all(len(v) == 3 for v in c.values())
+        add = m["chromatic_transform"] + m["achromatic_none"] - m["chromatic_none"] if full else None
+        cells3[est] = dict(cells=c, means=m, additive=add, interaction=m["achromatic_transform"] - add if full else None)
+    print(f"  v3 2x2 (Q1): {cells3['Q1']['means']}  interaction {cells3['Q1']['interaction']}")
     for k, v in pred.items():
         print(f"  {k}: {'MET ' if v['met'] else 'FAIL'}  {v['value']}")
     return dict(plan="docs/PLAN_EXEMPLAR_2026-09-21.md", source=[STR_OUT, ZOO_OUT], streams=S, trunks=T,
-                two_by_two=cells, predictions={k: dict(value=v["value"], met=bool(v["met"])) for k, v in pred.items()})
+                two_by_two=cells, two_by_two_v3=cells3, predictions={k: dict(value=v["value"], met=bool(v["met"])) for k, v in pred.items()})
 
 
 if __name__ == "__main__":
