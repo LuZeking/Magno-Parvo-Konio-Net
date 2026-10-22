@@ -7,8 +7,10 @@ Arms
                         paper's numbers)
   A                     fs2_bcs_avg_w050_ls, 3 seeds (thesis diet, Stage-2 recipe)
   dvd300                fs2_dvd300_avg_w050_ls, 3 seeds (DVD trajectory 0 -> 300 mo)
-  control               fs2_dvdfix300_avg_w050_ls, seed 0 (300-mo diet from step 0:
-                        dvd300's test input without the trajectory)
+  control               fs2_dvdfix300_avg_w050_ls, 3 seeds (300-mo diet from step 0:
+                        dvd300's test input without the trajectory; seeds 1-2 2026-10-22)
+  swap                  fs2_dvd300swap_avg_w050_ls, 3 seeds (the trajectory on L-M,
+                        luminance untransformed: the 2 x 2's fourth cell)
 
 Statistics, as in tmp_analysis/figs_v2/{fig3_cortex,ext_gradient,readout_w_cortex}.py
 and tmp_analysis/fig1_data.py (helpers reused where importable):
@@ -49,9 +51,10 @@ ARMS = {
     "BA no diet": (BA_ENC, BA_RW, [f"dkl_base_seed{s}_trained" for s in range(3)]),
     "A": (FS_ENC, FS_RW, [f"fs2_bcs_avg_w050_ls_seed{s}" for s in range(3)]),
     "dvd300": (FS_ENC, FS_RW, [f"fs2_dvd300_avg_w050_ls_seed{s}" for s in range(3)]),
-    "control": (FS_ENC, FS_RW, ["fs2_dvdfix300_avg_w050_ls_seed0"]),
+    "control": (FS_ENC, FS_RW, [f"fs2_dvdfix300_avg_w050_ls_seed{s}" for s in range(3)]),
+    "swap": (FS_ENC, FS_RW, [f"fs2_dvd300swap_avg_w050_ls_seed{s}" for s in range(3)]),
 }
-PAIRS = [("dvd300", "A"), ("dvd300", "control"), ("dvd300", "BA diet")]
+PAIRS = [("dvd300", "A"), ("dvd300", "control"), ("dvd300", "BA diet"), ("dvd300", "swap"), ("swap", "control")]
 SUBJ = list(range(1, 9))
 OUT_MD = "docs/slides_2026-10-12_ba_vs_fusion/figures/fs2_cortex_summary.md"
 OUT_JSON = OUT_MD.replace(".md", ".json")     # a /home copy for the figure script

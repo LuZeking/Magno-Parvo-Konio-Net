@@ -74,6 +74,10 @@ def caption12(out):
     nd, nlo, nhi = ci(B)
     sd, snd = out["stats"][A], out["stats"][B]
     n_d, n_nd = len(sd["delta_ext_minus_v1"]), len(snd["delta_ext_minus_v1"])
+    d_nd = np.array(snd["delta_ext_minus_v1"], float)
+    # positives counted directly: n - negatives would count a tied subject as positive
+    n_pos, n_tie = int((d_nd > 0).sum()), int((d_nd == 0).sum())
+    tie = f" and tied in {n_tie}" if n_tie else ""
     mi = "\u2212"
     return (
         "**Extended Data Table 2 | The readout weight cortex prefers against the one behaviour prefers.** "
@@ -93,7 +97,7 @@ def caption12(out):
         f"ordinal contrast: extrastriate below V1 in {sd['delta_n_neg']}/{n_d} subjects (\u0394 = {mi}{abs(dd):.3f} "
         f"[{mi}{abs(dlo):.3f}, {mi}{abs(dhi):.3f}], 10,000-sample percentile bootstrap over subjects, exact Wilcoxon "
         f"p = {str(round(sd['p_exact'], 4)).lstrip('0')}), {CFG['reversed_in']} (+{nd:.3f} [+{nlo:.3f}, +{nhi:.3f}], "
-        f"{n_nd - snd['delta_n_neg']}/{n_nd} positive, p = {str(round(snd['p_exact'], 3)).lstrip('0')}). "
+        f"{n_pos}/{n_nd} positive{tie}, p ={str(round(snd['p_exact'], 3)).lstrip('0')}). "
         "\"Voxels magno / parvo\" is the fraction of the ROI's voxels whose own best w is \u2265 0.75 / \u2264 0.25. "
         f"The behaviour-optimal weight (trial fit to each of 10 human observers' cue-conflict choices, {CFG['beh']}, "
         "3 seeds) is given in the last row for comparison, with the cue-conflict shape-bias rate "
