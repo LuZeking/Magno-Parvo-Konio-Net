@@ -6,6 +6,8 @@
 #
 #   env -u TMPDIR sbatch --export=ALL,CODE=/home/byrong/projects/TSN/fusion_stage1_code/<sha> \
 #       slurm/encode_fs2_preflight.sh
+# PREFLIGHT_RUNS="<run> ..." in --export checks only those runs (2026-10-22:
+# the control's seeds 1-2 and the swap, before encode/readout --array=56-95).
 #
 # Python is the /home env (as slurm/shape_texture_grouped.sh): the first
 # submission (26654758, /scratch env) sat silent until its 1.5 h limit, the

@@ -25,11 +25,18 @@ for each run, this checks:
      with those flags, and stream_outputs equals the pooled trunk output of 3
 
 Exits 1 on any failure, so the encoding arrays can depend on it (afterok).
+
+2026-10-22: the control's seeds 1-2 and the channel swap (fs2_dvd300swap, the
+ramp on L-M: transform_target "parvo", which the arrays pass as
+--transform-target parvo) join RUNS. PREFLIGHT_RUNS="<run> ..." restricts the
+check to those runs (the first seven passed on 2026-10-19). For the swap,
+check 4 also requires the guard to refuse the magno-target front end.
 """
 from __future__ import annotations
 
 import copy
 import json
+import os
 import sys
 import types
 
@@ -47,8 +54,10 @@ RGB_H5 = "/scratch/byrong/VST_data/VST_datasets/texture2shape_miniecoset_256px.h
 DKL_H5 = "/scratch/byrong/VST_data/VST_datasets/miniecoset_256px_dkl_uint8.h5"
 C = "/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-12_stage2"
 RUNS = ([f"fs2_dvd300_avg_w050_ls_seed{s}" for s in range(3)]
-        + ["fs2_dvdfix300_avg_w050_ls_seed0"]
-        + [f"fs2_bcs_avg_w050_ls_seed{s}" for s in range(3)])
+        + [f"fs2_dvdfix300_avg_w050_ls_seed{s}" for s in range(3)]
+        + [f"fs2_bcs_avg_w050_ls_seed{s}" for s in range(3)]
+        + [f"fs2_dvd300swap_avg_w050_ls_seed{s}" for s in range(3)])
+RUNS = os.environ.get("PREFLIGHT_RUNS", "").split() or RUNS
 fails: list[str] = []
 
 
@@ -64,7 +73,8 @@ def slurm_flags(run: str) -> types.SimpleNamespace:
     return types.SimpleNamespace(
         checkpoint=f"{C}/{run}/checkpoint_final.pt", dvd_age_months=dvd,
         no_lum_blur=dvd is not None, no_lum_cs=dvd is not None, age_months=48,
-        transform_target="magno", parvo_highsf=False, chroma_channel="rg",
+        transform_target="parvo" if "swap" in run else "magno",
+        parvo_highsf=False, chroma_channel="rg",
         chroma_rescale="none", features="network", batch_size=32)
 
 
@@ -107,7 +117,7 @@ def main() -> None:
         xe_m, xe_p = dkl_frontend.magno_parvo_inputs(
             rgb, ch_min, ch_max, lum_blur=not a.no_lum_blur,
             lum_cs=not a.no_lum_cs, age_months=a.age_months,
-            dvd_age=a.dvd_age_months)
+            dvd_age=a.dvd_age_months, transform_target=a.transform_target)
         check(torch.equal(xb_m, xe_m) and torch.equal(xb_p, xe_p),
               f"2 {run} encoding front end == StreamInputBuilder "
               f"(max|d| magno {(xb_m - xe_m).abs().max():.2e})")
@@ -151,6 +161,14 @@ def main() -> None:
             check(False, f"4 {run} guard accepted the wrong front end")
         except ValueError:
             check(True, f"4 {run} guard accepts the run's flags, refuses the other diet's")
+        if a.transform_target == "parvo":
+            wrong = copy.copy(a)
+            wrong.transform_target = "magno"
+            try:
+                run_encoding.check_frontend_matches_checkpoint(wrong)
+                check(False, f"4 {run} guard accepted the magno-target front end")
+            except ValueError:
+                check(True, f"4 {run} guard refuses the magno-target front end")
 
         fm, fp = run_encoding.features_from_rgb(a, rgb[:8], ch_min, ch_max, model, "cpu")
         y1, y2 = readout_w_cortex.stream_outputs(model, rgb[:8], ch_min, ch_max, a, "cpu")
