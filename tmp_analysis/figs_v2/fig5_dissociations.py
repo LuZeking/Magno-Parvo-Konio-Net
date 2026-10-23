@@ -8,14 +8,16 @@ not follow from it.
   (b) trial-level agreement with the ten human observers (error consistency,
       Cohen's κ as % of the human–human ceiling) against shape-bias rate, for every
       readout of the w sweep and the three published CNNs.
-  (c) the positive control, measured on the BA network (the model's per-image run
-      is pending): the same machinery recovers more structure from image
-      difficulty (whether either cue resolves) than from the shape–texture
-      decision, as % of each target's own split-half ceiling.
-  (d) …and the crossed front-end 2×2 that withdraws the BA diet reading of (c).
+  (c) per-image correspondence with the observers, held out, as % of each
+      target's own split-half ceiling: whether an image resolves to either cue
+      (difficulty) and which cue is picked, the model against its control and the
+      channel swap (identical test input; final checkpoints).
+  (d) the crossed front-end 2×2 of the BA network, which withdraws the BA diet
+      reading of the same difficulty contrast (train/test input match, not diet).
 
 Sources: results/ood/, results/ood_bestep/, results/sweep_error_consistency/,
-/scratch/byrong/mpk/perimage_behavior/results/2026-09-07_geirhos_perimage/perimage_correspondence.json
+results/perimage_behavior/perimage_correspondence_v3.json (tmp_analysis/perimage_correspondence.py
+over the 15 BA and 9 fs2 logit files, 2026-10-24; its BA rows are those of the BA run's own file)
 Usage: PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/fig5_dissociations.py
 """
 from __future__ import annotations
@@ -30,7 +32,7 @@ import style as S
 import v3runs as R
 
 SWEEP = "results/sweep_error_consistency"
-PERIMAGE = "/scratch/byrong/mpk/perimage_behavior/results/2026-09-07_geirhos_perimage/perimage_correspondence.json"
+PERIMAGE = "results/perimage_behavior/perimage_correspondence_v3.json"
 PUBLISHED = [("AlexNet", 0.429, 0.032), ("GoogLeNet", 0.312, 0.025), ("VGG-16", 0.172, 0.017)]  # Geirhos et al. 2020
 FAMILIES = ["uniform-noise", "high-pass", "false-colour", "rotation", "phase-scrambling", "contrast", "low-pass"]
 TRAINED_IN = {"contrast", "low-pass"}
@@ -77,7 +79,7 @@ def main():
          plt.Line2D([], [], marker="s", color=S.BA, lw=0, ms=3, label="BA network"),
          plt.Line2D([], [], marker="s", color=S.BANODIET, lw=0, ms=3, label="BA, no diet")]
     ax.legend(handles=h, loc="upper left", fontsize=5.6, ncol=2, columnspacing=0.8, handletextpad=0.3, bbox_to_anchor=(-0.02, 1.02))
-    S.note(ax, "✱ every model seed beyond the control; ≈ within it", x=0.0, y=-0.30, va="top", size=5.6)
+    S.note(ax, "✱ every model seed beyond every control seed; ≈ seeds overlap", x=0.0, y=-0.30, va="top", size=5.6)
     S.letter(ax, "a", dx=-0.19, dy=0.03, title="Robustness does not follow")
 
     # ------------------------------------------------------------ (b) error consistency vs rate
@@ -112,26 +114,26 @@ def main():
     print(f"  (b) best of the model's {n_model} readouts {best:.1f}% of ceiling; human rate {hsb:.3f}; ceiling {ceil:.4f}")
     S.letter(ax, "b", dx=-0.07, dy=0.03, title="Agreement does not follow")
 
-    # ------------------------------------------------------------ (c) positive control (BA network)
+    # ------------------------------------------------------------ (c) per-image correspondence (model, control, swap)
     M = json.load(open(PERIMAGE))["models"]
     ax = fig.add_subplot(gs[0, 2])
     meas = [("shape_rate_resid__pearson", "cue\npicked"), ("valid_rate_resid__pearson", "any cue\nresolves")]
-    arms = [("dkl_bcs_seed{}_final", S.BA, "BA network"), ("dkl_base_seed{}_final", S.BANODIET, "BA, no diet")]
+    arms = [(R.MODEL + "_final", S.MODEL, "model"), (R.CONTROL + "_final", S.CONTROL, "control"), (R.SWAP + "_final", S.SWAP, "channel swap")]
     for mi, (key, mlab) in enumerate(meas):
         for ai, (tmpl, c, alab) in enumerate(arms):
             v = np.array([M[tmpl.format(s)][key]["oos_pct_ceiling"] for s in range(3)])
-            x0 = mi + (ai - 0.5) * 0.38
-            ax.bar(x0, v.mean(), width=0.3, color=c, alpha=0.3, edgecolor=c, lw=0.8, zorder=2)
-            ax.plot(np.full(3, x0), v, "o", color=c, ms=2.8, mew=0, zorder=4)
+            x0 = mi + (ai - 1) * 0.28
+            ax.bar(x0, v.mean(), width=0.22, color=c, alpha=0.3, edgecolor=c, lw=0.8, zorder=2)
+            ax.plot(np.full(3, x0), v, "o", color=c, ms=2.6, mew=0, zorder=4)
             print(f"  (c) {mlab.replace(chr(10), ' '):24s} {alab:12s} {v.mean():5.1f}% [{v.min():.1f}, {v.max():.1f}]")
     ax.axhline(0, color="#BBBBBB", lw=0.7)
     ax.set_xticks([0, 1]); ax.set_xticklabels([m[1] for m in meas], fontsize=5.6)
-    ax.set_xlim(-0.75, 1.75); ax.set_ylim(-2, 32)
+    ax.set_xlim(-0.6, 1.6); ax.set_ylim(-2, 32)
     ax.set_ylabel("held-out correspondence\n(% of split-half ceiling)")
     h = [plt.Line2D([], [], color=c, lw=3, alpha=0.5, label=l) for _t, c, l in arms]
     ax.legend(handles=h, loc="upper left", fontsize=5.6, handlelength=1.0, borderpad=0.1)
-    S.note(ax, "BA network; the model's\nper-image run is pending", x=0.5, y=-0.36, ha="center", va="top", size=5.4, style="italic")
-    S.letter(ax, "c", dx=-0.095, dy=0.03, title="The measure works…")
+    S.note(ax, "identical test input;\nfinal checkpoints", x=0.5, y=-0.36, ha="center", va="top", size=5.4, style="italic")
+    S.letter(ax, "c", dx=-0.095, dy=0.03, title="Difficulty: the trajectory…")
 
     # ------------------------------------------------------------ (d) crossed 2x2 (BA network)
     ax = fig.add_subplot(gs[0, 3])
@@ -154,7 +156,7 @@ def main():
     h = [plt.Line2D([], [], color=c, lw=2, label=l) for c, l in [(S.BA, "BA diet weights"), (S.BANODIET, "no-diet weights")]]
     ax.legend(handles=h, loc="upper left", fontsize=5.6, handlelength=1.0, borderpad=0.1)
     S.note(ax, "solid: train/test matched; pale: crossed", x=0.5, y=-0.36, ha="center", va="top", size=5.4, style="italic")
-    S.letter(ax, "d", dx=-0.095, dy=0.03, title="…but the diet reading dies")
+    S.letter(ax, "d", dx=-0.095, dy=0.03, title="…in the BA network, the input")
 
     S.save(fig, "fig5_dissociations")
 

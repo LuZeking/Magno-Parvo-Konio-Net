@@ -11,10 +11,10 @@ magno stream's shape bias only with a maturing input.
       as an open marker); chromatic with the ramp = the channel swap fs2_dvd300swap,
       drawn when its results exist.
   (d) how each readout decides the cue-conflict images: shape / texture / neither.
-  (e) training-time evaluation (the shared head on the magno stream alone, seed 0):
-      the two magno streams' shape bias by epoch, and (f) against the network's
-      validation top-1 — the control at the model's final accuracy is the
-      accuracy-matched comparison.
+  (e) training-time evaluation (the shared head on the magno stream alone, every
+      finished seed): the two magno streams' shape bias by epoch, and (f) against
+      the network's validation top-1 — each control seed at the model's mean final
+      accuracy is the accuracy-matched comparison.
 
 Sources: results/figures_v2/exemplar_streams.json (probe), results/cue_conflict/
 (behaviour), run histories (e, f; tmp_analysis/figs_v2/v3runs.py).
@@ -177,46 +177,56 @@ def main():
     ax = fig.add_subplot(gs[1, 0]); panel_decisions(ax)
     S.letter(ax, "d", dx=-0.06, dy=0.03, title="How each readout decides the images")
 
-    # (e, f) training-time evaluation, seed 0 (the runs the text quotes)
-    T = {net: training_eval(tmpl.format(0)) for net, tmpl, _ in NETS[:2]}
-    for net, (ep, top1, sb) in T.items():
-        print(f"  (e) {net:8s} seed 0 magno SB over epochs {sb.min():.2f}–{sb.max():.2f}; final top-1 {top1[-1]:.3f}")
+    # (e, f) training-time evaluation, every finished seed (the text quotes the range over seeds)
+    T = {net: [training_eval(r) for r in R.finished(tmpl)] for net, tmpl, _ in NETS[:2]}
+    for net, runs in T.items():
+        sb_all = np.concatenate([sb for _ep, _t, sb in runs])
+        print(f"  (e) {net:8s} {len(runs)} seeds, magno SB over epochs {sb_all.min():.3f}–{sb_all.max():.3f}; "
+              f"final top-1 {[round(float(t[-1]), 3) for _e, t, _s in runs]}")
     ax = fig.add_subplot(gs[1, 1])
     S.refline(ax, y=0.5)
     for net, _t, c in NETS[:2]:
-        ep, top1, sb = T[net]
-        ax.plot(ep, sb, "-", color=c, lw=1.6, zorder=3, label=net)
+        for k, (ep, top1, sb) in enumerate(T[net]):
+            ax.plot(ep, sb, "-", color=c, lw=1.0, alpha=0.8, zorder=3, label=f"{net} ({R.fmt_seeds(len(T[net]))})" if k == 0 else None)
     sec = ax.secondary_xaxis("top", functions=(lambda e: 6 * e, lambda a: a / 6))
     sec.set_xticks([0, 150, 300]); sec.tick_params(labelsize=5.6)
     sec.set_xlabel("model's diet age (months)", fontsize=5.8, color=S.MUTED, labelpad=1.0)
     ax.set_xlim(0, 51); ax.set_ylim(0.25, 1.0)
     ax.set_xlabel("training epoch")
-    ax.set_ylabel("magno-stream shape bias\n(training-time, seed 0)")
+    ax.set_ylabel("magno-stream shape bias\n(training-time)")
     ax.legend(loc="center right", fontsize=6.0, handlelength=1.4)
     S.letter(ax, "e", dx=-0.055, dy=0.075, title="Opposite sides at every epoch")
 
     ax = fig.add_subplot(gs[1, 2])
     S.refline(ax, y=0.5)
-    target = T["model"][1][-1]
+    target = float(np.mean([t[-1] for _e, t, _s in T["model"]]))   # the model's mean final top-1
     for net, _t, c in NETS[:2]:
-        ep, top1, sb = T[net]
-        ax.plot(top1, sb, "-", color=c, lw=1.0, alpha=0.6, zorder=2)
-        ax.plot(top1, sb, "o", color=c, ms=2.2, mew=0, zorder=3)
-    ep, top1, sb = T["control"]
-    i = int(np.argmin(np.abs(top1 - target)))
+        for ep, top1, sb in T[net]:
+            ax.plot(top1, sb, "-", color=c, lw=0.8, alpha=0.5, zorder=2)
+            ax.plot(top1, sb, "o", color=c, ms=1.8, mew=0, zorder=3)
     ax.axvline(target, color="#B8B8B8", lw=0.7, ls=(0, (2, 2)), zorder=1)
-    ax.plot(top1[i], sb[i], "o", mfc="white", mec=S.CONTROL, ms=6, mew=1.2, zorder=5)
-    ax.annotate(f"control at the model's top-1\n(epoch {ep[i]}, {top1[i]:.3f}): {sb[i]:.2f}", (top1[i], sb[i]), xytext=(-8, 22),
+    hits = []
+    for ep, top1, sb in T["control"]:
+        i = int(np.argmin(np.abs(top1 - target)))
+        hits.append((int(ep[i]), float(top1[i]), float(sb[i])))
+        ax.plot(top1[i], sb[i], "o", mfc="white", mec=S.CONTROL, ms=5, mew=1.1, zorder=5)
+    eps, sbs = sorted({h[0] for h in hits}), [h[2] for h in hits]
+    ep_s = f"epoch {eps[0]}" if len(eps) == 1 else f"epochs {eps[0]}–{eps[-1]}"
+    top = max(hits, key=lambda h: h[2])
+    ax.annotate(f"control at the model's top-1\n({ep_s}): {min(sbs):.2f}–{max(sbs):.2f}", (top[1], top[2]), xytext=(-8, 22),
                 textcoords="offset points", fontsize=5.6, ha="right", va="bottom", color=S.INK,
                 arrowprops=dict(arrowstyle="-", color=S.MUTED, lw=0.5))
-    ax.plot(target, T["model"][2][-1], "o", mfc="white", mec=S.MODEL, ms=6, mew=1.2, zorder=5)
-    ax.annotate(f"model, final\ntop-1 {target:.3f}: {T['model'][2][-1]:.2f}", (target, T["model"][2][-1]), xytext=(-6, 4),
+    fin = [(float(t[-1]), float(s[-1])) for _e, t, s in T["model"]]
+    for t_, s_ in fin:
+        ax.plot(t_, s_, "o", mfc="white", mec=S.MODEL, ms=5, mew=1.1, zorder=5)
+    hi = max(s_ for _t, s_ in fin)
+    ax.annotate(f"model, final\ntop-1 {target:.3f}: {min(s_ for _t, s_ in fin):.2f}–{hi:.2f}", (target, hi), xytext=(-6, 4),
                 textcoords="offset points", fontsize=5.6, ha="right", va="bottom", color=S.INK)
-    print(f"  (f) control at the model's final top-1 {target:.3f}: epoch {ep[i]} top-1 {top1[i]:.3f} magno SB {sb[i]:.3f}; "
-          f"control max magno SB {sb.max():.3f}")
+    print(f"  (f) control at the model's mean final top-1 {target:.3f}: (epoch, top-1, magno SB) {hits}; "
+          f"control max magno SB {max(float(sb.max()) for _e, _t, sb in T['control']):.3f}; model final magno SB {[round(s_, 3) for _t, s_ in fin]}")
     ax.set_xlim(0.0, 0.8); ax.set_ylim(0.25, 1.0)
     ax.set_xlabel("validation top-1 (training-time)")
-    ax.set_ylabel("magno-stream shape bias\n(training-time, seed 0)")
+    ax.set_ylabel("magno-stream shape bias\n(training-time)")
     S.letter(ax, "f", dx=-0.055, dy=0.03, title="At matched accuracy")
 
     S.save(fig, "fig2_streams")

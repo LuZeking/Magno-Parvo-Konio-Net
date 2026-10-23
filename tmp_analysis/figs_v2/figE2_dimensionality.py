@@ -4,8 +4,8 @@ side of parity training ends on, not a level.
 Magno/parvo ratio of the participation ratio of each stream's features on 1,000
 NSD images per subject (n = 8). Left: the untrained network before training,
 right: every training seed (final checkpoints), fanned from the starting point.
-The model and its control share one untrained network and one test input; the BA
-network's two arms start from their own front ends. The claim is the side of
+The model, its control and the channel swap share one untrained network and one
+test input; the BA network's two arms start from their own front ends. The claim is the side of
 parity; no level is labelled because the within-arm seed range exceeds the
 between-arm gaps.
 
@@ -41,6 +41,7 @@ def ba_arm(key):
 ARMS = [("BA network, no diet", S.BANODIET, ba_arm("nodiet"), -0.08),
         ("BA network", S.BA, ba_arm("diet_normal"), -0.08),
         ("control", S.CONTROL, fs2_arm(R.CONTROL), 0.0),
+        ("channel swap", S.SWAP, fs2_arm(R.SWAP), 0.0),   # the ramp on L−M; same untrained network and test input
         ("model", S.MODEL, fs2_arm(R.MODEL), 0.0)]
 
 
@@ -62,13 +63,14 @@ def main():
         above = sum(int((s > 1.0).sum()) for s in seeds); tot = sum(len(s) for s in seeds)
         below = lab in ("control", "BA network, no diet")
         n_ok = tot - above if below else above
-        labels.append([sm.mean(), f"{lab}\n{n_ok}/{tot} subject-seeds {'below' if below else 'above'} parity", c])
+        labels.append([sm.mean(), f"{lab}\n{n_ok}/{tot} subject-seeds {'below' if below else 'above'} parity", c, sm.mean()])
         print(f"  {lab:22s} untrained {fm:.3f}  seeds {np.round(sm, 3)}  {n_ok}/{tot} {'below' if below else 'above'}")
     labels.sort(key=lambda e: e[0])
     for i in range(1, len(labels)):
         labels[i][0] = max(labels[i][0], labels[i - 1][0] + 0.30)
-    for y, txt, c in labels:
+    for y, txt, c, y_arm in labels:   # a leader from the arm's seed mean to its (de-collided) label
         ax.annotate(txt, (1, y), xytext=(10, 0), textcoords="offset points", fontsize=5.8, color=S.INK, va="center")
+        ax.plot([1.015, 1.055], [y_arm, y], "-", color=c, lw=0.6, clip_on=False, zorder=4)
         ax.plot([1.06], [y], "s", color=c, ms=3, mew=0, clip_on=False)
     ax.set_xticks([0, 1]); ax.set_xticklabels(["untrained", "after training\n(final ckpts)"])
     ax.set_xlim(-0.45, 1.3); ax.set_ylim(0.6, 3.2)

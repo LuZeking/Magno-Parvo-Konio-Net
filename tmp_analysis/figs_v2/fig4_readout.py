@@ -2,9 +2,9 @@
 property of that readout.
 
   (a) cue-conflict shape bias against the readout weight w on the magno stream
-      (full = classifier(w·y₁ + (1−w)·y₂)), 21 values: the model (3 seeds) and its
-      control (final checkpoints), the BA network (best saved checkpoints) for
-      comparison. Representations never change along the x-axis. The ten human
+      (full = classifier(w·y₁ + (1−w)·y₂)), 21 values: the model (3 seeds), its
+      control and the channel swap (final checkpoints), the BA network (best saved
+      checkpoints) for comparison. Representations never change along the x-axis. The ten human
       observers and the three published CNNs are drawn on the same y-axis.
   (b) does the span survive a readout that is refitted, and one that is not
       affine? Spans of shape bias over w for the frozen affine head, a refitted
@@ -67,6 +67,7 @@ def main():
     # ------------------------------------------------------------ (a) the sweep
     ax = fig.add_subplot(gs[0, 0])
     w, M = sweeps([f"{r}_final" for r in model]); _, Ct = sweeps([f"{r}_final" for r in control])
+    _, Sw = sweeps([f"{r}_final" for r in R.runs(R.SWAP)])   # the ramp on L−M: flat like the control
     _, B = sweeps([f"{r}_best" for r in R.runs(R.BA)])
     H = humans()
     S.refline(ax, y=0.5)
@@ -75,6 +76,7 @@ def main():
     ax.text(0.01, H.mean() + 0.012, f"human observers  {H.mean():.3f}  (n = 10, range {H.min():.2f}–{H.max():.2f})",
             fontsize=6.0, va="bottom", color=S.HUMAN)
     for rows, c, lw, lab in [(B, S.BA, 1.3, f"BA network ({R.fmt_seeds(len(B))}, best ckpts)"),
+                             (Sw, S.SWAP, 1.3, f"channel swap ({R.fmt_seeds(len(Sw))})"),
                              (Ct, S.CONTROL, 1.8, f"control ({R.fmt_seeds(len(Ct))})"),
                              (M, S.MODEL, 2.4, f"model ({R.fmt_seeds(len(M))})")]:
         for r in rows:
@@ -96,6 +98,7 @@ def main():
     ax.legend(loc="upper left", fontsize=5.8, handlelength=1.6, bbox_to_anchor=(0.0, 0.90))
     i05 = int(np.argmin(np.abs(w - 0.5)))
     print(f"  (a) model {lo:.3f} -> {hi:.3f} (w=0.5 {M.mean(0)[i05]:.3f}); control {Ct.mean(0).min():.3f}..{Ct.mean(0).max():.3f}; "
+          f"swap {Sw.mean(0).min():.3f}..{Sw.mean(0).max():.3f}; "
           f"BA best {B.mean(0)[0]:.3f} -> {B.mean(0)[-1]:.3f}; humans {H.mean():.3f} [{H.min():.3f},{H.max():.3f}]")
     S.letter(ax, "a", dx=-0.05, dy=0.03, title="One network, frozen streams, one scalar")
 

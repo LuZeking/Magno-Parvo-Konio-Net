@@ -4,7 +4,7 @@ from the result files, then run tmp_analysis/verify_new_claims.py as the compari
 the model zoo, whose numbers PAPER_v3 carries over from PAPER_v2.
 
 Model of record: fs2_dvd300_avg_w050_ls, seeds 0-2. Control: fs2_dvdfix300_avg_w050_ls, the adult diet from the
-first step, seeds 0-2 (behaviour; cortex reads seed 0 until the fits of seeds 1-2 land: CORTEX_SEEDS). Channel
+first step, seeds 0-2. Channel
 swap: fs2_dvd300swap_avg_w050_ls, the ramp on L-M with luminance untransformed, seeds 0-2. Fixed BA diet under the
 model's recipe: fs2_bcs_avg_w050_ls.
 
@@ -36,8 +36,8 @@ PAPER = open("docs/PAPER_v3.md", encoding="utf8").read()
 MODEL = [f"fs2_dvd300_avg_w050_ls_seed{s}" for s in range(3)]
 CONTROL_SEEDS = (0, 1, 2)  # behaviour: the text reports all three seeds (2026-10-23)
 CONTROL = [f"fs2_dvdfix300_avg_w050_ls_seed{s}" for s in CONTROL_SEEDS]
-# the cortical fits of control seeds 1-2 are still running: cortex checks read seed 0; widen together with the text
-CORTEX_SEEDS = (0,)
+# cortex: the control's fits cover seeds 0-2 since 2026-10-24 (seed 0 alone before)
+CORTEX_SEEDS = (0, 1, 2)
 CORTEX_CONTROL = [f"fs2_dvdfix300_avg_w050_ls_seed{s}" for s in CORTEX_SEEDS]
 SWAP = [f"fs2_dvd300swap_avg_w050_ls_seed{s}" for s in range(3)]
 FIXED = [f"fs2_bcs_avg_w050_ls_seed{s}" for s in range(3)]
@@ -334,35 +334,49 @@ def check_cortex() -> None:
     p = "In the model the index runs from +0.55 in V1v, magno-explained, through zero at V2v to −0.76 in hV4"
     said("model profile, V1v", pr[0], p, "+0.55"); said("model profile, hV4", pr[6], p, "−0.76")
     holds(f"model profile crosses zero at V2v (V1d {pr[1]:+.3f}, V2v {pr[2]:+.3f}, V2d {pr[3]:+.3f})", abs(pr[2]) < 0.05, p)
-    said("control profile, V1v", c["profile"][0], "(+0.83 in V1v, +0.76 in hV4)", "+0.83")
-    said("control profile, hV4", c["profile"][6], "(+0.83 in V1v, +0.76 in hV4)", "+0.76")
+    said("control profile, V1v", c["profile"][0], "(+0.81 in V1v, +0.73 in hV4)", "+0.81")
+    said("control profile, hV4", c["profile"][6], "(+0.81 in V1v, +0.73 in hV4)", "+0.73")
     holds("control magno-explained in every ROI", min(c["profile"]) > 0, "is magno-explained everywhere and nearly flat")
-    said("BA no-diet profile, V1v", nb["profile"][0], "as is the BA no-diet network (+0.91, +0.83)", "+0.91")
-    said("BA no-diet profile, hV4", nb["profile"][6], "as is the BA no-diet network (+0.91, +0.83)", "+0.83")
+    sw = A["swap"]
+    said("swap profile, V1v", sw["profile"][0], "as are the channel swap (+0.85, +0.83)", "+0.85")
+    said("swap profile, hV4", sw["profile"][6], "as are the channel swap (+0.85, +0.83)", "+0.83")
+    holds("swap magno-explained in every ROI", min(sw["profile"]) > 0, "as are the channel swap (+0.85, +0.83)")
+    said("BA no-diet profile, V1v", nb["profile"][0], "and the BA no-diet network (+0.91, +0.83)", "+0.91")
+    said("BA no-diet profile, hV4", nb["profile"][6], "and the BA no-diet network (+0.91, +0.83)", "+0.83")
     said("BA profile, V1v", b["profile"][0], "descends without crossing (−0.00 to −0.84)", "−0.00")
     said("BA profile, hV4", b["profile"][6], "descends without crossing (−0.00 to −0.84)", "−0.84")
     holds("BA profile never above zero", max(b["profile"]) <= 0.005, "descends without crossing (−0.00 to −0.84)")
 
     g, gb = np.array(m["grad_per_seed"]), np.array(b["grad_per_seed"])
-    p = "the gradient is −1.259 to −1.291 across the three seeds against −0.062 for the control"
+    p = "the gradient is −1.259 to −1.291 across the three seeds against −0.062 to −0.086 for the control's"
     said("model gradient, shallowest seed", g.max(), p, "−1.259"); said("model gradient, steepest seed", g.min(), p, "−1.291")
-    said("control gradient", np.mean(c["grad_per_seed"]), p, "−0.062")
+    said("control gradient, shallowest seed", max(c["grad_per_seed"]), p, "−0.062")
+    said("control gradient, steepest seed", min(c["grad_per_seed"]), p, "−0.086")
+    holds(f"control: {len(c['grad_per_seed'])} seeds", len(c["grad_per_seed"]) == 3, p)
     d = np.array(P["dvd300 - control"]["grad"])
-    holds(f"model below control, {(d < 0).sum()}/{len(d)} subjects, p {p_exact(d):.4f}", (d < 0).all() and len(d) == 8 and p_exact(d) < 0.0079,
-          "each comparison at the exact Wilcoxon floor for eight subjects (p = .0078, 8/8)")
+    holds(f"model below control (seed means), {(d < 0).sum()}/{len(d)} subjects, p {p_exact(d):.4f}",
+          (d < 0).all() and len(d) == 8 and p_exact(d) < 0.0079,
+          "each seed against the control seed of the same index at the exact Wilcoxon floor for eight subjects (p = .0078, 8/8)")
     p = "It is steeper than the BA network's −0.745 to −0.833 in 8/8 subjects (mean Δ −0.48, p = .0078)"
     said("BA gradient, shallowest seed", gb.max(), p, "−0.745"); said("BA gradient, steepest seed", gb.min(), p, "−0.833")
     d = np.array(P["dvd300 - BA diet"]["grad"])
     said("model minus BA, mean over subjects", d.mean(), p, "−0.48")
     holds(f"model steeper than BA, {(d < 0).sum()}/{len(d)}, p {p_exact(d):.4f}", (d < 0).all() and len(d) == 8 and p_exact(d) < 0.0079, p)
     rho = np.array(m["rho_per_seed"])
-    p = "is −0.964 to −0.973 in every seed, against −0.29 for the control"
+    p = "is −0.964 to −0.973 in every seed, against −0.29 to −0.41 for the control"
     said("model rho, weakest seed", rho.max(), p, "−0.964"); said("model rho, strongest seed", rho.min(), p, "−0.973")
-    said("control rho", np.mean(c["rho_per_seed"]), p, "−0.29")
+    said("control rho, weakest seed", max(c["rho_per_seed"]), p, "−0.29"); said("control rho, strongest seed", min(c["rho_per_seed"]), p, "−0.41")
+    p = "has no gradient either (−0.019 normalised, +0.002 raw, seed means; ρ = −0.22), and the model's lies below it in 8/8 subjects (p = .0078)"
+    said("swap gradient, seed mean", np.mean(sw["grad_per_seed"]), p, "−0.019"); said("swap rho, seed mean", np.mean(sw["rho_per_seed"]), p, "−0.22")
+    d = np.array(P["dvd300 - swap"]["grad"])
+    holds(f"model below the swap, {(d < 0).sum()}/{len(d)} subjects, p {p_exact(d):.4f}", (d < 0).all() and len(d) == 8 and p_exact(d) < 0.0079, p)
     said("model gradient, mean of seeds", g.mean(), "steepens it on the normalised index (to −1.27)")
-    said("control gradient (Results 2.3)", np.mean(c["grad_per_seed"]), "erases it on both (−0.062; −0.003)", "−0.062")
-    ed1 = ["| normalised | 0 | −1.259 | −0.062 | −0.833 | 8/8 | 0.0078 |", "|  | 1 | −1.291 | ⟦PENDING⟧ | −0.785 | 8/8 | 0.0078 |",
-           "|  | 2 | −1.262 | ⟦PENDING⟧ | −0.745 | 8/8 | 0.0078 |"]
+    said("control gradient (Results 2.3)", np.mean(c["grad_per_seed"]), "erases it on both (−0.070; −0.004, seed means)", "−0.070")
+    ed1 = ["| normalised | 0 | −1.259 | −0.062 | −0.833 | 8/8 | 0.0078 |", "|  | 1 | −1.291 | −0.062 | −0.785 | 8/8 | 0.0078 |",
+           "|  | 2 | −1.262 | −0.086 | −0.745 | 8/8 | 0.0078 |"]
+    p = ("The channel swap (the ramp on L−M, luminance untransformed) gives −0.015, −0.016 and −0.025 normalised (seeds 0–2)")
+    for s, lit in enumerate(("−0.015", "−0.016", "−0.025")):
+        said(f"ED T1 caption: swap normalised, seed {s}", sw["grad_per_seed"][s], p, lit)
     for s, row in enumerate(ed1):
         cells = [x.strip() for x in row.strip("|").split("|")]
         said(f"ED T1 normalised, seed {s}: model", g[s], row, cells[2])
@@ -371,9 +385,12 @@ def check_cortex() -> None:
             said(f"ED T1 normalised, seed {s}: control", c["grad_per_seed"][CORTEX_SEEDS.index(s)], row, cells[3])
 
     v, vc, vb = np.array(m["cc_per_seed"]), np.mean(c["cc_per_seed"]), np.array(b["cc_per_seed"])
-    p = "give a predicted magno − parvo shape-bias difference of +1.32 to +1.34 in the model against +0.08 for the control (8/8 subjects, seed means"
+    p = ("give a predicted magno − parvo shape-bias difference of +1.32 to +1.34 in the model against +0.07 for the control and "
+         "−0.01 for the channel swap (8/8 subjects, seed means")
     said("cue-conflict prediction, model, lowest seed", v.min(), p, "+1.32"); said("cue-conflict prediction, model, highest seed", v.max(), p, "+1.34")
-    said("cue-conflict prediction, control", vc, p, "+0.08")
+    said("cue-conflict prediction, control", vc, p, "+0.07"); said("cue-conflict prediction, swap", np.mean(sw["cc_per_seed"]), p, "−0.01")
+    d = np.array(P["dvd300 - swap"]["cc"])
+    holds(f"cue-conflict prediction above the swap in {(d > 0).sum()}/{len(d)} subjects", (d > 0).all() and len(d) == 8, p)
     d = np.array(P["dvd300 - control"]["cc"])
     holds(f"cue-conflict prediction above the control in {(d > 0).sum()}/{len(d)} subjects", (d > 0).all() and len(d) == 8, p)
     p = "It is smaller than the BA network's +1.53 to +1.57 (8/8)"
@@ -399,15 +416,15 @@ def check_cortex() -> None:
     said("U_m beyond V3", m["um_ext"], p, "0.013"); said("U_p beyond V3", m["up_ext"], p, "0.149")
 
     rm, rc, rb = np.mean(m["r2nc_per_seed"]), np.mean(c["r2nc_per_seed"]), np.mean(b["r2nc_per_seed"])
-    p = "(noise-ceiling-normalised median r² 0.471 against 0.496, 8/8 subjects)"
-    said("r²/NC, model", rm, p, "0.471"); said("r²/NC, control", rc, p, "0.496")
+    p = "(noise-ceiling-normalised median r² 0.471 against 0.494, 8/8 subjects)"
+    said("r²/NC, model", rm, p, "0.471"); said("r²/NC, control", rc, p, "0.494")
     d = np.array(P["dvd300 - control"]["r2nc"])
     holds(f"r²/NC below the control in {(d < 0).sum()}/{len(d)} subjects", (d < 0).all() and len(d) == 8, p)
     p = "although the model predicts BOLD better than the BA network does (0.395, 8/8; Fig. 3e)"
     said("r²/NC, BA", rb, p, "0.395")
     d = np.array(P["dvd300 - BA diet"]["r2nc"])
     holds(f"r²/NC above the BA network in {(d > 0).sum()}/{len(d)} subjects", (d > 0).all() and len(d) == 8, p)
-    said("control minus model, r²/NC", rc - rm, "and 0.026 of noise-ceiling-normalised r²")
+    said("control minus model, r²/NC", rc - rm, "and 0.024 of noise-ceiling-normalised r²")
     said("fixed diet, model's recipe, gradient", np.mean(fx["grad_per_seed"]), "(0.665 top-1, shape bias 0.620, gradient −0.735)", "−0.735")
     pending("nuisance-axis controls on the model (ED Fig. 3)", False, "these controls have not yet been rerun on the model ⟦PENDING⟧")
 
@@ -419,37 +436,53 @@ def check_encoding() -> None:
     print(f"\n[2.3, ED Table 1] per-voxel fits ({ENC})")
     grad = {}
     for stat, ratio in (("normalised", True), ("raw", False)):
-        for tag in MODEL + CORTEX_CONTROL + [f"{UNTRAINED}_seed0"]:
+        for tag in MODEL + CORTEX_CONTROL + SWAP + [f"{UNTRAINED}_seed0"]:
             subs, prof = ba.roi_profile(ENC, tag, ratio)
             grad[(stat, tag)] = dict(zip(subs, [ba.hv4_minus_v1(r) for r in prof]))
-    ctl = grad[("normalised", CORTEX_CONTROL[0])], grad[("raw", CORTEX_CONTROL[0])]
+
+    def seed_mean(stat, runs):   # per-subject mean over the runs' gradients (subjects every run has)
+        subs = sorted(set.intersection(*[set(grad[(stat, t)]) for t in runs]))
+        return {k: np.mean([grad[(stat, t)][k] for t in runs]) for k in subs}
+
+    ctl = seed_mean("normalised", CORTEX_CONTROL), seed_mean("raw", CORTEX_CONTROL)
     ed1 = {("normalised", 0): "| normalised | 0 | −1.259 | −0.062 | −0.833 | 8/8 | 0.0078 |",
-           ("normalised", 1): "|  | 1 | −1.291 | ⟦PENDING⟧ | −0.785 | 8/8 | 0.0078 |",
-           ("normalised", 2): "|  | 2 | −1.262 | ⟦PENDING⟧ | −0.745 | 8/8 | 0.0078 |",
+           ("normalised", 1): "|  | 1 | −1.291 | −0.062 | −0.785 | 8/8 | 0.0078 |",
+           ("normalised", 2): "|  | 2 | −1.262 | −0.086 | −0.745 | 8/8 | 0.0078 |",
            ("raw", 0): "| raw | 0 | −0.186 | −0.003 | −0.166 | 8/8 | 0.0078 |",
-           ("raw", 1): "|  | 1 | −0.193 | ⟦PENDING⟧ | −0.145 | 8/8 | 0.0078 |",
-           ("raw", 2): "|  | 2 | −0.190 | ⟦PENDING⟧ | −0.153 | 8/8 | 0.0078 |"}
+           ("raw", 1): "|  | 1 | −0.193 | −0.003 | −0.145 | 8/8 | 0.0078 |",
+           ("raw", 2): "|  | 2 | −0.190 | −0.007 | −0.153 | 8/8 | 0.0078 |"}
+    cap = "(against the control's seed mean it is also 8/8, p = .0078, for every seed and both statistics)"
     for (stat, s), row in ed1.items():
         cells = [x.strip() for x in row.strip("|").split("|")]
-        d, x = grad[(stat, MODEL[s])], ctl[stat == "raw"]
+        d, x = grad[(stat, MODEL[s])], grad[(stat, CORTEX_CONTROL[s])]   # paired seed by seed
         diff = np.array([d[k] - x[k] for k in sorted(set(d) & set(x))])
         said(f"ED T1 {stat}, seed {s}: model", np.mean(list(d.values())), row, cells[2])
-        if s in CORTEX_SEEDS:
-            said(f"ED T1 {stat}, seed {s}: control", np.mean(list(x.values())), row, cells[3])
-        said(f"ED T1 {stat}, seed {s}: subjects below the control", (diff < 0).sum(), row, "8")
+        said(f"ED T1 {stat}, seed {s}: control", np.mean(list(x.values())), row, cells[3])
+        said(f"ED T1 {stat}, seed {s}: subjects below the control seed", (diff < 0).sum(), row, "8")
         said(f"ED T1 {stat}, seed {s}: p", p_exact(diff), row, cells[6])
+        xm = ctl[stat == "raw"]
+        dm = np.array([d[k] - xm[k] for k in sorted(set(d) & set(xm))])
+        holds(f"ED T1 {stat}, seed {s}: below the control's seed mean {(dm < 0).sum()}/{len(dm)}, p {p_exact(dm):.4f}",
+              (dm < 0).all() and len(dm) == 8 and p_exact(dm) < 0.0079, cap)
     raw = np.array([np.mean(list(grad[("raw", t)].values())) for t in MODEL])
-    p = "with the same separation on the raw statistic U_m − U_p (−0.186 to −0.193 against −0.003)"
+    rawc = np.array([np.mean(list(grad[("raw", t)].values())) for t in CORTEX_CONTROL])
+    p = "with the same separation on the raw statistic U_m − U_p (−0.186 to −0.193 against −0.003 to −0.007)"
     said("raw gradient, model, shallowest seed", raw.max(), p, "−0.186"); said("raw gradient, model, steepest seed", raw.min(), p, "−0.193")
-    said("raw gradient, control", np.mean(list(ctl[1].values())), p, "−0.003")
+    said("raw gradient, control, shallowest seed", rawc.max(), p, "−0.003"); said("raw gradient, control, steepest seed", rawc.min(), p, "−0.007")
     said("raw gradient, model, mean of seeds", raw.mean(), "and holds it on the raw difference (−0.19)")
-    said("raw gradient, control (Results 2.3)", np.mean(list(ctl[1].values())), "erases it on both (−0.062; −0.003)", "−0.003")
-    row = "| control alone, normalised / raw | 0 | | −0.062 / −0.003 | | 5/8 / 4/8 < 0 | 0.25 / 0.84 |"
-    for stat, lit_m, lit_n, lit_p in (("normalised", "−0.062", "5", "0.25"), ("raw", "−0.003", "4", "0.84")):
+    said("raw gradient, control (Results 2.3)", np.mean(list(ctl[1].values())), "erases it on both (−0.070; −0.004, seed means)", "−0.004")
+    row = "| control alone (seed mean), normalised / raw | — | | −0.070 / −0.004 | | 6/8 / 4/8 < 0 | 0.11 / 0.64 |"
+    for stat, lit_m, lit_n, lit_p in (("normalised", "−0.070", "6", "0.11"), ("raw", "−0.004", "4", "0.64")):
         x = np.array(list(ctl[stat == "raw"].values()))
         said(f"control alone, {stat}: mean", x.mean(), row, lit_m)
         said(f"control alone, {stat}: subjects below zero", (x < 0).sum(), row, lit_n)
         said(f"control alone, {stat}: p", p_exact(x), row, lit_p)
+    swn, swr = (np.array(list(seed_mean(stat, SWAP).values())) for stat in ("normalised", "raw"))
+    p = "and +0.002 raw on the seed mean; alone, on the per-subject seed mean, 6/8 and 4/8 subjects below zero (p = .31 and .95)"
+    said("ED T1 caption: swap raw, seed mean", swr.mean(), p, "+0.002")
+    said("ED T1 caption: swap alone, normalised, below zero", (swn < 0).sum(), p, "6"); said("ED T1 caption: swap alone, raw, below zero", (swr < 0).sum(), p, "4")
+    said("ED T1 caption: swap alone, normalised, p", p_exact(swn), p, ".31"); said("ED T1 caption: swap alone, raw, p", p_exact(swr), p, ".95")
+    said("swap raw gradient, seed mean (Results 2.3)", swr.mean(), "has no gradient either (−0.019 normalised, +0.002 raw", "+0.002")
     u = {stat: np.array(list(grad[(stat, f"{UNTRAINED}_seed0")].values())) for stat in ("normalised", "raw")}
     row = "| untrained, the model's front end, normalised / raw | — | −0.480 / −0.195 | | | 8/8 < 0 | 0.0078 |"
     p = "An untrained network on the same test input already descends (−0.480 normalised, −0.195 raw, 8/8 subjects, p = .0078 on both"
@@ -558,7 +591,7 @@ def check_readout_w_summary() -> None:
     C = json.load(open(CORTEX))["readout_w"]
     w, S = sweep(MODEL)
     r = S.mean(0)
-    for arm, pre in (("dvd300", "model"), ("control", "control")):
+    for arm, pre in (("dvd300", "model"), ("control", "control"), ("swap", "channel swap")):
         R = C[arm]
         d = np.array(R["delta"])
         rng = np.random.default_rng(0)
@@ -574,16 +607,27 @@ def check_readout_w_summary() -> None:
             said("rate at V1's weight", np.interp(np.median(R["w_v1"]), w, r), p, "0.75")
             p = "the weight best predicting extrastriate cortex (0.34) lies below the one best predicting V1 (0.65)"
             said("Abstract: extrastriate w*", np.median(R["w_ext"]), p, "0.34"); said("Abstract: V1 w*", np.median(R["w_v1"]), p, "0.65")
-        else:
-            p = "reversed in the control (+0.248 [+0.052, +0.440], positive in 6/8 subjects and tied in one, p = .078"
-            said("control w*: extrastriate minus V1", d.mean(), p, "+0.248")
-            said("control w*: bootstrap 2.5%", lo, p, "+0.052"); said("control w*: bootstrap 97.5%", hi, p, "+0.440")
-            said("control w*: subjects positive", (d > 1e-9).sum(), p, "6")
-            holds(f"control w*: one subject tied ({(np.abs(d) < 1e-9).sum()})", (np.abs(d) < 1e-9).sum() == 1, p)
-            said("control w*: p (exact, tie dropped)", p_exact(d), p, ".078")
-            p = "In the control the gradient reverses (0.43 in V1 to 0.60–0.95 beyond hV4; higher in 6/8 subjects and tied in one, p = .078"
+        elif arm == "control":
+            holds(f"control w*: {R['n_seeds']} seeds", R["n_seeds"] == 3, "reversed in the control")
+            p = "reversed in the control (+0.308 [+0.194, +0.425], positive in 8/8 subjects, p = .0078)"
+            said("control w*: extrastriate minus V1", d.mean(), p, "+0.308")
+            said("control w*: bootstrap 2.5%", lo, p, "+0.194"); said("control w*: bootstrap 97.5%", hi, p, "+0.425")
+            said("control w*: subjects positive", (d > 1e-9).sum(), p, "8")
+            said("control w*: p (exact)", p_exact(d), p, ".0078")
+            p = "In the control the gradient reverses (0.43 in V1 to 0.62–0.78 beyond hV4; higher in 8/8 subjects, p = .0078)"
             said("control w*: V1 median", np.median(R["w_v1"]), p, "0.43")
-            said("control w*: subjects higher (Results 2.4)", (d > 1e-9).sum(), p, "6")
+            said("control w*: subjects higher (Results 2.4)", (d > 1e-9).sum(), p, "8")
+        else:
+            nz = d[np.abs(d) > 1e-9]   # one subject's difference is zero to floating point: a tie, dropped
+            p = "and in the channel swap (+0.358 [+0.221, +0.479], positive in 7/8 subjects and tied in one, p = .016, the tie dropped)"
+            said("swap w*: extrastriate minus V1", d.mean(), p, "+0.358")
+            said("swap w*: bootstrap 2.5%", lo, p, "+0.221"); said("swap w*: bootstrap 97.5%", hi, p, "+0.479")
+            said("swap w*: subjects positive", (nz > 0).sum(), p, "7")
+            holds(f"swap w*: one subject tied ({(np.abs(d) < 1e-9).sum()})", (np.abs(d) < 1e-9).sum() == 1, p)
+            said("swap w*: p (exact, tie dropped)", p_exact(nz), p, ".016")
+            p = "and so it does in the channel swap (0.38 in V1 to 0.62–1.00; higher in 7/8 subjects and tied in one, p = .016)"
+            said("swap w*: V1 median", np.median(R["w_v1"]), p, "0.38")
+            said("swap w*: subjects higher (Results 2.4)", (nz > 0).sum(), p, "7")
 
 
 def check_readout_w() -> None:
@@ -592,7 +636,7 @@ def check_readout_w() -> None:
     print(f"\n[2.4, ED Table 2] readout-weight fits ({RW})")
     VIS = {"V1": [1, 2], "V2": [3, 4], "V3": [5, 6], "hV4": [7]}
     KAST = {"ventral (VO, PHC)": [8, 9, 10, 11], "lateral (LO, TO)": [12, 13, 14, 15], "dorsal (V3A/B, IPS0–2)": [16, 17, 18, 19, 20]}
-    arms = {"model": MODEL, "control (seed 0)": CORTEX_CONTROL}
+    arms = {"model": MODEL, "control": CORTEX_CONTROL, "channel swap": SWAP}
     curves, conc, best = defaultdict(list), defaultdict(list), defaultdict(list)
     grid = None
     for f in sorted(glob.glob(f"{RW}/*.npz")):
@@ -612,7 +656,7 @@ def check_readout_w() -> None:
                 best[key].append(grid[np.argmax(z["r2"][:, v], axis=0)])
     rate = {a: sweep(runs)[1].mean(0) for a, runs in arms.items()}
     i05 = int(np.argmin(np.abs(grid - 0.5)))
-    half_model = []
+    half_model, ext_w = [], defaultdict(list)
     for arm, runs in arms.items():
         for g in {**VIS, **KAST}:
             row = next(x for x in PAPER.splitlines() if x.startswith(f"| {arm} | {g} |"))
@@ -636,6 +680,12 @@ def check_readout_w() -> None:
             holds(f"ED T2 {arm}, {g}: {sorted(nseed)} seed(s) per subject", nseed == {len(runs)}, row)
             if arm == "model":
                 half_model.append(np.median(half))
+            if g in KAST:
+                ext_w[arm].append(np.median(ws))
+    for arm, lo_, hi_, p in (("control", "0.62", "0.78", "In the control the gradient reverses (0.43 in V1 to 0.62–0.78 beyond hV4"),
+                             ("channel swap", "0.62", "1.00", "and so it does in the channel swap (0.38 in V1 to 0.62–1.00")):
+        said(f"{arm}: lowest extrastriate w* (Results 2.4)", min(ext_w[arm]), p, lo_)
+        said(f"{arm}: highest extrastriate w* (Results 2.4)", max(ext_w[arm]), p, hi_)
     # at the table's printed precision
     holds(f"every model ROI within 2% of its best r² at w = 0.5 (lowest {min(half_model):.4f})", round(min(half_model), 3) >= 0.98,
           "every ROI is within 2% of its best r² at w = 0.5")
@@ -699,19 +749,64 @@ def check_dissociations() -> None:
     said("κ integrated, lowest control seed", kc.min(), p, "10.3"); said("κ integrated, highest control seed", kc.max(), p, "13.2")
     said("κ integrated, exact Mann–Whitney p", mannwhitneyu(km, kc, method="exact").pvalue, p, "1.0")
     said("κ magno, exact Mann–Whitney p", mannwhitneyu(k(MODEL, 1.0), k(CONTROL, 1.0), method="exact").pvalue, p, "0.70")
-    pending("per-image correspondence on the model", False, "⟦PENDING per-image correspondence on the model⟧")
+
+    # per-image correspondence (tmp_analysis/perimage_correspondence.py over the BA and fs2 logit files, 2026-10-24)
+    PI = json.load(open("results/perimage_behavior/perimage_correspondence_v3.json"))["models"]
+    pi = lambda runs, key, f="oos_pct_ceiling": np.array([PI[f"{x}_final"][key][f] for x in runs])
+    dif, cue = "valid_rate_resid__pearson", "shape_rate_resid__pearson"
+    p = ("the model's readout recovers 22.3% of the split-half ceiling on held-out images (seeds 19.6–24.3%), against 9.0% for the "
+         "control (6.6–10.4%) and 8.2% for the channel swap (7.1–10.4%), every model seed above every seed of both (exact Mann–Whitney "
+         "p = 0.10, the floor); on which cue is picked the three are interleaved (13.3%, 10.4% and 9.5%; p ≥ 0.70; Fig. 5c)")
+    for lab, runs, lits in (("model", MODEL, ("22.3", "19.6", "24.3")), ("control", CONTROL, ("9.0", "6.6", "10.4")),
+                            ("swap", SWAP, ("8.2", "7.1", "10.4"))):
+        v = pi(runs, dif)
+        said(f"per-image difficulty, {lab}: mean", v.mean(), p, lits[0])
+        said(f"per-image difficulty, {lab}: lowest seed", v.min(), p, lits[1]); said(f"per-image difficulty, {lab}: highest seed", v.max(), p, lits[2])
+    m_, c_, s_ = pi(MODEL, dif), pi(CONTROL, dif), pi(SWAP, dif)
+    holds("per-image difficulty: every model seed above every control and swap seed", m_.min() > max(c_.max(), s_.max()), p)
+    said("per-image difficulty: exact Mann–Whitney p, model vs control", mannwhitneyu(m_, c_, method="exact").pvalue, p, "0.10")
+    said("per-image difficulty: exact Mann–Whitney p, model vs swap", mannwhitneyu(m_, s_, method="exact").pvalue, p, "0.10")
+    for lab, runs, lit in (("model", MODEL, "13.3"), ("control", CONTROL, "10.4"), ("swap", SWAP, "9.5")):
+        said(f"per-image cue picked, {lab}", pi(runs, cue).mean(), p, lit)
+    pc = [mannwhitneyu(pi(MODEL, cue), pi(x, cue), method="exact").pvalue for x in (CONTROL, SWAP)]
+    holds(f"per-image cue picked: model vs control and swap p ≥ 0.70 ({min(pc):.2f})", min(pc) >= 0.695, p)
+    holds("per-image cue picked: model seeds interleaved with the control's",
+          pi(MODEL, cue).max() > pi(CONTROL, cue).min() and pi(CONTROL, cue).max() > pi(MODEL, cue).min(), p)
+    w = pi(MODEL, dif, "oos_w_mean")
+    p = "The readout weight that recovers it is magno-heavy (0.91–0.98, chosen on held-out images)"
+    said("per-image difficulty: model w, lowest seed", w.min(), p, "0.91"); said("per-image difficulty: model w, highest seed", w.max(), p, "0.98")
+    ba_ = lambda t: np.mean([PI[t.format(s)][dif]["oos_pct_ceiling"] for s in range(3)])
+    p = ("The BA network showed the same contrast against its no-diet arm (24.1% against 9.2%), but crossing weights and test input "
+         "removed it in both directions (−0.6% and −3.7%; Fig. 5d)")
+    for lab, t, lit in (("BA", "dkl_bcs_seed{}_final", "24.1"), ("BA no diet", "dkl_base_seed{}_final", "9.2"),
+                        ("BA weights, front end off", "dkl_bcs_seed{}_final_nofe", "−0.6"), ("no-diet weights, front end on", "dkl_base_seed{}_final_fe", "−3.7")):
+        said(f"per-image difficulty, {lab}", ba_(t), p, lit)
 
     PR = json.load(open("results/figures_v2/fs2_pr_ratio.json"))["runs"]
     rat = lambda run: np.array([v["ratio"] for v in PR[run].values()])
     allm = np.concatenate([rat(x) for x in MODEL])
     seedm = [rat(x).mean() for x in MODEL]
     ctl = np.concatenate([rat(x) for x in CORTEX_CONTROL])
-    p = ("ends above parity in every subject and seed of the model (24/24; seed means 1.88–1.98) and below it in every subject "
-         "of its control (0.89; 0/8), from the same untrained starting point (1.63)")
+    p = ("ends above parity in every subject and seed of the model (24/24; seed means 1.88–1.98) and below it in 23 of its "
+         "control's 24 (seed means 0.89–0.95), from the same untrained starting point (1.63)")
     said("PR ratio: model subject-seeds above parity", (allm > 1).sum(), p, "24")
     holds(f"PR ratio: {len(allm)} model subject-seeds", len(allm) == 24, p)
     said("PR ratio: model seed mean, lowest", min(seedm), p, "1.88"); said("PR ratio: model seed mean, highest", max(seedm), p, "1.98")
-    said("PR ratio: control mean", ctl.mean(), p, "0.89"); said("PR ratio: control subjects above parity", (ctl > 1).sum(), p, "0")
+    seedc = [rat(x).mean() for x in CORTEX_CONTROL]
+    said("PR ratio: control subject-seeds below parity", (ctl < 1).sum(), p, "23"); holds(f"PR ratio: {len(ctl)} control subject-seeds", len(ctl) == 24, p)
+    said("PR ratio: control seed mean, lowest", min(seedc), p, "0.89"); said("PR ratio: control seed mean, highest", max(seedc), p, "0.95")
+    sw = np.concatenate([rat(x) for x in SWAP]); seeds = [rat(x).mean() for x in SWAP]
+    q = "The channel swap also ends above parity (24/24; seed means 1.27–2.15)"
+    said("PR ratio: swap subject-seeds above parity", (sw > 1).sum(), q, "24"); holds(f"PR ratio: {len(sw)} swap subject-seeds", len(sw) == 24, q)
+    said("PR ratio: swap seed mean, lowest", min(seeds), q, "1.27"); said("PR ratio: swap seed mean, highest", max(seeds), q, "2.15")
+    pr = lambda run, k: np.mean([v[k] for v in PR[run].values()])
+    q = ("its ramped chromatic stream contracts (participation ratio 52–86 against 116–124 in the control, seed means) while its "
+         "luminance stream stays where the control's is (109–113 against 108–110), whereas in the model the ramped luminance stream expands (272–281)")
+    for lab, runs, k, lo_, hi_ in (("swap parvo", SWAP, "pr_parvo", "52", "86"), ("control parvo", CORTEX_CONTROL, "pr_parvo", "116", "124"),
+                                   ("swap magno", SWAP, "pr_magno", "109", "113"), ("control magno", CORTEX_CONTROL, "pr_magno", "108", "110"),
+                                   ("model magno", MODEL, "pr_magno", "272", "281")):
+        v = [pr(x, k) for x in runs]
+        said(f"PR: {lab}, lowest seed", min(v), q, lo_); said(f"PR: {lab}, highest seed", max(v), q, hi_)
     said("PR ratio: untrained mean", rat(f"{UNTRAINED}_seed0").mean(), p, "1.63")
 
 
@@ -735,10 +830,28 @@ def check_ed_table3() -> None:
                         ("span, exemplars held out", e1.mean(), "0.202"), ("span, held out, lowest seed", e1.min(), "0.17"),
                         ("span, held out, highest seed", e1.max(), "0.23")):
         said(f"ED T3 model: {lab}", v, row, lit)
-    p = "| 0.202 [0.17, 0.23] | ⟦PENDING⟧ | — (shape basis on stream 1: ⟦PENDING⟧) | 0.181 |"
+    p = ("| 0.202 [0.17, 0.23] | 0.99 | 0.25 (0.07–0.93; 7.0 pts; shape basis on stream 1: 0.58–0.62) | 0.181 | — | 0.11 / 0.28 | "
+         "0.28 / 0.23 | 0.26 | 3 |")
     said("ED T3 model: forced-estimator span", np.mean([T[t]["spans"]["E0"]["forced_span"] for t in tags]), p, "0.181")
-    landed = "concat_fs2_dvd300" in open("results/figures_v2/subspace_behaviour.json").read()
-    pending("ED T3 model: ρ(w, rate), stream-1 energy, variance in S / T, order sensitivity", landed, p)
+    # the subspace aggregate of the v3 set (tmp_analysis/figs_v2/subspace_behaviour.py --set v3, v3 unit-split base)
+    fam = {f["key"]: f for f in json.load(open("results/figures_v3/subspace_behaviour.json"))["families"]}["concat_dvd300"]
+    sd = fam["seeds"]
+    holds("ED T3 model: the subspace aggregate covers the three seeds", [s["tag"] for s in sd] == tags, p)
+    dtop = max(max(abs(np.array(s["gain_accuracy"]["top1"]) - s["gain_accuracy"]["trained_top1"])) for s in sd) * 100
+    e1 = [s["descriptives"]["energy_S_on_stream1_full"] for s in sd]
+    mean = lambda f: float(np.mean([f(s) for s in sd]))
+    for lab, v, lit in (("ρ(w, rate)", fam["rho"], "0.99"), ("gated span", fam["gated_span"], "0.25"),
+                        ("gate, lowest w", fam["gate"][0], "0.07"), ("gate, highest w", fam["gate"][1], "0.93"),
+                        ("largest change of top-1 (pts)", dtop, "7.0"),
+                        ("shape basis on stream 1, lowest seed", min(e1), "0.58"), ("shape basis on stream 1, highest seed", max(e1), "0.62"),
+                        ("variance in S", mean(lambda s: s["descriptives"]["var_frac_S"]), "0.11"),
+                        ("variance in T", mean(lambda s: s["descriptives"]["var_frac_T"]), "0.28"),
+                        ("order sensitivity, S first", mean(lambda s: s["sensitivity"]["S_first"]["span"]), "0.28"),
+                        ("order sensitivity, T first", mean(lambda s: s["sensitivity"]["T_first"]["span"]), "0.23"),
+                        ("median-split gated span", fam["unit_gated_span"], "0.26")):
+        said(f"ED T3 model: {lab}", v, p, lit)
+    holds("ED T3 model: gate measured on MiniEcoset validation", all(s["gain_accuracy"]["set"] == "miniecoset_val" for s in sd),
+          "for the model's, gated on MiniEcoset validation, it is given after the gate")
 
 
 def _external(fn, key: str) -> None:
@@ -763,8 +876,6 @@ def main() -> int:
     _external(check_readout_w, "readout_w")
     check_dissociations()
     check_ed_table3()
-    pending("control seeds 1-2, cortex", len(json.load(open(CORTEX))["arms"]["control"]["grad_per_seed"]) >= 3,
-            "⟦PENDING control seeds 1–2⟧")
     if SKIPS:
         print(f"\nSKIPPED {len(SKIPS)} blocks for inputs not in the repository:")
         for fn, need in SKIPS:
