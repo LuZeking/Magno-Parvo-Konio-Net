@@ -1,0 +1,45 @@
+{
+  "model_name": "fs2_dvdfix300_avg_w050_ls_seed2",
+  "checkpoint": "/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-12_stage2/fs2_dvdfix300_avg_w050_ls_seed2/checkpoint_final.pt",
+  "conditions": {
+    "full": {
+      "n_images": 1200,
+      "n_shape": 263,
+      "n_texture": 407,
+      "n_other": 530,
+      "shape_bias": 0.3925373134328358,
+      "shape_accuracy": 0.21916666666666668,
+      "texture_accuracy": 0.33916666666666667,
+      "shape_bias_ci95": [
+        0.35542168674698793,
+        0.43047796181920267
+      ]
+    },
+    "magno_only": {
+      "n_images": 1200,
+      "n_shape": 265,
+      "n_texture": 403,
+      "n_other": 532,
+      "shape_bias": 0.3967065868263473,
+      "shape_accuracy": 0.22083333333333333,
+      "texture_accuracy": 0.3358333333333333,
+      "shape_bias_ci95": [
+        0.3584315439399251,
+        0.43525065832191034
+      ]
+    },
+    "parvo_only": {
+      "n_images": 1200,
+      "n_shape": 93,
+      "n_texture": 127,
+      "n_other": 980,
+      "shape_bias": 0.42272727272727273,
+      "shape_accuracy": 0.0775,
+      "texture_accuracy": 0.10583333333333333,
+      "shape_bias_ci95": [
+        0.3577513067561242,
+        0.48637559808612435
+      ]
+    }
+  }
+}

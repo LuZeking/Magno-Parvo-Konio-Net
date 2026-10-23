@@ -1,0 +1,322 @@
+{
+  "model_name": "fs2_dvd300swap_avg_w050_ls_seed1_final",
+  "checkpoint": "/scratch/byrong/TSN/fusion_stage1/checkpoints/2026-10-12_stage2/fs2_dvd300swap_avg_w050_ls_seed1/checkpoint_final.pt",
+  "n_boot": 2000,
+  "sweep": [
+    {
+      "n_images": 1200,
+      "n_shape": 73,
+      "n_texture": 128,
+      "n_other": 999,
+      "shape_bias": 0.36318407960199006,
+      "shape_accuracy": 0.060833333333333336,
+      "texture_accuracy": 0.10666666666666667,
+      "w": 0.0,
+      "shape_bias_ci95": [
+        0.30049203265570434,
+        0.42857142857142855
+      ],
+      "decision_rate": 0.1675
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 152,
+      "n_texture": 227,
+      "n_other": 821,
+      "shape_bias": 0.40105540897097625,
+      "shape_accuracy": 0.12666666666666668,
+      "texture_accuracy": 0.18916666666666668,
+      "w": 0.05,
+      "shape_bias_ci95": [
+        0.3519874659400545,
+        0.45052154876373623
+      ],
+      "decision_rate": 0.31583333333333335
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 201,
+      "n_texture": 325,
+      "n_other": 674,
+      "shape_bias": 0.3821292775665399,
+      "shape_accuracy": 0.1675,
+      "texture_accuracy": 0.2708333333333333,
+      "w": 0.1,
+      "shape_bias_ci95": [
+        0.34098575712143925,
+        0.42642138364779875
+      ],
+      "decision_rate": 0.43833333333333335
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 233,
+      "n_texture": 370,
+      "n_other": 597,
+      "shape_bias": 0.3864013266998342,
+      "shape_accuracy": 0.19416666666666665,
+      "texture_accuracy": 0.30833333333333335,
+      "w": 0.15,
+      "shape_bias_ci95": [
+        0.34887273311897105,
+        0.424040330931299
+      ],
+      "decision_rate": 0.5025
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 251,
+      "n_texture": 385,
+      "n_other": 564,
+      "shape_bias": 0.3946540880503145,
+      "shape_accuracy": 0.20916666666666667,
+      "texture_accuracy": 0.32083333333333336,
+      "w": 0.2,
+      "shape_bias_ci95": [
+        0.35836718674434354,
+        0.4333868378812199
+      ],
+      "decision_rate": 0.53
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 254,
+      "n_texture": 391,
+      "n_other": 555,
+      "shape_bias": 0.3937984496124031,
+      "shape_accuracy": 0.21166666666666667,
+      "texture_accuracy": 0.3258333333333333,
+      "w": 0.25,
+      "shape_bias_ci95": [
+        0.3581831048959304,
+        0.43323558594859995
+      ],
+      "decision_rate": 0.5375
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 252,
+      "n_texture": 404,
+      "n_other": 544,
+      "shape_bias": 0.38414634146341464,
+      "shape_accuracy": 0.21,
+      "texture_accuracy": 0.33666666666666667,
+      "w": 0.3,
+      "shape_bias_ci95": [
+        0.3486567799253259,
+        0.4214649182675632
+      ],
+      "decision_rate": 0.5466666666666666
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 256,
+      "n_texture": 406,
+      "n_other": 538,
+      "shape_bias": 0.3867069486404834,
+      "shape_accuracy": 0.21333333333333335,
+      "texture_accuracy": 0.3383333333333333,
+      "w": 0.35,
+      "shape_bias_ci95": [
+        0.35097800535319446,
+        0.4239712517013382
+      ],
+      "decision_rate": 0.5516666666666666
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 253,
+      "n_texture": 410,
+      "n_other": 537,
+      "shape_bias": 0.3815987933634992,
+      "shape_accuracy": 0.21083333333333334,
+      "texture_accuracy": 0.3416666666666667,
+      "w": 0.4,
+      "shape_bias_ci95": [
+        0.34603646438250096,
+        0.4186418269230769
+      ],
+      "decision_rate": 0.5525
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 257,
+      "n_texture": 413,
+      "n_other": 530,
+      "shape_bias": 0.3835820895522388,
+      "shape_accuracy": 0.21416666666666667,
+      "texture_accuracy": 0.3441666666666667,
+      "w": 0.45,
+      "shape_bias_ci95": [
+        0.34743043409127045,
+        0.4201448058420733
+      ],
+      "decision_rate": 0.5583333333333333
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 257,
+      "n_texture": 414,
+      "n_other": 529,
+      "shape_bias": 0.3830104321907601,
+      "shape_accuracy": 0.21416666666666667,
+      "texture_accuracy": 0.345,
+      "w": 0.5,
+      "shape_bias_ci95": [
+        0.34695957668285915,
+        0.41985410361804953
+      ],
+      "decision_rate": 0.5591666666666667
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 256,
+      "n_texture": 418,
+      "n_other": 526,
+      "shape_bias": 0.3798219584569733,
+      "shape_accuracy": 0.21333333333333335,
+      "texture_accuracy": 0.34833333333333333,
+      "w": 0.55,
+      "shape_bias_ci95": [
+        0.3446159793814433,
+        0.41617894458252785
+      ],
+      "decision_rate": 0.5616666666666666
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 257,
+      "n_texture": 417,
+      "n_other": 526,
+      "shape_bias": 0.38130563798219586,
+      "shape_accuracy": 0.21416666666666667,
+      "texture_accuracy": 0.3475,
+      "w": 0.6,
+      "shape_bias_ci95": [
+        0.3450329033956304,
+        0.41786851047356877
+      ],
+      "decision_rate": 0.5616666666666666
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 259,
+      "n_texture": 407,
+      "n_other": 534,
+      "shape_bias": 0.3888888888888889,
+      "shape_accuracy": 0.21583333333333332,
+      "texture_accuracy": 0.33916666666666667,
+      "w": 0.65,
+      "shape_bias_ci95": [
+        0.35232171227818926,
+        0.4247428701301932
+      ],
+      "decision_rate": 0.555
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 258,
+      "n_texture": 406,
+      "n_other": 536,
+      "shape_bias": 0.3885542168674699,
+      "shape_accuracy": 0.215,
+      "texture_accuracy": 0.3383333333333333,
+      "w": 0.7,
+      "shape_bias_ci95": [
+        0.35302807486631016,
+        0.4237580515210715
+      ],
+      "decision_rate": 0.5533333333333333
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 259,
+      "n_texture": 406,
+      "n_other": 535,
+      "shape_bias": 0.3894736842105263,
+      "shape_accuracy": 0.21583333333333332,
+      "texture_accuracy": 0.3383333333333333,
+      "w": 0.75,
+      "shape_bias_ci95": [
+        0.3540050040730828,
+        0.42521286214821225
+      ],
+      "decision_rate": 0.5541666666666667
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 260,
+      "n_texture": 407,
+      "n_other": 533,
+      "shape_bias": 0.38980509745127434,
+      "shape_accuracy": 0.21666666666666667,
+      "texture_accuracy": 0.33916666666666667,
+      "w": 0.8,
+      "shape_bias_ci95": [
+        0.3539115689403864,
+        0.42656559292521995
+      ],
+      "decision_rate": 0.5558333333333333
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 261,
+      "n_texture": 404,
+      "n_other": 535,
+      "shape_bias": 0.3924812030075188,
+      "shape_accuracy": 0.2175,
+      "texture_accuracy": 0.33666666666666667,
+      "w": 0.85,
+      "shape_bias_ci95": [
+        0.3566812345474766,
+        0.42836134453781505
+      ],
+      "decision_rate": 0.5541666666666667
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 263,
+      "n_texture": 402,
+      "n_other": 535,
+      "shape_bias": 0.3954887218045113,
+      "shape_accuracy": 0.21916666666666668,
+      "texture_accuracy": 0.335,
+      "w": 0.9,
+      "shape_bias_ci95": [
+        0.3598714609182283,
+        0.43172930593635434
+      ],
+      "decision_rate": 0.5541666666666667
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 263,
+      "n_texture": 401,
+      "n_other": 536,
+      "shape_bias": 0.3960843373493976,
+      "shape_accuracy": 0.21916666666666668,
+      "texture_accuracy": 0.33416666666666667,
+      "w": 0.95,
+      "shape_bias_ci95": [
+        0.36017781155015194,
+        0.4323538660747318
+      ],
+      "decision_rate": 0.5533333333333333
+    },
+    {
+      "n_images": 1200,
+      "n_shape": 263,
+      "n_texture": 402,
+      "n_other": 535,
+      "shape_bias": 0.3954887218045113,
+      "shape_accuracy": 0.21916666666666668,
+      "texture_accuracy": 0.335,
+      "w": 1.0,
+      "shape_bias_ci95": [
+        0.3596323576705107,
+        0.4321180644173345
+      ],
+      "decision_rate": 0.5541666666666667
+    }
+  ]
+}
