@@ -537,6 +537,70 @@ def check_nuisance() -> None:
         holds(f"{arm} size|ecc raw {w['n_pos']}/8 positive", w["n_pos"] == 8, p)
 
 
+VPREC = "results/vp_recovery_realnc_v3"
+
+
+def check_estimator_bias() -> None:
+    """Results 2.3 and Supplementary Note S3: the zero-truth floor of vp_recovery_realnc.py on seed 0 of the model and
+    the control, recomputed from the committed simulation files with the BA block's own statistic (ba.stats_from);
+    the real seed-0 contrasts come from the nuisance file (recomputed from the per-voxel fits in check_nuisance_recompute)."""
+    print(f"\n[2.3, S3] estimator bias on the model ({VPREC})")
+    J = json.load(open(NUISANCE))["estimator_bias"]
+    runs = {"model": MODEL[0], "control": CORTEX_CONTROL[0]}
+    fl, flr, fid, rho = {}, {}, {}, {}
+    for arm, run in runs.items():
+        files = sorted(glob.glob(f"{VPREC}/vp_recovery_{run}_subj*.json"))
+        assert len(files) == 8, (arm, len(files))
+        D = [json.load(open(f)) for f in files]
+        assert [d["subject"] for d in D] == list(range(1, 9))
+        B = [ba.stats_from(d["conditions"]["B_manufacture"]["rows"], "est_") for d in D]
+        fl[arm], flr[arm] = np.array([b[0] for b in B]), np.array([b[1] for b in B])
+        fid[arm] = np.mean([ba.stats_from(d["conditions"]["A_recovery"]["rows"], "est_")[0]
+                            / ba.stats_from(d["conditions"]["A_recovery"]["rows"], "true_")[0] for d in D])
+        rho[arm] = np.array([d["conditions"]["A_recovery"]["rho_est_vs_rank"] for d in D])
+        holds(f"{arm} floor matches the nuisance file", np.allclose(fl[arm], J[arm]["floor_norm"]["per_subject"], atol=1e-12),
+              "Simulated with the model's fitted feature geometry")
+    real = {a: np.array(J[a]["real_norm_seed0"]) for a in runs}
+    disp = {a: real[a] - fl[a] for a in runs}
+
+    p = ("the recovered contrast is small and of the wrong sign (+0.018, p = .11; +0.066 on the control's geometry). Corrected "
+         "by each arm's own floor, the model's gradient is −1.277 against −0.127 for the control, both non-zero in 8/8 "
+         "subjects, and the model's is the steeper in every subject (p = .0078; Supplementary Note S3)")
+    said("floor, model geometry", fl["model"].mean(), p, "+0.018"); said("floor, model geometry, p", p_exact(fl["model"]), p, ".11")
+    said("floor, control geometry", fl["control"].mean(), p, "+0.066")
+    said("displacement, model", disp["model"].mean(), p, "−1.277"); said("displacement, control", disp["control"].mean(), p, "−0.127")
+    for a in runs:
+        holds(f"displacement, {a}: {(disp[a] < 0).sum()}/8 negative, p {p_exact(disp[a]):.4f}",
+              (disp[a] < 0).all() and p_exact(disp[a]) < 0.0079, p)
+    dd = disp["model"] - disp["control"]
+    holds(f"model's displacement below the control's in {(dd < 0).sum()}/8, p {p_exact(dd):.4f}", (dd < 0).all() and p_exact(dd) < 0.0079, p)
+
+    p = "On the model's geometry the recovered contrast is +0.018 (5/8 subjects positive, p = .11) and on the raw statistic −0.001 (p = .31)"
+    holds(f"model floor positive in {(fl['model'] > 0).sum()}/8", (fl["model"] > 0).sum() == 5, p)
+    said("raw floor, model", flr["model"].mean(), p, "−0.001"); said("raw floor, model, p", p_exact(flr["model"]), p, ".31")
+    p = "On the control's geometry it is +0.066 (8/8, p = .0078), and +0.004 on the raw statistic (8/8, p = .0078)"
+    holds(f"control floor positive in {(fl['control'] > 0).sum()}/8, p {p_exact(fl['control']):.4f}",
+          (fl["control"] > 0).all() and p_exact(fl["control"]) < 0.0079, p)
+    said("raw floor, control", flr["control"].mean(), p, "+0.004")
+    holds(f"control raw floor positive in {(flr['control'] > 0).sum()}/8, p {p_exact(flr['control']):.4f}",
+          (flr["control"] > 0).all() and p_exact(flr["control"]) < 0.0079, p)
+    p = "the two floors differ (Mann–Whitney p = .0003)"
+    said("floors differ between geometries", mannwhitneyu(fl["model"], fl["control"], method="exact").pvalue, p, ".0003")
+    p = ("The real seed-0 contrast minus each subject's own floor is −1.277 for the model and −0.127 for the control, each "
+         "non-zero in 8/8 subjects (p = .0078). The model's displacement is 10.1 times the control's and below it in every "
+         "subject (−1.150, p = .0078)")
+    said("displacement ratio", disp["model"].mean() / disp["control"].mean(), p, "10.1")
+    said("model minus control displacement", dd.mean(), p, "−1.150")
+    p = "Uncorrected, its seed-0 gradient is −0.062 (5/8 negative, p = .25)"
+    said("control seed-0 gradient, uncorrected", real["control"].mean(), p, "−0.062")
+    holds(f"control seed 0 uncorrected: {(real['control'] < 0).sum()}/8 negative", (real["control"] < 0).sum() == 5, p)
+    said("control seed-0 gradient, uncorrected, p", p_exact(real["control"]), p, ".25")
+    p = ("The simulation recovers a known across-ROI split in the right order (ρ = +1.000 in 8/8 subjects, both geometries) "
+         "but overstates its size by a factor of 1.23 on the model's geometry and 1.25 on the control's")
+    holds("recovery rho = +1 in every subject, both geometries", all(np.allclose(rho[a], 1.0) for a in runs), p)
+    said("recovery est/true, model", fid["model"], p, "1.23"); said("recovery est/true, control", fid["control"], p, "1.25")
+
+
 def check_nuisance_recompute() -> None:
     """The nuisance file against the per-voxel fits: the model's seed-0 partial slopes recomputed from the encoding outputs."""
     import fs2_cortex_controls as cc_
@@ -550,6 +614,14 @@ def check_nuisance_recompute() -> None:
             if not ok:
                 print(f"  BAD subj{s:02d} {stat} regression differs from {NUISANCE}"); FAILS.append(f"nuisance recompute subj{s} {stat}")
     print("  OK  model seed 0 partial slopes and VIF, 8 subjects x 2 statistics, match the committed file" if not any("nuisance recompute" in f for f in FAILS) else "")
+    cc_.SIM = VPREC
+    eb = cc_.sim_block()
+    for arm in ("model", "control"):
+        a, b = np.array(eb[arm]["real_norm_seed0"]), np.array(J["estimator_bias"][arm]["real_norm_seed0"])
+        ok = np.allclose(a, b, atol=1e-12)
+        print(f"  {'OK ' if ok else 'BAD'} {arm} real seed-0 contrasts behind the displacement match the committed file")
+        if not ok:
+            FAILS.append(f"nuisance recompute real seed0 {arm}")
 
 
 def check_encoding() -> None:
@@ -995,6 +1067,7 @@ def main() -> int:
     check_cortex()
     _external(check_encoding, "encoding")
     check_nuisance()
+    check_estimator_bias()
     _external(check_nuisance_recompute, "encoding")
     check_behaviour()
     check_readout_w_summary()
