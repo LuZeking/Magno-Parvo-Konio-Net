@@ -426,7 +426,130 @@ def check_cortex() -> None:
     holds(f"r²/NC above the BA network in {(d > 0).sum()}/{len(d)} subjects", (d > 0).all() and len(d) == 8, p)
     said("control minus model, r²/NC", rc - rm, "and 0.024 of noise-ceiling-normalised r²")
     said("fixed diet, model's recipe, gradient", np.mean(fx["grad_per_seed"]), "(0.665 top-1, shape bias 0.620, gradient −0.735)", "−0.735")
-    pending("nuisance-axis controls on the model (ED Fig. 3)", False, "these controls have not yet been rerun on the model ⟦PENDING⟧")
+
+
+NUISANCE = "results/figures_v3/cortex_controls.json"
+
+
+def check_nuisance() -> None:
+    """Results 2.3, Supplementary Note S3 and Extended Data Fig. 3: the gradient within eccentricity bands and pRF-size
+    tertiles, and the partial slopes on continuous pRF eccentricity and size (tmp_analysis/fs2_cortex_controls.py)."""
+    print(f"\n[2.3, S3, ED Fig. 3] nuisance axes ({NUISANCE})")
+    J = json.load(open(NUISANCE))
+    T, PS = J["tests"], J["per_subject"]
+    band = lambda arm, stat="norm": np.array(PS[arm][stat]["ecc_bands"], float)
+    tert = lambda arm, stat="norm": np.array(PS[arm][stat]["size_tertiles"], float)
+    fin = lambda v: v[np.isfinite(v)]
+    # the seed-mean gradients agree with the cortex summary behind ED Table 1
+    p = "| control alone (seed mean), normalised / raw | — | | −0.070 / −0.004 |"
+    said("control gradient (nuisance file), normalised", T["norm"]["control"]["gradient"]["mean"], p, "−0.070")
+    said("control gradient (nuisance file), raw", T["raw"]["control"]["gradient"]["mean"], p, "−0.004")
+
+    p = ("Among voxels of matched eccentricity it is negative in each of NSD's five eccentricity bands (−0.58 in the foveal "
+         "band to −1.33 beyond 4°), and among voxels of matched pRF size in each size tertile (−1.26 to −1.32), below the "
+         "control's in every band and tertile (7/7 or 8/8 subjects; 6/6 in the smallest tertile), while the control and "
+         "the channel swap stay near zero in each")
+    m = [T["norm"]["model"]["ecc_bands"][b]["mean"] for b in range(5)]
+    said("model, foveal band", m[0], p, "−0.58"); said("model, beyond 4°", m[4], p, "−1.33")
+    holds("model's band gradient grows with eccentricity", all(np.diff(m) < 0), p)
+    mt = [T["norm"]["model"]["size_tertiles"][b]["mean"] for b in range(3)]
+    said("model, size tertiles, least negative", max(mt), p, "−1.26"); said("model, size tertiles, most negative", min(mt), p, "−1.32")
+    for stat in ("norm", "raw"):
+        mc = T[stat]["model_minus_control"]
+        cells = [(f"band {b}", w) for b, w in enumerate(mc["ecc_bands"])] + [(f"tertile {b}", w) for b, w in enumerate(mc["size_tertiles"])]
+        want = [(7, 7), (8, 8), (8, 8), (8, 8), (8, 8), (6, 6), (8, 8), (8, 8)]
+        got = [(w["n_neg"], w["n"]) for _, w in cells]
+        holds(f"model below control per band/tertile, {stat}: {got}", got == want, p)
+    for b, lit in ((0, ".016"), (1, ".0078")):
+        said(f"model - control, band {b}, p", T["norm"]["model_minus_control"]["ecc_bands"][b]["p"],
+             "the model lies below the control in every band (7/7, p = .016, in the foveal band; 8/8, p = .0078, in the other four)", lit)
+    said("model - control, small tertile, p", T["norm"]["model_minus_control"]["size_tertiles"][0]["p"],
+         "(6/6, p = .031, in the smallest tertile, where subjects 03 and 08 have too few voxels in the model; 8/8, p = .0078, in the other two)", ".031")
+    holds("same counts on the raw statistic",
+          [(w["n_neg"], w["n"]) for w in T["raw"]["model_minus_control"]["ecc_bands"] + T["raw"]["model_minus_control"]["size_tertiles"]]
+          == [(w["n_neg"], w["n"]) for w in T["norm"]["model_minus_control"]["ecc_bands"] + T["norm"]["model_minus_control"]["size_tertiles"]],
+          "On the raw statistic the model-minus-control contrasts have the same counts in every band and tertile.")
+
+    p = ("The control stays between −0.07 and +0.16 in every band and the channel swap between −0.06 and +0.05, and the "
+         "model lies below the control in every band")
+    cb, sb = [w["mean"] for w in T["norm"]["control"]["ecc_bands"]], [w["mean"] for w in T["norm"]["channel swap"]["ecc_bands"]]
+    said("control, band min", min(cb), p, "−0.07"); said("control, band max", max(cb), p, "+0.16")
+    said("swap, band min", min(sb), p, "−0.06"); said("swap, band max", max(sb), p, "+0.05")
+    p = ("(6/7 subjects in the foveal band, where subject 02 has too few hV4 voxels in every arm and subject 05 is positive; "
+         "8/8 in the other four)")
+    holds("subject 02 missing from the foveal band in every arm", all(np.isnan(band(a)[1, 0]) and np.isfinite(band(a)[[0, 2, 3, 4, 5, 6, 7], 0]).all()
+                                                                       for a in ("model", "control", "channel swap", "untrained")), p)
+    holds("model foveal band: subject 05 the only positive", list(np.where(band("model")[:, 0] > 0)[0] + 1) == [5], p)
+    holds("model negative in 8/8 beyond the foveal band", (band("model")[:, 1:] < 0).all(), p)
+    p = "Within pRF-size tertiles the model sits at −1.28, −1.26 and −1.32 against −0.13, −0.13 and −0.09 for the control"
+    for b, (lm, lc) in enumerate((("−1.28", "−0.13"), ("−1.26", "−0.13"), ("−1.32", "−0.09"))):
+        said(f"model, tertile {b}", T["norm"]["model"]["size_tertiles"][b]["mean"], p, lm)
+        said(f"control, tertile {b}", T["norm"]["control"]["size_tertiles"][b]["mean"], p, lc)
+    holds("subjects 03 and 08 missing from the model's small tertile",
+          list(np.where(~np.isfinite(tert("model")[:, 0]))[0] + 1) == [3, 8], p)
+
+    # continuous predictors
+    def part(arm, stat, term):
+        return T[stat][arm][term]
+    p = "mean VIF 1.64"
+    said("mean VIF, model seed 0", J["vif_mean_model_seed0"], p)
+    p = ("the model's stream preference moves toward parvo with increasing pRF size at fixed eccentricity (partial slope "
+         "−0.118, 8/8 subjects, p = .0078) and toward magno with increasing eccentricity at fixed size (+0.163, 8/8, p = .0078), "
+         "on the raw statistic too (−0.391 and +0.444, 8/8 each)")
+    for stat, term, lit, side in (("norm", "size_partial", "−0.118", "n_neg"), ("norm", "ecc_partial", "+0.163", "n_pos"),
+                                  ("raw", "size_partial", "−0.391", "n_neg"), ("raw", "ecc_partial", "+0.444", "n_pos")):
+        w = part("model", stat, term)
+        said(f"model {term} {stat}", w["mean"], p, lit)
+        holds(f"model {term} {stat}: {w[side]}/8, p {w['p']:.4f}", w[side] == 8 and w["p"] < 0.0079, p)
+    p = ("The control shows no eccentricity effect (−0.030, 6/8 negative, p = .25) and a size effect of the opposite sign "
+         "(+0.047, 8/8 positive, p = .0078), and so does the channel swap (−0.025, p = .31; +0.048, 7/8 positive, p = .016)")
+    w = part("control", "norm", "ecc_partial"); said("control ecc|size", w["mean"], p, "−0.030"); said("control ecc|size p", w["p"], p, ".25")
+    holds(f"control ecc|size {w['n_neg']}/8 negative", w["n_neg"] == 6, p)
+    w = part("control", "norm", "size_partial"); said("control size|ecc", w["mean"], p, "+0.047")
+    holds(f"control size|ecc {w['n_pos']}/8 positive, p {w['p']:.4f}", w["n_pos"] == 8 and w["p"] < 0.0079, p)
+    w = part("channel swap", "norm", "ecc_partial"); said("swap ecc|size", w["mean"], p, "−0.025"); said("swap ecc|size p", w["p"], p, ".31")
+    w = part("channel swap", "norm", "size_partial"); said("swap size|ecc", w["mean"], p, "+0.048"); said("swap size|ecc p", w["p"], p, ".016")
+    holds(f"swap size|ecc {w['n_pos']}/8 positive", w["n_pos"] == 7, p)
+    p = "the model minus the control is +0.193 on the eccentricity partial and −0.165 on the size partial (8/8 each, p = .0078)"
+    for term, lit, side in (("ecc_partial", "+0.193", "n_pos"), ("size_partial", "−0.165", "n_neg")):
+        w = T["norm"]["model_minus_control"][term]
+        said(f"model - control {term}", w["mean"], p, lit)
+        holds(f"model - control {term}: {w[side]}/8, p {w['p']:.4f}", w[side] == 8 and w["p"] < 0.0079, p)
+    p = "The untrained network on the shared front end already carries the dissociation (+0.083, 7/8, p = .023; −0.040, 8/8, p = .0078)"
+    w = part("untrained", "norm", "ecc_partial"); said("untrained ecc|size", w["mean"], p, "+0.083"); said("untrained ecc|size p", w["p"], p, ".023")
+    holds(f"untrained ecc|size {w['n_pos']}/8 positive", w["n_pos"] == 7, p)
+    w = part("untrained", "norm", "size_partial"); said("untrained size|ecc", w["mean"], p, "−0.040")
+    holds(f"untrained size|ecc {w['n_neg']}/8, p {w['p']:.4f}", w["n_neg"] == 8 and w["p"] < 0.0079, p)
+    p = ("Training on the maturing input keeps it and strengthens its size term on both statistics (model minus untrained "
+         "−0.078 normalised, −0.102 raw, 8/8 each, p = .0078), while its eccentricity term grows on the normalised statistic "
+         "only (+0.080, 7/8, p = .023; raw −0.027, 4/8, p = .64)")
+    for stat, lit in (("norm", "−0.078"), ("raw", "−0.102")):
+        w = T[stat]["model_minus_untrained"]["size_partial"]
+        said(f"model - untrained size|ecc {stat}", w["mean"], p, lit)
+        holds(f"model - untrained size|ecc {stat}: {w['n_neg']}/8, p {w['p']:.4f}", w["n_neg"] == 8 and w["p"] < 0.0079, p)
+    w = T["norm"]["model_minus_untrained"]["ecc_partial"]; said("model - untrained ecc|size norm", w["mean"], p, "+0.080")
+    said("model - untrained ecc|size norm p", w["p"], p, ".023"); holds(f"... {w['n_pos']}/8 positive", w["n_pos"] == 7, p)
+    w = T["raw"]["model_minus_untrained"]["ecc_partial"]; said("model - untrained ecc|size raw", w["mean"], p, "−0.027")
+    said("model - untrained ecc|size raw p", w["p"], p, ".64"); holds(f"... {w['n_neg']}/8 negative", w["n_neg"] == 4, p)
+    p = "removes the eccentricity term and reverses the size term (raw +0.265 and +0.270, 8/8 each)"
+    for arm, lit in (("control", "+0.265"), ("channel swap", "+0.270")):
+        w = part(arm, "raw", "size_partial"); said(f"{arm} size|ecc raw", w["mean"], p, lit)
+        holds(f"{arm} size|ecc raw {w['n_pos']}/8 positive", w["n_pos"] == 8, p)
+
+
+def check_nuisance_recompute() -> None:
+    """The nuisance file against the per-voxel fits: the model's seed-0 partial slopes recomputed from the encoding outputs."""
+    import fs2_cortex_controls as cc_
+    print(f"\n[S3] nuisance file recomputed from the per-voxel fits ({ENC}), model seed 0")
+    J = json.load(open(NUISANCE))
+    got = cc_.per_model(MODEL[0])
+    for stat in ("norm", "raw"):
+        for s in range(1, 9):
+            a, b = got[s][stat]["regression"], J["per_seed_regression"][MODEL[0]][stat][str(s)]
+            ok = all(abs(a[k] - b[k]) < 1e-9 for k in ("ecc_partial", "size_partial", "vif"))
+            if not ok:
+                print(f"  BAD subj{s:02d} {stat} regression differs from {NUISANCE}"); FAILS.append(f"nuisance recompute subj{s} {stat}")
+    print("  OK  model seed 0 partial slopes and VIF, 8 subjects x 2 statistics, match the committed file" if not any("nuisance recompute" in f for f in FAILS) else "")
 
 
 def check_encoding() -> None:
@@ -871,6 +994,8 @@ def main() -> int:
     check_streams()
     check_cortex()
     _external(check_encoding, "encoding")
+    check_nuisance()
+    _external(check_nuisance_recompute, "encoding")
     check_behaviour()
     check_readout_w_summary()
     _external(check_readout_w, "readout_w")

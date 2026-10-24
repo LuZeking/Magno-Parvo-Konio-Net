@@ -215,6 +215,10 @@ def main() -> int:
                         "0.15,0.20,0.25,0.30,0.35,0.40,0.45 to reproduce "
                         "the original vp_recovery.py behaviour.")
     p.add_argument("--out-dir", default="results/vp_recovery_realnc")
+    p.add_argument("--cache-dir", default=CACHE,
+                   help="feature cache holding <model>_subjNN.npz (magno, "
+                        "parvo, image_ids); the model of record's is "
+                        "/scratch/byrong/mpk/encoding/cache/2026-10-16_fs2")
     args = p.parse_args()
 
     os.makedirs(args.out_dir, exist_ok=True)
@@ -224,7 +228,7 @@ def main() -> int:
         fit_banded, make_grouped_splits, variance_partition,
     )
 
-    z = np.load(f"{CACHE}/{args.model}_subj{args.subject:02d}.npz")
+    z = np.load(f"{args.cache_dir}/{args.model}_subj{args.subject:02d}.npz")
     Xm, Xp, ids = z["magno"], z["parvo"], z["image_ids"]
     n = Xm.shape[0]
     print(f"[{args.model} subj{args.subject:02d}] {n} images, "
