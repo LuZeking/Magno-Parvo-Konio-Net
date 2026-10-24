@@ -1203,6 +1203,36 @@ def check_relead() -> None:
     said("2.2: swap L−M probe, held out", q(SWAP, "parvo"), p, "−0.016")
 
 
+def check_length_cut() -> None:
+    """The NMI length cut (2026-10-24): Supplementary Note S6 holds each condensed paragraph's full original; the main
+    text keeps the opening words, gives no number its original lacks, and stays within the journal's 5,000 words."""
+    print("\n[length cut] Supplementary Note S6 against the condensed main text")
+    head, rest = PAPER.split("## 1. Introduction", 1)
+    main = rest.split("## 4. Methods", 1)[0]
+    s6 = PAPER.split("## Supplementary Note S6", 1)[1].split("\n## ", 1)[0]
+    body = [l for l in main.split("\n") if l.strip() and not l.startswith(("#", "|", "**Table"))]
+    n = sum(len(l.split()) for l in main.split("\n") if not l.startswith(("|", "**Table")))
+    holds(f"main text {n} words, at most 5,000", n <= 5000, "## 1. Introduction")
+    orig = [l for l in s6.split("\n")[1:] if l.strip() and not l.startswith("*From ")][1:]   # [0] is the note's preface
+    toks = lambda t: {x.rstrip(",") for x in NUM.findall(t.replace("Supplementary Note S6", "").replace("−", "-"))}
+    bad = []
+    for o in orig:
+        mates = [m for m in body if m[:40] == o[:40]]
+        if len(mates) != 1:
+            bad.append(f"{o[:40]!r}: {len(mates)} main-text partners")
+            continue
+        new = toks(mates[0]) - toks(o)
+        if new:
+            bad.append(f"{o[:40]!r}: numbers not in the original {sorted(new)}")
+        if len(mates[0].split()) >= len(o.split()):
+            bad.append(f"{o[:40]!r}: not shorter than the original")
+    print(f"  {'OK ' if not bad else 'BAD'} {len(orig)} condensed paragraphs: one partner each, shorter, no number outside the original")
+    for b in bad:
+        print(f"      {b}")
+    if bad or len(orig) < 30:
+        FAILS.append(f"length cut: {len(bad)} problems, {len(orig)} originals")
+
+
 def check_fig6_reference_recompute() -> None:
     """Fig. 6c's reference: the model's magno − parvo profile recomputed from the per-voxel fits by
     tmp_analysis/figs_v2/fig6_model_reference.py, against the committed file."""
@@ -1245,6 +1275,7 @@ def main() -> int:
     check_ed_table3()
     check_review_v9()
     check_relead()
+    check_length_cut()
     _external(check_fig6_reference_recompute, "encoding")
     if SKIPS:
         print(f"\nSKIPPED {len(SKIPS)} blocks for inputs not in the repository:")
