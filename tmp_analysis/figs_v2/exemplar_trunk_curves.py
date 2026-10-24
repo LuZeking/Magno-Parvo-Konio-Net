@@ -1,4 +1,4 @@
-"""Mean gain curves of the twelve trunk runs under E0 (pair-stratified halves) and E1 (exemplar-disjoint folds),
+"""Mean gain curves of the fifteen trunk runs under E0 (pair-stratified halves) and E1 (exemplar-disjoint folds),
 for Fig. 6a (docs/PLAN_EXEMPLAR_2026-09-21.md). exemplar_aggregate.py keeps only the trunks' spans; the figure
 needs the curves. Reads the per-run <tag>_exemplar.json; writes results/figures_v2/exemplar_trunk_curves.json.
 
@@ -12,7 +12,9 @@ import os
 SRC = "/scratch/byrong/mpk/exemplar/results/2026-09-21_exemplar"
 OUT = "results/figures_v2/exemplar_trunk_curves.json"
 TAGS = {"concat": "concat_dkl_bcs_seed{}", "single34": "run_dkl_bcs_single34_seed{}",
-        "single18": "run_dkl_bcs_single_seed{}", "rgb_tsn": "run_rgb_tsn_seed{}"}
+        "single18": "run_dkl_bcs_single_seed{}", "rgb_tsn": "run_rgb_tsn_seed{}",
+        # PAPER_v3's model of record (Fig. 6a draws it in place of the BA network, 2026-10-24)
+        "concat_dvd300": "concat_fs2_dvd300_avg_w050_ls_seed{}"}
 KEEP = ("mean_curve", "span_mean", "gated_span", "shape_end", "texture_end", "rho_mean_curve")
 
 

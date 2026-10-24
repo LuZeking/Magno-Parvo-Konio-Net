@@ -68,21 +68,21 @@ def _val(lit: str) -> float:
     return float(lit.replace("−", "-").replace(",", ""))
 
 
-def said(name: str, got: float, phrase: str, lit: str | None = None, tol: float | None = None) -> None:
-    """`phrase` is copied from PAPER_v3 and must still be in it; `lit` (default: the phrase's last number) is the
-    printed value, and `got` must round to it."""
+def said(name: str, got: float, phrase: str, lit: str | None = None, tol: float | None = None, doc: str | None = None) -> None:
+    """`phrase` is copied from PAPER_v3 (or from `doc`, a figure caption) and must still be in it; `lit` (default: the
+    phrase's last number) is the printed value, and `got` must round to it."""
     lit = NUM.findall(phrase)[-1] if lit is None else lit
     dec = len(lit.split(".")[1]) if "." in lit else 0
     tol = 0.5 * 10 ** -dec + 1e-9 if tol is None else tol
-    found = phrase in PAPER and lit in phrase
+    found = phrase in (PAPER if doc is None else doc) and lit in phrase
     ok = found and abs(float(got) - _val(lit)) <= tol
     print(f"  {'OK ' if ok else 'BAD'} {name:50s} got {float(got):+.4f}  text {lit}" + ("" if found else "  <- phrase not in PAPER_v3"))
     if not ok:
         FAILS.append(name)
 
 
-def holds(name: str, ok: bool, phrase: str) -> None:
-    found = phrase in PAPER
+def holds(name: str, ok: bool, phrase: str, doc: str | None = None) -> None:
+    found = phrase in (PAPER if doc is None else doc)
     ok = bool(ok) and found
     print(f"  {'OK ' if ok else 'BAD'} {name}" + ("" if found else "  <- phrase not in PAPER_v3"))
     if not ok:
@@ -400,7 +400,7 @@ def check_cortex() -> None:
 
     at = {k.split("(")[0].split(" ")[0]: np.array(x) for k, x in m["atlas"].items()}
     p = ("relative to V1, hV4 sits at −1.12 and every extrastriate group lower — ventral (VO, PHC) −1.25, lateral (LO, TO) −1.27, "
-         "dorsal (V3A/B, IPS0–3) −1.22 — each in 8/8 subjects (p = .0078)")
+         "dorsal (V3A/B, IPS0–2) −1.22 — each in 8/8 subjects (p = .0078)")
     for k, lit in (("hV4", "−1.12"), ("ventral", "−1.25"), ("lateral", "−1.27"), ("dorsal", "−1.22")):
         said(f"atlas, {k} minus V1", at[k].mean(), p, lit)
         holds(f"atlas, {k} below V1 in {(at[k] < 0).sum()}/8, p {p_exact(at[k]):.4f}", (at[k] < 0).all() and p_exact(at[k]) < 0.0079, p)
@@ -800,8 +800,8 @@ def check_readout_w_summary() -> None:
             holds(f"model w*: extrastriate below V1 in {(d < 0).sum()}/{len(d)}, p {p_exact(d):.4f}", (d < 0).all() and len(d) == 8 and p_exact(d) < 0.0079, p)
             said("rate at the extrastriate weight", np.interp(np.median(R["w_ext"]), w, r), p, "0.60")
             said("rate at V1's weight", np.interp(np.median(R["w_v1"]), w, r), p, "0.75")
-            p = "the weight best predicting extrastriate cortex (0.34) lies below the one best predicting V1 (0.65)"
-            said("Abstract: extrastriate w*", np.median(R["w_ext"]), p, "0.34"); said("Abstract: V1 w*", np.median(R["w_v1"]), p, "0.65")
+            p = "the weight best predicting extrastriate cortex (0.30–0.35) lies below the one best predicting V1 (0.65)"
+            said("Abstract: V1 w*", np.median(R["w_v1"]), p, "0.65")
         elif arm == "control":
             holds(f"control w*: {R['n_seeds']} seeds", R["n_seeds"] == 3, "reversed in the control")
             p = "reversed in the control (+0.308 [+0.194, +0.425], positive in 8/8 subjects, p = .0078)"
@@ -1049,6 +1049,131 @@ def check_ed_table3() -> None:
           "for the model's, gated on MiniEcoset validation, it is given after the gate")
 
 
+CAPTION = "results/figures_v3/{}_caption.md"
+
+
+def check_review_v9() -> None:
+    """The referee simulation v9 consistency pass (2026-10-24): what it rewrote or added in the Abstract, Results 2.4,
+    Methods 4.5 and 4.8, the Extended Data Table 4 caption and the Fig. 6 caption, from the committed result files; and
+    the wordings it removed, which must not come back."""
+    print("\n[v9 pass] the consistency fixes")
+    from scipy.stats import spearmanr
+    # Methods 4.5: the concatenation is a reference, not a bound (the BA block's statistic, on the model and its control)
+    W = json.load(open("results/figures_v3/readout_w_cortex.json"))["arms"]
+    cells = [R for a in ("model", "control") for R in W[a].values()]
+    mx = np.concatenate([np.array(R["max_r2"], float) for R in cells])
+    exc = mx - np.concatenate([np.array(R["concat"], float) for R in cells])
+    buys = float(np.median((1.0 - np.concatenate([np.array(R["r2_at_half_over_max"], float) for R in cells])) * mx))
+    pos = exc > 0
+    p = ("in the model and its control the best mixture exceeds the fitted concatenation in 15 of the 112 subject × ROI × "
+         "arm cells by a median 0.0023 r² — more than the 0.0012 the sweep itself buys from w = ½ to w*")
+    said("4.5: cells where the best mixture beats the concatenation", pos.sum(), p, "15"); said("4.5: cells", len(mx), p, "112")
+    said("4.5: median excess over the concatenation", np.median(exc[pos]), p, "0.0023"); said("4.5: r² the sweep buys", buys, p, "0.0012")
+    holds("4.5: the excess exceeds what the sweep buys", np.median(exc[pos]) > buys, p)
+    # Abstract: the extrastriate optimum is the range of Extended Data Table 2's three group rows
+    g = [R["w_star_median"] for k, R in W["model"].items() if k.split(" ")[0] in ("ventral", "lateral", "dorsal")]
+    p = "the weight best predicting extrastriate cortex (0.30–0.35) lies below the one best predicting V1 (0.65)"
+    holds(f"Abstract: the three extrastriate groups ({len(g)})", len(g) == 3, p)
+    said("Abstract: extrastriate w*, lowest group", min(g), p, "0.30"); said("Abstract: extrastriate w*, highest group", max(g), p, "0.35")
+    # Abstract: of the pairs the trained rate resolves, the share the gain reverses, against the resampling floors (Results 2.4)
+    F = json.load(open("results/figures_v2/exemplar_floors.json"))["units"]
+    frac = {u: F[u]["observed"]["heldout_gate"]["n_resolved_reversed"] / F[u]["n_resolved"] for u in ("image", "texture_exemplar")}
+    p = "re-ordering 3–8% of the network pairs the trained rate resolves, against resampling floors below 0.5%"
+    said("Abstract: resolved pairs reversed, texture exemplars (%)", 100 * frac["texture_exemplar"], p, "3")
+    said("Abstract: resolved pairs reversed, images (%)", 100 * frac["image"], p, "8")
+    holds("Abstract: both resolved-pair floors below 0.5%", max(F[u]["floor_resolved"] for u in frac) < 0.005, p)
+    # Methods 4.8 and the Extended Data Table 4 caption: the zoo's median span and its ρ with the trained rate, both gates
+    G = json.load(open("results/figures_v2/exemplar_gate.json"))
+    im = [r for r in G["networks"] if r["group"] == "imagenet"]
+    Z = {n["tag"]: n for n in json.load(open("results/figures_v2/exemplar_zoo.json"))["networks"]}
+    tr = [r["trained"] for r in im]
+    fold = [r["heldout"]["gated_span"] for r in im]
+    allim = [Z[r["tag"]]["spans"]["E1"]["gated"] for r in im]
+    holds(f"zoo: 38 ImageNet networks ({len(im)})", len(im) == 38, "the zoo summaries barely change")
+    p = ("median 0.18 against 0.19, 11 of 38 ≥ 0.20; 19% of pairs reversed, τ = 0.63; Spearman ρ with the trained rate +0.17 "
+         "against +0.10)")
+    said("4.8: median gated span, fold-basis gate", np.median(fold), p, "0.18")
+    said("4.8: median gated span, all-image gate", np.median(allim), p, "0.19")
+    said("4.8: ρ(span, trained rate), fold-basis gate", spearmanr(fold, tr)[0], p, "+0.17")
+    said("4.8: ρ(span, trained rate), all-image gate", spearmanr(allim, tr)[0], p, "+0.10")
+    p = ("gated span 0.08–0.29 (median 0.19; 0.18 with the gate recomputed on the held-out fold bases, as in Results 2.4 and "
+         "Methods 4.8), ≥ 0.20 in 11; Spearman ρ with the trained rate +0.10 (+0.17 on the fold-basis gate)")
+    said("ED T4 caption: median, all-image gate", np.median(allim), p, "0.19")
+    said("ED T4 caption: median, fold-basis gate", np.median(fold), p, "0.18")
+    said("ED T4 caption: networks ≥ 0.20, all-image gate", sum(v >= 0.20 for v in allim), p, "11")
+    said("ED T4 caption: ρ, all-image gate", spearmanr(allim, tr)[0], p, "+0.10")
+    said("ED T4 caption: ρ, fold-basis gate", spearmanr(fold, tr)[0], p, "+0.17")
+    # Results 2.4, closing: the within-budget span is the refitted head's (check_behaviour checks 0.241)
+    NL = json.load(open("results/nonlinear_readout_summary.json"))
+    said("2.4 closing: refitted head within five points of peak accuracy", np.median([NL[f"{x}_final"]["mlp"]["gated"] for x in MODEL]),
+         "from 0.48 to 0.85 (by 0.24 for a refitted head held within five points of peak accuracy)", "0.24")
+    # Supplementary Note S4 is scoped to the BA network and no longer contradicts the Discussion
+    holds("S4 is scoped to the BA network", True, "These passages are PAPER_v2's and describe the BA network")
+    holds("S4's 'do not support it' is the BA network's fixed transform", True,
+          "for the BA network's fixed transform our results do not support it")
+    holds("the Discussion's reading of the trajectory stands", True, "Our results support a version of it in which the input's history matters")
+
+    # Fig. 6 caption: the two-stream row and panel c's reference are the model
+    cap = open(CAPTION.format("fig6_generality"), encoding="utf8").read()
+    trc = json.load(open("results/figures_v2/exemplar_trunk_curves.json"))["families"]["concat_dvd300"]
+    fam = {f["key"]: f for f in json.load(open("results/figures_v3/subspace_behaviour.json"))["families"]}["concat_dvd300"]
+    gen = {f["key"]: f for f in json.load(open("results/figures_v3/generality_behaviour.json"))["families"]}["concat_dvd300"]
+    holds("Fig. 6: held-out curves are the model's three seeds", [x["tag"] for x in trc] == [f"concat_{x}" for x in MODEL],
+          "In the two-stream model the discriminant subspaces are not the streams", doc=cap)
+    c1 = np.mean([x["E1"]["mean_curve"] for x in trc], 0)
+    c0 = np.mean([x["mean_curve"] for x in fam["seeds"]], 0)
+    ws = np.round(np.linspace(0, 1, 21), 10)
+    m = (ws >= fam["gate"][0] - 1e-9) & (ws <= fam["gate"][1] + 1e-9)
+    en = [x["descriptives"]["energy_S_on_stream1_full"] for x in fam["seeds"]]
+    w, S = sweep(MODEL)
+    r = S.mean(0)
+    p = ("In the two-stream model the discriminant subspaces are not the streams (58–62% of the shape basis's energy lies on "
+         "stream 1) and the subspace gain moves the rate by 0.20 with exemplars held out (mean over repetitions and seeds; the "
+         "seed-mean curve runs 0.57 → 0.77, 0.16 within the gate) and by 0.29 with exemplars shared (0.52 → 0.80; 0.25 within "
+         "the gate), where the streams themselves, which the unit-level rule recovers, give 0.38 and the readout weight of "
+         "Fig. 4a 0.37.")
+    for lab, v, lit in (("shape basis on stream 1, lowest seed (%)", 100 * min(en), "58"),
+                        ("shape basis on stream 1, highest seed (%)", 100 * max(en), "62"),
+                        ("held out, mean span", np.mean([x["E1"]["span_mean"] for x in trc]), "0.20"),
+                        ("held out, seed-mean curve at w = 0", c1[0], "0.57"), ("held out, seed-mean curve at w = 1", c1[-1], "0.77"),
+                        ("held out, within the gate", c1[m].max() - c1[m].min(), "0.16"),
+                        ("shared, span", fam["span"], "0.29"), ("shared, w = 0", c0[0], "0.52"), ("shared, w = 1", c0[-1], "0.80"),
+                        ("shared, within the gate", fam["gated_span"], "0.25"), ("unit-level rule", gen["span"], "0.38"),
+                        ("readout weight of Fig. 4a", r.max() - r.min(), "0.37")):
+        said(f"Fig. 6 caption: {lab}", v, p, lit, doc=cap)
+    R = {k: float(np.nanmean(v)) for k, v in json.load(open("results/figures_v3/fig6_model_reference.json"))["families"]["two_stream_model"]["index"].items()}
+    ext = [R[k] for k in ("ventral", "lateral", "dorsal")]
+    p = "voxels pooled per region: +0.51 in V1, −0.76 in hV4 and −0.80 to −0.85 beyond it."
+    said("Fig. 6 caption: reference, V1", R["V1"], p, "+0.51", doc=cap); said("Fig. 6 caption: reference, hV4", R["hV4"], p, "−0.76", doc=cap)
+    said("Fig. 6 caption: reference beyond hV4, highest", max(ext), p, "−0.80", doc=cap)
+    said("Fig. 6 caption: reference beyond hV4, lowest", min(ext), p, "−0.85", doc=cap)
+
+    # the wordings the pass removed
+    for where, doc, gone in (("PAPER_v3", PAPER, ("twice the resampling noise", "at no cost in accuracy", "IPS0–3", "Table 11",
+                                                  "mpk-rewrite", "zoo summaries do not change", "best predicting extrastriate cortex (0.34)")),
+                             ("Fig. 6 caption", cap, ("Table 14", "63–70%", "two-stream diet model's"))):
+        for w_ in gone:
+            ok = w_ not in doc
+            print(f"  {'OK ' if ok else 'BAD'} {where}: “{w_}” stays out")
+            if not ok:
+                FAILS.append(f"{where}: “{w_}” is back")
+
+
+def check_fig6_reference_recompute() -> None:
+    """Fig. 6c's reference: the model's magno − parvo profile recomputed from the per-voxel fits by
+    tmp_analysis/figs_v2/fig6_model_reference.py, against the committed file."""
+    print("\n[Fig. 6c] the model's reference profile, recomputed (FS2_ENCODING_DIR)")
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs_v2"))
+    import fig6_model_reference as f6  # noqa: E402
+    got = f6.profile(ENC)
+    ref = json.load(open("results/figures_v3/fig6_model_reference.json"))["families"]["two_stream_model"]
+    ok = got["subjects"] == ref["subjects"] and all(np.allclose(got["index"][r], ref["index"][r], atol=1e-12, equal_nan=True)
+                                                    for r in ref["index"])
+    print(f"  {'OK ' if ok else 'BAD'} per-subject index in 7 regions x {len(ref['subjects'])} subjects matches the committed file")
+    if not ok:
+        FAILS.append("Fig. 6c reference recompute")
+
+
 def _external(fn, key: str) -> None:
     path, what = EXTERNAL[key]
     if not os.path.isdir(path):
@@ -1074,6 +1199,8 @@ def main() -> int:
     _external(check_readout_w, "readout_w")
     check_dissociations()
     check_ed_table3()
+    check_review_v9()
+    _external(check_fig6_reference_recompute, "encoding")
     if SKIPS:
         print(f"\nSKIPPED {len(SKIPS)} blocks for inputs not in the repository:")
         for fn, need in SKIPS:

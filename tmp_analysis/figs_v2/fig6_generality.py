@@ -1,11 +1,16 @@
 """Figure 6 — the readout account beyond the two-stream architecture (subspace rule; PLAN_SUBSPACE_2026-09-15).
 
-Inputs: results/figures_v2/subspace_behaviour.json   (tmp_analysis/figs_v2/subspace_behaviour.py; trained rates, accuracy
+Draws PAPER_v3's model of record (fs2_dvd300) in the two-stream row and as panel c's reference; the PAPER_v2 version,
+which drew the BA network there, is this file at commit 7673c18.
+
+Inputs: results/figures_v3/subspace_behaviour.json   (tmp_analysis/figs_v2/subspace_behaviour.py; trained rates, accuracy
                                                      gate and top-1 along the sweep, exemplar-shared curves and spans)
         results/figures_v2/exemplar_zoo.json         (exemplar-held-out curves of the six ImageNet networks; PLAN_EXEMPLAR)
         results/figures_v2/exemplar_trunk_curves.json (exemplar-held-out curves of our trunks)
         results/figures_v2/subspace_cortex.json      (tmp_analysis/figs_v2/generality_cortex.py --run-id 2026-09-15_sub; optional)
         results/figures_v2/generality_cortex.json    (unit-split cortex; used for panels c-d until the subspace cortex fits exist)
+        results/figures_v3/fig6_model_reference.json (the model's magno − parvo profile under the same rule;
+                                                     tmp_analysis/figs_v2/fig6_model_reference.py)
 
 (a) For each frozen network, the cue-conflict shape bias reachable by one gain on its own shape- and
     texture-predictive subspaces with its own head, the subspaces fitted on images sharing no object or texture
@@ -13,7 +18,7 @@ Inputs: results/figures_v2/subspace_behaviour.json   (tmp_analysis/figs_v2/subsp
     part of the sweep within 5 points of the trained top-1; dot, the trained readout. Grey bracket below: the same
     gated range under the pre-registered estimator, whose halves share exemplars (E0).
 (b) Held-out rate against w for the six ImageNet networks, with the change of top-1 along the sweep beneath.
-(c) Cortex: the S − T index across the hierarchy, with the two-stream diet model's magno − parvo profile for reference.
+(c) Cortex: the S − T index across the hierarchy, with the two-stream model's magno − parvo profile for reference.
 (d) Cortex-optimal mixing weight of the lossy sum per region.
 Usage: PYTHONPATH=.:tmp_analysis/figs_v2 python tmp_analysis/figs_v2/fig6_generality.py
 """
@@ -27,7 +32,7 @@ import matplotlib.pyplot as plt
 
 import style as S
 
-ORDER = [("concat", "two-stream, diet (streams concatenated)", S.DIET),
+ORDER = [("concat_dvd300", "two-stream model (streams concatenated)", S.DIET),
          ("single34", "single ResNet-34, diet", S.DIETL),
          ("single18", "single ResNet-18, diet", S.DIETL),
          ("rgb_tsn", "single ResNet-18, no diet", S.NODIET),
@@ -42,14 +47,14 @@ IMAGENET = ["vit_b_16", "resnet152", "convnext_base", "convnext_small", "resnet5
 IN_COL = {"vit_b_16": "#000000", "resnet152": "#0072B2", "convnext_base": "#009E73", "convnext_small": "#56B4E9",
           "resnet50": "#D55E00", "vgg16": "#CC79A7"}
 REGIONS = ["V1", "V2", "V3", "hV4", "ventral", "lateral", "dorsal"]
-FAM_STYLE = {"two_stream_diet": ("two-stream, diet (magno − parvo)", S.DIET, "-", "o"),
+FAM_STYLE = {"two_stream_model": ("two-stream model (magno − parvo)", S.DIET, "-", "o"),
              "single34": ("single ResNet-34, diet", S.DIETL, "-", "s"),
              "rgb_tsn": ("single ResNet-18, no diet", S.NODIET, "-", "^"),
              "resnet50": ("ImageNet ResNet-50", S.PUB, "-", "D"),
              "vit_b_16": ("ImageNet ViT-B/16", "#000000", "--", "v"),
              "convnext_base": ("ImageNet ConvNeXt-B", "#009E73", "--", "P")}
 SHARED_COL = "#9A9A9A"
-TRUNKS = ("concat", "single34", "single18", "rgb_tsn")
+TRUNKS = ("concat_dvd300", "single34", "single18", "rgb_tsn")
 WS_GRID = np.round(np.linspace(0, 1, 21), 10)
 
 
@@ -89,6 +94,11 @@ def load_ctx():
         if os.path.exists(path):
             ctx = json.load(open(path))
             if ctx.get("families"):
+                # the two-stream reference is the model of record, not the BA network the file carries
+                ctx["families"].pop("two_stream_diet", None)
+                ref = "results/figures_v3/fig6_model_reference.json"
+                if os.path.exists(ref):
+                    ctx["families"].update(json.load(open(ref))["families"])
                 return ctx, mode
     return None, None
 
@@ -96,7 +106,7 @@ def load_ctx():
 def main():
     global GATE
     GATE = {g["tag"]: g for g in json.load(open("results/figures_v2/exemplar_gate.json"))["networks"]}
-    sub = json.load(open("results/figures_v2/subspace_behaviour.json"))
+    sub = json.load(open("results/figures_v3/subspace_behaviour.json"))
     fam = {f["key"]: f for f in sub["families"]}
     ws = np.array(fam["resnet50"]["seeds"][0]["ws"])
     ctx, ctx_mode = load_ctx()
@@ -196,8 +206,6 @@ def main():
             m = np.array([np.nanmean(fo["index"][r]) for r in REGIONS])
             se = np.array([np.nanstd(fo["index"][r], ddof=1) / np.sqrt(np.sum(np.isfinite(fo["index"][r]))) for r in REGIONS])
             ax_c.errorbar(x, m, yerr=se, fmt=ls + mk, color=col, ms=4, lw=1.2, capsize=0, mec="white", mew=0.6, label=label, zorder=4)
-        if ctx_mode == "unit" and "two_stream_diet" not in ctx["families"]:
-            pass
         what = "shape- and texture-predictive subspaces" if ctx_mode == "subspace" else "shape- and texture-leaning unit halves"
         leg = ax_c.legend(loc="upper right", fontsize=5.9, handlelength=1.8, labelspacing=0.25,
                           title=f"bands: {what}", title_fontsize=6.0, alignment="left")
