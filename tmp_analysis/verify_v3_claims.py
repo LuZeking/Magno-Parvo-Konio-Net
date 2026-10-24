@@ -723,8 +723,8 @@ def check_behaviour() -> None:
     i05 = int(np.argmin(np.abs(w - 0.5)))
     dev = float(np.abs(S[:, i05] - cf).max())
     holds(f"w = 0.5 reproduces each trained model (max |d| {dev:.1e})", dev < 1e-6, p)
-    said("Abstract: sweep, w = 0", r[0], "one readout weight moves the rate from 0.48 to 0.85", "0.48")
-    said("Abstract: sweep, w = 1", r[-1], "one readout weight moves the rate from 0.48 to 0.85", "0.85")
+    said("Abstract: sweep, w = 0", r[0], "One readout weight moves its shape-bias rate from 0.48 to 0.85", "0.48")
+    said("Abstract: sweep, w = 1", r[-1], "One readout weight moves its shape-bias rate from 0.48 to 0.85", "0.85")
     rc = sweep(CONTROL)[1].mean(0)
     rs = sweep(SWAP)[1].mean(0)
     p = "The control's curve is flat (0.37–0.42), and so is the channel swap's (0.38–0.40)"
@@ -800,8 +800,6 @@ def check_readout_w_summary() -> None:
             holds(f"model w*: extrastriate below V1 in {(d < 0).sum()}/{len(d)}, p {p_exact(d):.4f}", (d < 0).all() and len(d) == 8 and p_exact(d) < 0.0079, p)
             said("rate at the extrastriate weight", np.interp(np.median(R["w_ext"]), w, r), p, "0.60")
             said("rate at V1's weight", np.interp(np.median(R["w_v1"]), w, r), p, "0.75")
-            p = "the weight best predicting extrastriate cortex (0.30–0.35) lies below the one best predicting V1 (0.65)"
-            said("Abstract: V1 w*", np.median(R["w_v1"]), p, "0.65")
         elif arm == "control":
             holds(f"control w*: {R['n_seeds']} seeds", R["n_seeds"] == 3, "reversed in the control")
             p = "reversed in the control (+0.308 [+0.194, +0.425], positive in 8/8 subjects, p = .0078)"
@@ -1070,18 +1068,11 @@ def check_review_v9() -> None:
     said("4.5: cells where the best mixture beats the concatenation", pos.sum(), p, "15"); said("4.5: cells", len(mx), p, "112")
     said("4.5: median excess over the concatenation", np.median(exc[pos]), p, "0.0023"); said("4.5: r² the sweep buys", buys, p, "0.0012")
     holds("4.5: the excess exceeds what the sweep buys", np.median(exc[pos]) > buys, p)
-    # Abstract: the extrastriate optimum is the range of Extended Data Table 2's three group rows
-    g = [R["w_star_median"] for k, R in W["model"].items() if k.split(" ")[0] in ("ventral", "lateral", "dorsal")]
-    p = "the weight best predicting extrastriate cortex (0.30–0.35) lies below the one best predicting V1 (0.65)"
-    holds(f"Abstract: the three extrastriate groups ({len(g)})", len(g) == 3, p)
-    said("Abstract: extrastriate w*, lowest group", min(g), p, "0.30"); said("Abstract: extrastriate w*, highest group", max(g), p, "0.35")
-    # Abstract: of the pairs the trained rate resolves, the share the gain reverses, against the resampling floors (Results 2.4)
-    F = json.load(open("results/figures_v2/exemplar_floors.json"))["units"]
-    frac = {u: F[u]["observed"]["heldout_gate"]["n_resolved_reversed"] / F[u]["n_resolved"] for u in ("image", "texture_exemplar")}
-    p = "re-ordering 3–8% of the network pairs the trained rate resolves, against resampling floors below 0.5%"
-    said("Abstract: resolved pairs reversed, texture exemplars (%)", 100 * frac["texture_exemplar"], p, "3")
-    said("Abstract: resolved pairs reversed, images (%)", 100 * frac["image"], p, "8")
-    holds("Abstract: both resolved-pair floors below 0.5%", max(F[u]["floor_resolved"] for u in frac) < 0.005, p)
+    # Supplementary Note S4: the resolved-pairs statistic that replaced "twice the resampling noise"
+    F = json.load(open("results/figures_v2/exemplar_floors.json"))["units"]["image"]
+    p = "(8% of the pairs the trained rate resolves, against a resampling floor of 0.33%)"
+    said("S4: resolved pairs reversed, images (%)", 100 * F["observed"]["heldout_gate"]["n_resolved_reversed"] / F["n_resolved"], p, "8")
+    said("S4: resolved-pair floor, images (%)", 100 * F["floor_resolved"], p, "0.33")
     # Methods 4.8 and the Extended Data Table 4 caption: the zoo's median span and its ρ with the trained rate, both gates
     G = json.load(open("results/figures_v2/exemplar_gate.json"))
     im = [r for r in G["networks"] if r["group"] == "imagenet"]
@@ -1159,6 +1150,59 @@ def check_review_v9() -> None:
                 FAILS.append(f"{where}: “{w_}” is back")
 
 
+def check_relead() -> None:
+    """Plan step 3 (2026-10-24): the re-led abstract (at most 150 words), Results 2.2's per-stream accuracies (detached
+    readouts in the run histories) and the Discussion's per-image figures."""
+    print("\n[re-lead] abstract, per-stream accuracy (Results 2.2), Discussion")
+    ab = PAPER.split("## Abstract\n", 1)[1].split("\n## ", 1)[0].strip()
+    holds(f"Abstract: {len(ab.split())} words, at most 150", len(ab.split()) <= 150, ab[:60])
+    PI = json.load(open("results/perimage_behavior/perimage_correspondence_v3.json"))["models"]
+    dif = lambda runs: float(np.mean([PI[f"{x}_final"]["valid_rate_resid__pearson"]["oos_pct_ceiling"] for x in runs]))
+    p = "(22% of the ceiling, against 8–9% for both controls on identical input)"
+    said("Abstract: per-image difficulty, model", dif(MODEL), p, "22")
+    said("Abstract: per-image difficulty, control", dif(CONTROL), p, "9"); said("Abstract: per-image difficulty, swap", dif(SWAP), p, "8")
+    p = "(22.3% of the split-half ceiling, against 9.0% and 8.2% on identical input)"
+    said("Discussion: per-image difficulty, model", dif(MODEL), p, "22.3")
+    said("Discussion: per-image difficulty, control", dif(CONTROL), p, "9.0"); said("Discussion: per-image difficulty, swap", dif(SWAP), p, "8.2")
+    G = json.load(open("results/figures_v2/exemplar_gate.json"))["summary"]["heldout"]
+    p = "in 38 frozen ImageNet networks, a gain on each network's shape and texture subspaces moves it by 0.08–0.29"
+    said("Abstract: zoo gated span, lowest", G["gated_min"], p, "0.08"); said("Abstract: zoo gated span, highest", G["gated_max"], p, "0.29")
+    gone = "Shape-biased behaviour does not require shape-biased representations"
+    print(f"  {'OK ' if gone not in PAPER else 'BAD'} Abstract: the unsupported last sentence stays out")
+    if gone in PAPER:
+        FAILS.append("Abstract: unsupported sentence is back")
+
+    # Results 2.2: which trunk carries the task (detached readouts: heads on detached features, no gradient into the trunks)
+    va = lambda runs, st, ep=-1: np.array([hist(r)[ep]["val"][st] for r in runs])
+    holds("2.2: histories end at epoch 49 and index 7 is epoch 7",
+          all(hist(r)[-1]["epoch"] == 49 and hist(r)[7]["epoch"] == 7 for r in MODEL + CONTROL + SWAP), "at epoch 7, against")
+    p = ("the model's luminance stream reaches 0.39 validation top-1 and its L−M stream 0.63, while in the control and the swap "
+         "the luminance stream carries the task (0.75, against 0.25 and 0.17 for L−M)")
+    said("2.2: model, luminance read alone", va(MODEL, "magno").mean(), p, "0.39")
+    said("2.2: model, L−M read alone", va(MODEL, "parvo").mean(), p, "0.63")
+    said("2.2: control, luminance read alone", va(CONTROL, "magno").mean(), p, "0.75")
+    said("2.2: swap, luminance read alone", va(SWAP, "magno").mean(), p, "0.75")
+    said("2.2: control, L−M read alone", va(CONTROL, "parvo").mean(), p, "0.25")
+    said("2.2: swap, L−M read alone", va(SWAP, "parvo").mean(), p, "0.17")
+    p = "(0.07–0.09 at epoch 7, against 0.68–0.69 in the control and the swap)"
+    e7m, e7c = va(MODEL, "magno", 7), np.concatenate([va(CONTROL, "magno", 7), va(SWAP, "magno", 7)])
+    said("2.2: model luminance at epoch 7, lowest seed", e7m.min(), p, "0.07"); said("2.2: model luminance at epoch 7, highest seed", e7m.max(), p, "0.09")
+    said("2.2: control and swap luminance at epoch 7, lowest", e7c.min(), p, "0.68")
+    said("2.2: control and swap luminance at epoch 7, highest", e7c.max(), p, "0.69")
+    EX = json.load(open(EXEMPLAR))["streams"]
+    q = lambda runs, st: float(np.mean([EX[r][st]["Q1"]["bias"] for r in runs]))
+    ok = True
+    for runs in (MODEL, CONTROL, SWAP):
+        weak, strong = ("magno", "parvo") if va(runs, "magno").mean() < va(runs, "parvo").mean() else ("parvo", "magno")
+        ok &= q(runs, weak) > q(runs, strong)
+    holds("2.2: in model, control and swap the weaker trunk is the more shape-leaning (held-out probe)", ok,
+          "In each of the three networks the weaker trunk is the more shape-leaning one, but weakness does not cross parity")
+    acc = {(n, st): va(runs, st).mean() for n, runs in (("model", MODEL), ("control", CONTROL), ("swap", SWAP)) for st in ("magno", "parvo")}
+    p = "the swap's chromatic trunk is the weakest of all and stays below it (−0.016)"
+    holds("2.2: the swap's L−M trunk is the weakest of the six", min(acc, key=acc.get) == ("swap", "parvo"), p)
+    said("2.2: swap L−M probe, held out", q(SWAP, "parvo"), p, "−0.016")
+
+
 def check_fig6_reference_recompute() -> None:
     """Fig. 6c's reference: the model's magno − parvo profile recomputed from the per-voxel fits by
     tmp_analysis/figs_v2/fig6_model_reference.py, against the committed file."""
@@ -1200,6 +1244,7 @@ def main() -> int:
     check_dissociations()
     check_ed_table3()
     check_review_v9()
+    check_relead()
     _external(check_fig6_reference_recompute, "encoding")
     if SKIPS:
         print(f"\nSKIPPED {len(SKIPS)} blocks for inputs not in the repository:")
