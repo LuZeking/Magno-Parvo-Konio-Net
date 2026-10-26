@@ -20,13 +20,15 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 import time
 
 import numpy as np
 import torch
 
 from src.analysis.encoding import (banded_ridge, dkl_frontend, features,
-                                    input_bands, voxel_shape_bias)
+                                    input_bands, template_design,
+                                    voxel_shape_bias)
 from src.analysis.encoding import nsd_data
 
 
@@ -101,6 +103,31 @@ def parse_args():
              "encoding model and store a per-voxel shape-bias index -- the "
              "in-silico cue-conflict panel of PAPER_PLAN 7.3b/21",
     )
+    # docs/PLAN_CORTEX_DECISION_2026-10-26.md -- all four off by default, so a
+    # run without them is byte-for-byte the run this file always produced.
+    p.add_argument("--save-predictions", action="store_true",
+                   help="store the cue-conflict (and template) predictions "
+                        "themselves, (n_images, n_voxels) float16 per band, "
+                        "not only the per-voxel index; requires --cue-conflict")
+    p.add_argument("--template-design", default="none",
+                   choices=("none", "miniecoset16"),
+                   help="also push a template design through the fit "
+                        "(template_design.build): 'miniecoset16' = 50 "
+                        "MiniEcoset validation images of each of the 16 "
+                        "Geirhos classes + the 80 same-cue Geirhos images; "
+                        "requires --cue-conflict")
+    p.add_argument("--save-encoder", action="store_true",
+                   help="store the fitted estimators (ridge coefficients, band "
+                        "weights, band statistics, PCA bases) so further "
+                        "stimuli can be pushed through this fit later without "
+                        "refitting it")
+    p.add_argument("--reproduce-check", type=str, default=None,
+                   help="a stored result npz of the same run x subject; after "
+                        "the fit, max |diff| of r2_joint / unique_magno / "
+                        "unique_parvo over its reliable_mask is recorded as "
+                        "repro_max_abs_diff, and the process exits 3 if it "
+                        "exceeds --reproduce-tol (the result is saved first)")
+    p.add_argument("--reproduce-tol", type=float, default=1e-3)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--allow-partial", action="store_true",
                    help="encode a still-training checkpoint on purpose")
@@ -117,6 +144,9 @@ def parse_args():
         help="npz path to cache per-image stream features",
     )
     args = p.parse_args()
+    if (args.save_predictions or args.template_design != "none") \
+            and not args.cue_conflict:
+        p.error("--save-predictions / --template-design require --cue-conflict")
     if args.dvd_age_months is not None:
         # Recorded as such in the provenance, so a DVD-diet cache can never
         # pass for a blur+CS one.
@@ -225,6 +255,27 @@ def features_from_rgb(args, rgb_uint8, ch_min, ch_max, model, device: str):
         print(f"  features {min(start + chunk, n)}/{n}", flush=True)
 
     return np.concatenate(magno_all), np.concatenate(parvo_all)
+
+
+def assemble_chunks(
+    res_chunks: dict[str, list[np.ndarray]]
+) -> dict[str, np.ndarray]:
+    """Join the per-voxel-chunk results of ``fit_banded``.
+
+    Per-voxel statistics are (n_voxels,) and stack along axis 0; predictions
+    (n_images, n_voxels) and coefficients (n_features, n_voxels) carry voxels
+    on axis 1; the band statistics ``enc_band_*`` do not depend on the chunk
+    and are taken once.
+    """
+    out: dict[str, np.ndarray] = {}
+    for k, v in res_chunks.items():
+        if k.startswith("enc_band_"):
+            out[k] = v[0]
+        elif k.startswith(("pred_extra_", "enc_coef_", "enc_deltas_")):
+            out[k] = np.concatenate(v, axis=1)
+        else:
+            out[k] = np.concatenate(v, axis=0)
+    return out
 
 
 def cache_provenance(args) -> dict[str, np.ndarray]:
@@ -425,20 +476,45 @@ def main():
     # ridge was fit through.
     X_extra = None
     cc_shapes = cc_textures = None
+    n_cc = 0
+    tpl = None
     if args.cue_conflict:
         stage("cue-conflict features")
         rgb_cc, cc_shapes, cc_textures = voxel_shape_bias.cue_conflict_design()
+        n_cc = len(cc_shapes)
         ch_min, ch_max, cc_model = build_extractor(args, device)
         cc_m, cc_p = features_from_rgb(
             args, rgb_cc, ch_min, ch_max, cc_model, device
         )
-        del rgb_cc, cc_model
+        del rgb_cc
+        if args.template_design != "none":
+            # PLAN_CORTEX_DECISION_2026-10-26: the templates and the same-cue
+            # images ride along as further rows of the same extra design --
+            # same front end, feature stage, PCA and band statistics -- and
+            # are split off by row after the fit. Image sets of different
+            # sizes go through the extractor separately (the front end
+            # resizes each set to 256 px).
+            tpl = template_design.build(args.template_design)
+            tm, tp = [cc_m], [cc_p]
+            for rgb_t in tpl.pop("rgb"):
+                m_t, p_t = features_from_rgb(
+                    args, rgb_t, ch_min, ch_max, cc_model, device
+                )
+                tm.append(m_t)
+                tp.append(p_t)
+            cc_m, cc_p = np.concatenate(tm), np.concatenate(tp)
+            del tm, tp
+            stage(f"  template design {args.template_design}: "
+                  f"{len(tpl['labels'])} images")
+        del cc_model
         X_extra = [
             pcam.transform(cc_m).astype(np.float32),
             pcap.transform(cc_p).astype(np.float32),
         ]
         del cc_m, cc_p
-        stage(f"  cue-conflict design {X_extra[0].shape[0]} images")
+        stage(f"  cue-conflict design {n_cc} images"
+              + (f" + {X_extra[0].shape[0] - n_cc} template rows"
+                 if tpl is not None else ""))
 
     stage(f"banded ridge over {Y_train.shape[1]} voxels "
           f"(chunk={args.voxel_chunk or 'all'}, folds={args.n_splits})")
@@ -457,6 +533,7 @@ def main():
             [Xm_te, Xp_te], Y_test[:, start:stop],
             splits, backend=args.backend, seed=args.seed,
             X_bands_extra=X_extra,
+            save_encoder=args.save_encoder,
             single_solver_params=(dict(n_targets_batch=500, n_alphas_batch=7, n_targets_batch_refit=500)
                                   if args.ridge_batched else None),
             banded_targets_batch=1000 if args.ridge_batched else 2000,
@@ -470,25 +547,73 @@ def main():
     # Per-voxel statistics are (n_voxels,) and stack along axis 0; the
     # cue-conflict predictions are (n_images, n_voxels) and stack along the
     # voxel axis instead.
-    res = {
-        k: np.concatenate(v, axis=1 if k.startswith("pred_extra_") else 0)
-        for k, v in res_chunks.items()
-    }
+    res = assemble_chunks(res_chunks)
 
     extras: dict[str, np.ndarray] = {}
     if args.cue_conflict:
         for band in ("magno", "parvo", "joint"):
             pred = res.pop(f"pred_extra_{band}")
+            pred_cc, pred_tpl = pred[:n_cc], pred[n_cc:]
             for k, v in voxel_shape_bias.voxel_shape_bias(
-                pred, cc_shapes, cc_textures
+                pred_cc, cc_shapes, cc_textures
             ).items():
                 extras[f"cc_{band}_{k}"] = v
-        extras["cc_n_images"] = np.asarray(len(cc_shapes))
+            if args.save_predictions:
+                extras[f"cc_pred_{band}"] = pred_cc.astype(np.float16)
+                if tpl is not None:
+                    extras[f"tpl_pred_{band}"] = pred_tpl.astype(np.float16)
+        extras["cc_n_images"] = np.asarray(n_cc)
+        if args.save_predictions:
+            stems = np.asarray(template_design.cue_conflict_stems())
+            if len(stems) != n_cc:
+                raise RuntimeError(
+                    f"cue-conflict listing changed under us: {len(stems)} "
+                    f"stems for {n_cc} design rows"
+                )
+            extras["cc_shapes"] = np.asarray(cc_shapes)
+            extras["cc_textures"] = np.asarray(cc_textures)
+            extras["cc_stems"] = stems
+            if tpl is not None:
+                extras["tpl_labels"] = np.asarray(tpl["labels"])
+                extras["tpl_source"] = np.asarray(tpl["source"])
+                extras["tpl_stems"] = np.asarray(tpl["stems"])
         stage("  cue-conflict shape-bias index computed")
+    if args.save_encoder:
+        # The stored estimators act on PCA-projected, band-scaled features:
+        #   z = ((x - enc_pca_mean) @ enc_pca_components.T - enc_band_mu)
+        #   pred = (z[:, enc_band_keep] / enc_band_scale) @ enc_coef
+        # with the joint design the concatenation of the two scaled bands.
+        for name, pca in (("magno", pcam), ("parvo", pcap)):
+            extras[f"enc_pca_mean_{name}"] = pca.mean_.astype(np.float32)
+            extras[f"enc_pca_components_{name}"] = (
+                pca.components_.astype(np.float16)
+            )
+        stage("  encoder stored")
 
     part = banded_ridge.variance_partition(
         res["r2_joint"], res["r2_magno"], res["r2_parvo"], noise_ceiling=nc
     )
+
+    repro: dict[str, np.ndarray] = {}
+    if args.reproduce_check:
+        ref = np.load(args.reproduce_check, allow_pickle=False)
+        rm = ref["reliable_mask"]
+        if rm.shape != res["r2_joint"].shape:
+            raise ValueError(
+                f"reproduce-check: {args.reproduce_check} has "
+                f"{rm.shape[0]} voxels, this fit {res['r2_joint'].shape[0]}"
+            )
+        diffs = {
+            "r2_joint": float(np.nanmax(np.abs(res["r2_joint"][rm] - ref["r2_joint"][rm]))),
+            "unique_magno": float(np.nanmax(np.abs(part["unique_magno"][rm] - ref["unique_magno"][rm]))),
+            "unique_parvo": float(np.nanmax(np.abs(part["unique_parvo"][rm] - ref["unique_parvo"][rm]))),
+        }
+        repro = {
+            "repro_ref": np.asarray(args.reproduce_check),
+            "repro_max_abs_diff": np.asarray(max(diffs.values())),
+            "repro_tol": np.asarray(args.reproduce_tol),
+        }
+        stage(f"  reproduce-check vs {args.reproduce_check}: {diffs}")
 
     rois = {}
     for roi_name in ("streams", "prf-eccrois", "prf-visualrois"):
@@ -516,8 +641,17 @@ def main():
         **{k: v for k, v in part.items()},
         **extras,
         **rois,
+        **repro,
     )
     stage(f"saved -> {out_path}")
+    if repro and float(repro["repro_max_abs_diff"]) > args.reproduce_tol:
+        print(
+            f"FATAL: refit does not reproduce {args.reproduce_check}: max "
+            f"|diff| {float(repro['repro_max_abs_diff']):.3e} > "
+            f"{args.reproduce_tol:g} (result saved, exit 3)",
+            file=sys.stderr, flush=True,
+        )
+        sys.exit(3)
 
 
 if __name__ == "__main__":

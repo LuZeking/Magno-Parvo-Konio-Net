@@ -83,29 +83,41 @@ def prepare_band(
     the test set -- refitting them on 1280 out-of-distribution images would
     make its predictions incomparable with the NSD ones.
     """
+    mu, keep, scale = band_stats(Xb_train, var_tol)
+    tr = (Xb_train - mu).astype(np.float64)[:, keep]
+    te = (Xb_test - mu).astype(np.float64)[:, keep]
+    ex = (None if Xb_extra is None
+          else (Xb_extra - mu).astype(np.float64)[:, keep])
+    return tr / scale, te / scale, (None if ex is None else ex / scale)
+
+
+def band_stats(
+    Xb_train: np.ndarray, var_tol: float = 1e-6, verbose: bool = True
+) -> tuple[np.ndarray, np.ndarray, float]:
+    """(mu, keep, scale) of ``prepare_band``, from the training split only.
+
+    The arithmetic ``prepare_band`` always did, factored out so that
+    ``fit_banded(save_encoder=True)`` can store it: a fitted coefficient
+    matrix is only usable on further stimuli together with the centring,
+    the dropped dimensions and the scale its design was built with
+    (docs/PLAN_CORTEX_DECISION_2026-10-26.md §1).
+    """
     mu = Xb_train.mean(axis=0, keepdims=True)
     tr = (Xb_train - mu).astype(np.float64)
-    te = (Xb_test - mu).astype(np.float64)
-    ex = None if Xb_extra is None else (Xb_extra - mu).astype(np.float64)
-
     sd = tr.std(axis=0)
     keep = sd > (sd.max() * var_tol if sd.size and sd.max() > 0 else 0.0)
     if not keep.any():
         raise ValueError("feature band has no non-degenerate dimensions")
-    tr, te = tr[:, keep], te[:, keep]
-    if ex is not None:
-        ex = ex[:, keep]
-    if int(keep.size - keep.sum()):
+    if verbose and int(keep.size - keep.sum()):
         print(
             f"[banded_ridge] dropped {int(keep.size - keep.sum())} of "
             f"{keep.size} degenerate band dimensions",
             flush=True,
         )
-
-    scale = np.sqrt((tr**2).sum() / tr.shape[0])
+    scale = np.sqrt((tr[:, keep] ** 2).sum() / tr.shape[0])
     if scale <= 0:
         raise ValueError("feature band has zero scale")
-    return tr / scale, te / scale, (None if ex is None else ex / scale)
+    return mu, keep, float(scale)
 
 
 def fit_banded(
@@ -122,8 +134,16 @@ def fit_banded(
     single_solver_params: dict | None = None,
     banded_targets_batch: int = 2000,
     banded_alphas_batch: int | None = None,
+    save_encoder: bool = False,
 ) -> dict[str, np.ndarray]:
     """Joint banded ridge + per-band single ridge fits; test R2 per voxel.
+
+    ``save_encoder`` additionally returns the fitted estimators -- the
+    single-band and joint coefficient matrices ``enc_coef_{magno,parvo,joint}``
+    ((n_kept_features, n_targets), float32), the joint band weights
+    ``enc_deltas_joint`` and each band's ``enc_band_{mu,keep,scale}_*`` -- so
+    that further stimuli can be pushed through this fit without refitting it
+    (docs/PLAN_CORTEX_DECISION_2026-10-26.md). Nothing else changes.
 
     ``single_solver_params`` (e.g. ``dict(n_targets_batch=500, n_alphas_batch=7,
     n_targets_batch_refit=500)``) bounds the memory of the single-band RidgeCV
@@ -175,6 +195,12 @@ def fit_banded(
     Xex = [p[2] for p in prepared]
 
     results: dict[str, np.ndarray] = {}
+    if save_encoder:
+        for name, Xb_tr in zip(("magno", "parvo"), X_bands_train):
+            mu, keep, scale = band_stats(Xb_tr, verbose=False)
+            results[f"enc_band_mu_{name}"] = mu.astype(np.float32).ravel()
+            results[f"enc_band_keep_{name}"] = keep
+            results[f"enc_band_scale_{name}"] = np.asarray(scale, dtype=np.float64)
 
     # ---- single-band ridge fits ----
     for name, Xb_tr, Xb_te, Xb_ex in zip(("magno", "parvo"), Xtr, Xte, Xex):
@@ -189,6 +215,8 @@ def fit_banded(
             results[f"pred_extra_{name}"] = _as_numpy(
                 ridge.predict(Xb_ex.astype(np.float64)), backend_mod
             ).astype(np.float32)
+        if save_encoder:
+            results[f"enc_coef_{name}"] = _fitted_coef(ridge, backend_mod)
 
     # ---- joint banded ridge, PRIMAL space ----
     # With ~1k features per band and tens of thousands of trials, the primal
@@ -226,8 +254,26 @@ def fit_banded(
         results["pred_extra_joint"] = _as_numpy(
             banded.predict(Xex_cat), backend_mod
         ).astype(np.float32)
+    if save_encoder:
+        results["enc_coef_joint"] = _fitted_coef(banded, backend_mod)
+        results["enc_deltas_joint"] = _as_numpy(
+            banded.deltas_, backend_mod
+        ).astype(np.float32)
 
     return results
+
+
+def _fitted_coef(estimator, backend_mod) -> np.ndarray:
+    """The primal coefficient matrix (n_features, n_targets) of a fitted
+    himalaya estimator, float32; raises rather than returning nothing, because
+    a stored encoder without its coefficients would be a silent lie."""
+    coef = getattr(estimator, "coef_", None)
+    if coef is None:
+        raise RuntimeError(
+            f"{type(estimator).__name__} exposes no coef_; the encoder cannot "
+            "be stored from this solver"
+        )
+    return _as_numpy(coef, backend_mod).astype(np.float32)
 
 
 def variance_partition(

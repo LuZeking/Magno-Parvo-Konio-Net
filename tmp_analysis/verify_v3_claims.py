@@ -60,6 +60,23 @@ PUBLISHED_CNNS = {"AlexNet": (0.429, 0.032), "GoogLeNet": (0.312, 0.025), "VGG-1
 
 FAILS: list[str] = []
 SKIPS: list[tuple[str, str]] = []
+# 2026-10-26: the former Fig. 6 strand (frozen single-trunk networks under subspace gains, the model zoo) was
+# removed from the manuscript, so the checks that quote it have no phrase to find. They are retired by name
+# prefix and printed as such, never silently dropped; the result files they read are unchanged.
+RETIRED_PREFIXES = (
+    "model's two-stream span", "six networks' ", "Discussion: two-stream span", "Discussion: concatenation",
+    "ED T3 model:", "S4: resolved", "zoo: 38 ImageNet networks", "4.8: ", "ED T4 caption:",
+    "2.4 closing: refitted head", "Abstract: zoo gated span",
+)
+RETIRED: list[str] = []
+
+
+def _retired(name: str) -> bool:
+    if name.startswith(RETIRED_PREFIXES):
+        RETIRED.append(name)
+        print(f"  RETIRED {name} (the former Fig. 6 strand left the manuscript 2026-10-26)")
+        return True
+    return False
 LANDED: list[str] = []
 NUM = re.compile(r"[−+-]?(?:\d[\d,]*(?:\.\d+)?|\.\d+)")
 
@@ -71,6 +88,8 @@ def _val(lit: str) -> float:
 def said(name: str, got: float, phrase: str, lit: str | None = None, tol: float | None = None, doc: str | None = None) -> None:
     """`phrase` is copied from PAPER_v3 (or from `doc`, a figure caption) and must still be in it; `lit` (default: the
     phrase's last number) is the printed value, and `got` must round to it."""
+    if _retired(name):
+        return
     lit = NUM.findall(phrase)[-1] if lit is None else lit
     dec = len(lit.split(".")[1]) if "." in lit else 0
     tol = 0.5 * 10 ** -dec + 1e-9 if tol is None else tol
@@ -82,6 +101,8 @@ def said(name: str, got: float, phrase: str, lit: str | None = None, tol: float 
 
 
 def holds(name: str, ok: bool, phrase: str, doc: str | None = None) -> None:
+    if _retired(name):
+        return
     found = phrase in (PAPER if doc is None else doc)
     ok = bool(ok) and found
     print(f"  {'OK ' if ok else 'BAD'} {name}" + ("" if found else "  <- phrase not in PAPER_v3"))
@@ -1231,7 +1252,8 @@ def check_length_cut() -> None:
     print(f"  {'OK ' if not bad else 'BAD'} {len(orig)} condensed paragraphs: one partner each, shorter, no number outside the original")
     for b in bad:
         print(f"      {b}")
-    if bad or len(orig) < 30:
+    # 25 originals since 2026-10-26: five passages of Results 2.4 and the Discussion left with the former Fig. 6 strand
+    if bad or len(orig) < 25:
         FAILS.append(f"length cut: {len(bad)} problems, {len(orig)} originals")
 
 
@@ -1324,6 +1346,7 @@ def main() -> int:
         print(f"  {c}")
     if LANDED:
         print(f"\nLANDED, the text still marks pending: {LANDED}")
+    print(f"\nv3 RETIRED checks: {len(RETIRED)}")
     print("\nv3 FAILURES:", FAILS if FAILS else "none")
     rc = 1 if FAILS else 0
     if not args.no_ba:
