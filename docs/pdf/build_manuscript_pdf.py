@@ -61,6 +61,9 @@ PROFILES = {
                   ("E6", "figE6_zoo", "Extended Data Figure 6")],
     ),
 }
+# v3 is the dvd300 rewrite: same figure set and citation style as v2, drawn on the model in results/figures_v3/.
+PROFILES["v3"] = dict(PROFILES["v2"], draft=REPO / "docs" / "PAPER_v3.md", figdir=REPO / "results" / "figures_v3",
+                      out=REPO / "docs" / "pdf" / "PAPER_v3.pdf")
 DRAFT = PROFILES["draft"]["draft"]
 FIGDIR = PROFILES["draft"]["figdir"]
 FIGURES = PROFILES["draft"]["figures"]
