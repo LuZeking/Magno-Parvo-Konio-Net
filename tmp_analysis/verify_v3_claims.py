@@ -1214,7 +1214,9 @@ def check_length_cut() -> None:
     n = sum(len(l.split()) for l in main.split("\n") if not l.startswith(("|", "**Table")))
     holds(f"main text {n} words, at most 5,000", n <= 5000, "## 1. Introduction")
     orig = [l for l in s6.split("\n")[1:] if l.strip() and not l.startswith("*From ")][1:]   # [0] is the note's preface
-    toks = lambda t: {x.rstrip(",") for x in NUM.findall(t.replace("Supplementary Note S6", "").replace("−", "-"))}
+    # citation years are not data: a condensed paragraph may add a reference its original lacked
+    toks = lambda t: {x.rstrip(",") for x in NUM.findall(t.replace("Supplementary Note S6", "").replace("−", "-"))
+                      if not re.fullmatch(r"(19|20)\d\d", x.rstrip(","))}
     bad = []
     for o in orig:
         mates = [m for m in body if m[:40] == o[:40]]
@@ -1231,6 +1233,41 @@ def check_length_cut() -> None:
         print(f"      {b}")
     if bad or len(orig) < 30:
         FAILS.append(f"length cut: {len(bad)} problems, {len(orig)} originals")
+
+
+# the citation pass (2026-10-26): in-text form -> opening of its reference entry; each entry verified against its source
+# page (Crossref, PubMed, OpenReview, NeurIPS proceedings) before it entered the list
+NEW_CITATIONS = {
+    "Achille et al., 2019": "Achille, A., Rovere, M., & Soatto, S. (2019)",
+    "Avberšek et al., 2021": "Avberšek, L. K., Zeman, A., & Op de Beeck, H. (2021)",
+    "Choi et al., 2023": "Choi, M., Han, K., Wang, X., Zhang, Y., & Liu, Z. (2023)",
+    "Dobs et al., 2022": "Dobs, K., Martinez, J., Kell, A. J. E., & Kanwisher, N. (2022)",
+    "Finzi et al., 2026": "Finzi, D., Margalit, E., Kay, K., Yamins, D. L. K., & Grill-Spector, K. (2026)",
+    "Izmailov et al., 2022": "Izmailov, P., Kirichenko, P., Gruver, N., & Wilson, A. G. (2022)",
+    "Jang & Tong, 2024": "Jang, H., & Tong, F. (2024)",
+    "Jinsi et al., 2023": "Jinsi, O., Henderson, M. M., & Tarr, M. J. (2023)",
+    "Kirichenko et al., 2023": "Kirichenko, P., Izmailov, P., & Wilson, A. G. (2023)",
+    "Klein et al., 2025": "Klein, T., Meyen, S., Brendel, W., Wichmann, F. A., & Meding, K. (2025)",
+    "Mummadi et al., 2021": "Mummadi, C. K., Subramaniam, R., Hutmacher, R., Vitay, J., Fischer, V., & Metzen, J. H. (2021)",
+    "Vogelsang et al., 2018": "Vogelsang, L., Gilad-Gutnick, S., Ehrenberg, E., Yonas, A., Diamond, S., Held, R., & Sinha, P. (2018)",
+    "Vogelsang et al., 2018, 2024": "Vogelsang, L., Vogelsang, M., Pipa, G., Diamond, S., & Sinha, P. (2024)",
+    "Vogelsang et al., 2025": "Vogelsang, M., Vogelsang, L., Pipa, G., Diamond, S., & Sinha, P. (2025)",
+    "Yoshihara et al., 2023": "Yoshihara, S., Fukiage, T., & Nishida, S. (2023)",
+}
+
+
+def check_citations() -> None:
+    """The citation pass: each new in-text citation is in the main text and its reference entry is in the list."""
+    print("\n[citations] the prior work added after review v9")
+    main = PAPER.split("## 1. Introduction", 1)[1].split("## 4. Methods", 1)[0]
+    refs = re.sub(r"\s+", " ", PAPER.split("## References", 1)[1].split("\n## ", 1)[0])
+    for cite, entry in NEW_CITATIONS.items():
+        ok = cite in main and entry in refs
+        print(f"  {'OK ' if ok else 'BAD'} {cite}: cited {cite in main}, entry {entry in refs}")
+        if not ok:
+            FAILS.append(f"citation {cite}")
+    holds("the closest precedent is named with what this design adds", True,
+          "here the split is set by two streams' inputs, the input matures continuously to adulthood")
 
 
 def check_fig6_reference_recompute() -> None:
@@ -1276,6 +1313,7 @@ def main() -> int:
     check_review_v9()
     check_relead()
     check_length_cut()
+    check_citations()
     _external(check_fig6_reference_recompute, "encoding")
     if SKIPS:
         print(f"\nSKIPPED {len(SKIPS)} blocks for inputs not in the repository:")
