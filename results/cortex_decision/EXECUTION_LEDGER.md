@@ -102,3 +102,17 @@ Budget: ≈ 450 CPU-h, ≈ 1.5 days wall at %16; ≈ 40 GB on scratch.
      (CODE = snapshot 376fb05 as before). If the gate fails it lists the missing files; rerun those elements and
      resubmit gate + analysis.
 - MaxRSS of finished elements 33.5–39.2 GB (includes page cache) against the 44 G request.
+
+### 2b. 2026-10-27 18:30 — third time-out (task 21); rerun 26721875, gate dependency extended
+
+- `26713943_21` (`fs2_dvd300_avg_w050_ls` seed2, subj06, c012) TIMEOUT at 14:00:14 (ended 18:23:58). Log: 1.6 h in
+  "design + betas", then 8.5 h reading the 1,280 cue-conflict PNGs + 880 MiniEcoset templates (stage +5,744 s →
+  +36,184 s), ridge reached 80 % (12,019 s) at the limit — ≈ 50 min short. No output file was written (DEST absent,
+  the script's refuse-overwrite rule is therefore not triggered), no Python error. Same storage signature as tasks 3 and 5.
+- Action (script and settings unchanged, only wall limit / node list on the sbatch line): rerun **26721875**
+  (`--array=21 --time=30:00:00 --exclude=c116,c042,c162,c012`, CODE = snapshot 376fb05).
+  Gate 26719988 dependency extended to `afterany:26713943:26719969:26719997:26721875`
+  (`scontrol update`, verified with `scontrol show job`); analysis 26719989 unchanged (`afterok:26719988`).
+- State 18:30: 32/88 refit files, all 32 reproduce the stored fits exactly (0.0). Running: 26713943 tasks 25, 28, 37,
+  38, 39 (14 h limit; 4–12 h elapsed), 26719969 tasks 3, 5 (c161, 3 h), 26719997 tasks 40–55 (≈ 3 h). Pending:
+  26719997_[56–87], 26721875_21. Any further time-out among 25/28/37/38/39 is handled the same way.
