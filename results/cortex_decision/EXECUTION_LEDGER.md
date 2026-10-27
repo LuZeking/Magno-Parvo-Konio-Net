@@ -75,3 +75,30 @@ Budget: ≈ 450 CPU-h, ≈ 1.5 days wall at %16; ≈ 40 GB on scratch.
 - Next, once 26713944 has ended: copy `ctd_analysis.json` and `ctd_summary.md` into `results/cortex_decision/`,
   write §3 here, fill the ⟦PENDING⟧ slots of PAPER_v3 (Results 2.5, abstract, Discussion), write
   `tmp_analysis/figs_v2/fig6_cortex_decision.py`, add the new numbers to `tmp_analysis/verify_v3_claims.py`.
+
+### 2a. In flight, 2026-10-27 15:05 — two time-outs from Lustre stalls; chain re-built
+
+- State at 14:55: 27 of 88 refits COMPLETED, 11 RUNNING, 2 TIMEOUT (tasks 3 = `fs2_dvd300…seed0` subj04 on c116,
+  5 = same run subj06 on c042), 48 not started. Every completed refit reproduces its stored 2026-10-16_fs2 fit
+  **exactly** (reproduce-check max |Δ| = 0.0 on r2_joint, unique_magno, unique_parvo; 27/27). No Python error in any log.
+- Cause of the time-outs: storage, not the fit. Normal elements spend 20–40 min before the ridge (betas 25 min,
+  cue-conflict + template features 3 min) and 3.1–7.1 h in the ridge (total 3.6–7.6 h). Six elements stalled in the
+  read stages: task 5 took 10 h to read the 1,280 cue-conflict PNGs (its ridge then ran out of time at 65%), task 3
+  never left "design + betas" in 14 h and could not be killed ("JOB NOT ENDING WITH SIGNALS", the Lustre-wait
+  signature), tasks 7/13/16/21 lost 6–10 h in the same stages (7 and 13 still finished, 44,553–48,792 s). Today's
+  42-OST probe (15:01): OST 0, 12, 13, 16, 18–23, 25 stalled; yesterday it was 3, 12–17, 23. The inputs are spread over
+  every OST (cue-conflict PNGs ≈ 30 per OST; each subject's 30–40 betas sessions include 3–9 on yesterday's bad set),
+  so some elements will always hit a stalled OST; the output directories (OST 36/30/9) were healthy both days.
+- Actions (same script, same settings, only the wall limit and node list changed on the sbatch command line;
+  no refit output was touched):
+  1. `scancel 26713944` — its `afterok:26713943_*` can never be satisfied after a TIMEOUT.
+  2. Rerun of tasks 3 and 5: **26719969** (`--array=3,5 --time=30:00:00 --exclude=c116,c042,c162,c012`).
+  3. The 48 elements that had not started (`26713943_[40-87]`) were cancelled and resubmitted as
+     **26719997** (`--array=40-87%16 --time=30:00:00`, same exclusions), so a stall no longer costs a day.
+     The 10–11 running elements of 26713943 (14 h limit) run on; task 21 (subj06, seed2) spent 10 h in the read stage
+     and may time out at ≈ 18:20 — if so it is rerun the same way and the gate dependency extended.
+  4. New `slurm/ctd_gate.sh` (commit 4e85f06): exits 0 only when all 88 refit files exist. Chain now:
+     gate **26719988** `afterany:26713943:26719969:26719997` → analysis **26719989** `afterok:26719988`
+     (CODE = snapshot 376fb05 as before). If the gate fails it lists the missing files; rerun those elements and
+     resubmit gate + analysis.
+- MaxRSS of finished elements 33.5–39.2 GB (includes page cache) against the 44 G request.
