@@ -124,3 +124,14 @@ Budget: ≈ 450 CPU-h, ≈ 1.5 days wall at %16; ≈ 40 GB on scratch.
   (and a task-25 rerun, if 25 times out at 20:01 — its ridge was at 45 % with 1.5 h left) starts only when 26719997
   is in its last wave; expected chain end ≈ 2026-10-28 afternoon. Not changed: QOS is the user's policy
   (`scontrol update jobid=26721875 qos=prio` would start it at once; prio has 10/20 running).
+
+### 2c. 2026-10-27 20:10 — fourth time-out (task 25); rerun 26722389
+
+- `26713943_25` (`fs2_dvdfix300_avg_w050_ls` seed0, subj02, c054) TIMEOUT at 14:00:20 (ended 20:01:30): 9.0 h in the
+  read stages before the ridge, ridge at 70 % (14,361 s) when the limit hit. No output file, no Python error — the
+  same Lustre signature as tasks 3, 5 and 21.
+- Action: `slurm/ctd_rerun_element.sh 25` → **26722389** (`--array=25 --time=30:00:00`, same exclusions, CODE 376fb05).
+  Gate 26719988 now `afterany:26713943:26719969:26719997:26721875:26722389` (verified); analysis 26719989 unchanged.
+- State 20:10: 42/88 refit files, 42/42 reproduce the stored fits exactly (0.0). One element left on the 14 h limit:
+  task 28 (ridge 90 %, 1.5 h left, expected to finish). Running 18, pending 26 (26719997, %16 throttle) + 2 (reruns
+  21 and 25, behind the standard-QOS cap as noted in §2b).
