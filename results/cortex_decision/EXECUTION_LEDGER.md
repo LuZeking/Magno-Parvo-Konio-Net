@@ -116,3 +116,11 @@ Budget: ≈ 450 CPU-h, ≈ 1.5 days wall at %16; ≈ 40 GB on scratch.
 - State 18:30: 32/88 refit files, all 32 reproduce the stored fits exactly (0.0). Running: 26713943 tasks 25, 28, 37,
   38, 39 (14 h limit; 4–12 h elapsed), 26719969 tasks 3, 5 (c161, 3 h), 26719997 tasks 40–55 (≈ 3 h). Pending:
   26719997_[56–87], 26721875_21. Any further time-out among 25/28/37/38/39 is handled the same way.
+- Rerun recipe is now a helper, `slurm/ctd_rerun_element.sh <task>` (commit d8cc66a): refuses while the task is
+  live in the gate's chain or its output exists, submits with `--time=30:00:00` and extends the gate's afterany list.
+- Queue note (18:40): the standard QOS cap of 45 running jobs is full (23 CTD + 22 `cat_ctl` from another lane).
+  Freed slots go by priority: `fs2_nlfeat` ×5 (277065) and `tuned_gen` ×6 (276069, both queued since 10-23) >
+  26719997 (270940, %16) > `cat_ctl` (270841, 162 pending, %30) > **26721875_21 (270739)**. So the task-21 rerun
+  (and a task-25 rerun, if 25 times out at 20:01 — its ridge was at 45 % with 1.5 h left) starts only when 26719997
+  is in its last wave; expected chain end ≈ 2026-10-28 afternoon. Not changed: QOS is the user's policy
+  (`scontrol update jobid=26721875 qos=prio` would start it at once; prio has 10/20 running).
