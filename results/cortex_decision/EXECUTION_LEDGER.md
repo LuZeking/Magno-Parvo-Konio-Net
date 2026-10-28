@@ -235,3 +235,19 @@ Budget: ≈ 450 CPU-h, ≈ 1.5 days wall at %16; ≈ 40 GB on scratch.
 - Expected: v2 equals the v1 record in every quantity except the shape-target permutation p, null percentile and r_h
   exemplar CIs, which must equal `ctd_h_null_fix.json`; reading of record unchanged. On completion: diff v2 against
   v1 and the fix file, copy v2 into `results/cortex_decision/v2/`, write §4b, add the verifier check.
+
+### 4b. 2026-10-28 19:40 — v2 analysis complete; equals the record except the corrected quantities
+
+- Job 26728647 COMPLETED (c-node, 40 min, MaxRSS 19.1 GB of 24 G; unit tests 13/13 in the job). Outputs
+  `/scratch/.../2026-10-26_ctd/analysis_v2/` (main + three sensitivity runs), copied with the job log into
+  `results/cortex_decision/v2/`. Reading of record in all four runs: `CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES`;
+  P-C1/P-C2/P-C2b/P-C4 not met, P-C3 met — identical to v1.
+- `tmp_analysis/ctd_compare_v2.py` → `v2/compare_v2.json`: per run, 44,269 leaves of the v1 json reproduced by v2 to
+  1e-12 (NaN = NaN), 0 differ, 0 extra; the corrected quantities (shape-target permutation p and null percentile per
+  arm × ROI, P-C2's `perm_p` on h, the r_h exemplar CIs) equal `ctd_h_null_fix.json` to 1e-12 in the main run (353
+  leaves, joint band) and are finite everywhere else (560 main; 913 per sensitivity run, where v1 had NaN). So v2 is
+  the record with the defect removed and nothing else changed. Model p_h (v2 = fix): V1 .0010, V2 .0005, V3 .0005,
+  hV4 .0015, ventral .0295, lateral .0135, parietal .0055; sensitivity runs: ventral .035 / .0295 / .0235, lateral
+  .006 / .0135 / .0135 (Spearman / V1 = streams / all voxels) — P-C2's permutation criterion fails in every variant.
+- Manuscript: Methods 4.8 now states the v2 rerun; the numbers quoted remain those of the v1 record plus the corrected
+  null (which v2 reproduces). Verifier: `check_cortex_decision` adds the v2 check (reading, zero differences, p_h = fix).

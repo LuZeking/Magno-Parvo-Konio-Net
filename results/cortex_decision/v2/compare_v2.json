@@ -1,0 +1,102 @@
+{
+ "v2_dir": "/scratch/byrong/mpk/encoding/results/2026-10-26_ctd/analysis_v2",
+ "runs": {
+  "main": {
+   "n_reproduced": 44269,
+   "n_equal_to_fix": 353,
+   "n_finite_corrected": 560,
+   "n_bad": 0,
+   "n_extra_in_v2": 0,
+   "reading_v1": "CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES",
+   "reading_v2": "CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES",
+   "met_v1": {
+    "P-C1": false,
+    "P-C2": false,
+    "P-C3": true,
+    "P-C4": false,
+    "P-C5": null
+   },
+   "met_v2": {
+    "P-C1": false,
+    "P-C2": false,
+    "P-C3": true,
+    "P-C4": false,
+    "P-C5": null
+   },
+   "bad": []
+  },
+  "sens_spearman": {
+   "n_reproduced": 44269,
+   "n_equal_to_fix": 0,
+   "n_finite_corrected": 913,
+   "n_bad": 0,
+   "n_extra_in_v2": 0,
+   "reading_v1": "CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES",
+   "reading_v2": "CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES",
+   "met_v1": {
+    "P-C1": false,
+    "P-C2": false,
+    "P-C3": true,
+    "P-C4": false,
+    "P-C5": null
+   },
+   "met_v2": {
+    "P-C1": false,
+    "P-C2": false,
+    "P-C3": true,
+    "P-C4": false,
+    "P-C5": null
+   },
+   "bad": []
+  },
+  "sens_v1_streams": {
+   "n_reproduced": 44269,
+   "n_equal_to_fix": 0,
+   "n_finite_corrected": 913,
+   "n_bad": 0,
+   "n_extra_in_v2": 0,
+   "reading_v1": "CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES",
+   "reading_v2": "CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES",
+   "met_v1": {
+    "P-C1": false,
+    "P-C2": false,
+    "P-C3": true,
+    "P-C4": false,
+    "P-C5": null
+   },
+   "met_v2": {
+    "P-C1": false,
+    "P-C2": false,
+    "P-C3": true,
+    "P-C4": false,
+    "P-C5": null
+   },
+   "bad": []
+  },
+  "sens_all_voxels": {
+   "n_reproduced": 44269,
+   "n_equal_to_fix": 0,
+   "n_finite_corrected": 913,
+   "n_bad": 0,
+   "n_extra_in_v2": 0,
+   "reading_v1": "CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES",
+   "reading_v2": "CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES",
+   "met_v1": {
+    "P-C1": false,
+    "P-C2": false,
+    "P-C3": true,
+    "P-C4": false,
+    "P-C5": null
+   },
+   "met_v2": {
+    "P-C1": false,
+    "P-C2": false,
+    "P-C3": true,
+    "P-C4": false,
+    "P-C5": null
+   },
+   "bad": []
+  }
+ },
+ "ok": true
+}

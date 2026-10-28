@@ -1438,6 +1438,17 @@ def check_cortex_decision() -> None:
     rng("Fig. 6c caption: magno", [mean("model", r, "magno", "B") for r in rois], "Luminance band 0.66–0.73, L−M band 0.42–0.51", "0.66", "0.73", doc=cap)
     rng("Fig. 6c caption: parvo", [mean("model", r, "parvo", "B") for r in rois], "L−M band 0.42–0.51, joint between them", "0.42", "0.51", doc=cap)
     said("Fig. 6e caption: r", e["r_h_resid_subject_mean"], "r = 0.108 [0.050, 0.155], 17% of the ceiling", lit="0.108", doc=cap)
+    # v2 record (ledger §4): the corrected module rerun on the same refits reproduces v1 except the shape-target nulls/CIs
+    cmp_path = "results/cortex_decision/v2/compare_v2.json"
+    if os.path.exists(cmp_path):
+        cmp = json.load(open(cmp_path))
+        v2 = json.load(open("results/cortex_decision/v2/ctd_analysis.json"))
+        holds("4.8: v2 record reproduces v1 except the corrected nulls", cmp["ok"] and all(r["n_bad"] == 0 and r["n_extra_in_v2"] == 0
+              and r["reading_v2"] == reading for r in cmp["runs"].values()) and v2["reading_of_record"] == reading
+              and all(abs(v2["permutation"]["model"][r]["p_h"] - hf["per_arm_roi"]["model"][r]["p_h"]) < 1e-12 for r in rois),
+              "a full rerun with the corrected module")
+    else:
+        print("  ... 4.8: v2 record not yet in results/cortex_decision/v2/ (ledger §4)")
 
 
 def _external(fn, key: str) -> None:
