@@ -1307,6 +1307,139 @@ def check_fig6_reference_recompute() -> None:
         FAILS.append("Fig. 6c reference recompute")
 
 
+def check_cortex_decision() -> None:
+    """Results 2.5, the abstract, the Discussion and Fig. 6: the cortex-to-decision test, re-derived from
+    results/cortex_decision/ (the record ctd_analysis.json, the corrected shape-target null ctd_h_null_fix.json, the
+    per-image hV4 margins ctd_perimage_hV4.json) and the Fig. 6 caption."""
+    print("\n[2.5] cortex-to-decision test (results/cortex_decision/)")
+    d = json.load(open("results/cortex_decision/ctd_analysis.json"))
+    hf = json.load(open("results/cortex_decision/ctd_h_null_fix.json"))
+    pim = json.load(open("results/cortex_decision/ctd_perimage_hV4.json"))
+    cap = open("results/figures_v3/fig6_cortex_decision_caption.md", encoding="utf8").read()
+    P, ps = d["predictions"], d["per_subject"]
+    ceil_h = d["settings"]["ceilings"]["ceiling_h"]
+    rois = ["V1", "V2", "V3", "hV4", "ventral", "lateral", "parietal"]
+    extra = ["hV4", "ventral", "lateral"]
+
+    def mean(arm, roi, band, key):
+        return float(np.mean([ps[arm][s][roi][band][key] for s in ps[arm] if roi in ps[arm][s]]))
+
+    def rng(name, vals, phrase, lo, hi, doc=None):
+        said(f"{name} (low)", min(vals), phrase, lit=lo, doc=doc)
+        said(f"{name} (high)", max(vals), phrase, lit=hi, doc=doc)
+
+    reading = "CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES"
+    sens = [json.load(open(f"results/cortex_decision/{k}/ctd_analysis.json")) for k in ("sens_spearman", "sens_v1_streams", "sens_all_voxels")]
+    holds("2.5: reading of record", d["reading_of_record"] == reading and not P["P-C1"]["met"] and not P["P-C2"]["met"]
+          and P["P-C3"]["met"] and not P["P-C4"]["met"] and not P["P-C2"]["met_b_resolution"],
+          "the reading of record is `" + reading + "`")
+    holds("2.5: sensitivity readings", all(x["reading_of_record"] == reading and
+                                           {k: v.get("met") for k, v in x["predictions"].items()} == {k: v.get("met") for k, v in P.items()}
+                                           for x in sens), "the reading is the same in the three registered sensitivity analyses")
+    files = d["files"]
+    holds("Methods 4.8 gate: reproduction", not any(f.get("excluded") for f in files) and len(files) == 88 and
+          all(f["repro_max_abs_diff"] == 0.0 for f in files if f.get("repro_max_abs_diff") is not None) and
+          sum(f.get("repro_max_abs_diff") is None for f in files) == 8, "A refit must reproduce its stored fit")
+    # P-C1
+    said("2.5: hV4 rate", mean("model", "hV4", "joint", "B"), "the cortical shape-bias rate of the model's joint fit is 0.53 in hV4", lit="0.53")
+    holds("2.5: hV4 8/8 above .5", P["P-C1"]["rois"]["hV4"]["n_below_half"] == 0, "0.53 in hV4 (8/8 subjects above 0.5)")
+    said("2.5: ventral rate", mean("model", "ventral", "joint", "B"), "0.47 in ventral (8/8 below, every seed)", lit="0.47")
+    holds("2.5: ventral 8/8 below, every seed", P["P-C1"]["rois"]["ventral"]["n_below_half"] == 8 and
+          P["P-C1"]["rois"]["ventral"]["all_seeds_below_half"], "0.47 in ventral (8/8 below, every seed)")
+    said("2.5: lateral rate", mean("model", "lateral", "joint", "B"), "0.50 in lateral cortex (5/8 below)", lit="0.50")
+    holds("2.5: lateral 5/8 below", P["P-C1"]["rois"]["lateral"]["n_below_half"] == 5, "0.50 in lateral cortex (5/8 below)")
+    rng("2.5: V1-V3 rates", [mean("model", r, "joint", "B") for r in ("V1", "V2", "V3")], "against 0.57–0.60 in V1–V3", "0.57", "0.60")
+    holds("2.5: rates below the behavioural rate", P["P-C1"]["B_below_behavioural_rate_everywhere"] and d["settings"]["behavioural_rate_model"] == 0.682,
+          "every rate lies below the network's behavioural rate of 0.68")
+    rng("2.5: control rates", [mean("control", r, "joint", "B") for r in rois], "The control (0.40–0.51 across regions)", "0.40", "0.51")
+    rng("2.5: swap rates", [mean("swap", r, "joint", "B") for r in rois], "the channel swap (0.39–0.51)", "0.39", "0.51")
+    rng("2.5: untrained rates", [mean("untrained", r, "joint", "B") for r in rois], "the untrained network at 0.49–0.55", "0.49", "0.55")
+    rng("2.5: floor rates", [mean("gabor", r, "joint", "B") for r in rois], "the input floor at 0.48–0.52", "0.48", "0.52")
+    rng("Abstract: extrastriate rates", [mean("model", r, "joint", "B") for r in extra], "(shape-bias rates 0.47–0.53)", "0.47", "0.53")
+    rng("Discussion: control+swap rates", [mean(a, r, "joint", "B") for a in ("control", "swap") for r in rois],
+        "against 0.39–0.51 for the control and the swap", "0.39", "0.51")
+    # P-C2
+    c2 = P["P-C2"]["rois"]
+    holds("2.5: 8/8 positive, Wilcoxon .0039", all(c2[r]["h"]["n_positive"] == 8 and round(c2[r]["h"]["wilcoxon_p_greater"], 4) == 0.0039 for r in extra),
+          "8/8 subjects positive in hV4, ventral and lateral cortex (exact Wilcoxon p = .0039)")
+    said("2.5: hV4 % ceiling", P["P-C5"]["model"]["hV4"]["pct_h_mean"], "at 15.8% of the residual ceiling in hV4", lit="15.8")
+    said("2.5: ventral % ceiling", P["P-C5"]["model"]["ventral"]["pct_h_mean"], "9.4% in ventral", lit="9.4")
+    said("2.5: lateral % ceiling", P["P-C5"]["model"]["lateral"]["pct_h_mean"], "10.3% in lateral cortex", lit="10.3")
+    ph = {r: hf["per_arm_roi"]["model"][r]["p_h"] for r in rois}
+    holds("2.5: corrected null V1-hV4", max(ph[r] for r in ("V1", "V2", "V3", "hV4")) <= 0.0015 and
+          all(hf["per_arm_roi"]["model"][r]["null_h_nan"] == 0 for r in rois) and hf["max_abs_diff_r_h_vs_record"] < 1e-9,
+          "above the within-cell permutation null in V1–hV4 (p ≤ .0015)")
+    said("2.5: corrected null ventral", ph["ventral"], "ventral (p = .029)", lit=".029")
+    said("2.5: corrected null lateral", ph["lateral"], "lateral cortex (p = .013)", lit=".013")
+    holds("2.5: P-C2 permutation criterion also not met", not hf["P-C2_permutation_criterion"]["met_p_lt_0.01_in_all_three"],
+          "though not at the registered p < .01 in ventral")
+    said("2.5: floor hV4", P["P-C5"]["gabor"]["hV4"]["pct_h_mean"], "carries 11.5% in hV4", lit="11.5")
+    rng("2.5: floor beyond hV4", [P["P-C5"]["gabor"][r]["pct_h_mean"] for r in ("ventral", "lateral", "parietal")], "13.0–13.8% beyond it", "13.0", "13.8")
+    holds("2.5: model above floor 7/0/1", c2["hV4"]["h"]["n_above_gabor"] == 7 and c2["ventral"]["h"]["n_above_gabor"] == 0 and
+          c2["lateral"]["h"]["n_above_gabor"] == 1 and round(c2["hV4"]["h"]["wilcoxon_vs_gabor_p_greater"], 4) == 0.0078,
+          "7/8 subjects in hV4 (p = .0078) and in 0/8 and 1/8 in ventral and lateral cortex")
+    rng("2.5: P-C2b % ceiling", [P["P-C5"]["model"][r]["pct_v_mean"] for r in extra], "correspond at 8.7–9.5% of ceiling", "8.7", "9.5")
+    holds("2.5: P-C2b 8/8 positive", all(c2[r]["v"]["n_positive"] == 8 for r in extra), "8/8 subjects positive, but do not beat the permutation null")
+    rng("2.5: P-C2b permutation p", [d["permutation"]["model"][r]["p_v"] for r in extra], "do not beat the permutation null (p = .12–.18)", ".12", ".18")
+    # P-C3
+    c3 = P["P-C3"]["rois"]
+    said("2.5: magno V1", mean("model", "V1", "magno", "B"), "rates 0.66 in V1", lit="0.66")
+    rng("2.5: magno beyond V3", [mean("model", r, "magno", "B") for r in ("hV4", "ventral", "lateral", "parietal")], "rising to 0.70–0.73 beyond V3", "0.70", "0.73")
+    rng("2.5: parvo", [mean("model", r, "parvo", "B") for r in rois], "the L−M band's is texture-biased, 0.42–0.51", "0.42", "0.51")
+    holds("2.5: P-C3 everywhere", P["P-C3"]["met"] and all(c3[r]["n_magno_gt_parvo"] == 8 and c3[r]["seed_cells_magno_gt_parvo"] == "24/24"
+                                                            and c3[r]["n_joint_between"] == 8 for r in rois),
+          "8/8 subjects, 24/24 seed-cells and every one of the seven regions (P-C3 met)")
+    # P-C4
+    c4 = P["P-C4"]
+    rng("2.5: P-C4 v model seeds", list(c4["v"]["model_seed_means"].values()), "every model seed (7.0–9.3% of ceiling, extrastriate mean)", "7.0", "9.3")
+    rng("2.5: P-C4 v control seeds", list(c4["v"]["control_seed_means"].values()), "every control seed (9.5–13.1%)", "9.5", "13.1")
+    rng("2.5: P-C4 v swap seeds", list(c4["v"]["swap_seed_means"].values()), "every swap seed (10.0–12.0%", "10.0", "12.0")
+    holds("2.5: P-C4 v U = 0 opposite", c4["v"]["mw_vs_control"]["u"] == 0 and c4["v"]["mw_vs_swap"]["u"] == 0 and
+          c4["v"]["mw_vs_control"]["p_less"] == 0.05 and c4["v"]["mw_vs_swap"]["p_less"] == 0.05 and not c4["met"],
+          "U = 0: complete separation in the direction opposite to the prediction, one-sided p = .05")
+    rng("2.5: P-C4 h model seeds", list(c4["h"]["model_seed_means"].values()), "(model 8.4–15.2%", "8.4", "15.2")
+    rng("2.5: P-C4 h control seeds", list(c4["h"]["control_seed_means"].values()), "control 7.8–11.1%", "7.8", "11.1")
+    rng("2.5: P-C4 h swap seeds", list(c4["h"]["swap_seed_means"].values()), "swap 8.9–12.4%; p = 1.0", "8.9", "12.4")
+    holds("2.5: P-C4 h interleaved", c4["h"]["mw_vs_control"]["p_two"] == 1.0 and c4["h"]["mw_vs_swap"]["p_two"] == 1.0, "swap 8.9–12.4%; p = 1.0")
+    # P-C5
+    said("2.5: profile V1", P["P-C5"]["model"]["V1"]["pct_h_mean"], "a rise from V1 (13.9%)", lit="13.9")
+    said("2.5: profile hV4", P["P-C5"]["model"]["hV4"]["pct_h_mean"], "to hV4 (15.8%)", lit="15.8")
+    rng("2.5: profile beyond", [P["P-C5"]["model"][r]["pct_h_mean"] for r in ("ventral", "lateral", "parietal")], "a fall beyond (9.4–10.8%)", "9.4", "10.8")
+    said("2.5: r2 V1", P["P-C5"]["model"]["V1"]["r2_median_mean"], "median encoder r² falling from 0.19 to 0.09", lit="0.19")
+    said("2.5: r2 parietal", P["P-C5"]["model"]["parietal"]["r2_median_mean"], "median encoder r² falling from 0.19 to 0.09", lit="0.09")
+    rng("2.5: floor profile V1-hV4", [P["P-C5"]["gabor"][r]["pct_h_mean"] for r in ("V1", "V2", "V3", "hV4")], "(9.7–11.5% in V1–hV4", "9.7", "11.5")
+    # Fig. 6e (paper and caption)
+    e = pim["arms"]["model"]
+    said("2.5: hV4 image-level r", e["r_h_resid_subject_mean"], "r = 0.108 [0.050, 0.155] under the exemplar-cluster bootstrap, 17% of the ceiling", lit="0.108")
+    said("2.5: hV4 image-level CI low", e["r_h_resid_subject_mean_ci_exemplar"][0], "r = 0.108 [0.050, 0.155]", lit="0.050")
+    said("2.5: hV4 image-level CI high", e["r_h_resid_subject_mean_ci_exemplar"][1], "r = 0.108 [0.050, 0.155]", lit="0.155")
+    said("2.5: hV4 image-level % ceiling", e["pct_h_subject_mean"], "17% of the ceiling", lit="17")
+    holds("2.5: hV4 image-level per-subject r = record", all(abs(e["per_subject"][s]["r_h_resid"] - ps["model"][s]["hV4"]["joint"]["r_h_resid"]) < 1e-9
+                                                            for s in e["per_subject"]) and pim["code"].startswith("376fb05"),
+          "Fig. 6e shows hV4 image by image")
+    rs = [ps["model"][s]["hV4"]["joint"]["r_h_resid"] * 100 / ceil_h for s in ps["model"]]
+    rng("Fig. 6e caption: per-subject % ceiling", rs, "per subject 13–18%", "13", "18", doc=cap)
+    # Fig. 6 caption lists
+    for name, got, phrase, lits in [
+        ("Fig. 6a caption: model rates", [mean("model", r, "joint", "B") for r in rois],
+         "Model: 0.60, 0.59, 0.57 in V1–V3, 0.53 in hV4, 0.47 ventral, 0.50 lateral, 0.47 parietal", ["0.60", "0.59", "0.57", "0.53", "0.47", "0.50", "0.47"]),
+        ("Fig. 6b caption: model % ceiling", [P["P-C5"]["model"][r]["pct_h_mean"] for r in rois],
+         "Shape target, model: 13.9, 14.7, 15.5, 15.8, 9.4, 10.3, 10.8%", ["13.9", "14.7", "15.5", "15.8", "9.4", "10.3", "10.8"]),
+        ("Fig. 6b caption: permutation p", [ph[r] for r in rois],
+         "permutation p = .0010, .0005, .0005, .0015, .029, .013, .0055", [".0010", ".0005", ".0005", ".0015", ".029", ".013", ".0055"]),
+        ("Fig. 6b caption: floor % ceiling", [P["P-C5"]["gabor"][r]["pct_h_mean"] for r in rois],
+         "floor 10.2, 9.7, 10.9, 11.5, 13.0, 13.8, 13.4%", ["10.2", "9.7", "10.9", "11.5", "13.0", "13.8", "13.4"]),
+        ("Fig. 6b caption: model above floor", [c2[r]["h"]["n_above_gabor"] if r in c2 else
+                                                sum(ps["model"][s][r]["joint"]["pct_h"] > ps["gabor"][s][r]["joint"]["pct_h"] for s in ps["model"]) for r in rois],
+         "model above the floor in 7, 8, 8, 7, 0, 1, 1 of 8 subjects", ["7", "8", "8", "7", "0", "1", "1"]),
+    ]:
+        for i, (g, lit) in enumerate(zip(got, lits)):
+            said(f"{name} [{rois[i]}]", g, phrase, lit=lit, doc=cap)
+    rng("Fig. 6c caption: magno", [mean("model", r, "magno", "B") for r in rois], "Luminance band 0.66–0.73, L−M band 0.42–0.51", "0.66", "0.73", doc=cap)
+    rng("Fig. 6c caption: parvo", [mean("model", r, "parvo", "B") for r in rois], "L−M band 0.42–0.51, joint between them", "0.42", "0.51", doc=cap)
+    said("Fig. 6e caption: r", e["r_h_resid_subject_mean"], "r = 0.108 [0.050, 0.155], 17% of the ceiling", lit="0.108", doc=cap)
+
+
 def _external(fn, key: str) -> None:
     path, what = EXTERNAL[key]
     if not os.path.isdir(path):
@@ -1336,6 +1469,7 @@ def main() -> int:
     check_relead()
     check_length_cut()
     check_citations()
+    check_cortex_decision()
     _external(check_fig6_reference_recompute, "encoding")
     if SKIPS:
         print(f"\nSKIPPED {len(SKIPS)} blocks for inputs not in the repository:")

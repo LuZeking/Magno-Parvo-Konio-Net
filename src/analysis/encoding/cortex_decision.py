@@ -99,12 +99,22 @@ def pearson(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def pearson_rows(M: np.ndarray, y: np.ndarray) -> np.ndarray:
-    """Pearson r of every row of M with y."""
-    A = M - M.mean(axis=1, keepdims=True)
-    b = y - y.mean()
-    den = np.sqrt((A * A).sum(axis=1) * (b * b).sum())
+    """Pearson r of every row of M with y, over the entries finite in both (per
+    row), as ``pearson`` does for one pair. 2026-10-28: until then non-finite
+    entries propagated, so a target with NaN images (the observers' shape rate
+    has six, images no observer resolved) gave an all-NaN permutation null;
+    see results/cortex_decision/EXECUTION_LEDGER.md §3 and ctd_h_null_fix.py."""
+    M = np.asarray(M, float)
+    y = np.asarray(y, float)
+    W = np.isfinite(M) & np.isfinite(y)[None, :]
+    n = W.sum(axis=1)
+    Mz = np.where(W, M, 0.0)
+    Y = np.where(W, y[None, :], 0.0)
     with np.errstate(invalid="ignore", divide="ignore"):
-        return np.where(den > 0, A @ b / den, np.nan)
+        A = np.where(W, Mz - (Mz.sum(axis=1) / n)[:, None], 0.0)
+        B = np.where(W, Y - (Y.sum(axis=1) / n)[:, None], 0.0)
+        den = np.sqrt((A * A).sum(axis=1) * (B * B).sum(axis=1))
+        return np.where(den > 0, (A * B).sum(axis=1) / den, np.nan)
 
 
 def spearman(a: np.ndarray, b: np.ndarray) -> float:
@@ -282,6 +292,8 @@ def cluster_bootstrap_rs(x, y, clusters, n_boot: int, seed: int = 1) -> np.ndarr
     checks this against explicit resampling)."""
     x = np.asarray(x, float)
     y = np.asarray(y, float)
+    keep = np.isfinite(x) & np.isfinite(y)          # 2026-10-28: as ``pearson`` masks (see pearson_rows)
+    x, y, clusters = x[keep], y[keep], np.asarray(clusters)[keep]
     counts, inv = cluster_bootstrap_counts(clusters, n_boot, seed)
     W = counts[:, inv].astype(float)                     # (n_boot, n_images)
     n = W.sum(axis=1)

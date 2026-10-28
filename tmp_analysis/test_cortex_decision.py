@@ -254,6 +254,32 @@ def test_disk_designs():
     assert sorted(set(labels)) == sorted(set(c for _, c in sc)) and len(set(st)) == 800
 
 
+def test_nan_images_in_target():
+    """Six cue-conflict images have no resolved observer trial (h = NaN): the
+    permutation null and the exemplar bootstrap must mask them as `pearson`
+    does, per row, instead of returning NaN (found 2026-10-28, ledger §3)."""
+    rng = np.random.default_rng(3)
+    M = rng.standard_normal((20, 300))
+    y = rng.standard_normal(300)
+    y[[4, 77, 150]] = np.nan
+    rows = cd.pearson_rows(M, y)
+    assert np.all(np.isfinite(rows))
+    for k in range(20):
+        assert abs(rows[k] - cd.pearson(M[k], y)) < 1e-12
+    Mn = M.copy()
+    Mn[0, 10] = np.nan                      # NaN moved into a permuted row
+    assert abs(cd.pearson_rows(Mn, y)[0] - cd.pearson(Mn[0], y)) < 1e-12
+    yf = rng.standard_normal(300)           # all finite: unchanged estimator
+    A = M - M.mean(axis=1, keepdims=True)
+    b = yf - yf.mean()
+    ref = A @ b / np.sqrt((A * A).sum(axis=1) * (b * b).sum())
+    assert np.allclose(cd.pearson_rows(M, yf), ref, atol=1e-12)
+    clusters = np.repeat(np.arange(30), 10)
+    lo, hi = cd.cluster_bootstrap_r(M[0], y, clusters, 200)
+    assert np.isfinite(lo) and np.isfinite(hi) and lo < hi
+    keep = np.isfinite(y)
+    assert (lo, hi) == cd.cluster_bootstrap_r(M[0][keep], y[keep], clusters[keep], 200)
+
 if __name__ == "__main__":
     import time
     names = [n for n in dir() if n.startswith("test_")]
