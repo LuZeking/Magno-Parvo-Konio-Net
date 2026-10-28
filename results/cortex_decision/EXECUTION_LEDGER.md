@@ -223,3 +223,15 @@ Budget: ≈ 450 CPU-h, ≈ 1.5 days wall at %16; ≈ 40 GB on scratch.
   header note remains. `tmp_analysis/verify_v3_claims.py::check_cortex_decision` re-derives every number stated for
   the test from the three json files and the caption; the full verifier passes (1,587 checks, 0 failures, BA block
   pass; main text 4,989 words).
+
+### 4. 2026-10-28 — v2 analysis launched (corrected module; user: "按你的推荐进行")
+
+- `slurm/ctd_analysis_v2.sh` (commit 4a64f81): the registered analysis rerun unchanged on the same 88 refit files from the
+  pinned snapshot `/home/byrong/projects/TSN/fusion_stage1_code/4a64f81` (= worktree HEAD 4a64f81, whose
+  `cortex_decision.py` masks the NaN images in the permutation null and the exemplar bootstrap, §3b), writing to the
+  new directory `/scratch/byrong/mpk/encoding/results/2026-10-26_ctd/analysis_v2/` (main + the three sensitivity runs);
+  the v1 record `analysis/` is not touched. `--mem=24G`, 4 CPUs, 4 h, `main`/`standard`. Job **26728647**
+  (`env -u TMPDIR sbatch --export=ALL,CODE=$SNAP` from the snapshot directory).
+- Expected: v2 equals the v1 record in every quantity except the shape-target permutation p, null percentile and r_h
+  exemplar CIs, which must equal `ctd_h_null_fix.json`; reading of record unchanged. On completion: diff v2 against
+  v1 and the fix file, copy v2 into `results/cortex_decision/v2/`, write §4b, add the verifier check.
