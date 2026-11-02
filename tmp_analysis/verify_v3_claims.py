@@ -1350,7 +1350,10 @@ def check_cortex_decision() -> None:
     holds("2.5: lateral 5/8 below", P["P-C1"]["rois"]["lateral"]["n_below_half"] == 5, "0.50 in lateral cortex (5/8 below)")
     rng("2.5: V1-V3 rates", [mean("model", r, "joint", "B") for r in ("V1", "V2", "V3")], "against 0.57–0.60 in V1–V3", "0.57", "0.60")
     holds("2.5: rates below the behavioural rate", P["P-C1"]["B_below_behavioural_rate_everywhere"] and d["settings"]["behavioural_rate_model"] == 0.682,
-          "every rate lies below the network's behavioural rate of 0.68")
+          "every rate lies below the network's behavioural rate — 0.68 over the images the readout decides")
+    holds("2.5: forced-estimator rate quoted beside the cortical rates", "0.648 by the forced estimator over all 1,200, the cortical rate's denominator" in PAPER
+          and "0.648 by the forced two-way estimator over all 1,200 images" in PAPER and "integrated 0.648" in PAPER,
+          "0.648 by the forced estimator over all 1,200")
     rng("2.5: control rates", [mean("control", r, "joint", "B") for r in rois], "The control (0.40–0.51 across regions)", "0.40", "0.51")
     rng("2.5: swap rates", [mean("swap", r, "joint", "B") for r in rois], "the channel swap (0.39–0.51)", "0.39", "0.51")
     rng("2.5: untrained rates", [mean("untrained", r, "joint", "B") for r in rois], "the untrained network at 0.49–0.55", "0.49", "0.55")
@@ -1385,7 +1388,7 @@ def check_cortex_decision() -> None:
     c3 = P["P-C3"]["rois"]
     said("2.5: magno V1", mean("model", "V1", "magno", "B"), "rates 0.66 in V1", lit="0.66")
     rng("2.5: magno beyond V3", [mean("model", r, "magno", "B") for r in ("hV4", "ventral", "lateral", "parietal")], "rising to 0.70–0.73 beyond V3", "0.70", "0.73")
-    rng("2.5: parvo", [mean("model", r, "parvo", "B") for r in rois], "the L−M band's is texture-biased, 0.42–0.51", "0.42", "0.51")
+    rng("2.5: parvo", [mean("model", r, "parvo", "B") for r in rois], "the L−M band's is at or below parity, 0.42–0.51", "0.42", "0.51")
     holds("2.5: P-C3 everywhere", P["P-C3"]["met"] and all(c3[r]["n_magno_gt_parvo"] == 8 and c3[r]["seed_cells_magno_gt_parvo"] == "24/24"
                                                             and c3[r]["n_joint_between"] == 8 for r in rois),
           "8/8 subjects, 24/24 seed-cells and every one of the seven regions (P-C3 met)")
