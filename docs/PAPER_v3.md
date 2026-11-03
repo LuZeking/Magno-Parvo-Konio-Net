@@ -1,6 +1,6 @@
 # How object recognition can be more shape-biased than the visual cortex it reads from: a developmental two-stream model
 
-> **Draft v3, 2026-10-19.** Model of record: `fs2_dvd300_avg_w050_ls` (seeds 0–2), replacing the BA network `dkl_bcs` of PAPER_v2, which is kept as the comparison. Plan and claim-by-claim evidence: `docs/PAPER_v3_PLAN_dvd300.md`. Control seeds 1–2 and the channel swap (3 seeds) finished training; their behavioural (2026-10-23) and cortical (2026-10-24) numbers are filled. The nuisance-axis controls of Extended Data Fig. 3 and the estimator-bias simulation were rerun on the model (2026-10-24; Supplementary Note S3). Still marked ⟦PENDING⟧: the Supplementary rows for the model. Before submission: push branch `fusion-stage1`, which the code statement names and which is not yet on the public remote, and fill Author contributions. `tmp_analysis/verify_v3_claims.py` re-derives every number stated for the model and its controls (main text, Table 1, Extended Data Tables 1–3) and runs `tmp_analysis/verify_new_claims.py` as the comparison block for the BA network and the zoo. The abstract and the Discussion were re-led on the carrier × ramp conjunction and the per-image result, and the per-stream accuracies added to Results 2.2 (2026-10-24). Figures are regenerated on the model in `results/figures_v3/` (Fig. 5d shows the BA network; control seeds 0–2 and the channel swap are drawn, 2026-10-24; Fig. 6 draws the model in its two-stream row and as panel c's reference, 2026-10-24). The main text was cut to NMI length (2026-10-24); the paragraphs condensed are given in full in Supplementary Note S6. Supplementary Note S4 (which now says so) and the Supplementary Tables still describe the BA network; Extended Data Tables 1 and 2 are rewritten here by hand. **2026-10-26:** the former Fig. 6 — frozen single-trunk networks under a gain on their shape- and texture-predictive subspaces, and the model zoo — and everything that reported it (the last four paragraphs of Results 2.4, the ‘How to report shape bias’ paragraph, Methods 4.8, Extended Data Tables 3–4, Supplementary Tables S11–S14 and the matching passages of Notes S1, S4, S5 and S6) were removed: they answer how far a rate can be moved by re-weighting a frozen representation, not the paper's question. Results 2.5 and Methods 4.8 now hold the cortex-to-decision test, registered in `docs/PLAN_CORTEX_DECISION_2026-10-26.md` and ⟦PENDING⟧ its runs (`slurm/ctd_encode.sh`); the former 2.5 is 2.6; Fig. 6 is reassigned to that test (caption skeleton `results/figures_v3/fig6_cortex_decision_caption.md`; the old figure files stay for provenance). The title was changed to state the question. Methods 4.3's residual ceilings were corrected to the values the analysis uses (.624 / .728; .658 / .794 are the un-residualised ones). **2026-10-28:** the cortex-to-decision runs completed (`results/cortex_decision/EXECUTION_LEDGER.md` §3); Results 2.5, the abstract, the Discussion and Fig. 6 state the registered reading, `CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES`, with its qualifications; a defect in the registered analysis's permutation null on the shape target (images no observer resolved), found after the run, is disclosed in Methods 4.8 and corrected in `results/cortex_decision/ctd_h_null_fix.json`. **2026-11-02:** the title was re-cut to the claim the data support (every predicted cortical rate lies below the readout's, none below parity); the model's L−M stream, band and component are called texture-leaning, or at parity, wherever the cue-conflict rate rather than the probe is meant (Table 1: 0.477 over decided images, 0.520 by the forced estimator), and Results 2.5 quotes the forced estimator's 0.648 beside the cortical rates, whose denominator it shares.
+> **Draft v3, 2026-10-19.** Model of record: `fs2_dvd300_avg_w050_ls` (seeds 0–2), replacing the BA network `dkl_bcs` of PAPER_v2, which is kept as the comparison. Plan and claim-by-claim evidence: `docs/PAPER_v3_PLAN_dvd300.md`. Control seeds 1–2 and the channel swap (3 seeds) finished training; their behavioural (2026-10-23) and cortical (2026-10-24) numbers are filled. The nuisance-axis controls of Extended Data Fig. 3 and the estimator-bias simulation were rerun on the model (2026-10-24; Supplementary Note S3). Before submission: push branch `fusion-stage1`, which the code statement names and which is not yet on the public remote, and fill Author contributions. `tmp_analysis/verify_v3_claims.py` re-derives every number stated for the model and its controls (main text, Table 1, Extended Data Tables 1–3) and runs `tmp_analysis/verify_new_claims.py` as the comparison block for the BA network and the zoo. The abstract and the Discussion were re-led on the carrier × ramp conjunction and the per-image result, and the per-stream accuracies added to Results 2.2 (2026-10-24). Figures are regenerated on the model in `results/figures_v3/` (Fig. 5d shows the BA network; control seeds 0–2 and the channel swap are drawn, 2026-10-24; Fig. 6 draws the model in its two-stream row and as panel c's reference, 2026-10-24). The main text was cut to NMI length (2026-10-24); the paragraphs condensed are given in full in Supplementary Note S6. Supplementary Note S4 (which now says so) and the Supplementary Tables still describe the BA network; Extended Data Tables 1 and 2 are rewritten here by hand. **2026-10-26:** the former Fig. 6 — frozen single-trunk networks under a gain on their shape- and texture-predictive subspaces, and the model zoo — and everything that reported it (the last four paragraphs of Results 2.4, the ‘How to report shape bias’ paragraph, Methods 4.8, Extended Data Tables 3–4, Supplementary Tables S11–S14 and the matching passages of Notes S1, S4, S5 and S6) were removed: they answer how far a rate can be moved by re-weighting a frozen representation, not the paper's question. Results 2.5 and Methods 4.8 now hold the cortex-to-decision test, registered in `docs/PLAN_CORTEX_DECISION_2026-10-26.md` and ⟦PENDING⟧ its runs (`slurm/ctd_encode.sh`); the former 2.5 is 2.6; Fig. 6 is reassigned to that test (caption skeleton `results/figures_v3/fig6_cortex_decision_caption.md`; the old figure files stay for provenance). The title was changed to state the question. Methods 4.3's residual ceilings were corrected to the values the analysis uses (.624 / .728; .658 / .794 are the un-residualised ones). **2026-10-28:** the cortex-to-decision runs completed (`results/cortex_decision/EXECUTION_LEDGER.md` §3); Results 2.5, the abstract, the Discussion and Fig. 6 state the registered reading, `CORTEX_NOT_TEXTURE_BIASED_ON_THESE_IMAGES`, with its qualifications; a defect in the registered analysis's permutation null on the shape target (images no observer resolved), found after the run, is disclosed in Methods 4.8 and corrected in `results/cortex_decision/ctd_h_null_fix.json`. **2026-11-02:** the title was re-cut to the claim the data support (every predicted cortical rate lies below the readout's, none below parity); the model's L−M stream, band and component are called texture-leaning, or at parity, wherever the cue-conflict rate rather than the probe is meant (Table 1: 0.477 over decided images, 0.520 by the forced estimator), and Results 2.5 quotes the forced estimator's 0.648 beside the cortical rates, whose denominator it shares. **2026-11-03:** the Supplementary Tables carry the model of record's rows above PAPER_v2's BA rows, generated from stored outputs under `docs/PLAN_SUPP_MODEL_2026-11-03.md` (record `results/supp_v3/`, job 26764879); Note S1 lists the claims the model does not make, Note S5 the plan, and Notes S2 and S4 are labelled as the BA network's.
 
 ## Abstract
 
@@ -477,9 +477,21 @@ images bring convolutional neural networks closer to humans with respect to
 robust object recognition and internal representations? *Frontiers in
 Psychology*, 14, 1047694. https://doi.org/10.3389/fpsyg.2023.1047694
 
-> **Supplementary material in this draft.** Supplementary Notes S1–S5 and Tables S1–S10 below are PAPER_v2's and describe the BA network (`dkl_bcs`); the main text cites them for the BA network only. Their rows for the model of record are being regenerated ⟦PENDING⟧.
+> **Supplementary material in this draft.** Each Supplementary Table gives the model of record's rows first (model, control and channel swap, three seeds each, and the untrained network on their shared front end where the table has such a column), generated from stored outputs by `tmp_analysis/figs_v3/supp_tables_model.py` (record `results/supp_v3/`; plan `docs/PLAN_SUPP_MODEL_2026-11-03.md`), and then PAPER_v2's rows for the BA network (`dkl_bcs`), which the main text cites as the comparison. Supplementary Notes S2 and S4 are the BA network's and say so; Notes S1, S3 and S5 cover both.
 
 ## Supplementary Note S1 — claims deliberately not made
+
+**For the model of record.** The main text makes none of the following claims; each item is drawn from its own statements.
+
+- That the two-stream split is necessary for the dissociation, or that it buys a shape-bias advantage over one stream: no single-trunk network was trained on the dvd300 schedule, so the single-stream rows of Supplementary Table S4 have no counterpart for the model.
+- Any dorsal/ventral or anatomical magno/parvo mapping of the two trunks: the streams are named by their input, and the atlas rows of Supplementary Table S10 are read as sign and ordering only.
+- That the cortical division separates task load or the carrier from texture bias: in every network the stream carrying extrastriate cortex also carries the task, and in the model it is the chromatic one too (Results 2.3); no capacity-matched or task-load-matched control was trained.
+- That predicted cortex is texture-biased on the cue-conflict images, or that the human readout was measured: the cortex-to-decision test returned its registered failure reading with P-C1, P-C2 and P-C4 not met (Results 2.5), and its instrument does not exceed its input floor beyond hV4.
+- That the model's shape bias is human-like: its rate lies below the observers', its error consistency stays below a third of the human–human ceiling and does not separate it from the control (Results 2.4), and the trajectory buys no out-of-distribution robustness (Supplementary Table S5).
+- That the chromatic stream predicts colour-selective cortex: it was not tested on the model (the koniocellular control of Supplementary Note S2 is the BA front end's).
+- That the resolution-tracking result is established beyond three seeds against three: its exact Mann–Whitney p sits at the floor, and its predicted-cortex counterpart points the other way (Results 2.5).
+
+**The BA network's list (PAPER_v2).**
 
 - That the two-stream split is necessary for the dissociation: whether frozen single-trunk networks show the same readout property is not examined in this paper (the analyses that asked it are reported outside it; Supplementary Note S5).
 - That the two-stream split causes a shape-bias advantage over a single stream: at matched capacity the arms do not separate at n = 3, and capacity alone moves the rate by a comparable amount (Results 2.4).
@@ -496,7 +508,7 @@ Why the three regional claims above failed together, and what it implies for the
 
 ## Supplementary Note S2 — the koniocellular control
 
-The thesis omitted the koniocellular pathway for simplicity. Because L−M fails to predict colour-biased cortex, two readings were live: that the chromatic stream does not predict colour cortex, or that L−M is the wrong chromatic axis. Swapping S−(L+M) into stream 2 of the untrained network, contrast-matched to L−M per image, with the luminance stream bit-identical, makes the ventral prediction worse and worse where colour lives (seed 0: hV4 −0.029, VO −0.024, the pre-declared colour set −0.026, each p = .0078 with 0/8 subjects positive on both statistics; colour set minus the other 17 ROIs −0.014, p = .0078), unchanged when the channel keeps its native 2.05× contrast, and replicated at two further untrained seeds, each against the L−M network of its own seed (colour set −0.027 and −0.020, colour set minus the other ROIs −0.016 and −0.014, every contrast p = .0078 with 0/8 subjects positive on both statistics; `results/konio_verdict/`). Both cone-opponent axes have now been tested against colour-biased cortex and neither predicts it. These fits are untrained, the native-contrast variant was run at seed 0 only, no third stream was added, and no blur was applied to the S channel; whether a three-band model beats a two-band one is a separate question requiring three-way variance partitioning.
+This control belongs to the BA front end of PAPER_v2 and was not run on the model of record. The thesis omitted the koniocellular pathway for simplicity. Because L−M fails to predict colour-biased cortex, two readings were live: that the chromatic stream does not predict colour cortex, or that L−M is the wrong chromatic axis. Swapping S−(L+M) into stream 2 of the untrained network, contrast-matched to L−M per image, with the luminance stream bit-identical, makes the ventral prediction worse and worse where colour lives (seed 0: hV4 −0.029, VO −0.024, the pre-declared colour set −0.026, each p = .0078 with 0/8 subjects positive on both statistics; colour set minus the other 17 ROIs −0.014, p = .0078), unchanged when the channel keeps its native 2.05× contrast, and replicated at two further untrained seeds, each against the L−M network of its own seed (colour set −0.027 and −0.020, colour set minus the other ROIs −0.016 and −0.014, every contrast p = .0078 with 0/8 subjects positive on both statistics; `results/konio_verdict/`). Both cone-opponent axes have now been tested against colour-biased cortex and neither predicts it. These fits are untrained, the native-contrast variant was run at seed 0 only, no third stream was added, and no blur was applied to the S channel; whether a three-band model beats a two-band one is a separate question requiring three-way variance partitioning.
 
 ## Supplementary Note S3 — the cortical gradient against its nuisance axes and the instrument's bias
 
@@ -515,7 +527,7 @@ Results 2.3 states the outcome; this note carries the analyses. It reports them 
 
 **The estimator's own bias points the wrong way.** The mean noise ceiling declines from V1v to hV4 (ρ = −0.89 against rank), a nuisance falling along the axis of the effect, so we simulated the instrument: synthetic voxels from each arm's fitted feature spaces, the measured noise ceilings imposed, the true magno − parvo difference set to zero everywhere. The recovered contrast is a small, positive floor (+0.038 with the diet's feature geometry, +0.051 without, 8/8 subjects each), flat across ROIs (+0.025 to +0.027 per ROI), and indistinguishable from zero on the raw statistic — opposite in sign to the observed effect and without its gradient. Because the floor is a signed bias, the right comparison is a paired displacement: the real contrast minus each subject's own floor is −0.871 with the diet and −0.130 without, each non-zero in every subject, the diet arm's 6.7 times larger (Supplementary Table S7). The floor subtraction relocates the recovery simulation's residual misfit rather than removing it, and we do not correct that residual, because the correction is under-specified: six variants swing the no-diet arm between 4/8 and 6/8 subjects and between p = .055 and p = 1.00, while the diet arm is non-zero in all eight subjects at p = .0078 under all six (Supplementary Table S7). The no-diet arm's non-zero gradient therefore rests on the floor correction alone, and since the simulation is not magnitude-faithful (it recovers the true contrast with a slope of 1.21 to 1.28), we read −0.834 as a sign-and-ordering result, not a calibrated effect size. The raw statistic per ROI is drawn beside the normalised one in Extended Data Fig. 3a; the diet arm's normalised index approaches −0.84 at hV4, near the index's bound, and the raw profile carries the same ordering without that bound.
 
-## Supplementary Note S4 — passages condensed in the main text
+## Supplementary Note S4 — PAPER_v2's passages on the BA network, condensed in its main text
 
 The main text was shortened to the journal's length. Every paragraph it condensed is given here in its full, pre-condensation wording, under the section it came from, so no number, control or failed prediction was dropped. These passages are PAPER_v2's and describe the BA network: “the diet” in them is its fixed 48-month transform under the thesis's recipe, not the model's trajectory. Where they differ from the main text, the main text is the current statement. Tables are not repeated.
 
@@ -601,7 +613,7 @@ If shape bias is a property of a readout over components rather than of a repres
 
 ## Supplementary Note S5 — the pre-registration ledgers
 
-Four predictions — the front-end 2×2, the inverted-front-end prediction, the corruption families and the error-consistency hypothesis — were committed before their analyses ran on the BA network (Methods 4.7); two failed and are reported as failures (Results 2.6; Supplementary Note S4). A further plan (`docs/PLAN_KAPPA_2026-09-17.md`) predicted that agreement with the observers would separate representations at a matched rate; four of its six predictions failed, for the reason given in Results 2.6, and only the part concerning our own networks is kept in this paper. Five plans on frozen single-trunk networks (`docs/PLAN_GENERALITY_2026-09-14.md`, `docs/PLAN_SUBSPACE_2026-09-15.md`, `docs/PLAN_ZOO_2026-09-15.md`, `docs/PLAN_SPAN_2026-09-18.md`, `docs/PLAN_EXEMPLAR_2026-09-21.md`) asked how far a gain on a network's own shape- and texture-predictive subspaces moves its cue-conflict rate; their ledgers are complete in the plan files and their results, failures included, are reported outside this paper, which asks a different question. The cortex-to-decision test of Results 2.5 is registered in `docs/PLAN_CORTEX_DECISION_2026-10-26.md`, committed before its encoding runs were submitted; its predictions P-C1–P-C5, decision rules, floors and nulls are fixed there.
+Four predictions — the front-end 2×2, the inverted-front-end prediction, the corruption families and the error-consistency hypothesis — were committed before their analyses ran on the BA network (Methods 4.7); two failed and are reported as failures (Results 2.6; Supplementary Note S4). A further plan (`docs/PLAN_KAPPA_2026-09-17.md`) predicted that agreement with the observers would separate representations at a matched rate; four of its six predictions failed, for the reason given in Results 2.6, and only the part concerning our own networks is kept in this paper. Five plans on frozen single-trunk networks (`docs/PLAN_GENERALITY_2026-09-14.md`, `docs/PLAN_SUBSPACE_2026-09-15.md`, `docs/PLAN_ZOO_2026-09-15.md`, `docs/PLAN_SPAN_2026-09-18.md`, `docs/PLAN_EXEMPLAR_2026-09-21.md`) asked how far a gain on a network's own shape- and texture-predictive subspaces moves its cue-conflict rate; their ledgers are complete in the plan files and their results, failures included, are reported outside this paper, which asks a different question. The cortex-to-decision test of Results 2.5 is registered in `docs/PLAN_CORTEX_DECISION_2026-10-26.md`, committed before its encoding runs were submitted; its predictions P-C1–P-C5, decision rules, floors and nulls are fixed there. The Supplementary rows for the model of record were generated under `docs/PLAN_SUPP_MODEL_2026-11-03.md`, which fixed their sources, statistics and a consistency gate against the main text before the job ran (`results/supp_v3/EXECUTION_LEDGER.md`).
 
 ## Supplementary Note S6 — the model's passages condensed in the main text
 
@@ -691,6 +703,33 @@ The trajectory does not add to the correspondence (Fig. 6d). On the resolution t
 
 **Supplementary Table S1 | Monotonicity of the profile and the exact permutation null.** Spearman ρ between hierarchical rank [1,1,2,2,3,3,4] and stream preference, mean over subjects; the null enumerates all 630 distinct labellings of the seven ROIs (one-sided in the pre-stated direction, floor 1/630 = .0016). “per-voxel index” is the manuscript's statistic (Fig. 3c; Results 2.3): the median over reliable voxels of (U_m − U_p)/(U_m + U_p) per ROI, as in Extended Data Table 1; “ratio of medians” is median(U_m − U_p)/median(U_m + U_p) per ROI, the statistic of an earlier draft, kept for comparison. Source: `results/hierarchy_permutation_null.json` (which labels the two `raw` and `norm`).
 
+*Model of record.* Spearman ρ between hierarchical rank [1,1,2,2,3,3,4] and stream preference (per-voxel index: median over reliable voxels of (U_m − U_p)/(U_m + U_p); ratio of medians: median(U_m − U_p)/median(U_m + U_p)), mean over 8 subjects; the null enumerates all 630 distinct labellings of the seven ROIs (one-sided in the pre-stated direction, floor 1/630 = .0016). Source: the stored voxelwise fits of the model, its control, the channel swap and the untrained network.
+
+| arm | seed | statistic | observed mean ρ | exact p | most extreme of 630 | null 2.5th pct |
+|---|---|---|---|---|---|---|
+| model | 0 | per-voxel index | −0.973 | 0.0016 | yes | −0.748 |
+| model | 0 | ratio of medians | −0.973 | 0.0016 | yes | −0.753 |
+| model | 1 | per-voxel index | −0.973 | 0.0016 | yes | −0.753 |
+| model | 1 | ratio of medians | −0.973 | 0.0016 | yes | −0.748 |
+| model | 2 | per-voxel index | −0.964 | 0.0016 | yes | −0.743 |
+| model | 2 | ratio of medians | −0.973 | 0.0016 | yes | −0.762 |
+| control | 0 | per-voxel index | −0.294 | 0.1159 | no | −0.419 |
+| control | 0 | ratio of medians | −0.411 | 0.0524 | no | −0.460 |
+| control | 1 | per-voxel index | −0.346 | 0.1286 | no | −0.533 |
+| control | 1 | ratio of medians | −0.397 | 0.1095 | no | −0.555 |
+| control | 2 | per-voxel index | −0.413 | 0.1175 | no | −0.585 |
+| control | 2 | ratio of medians | −0.459 | 0.1016 | no | −0.629 |
+| channel swap | 0 | per-voxel index | −0.204 | 0.2222 | no | −0.466 |
+| channel swap | 0 | ratio of medians | −0.337 | 0.0825 | no | −0.427 |
+| channel swap | 1 | per-voxel index | −0.218 | 0.1952 | no | −0.420 |
+| channel swap | 1 | ratio of medians | −0.317 | 0.0714 | no | −0.380 |
+| channel swap | 2 | per-voxel index | −0.241 | 0.1968 | no | −0.430 |
+| channel swap | 2 | ratio of medians | −0.312 | 0.1413 | no | −0.487 |
+| untrained | 0 | per-voxel index | −0.826 | 0.0032 | no | −0.686 |
+| untrained | 0 | ratio of medians | −0.817 | 0.0032 | no | −0.677 |
+
+*BA network (PAPER_v2).*
+
 | arm | seed | statistic | observed mean ρ | exact p | most extreme of 630 | null 2.5th pct |
 |---|---|---|---|---|---|---|
 | diet | 0 | per-voxel index | -0.964 | 0.0016 | yes | -0.743 |
@@ -708,6 +747,23 @@ The trajectory does not add to the correspondence (Fig. 6d). On the resolution t
 
 **Supplementary Table S2 | In-silico cue conflict through the fitted encoding models, per seed.** Median over reliable voxels of the per-voxel predicted shape-bias index for each stream, mean over 8 subjects; the contrast is magno − parvo, paired within subject against the no-diet arm of the same seed. Source: `results/encoding_cc/`.
 
+*Model of record.* Median over reliable voxels (noise ceiling > 0.1) of the per-voxel predicted shape-bias index per stream, mean over 8 subjects; pairings are per subject against the seed of the same index (exact Wilcoxon, floor p = .0078). This is PAPER_v2's in-silico index on the NSD-image fits; the cortex-to-decision rate of Results 2.5 refits the encoders on cue-conflict features and is a different instrument.
+
+| seed | arm | magno stream | parvo stream | magno − parvo | model − control | sep. | p | model − swap | sep. | p |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | model | +0.569 | −0.750 | +1.319 | +1.237 | 8/8 | .0078 | +1.333 | 8/8 | .0078 |
+| 0 | control | −0.683 | −0.764 | +0.081 |  |  |  |  |  |  |
+| 0 | channel swap | −0.714 | −0.699 | −0.015 |  |  |  |  |  |  |
+| 1 | model | +0.559 | −0.759 | +1.317 | +1.266 | 8/8 | .0078 | +1.322 | 8/8 | .0078 |
+| 1 | control | −0.716 | −0.767 | +0.051 |  |  |  |  |  |  |
+| 1 | channel swap | −0.710 | −0.705 | −0.005 |  |  |  |  |  |  |
+| 2 | model | +0.570 | −0.769 | +1.339 | +1.270 | 8/8 | .0078 | +1.358 | 8/8 | .0078 |
+| 2 | control | −0.681 | −0.749 | +0.069 |  |  |  |  |  |  |
+| 2 | channel swap | −0.693 | −0.674 | −0.019 |  |  |  |  |  |  |
+| — | untrained | +0.098 | −0.894 | +0.991 | | | | | | |
+
+*BA network (PAPER_v2).*
+
 | seed | arm | magno stream | parvo stream | magno − parvo | diet − no diet | sep. | p |
 |---|---|---|---|---|---|---|---|
 | 0 | diet | +0.791 | −0.743 | +1.534 | +1.424 | 8/8 | 0.0078 |
@@ -719,6 +775,20 @@ The trajectory does not add to the correspondence (Fig. 6d). On the resolution t
 
 **Supplementary Table S3 | The carrier × transform 2×2 on the probe and on behaviour.** Mean over training seeds with the seed range in brackets; “decided” is the mean number of the 1,200 cue-conflict images the readout classifies as the shape or the texture category (the shape-bias denominator). Cells are read out on stream 2 in three cases and on the diet's magno stream in the fourth. Source: `results/figures/fig1_data.npz` (from `results/shape_texture/`, `results/cue_conflict/`). “probe bias, exemplars held out” is the exemplar-balanced probe of Methods 4.3, scored on object and texture exemplars the probe was not trained on (three exemplars per category for both labels, leave one exemplar out, PCA inside the folds, mean of 20 draws; `docs/PLAN_EXEMPLAR_2026-09-21.md`, `results/figures_v2/exemplar_streams.json`); “probe bias” is the original stratified-fold probe, whose test images share exemplars with its training folds.
 
+*Model of record.* Mean over training seeds with the seed range in brackets. “probe bias” is the stratified-fold probe (Methods 4.3), “exemplars held out” the exemplar-balanced probe (results/figures_v2/exemplar_streams.json, two_by_two_v3, Q1), “cue-conflict shape bias” the restricted estimator of the named stream read through the shared head, “decided” its denominator. Cells are the four of Results 2.2.
+
+| carrier | ramp | condition, stream | probe bias | probe bias, exemplars held out | cue-conflict shape bias | decided / 1,200 | seeds |
+|---|---|---|---|---|---|---|---|
+| chromatic (L−M) | none | control, L−M stream | −0.413 [0.009] | −0.069 [0.020] | 0.426 [0.079] | 209 | 3 |
+| chromatic (L−M) | yes | channel swap, L−M stream | −0.276 [0.024] | −0.016 [0.012] | 0.390 [0.015] | 206 | 3 |
+| achromatic (luminance) | none | control, luminance stream | −0.291 [0.004] | −0.177 [0.010] | 0.384 [0.020] | 673 | 3 |
+| achromatic (luminance) | yes | model, luminance stream | +0.578 [0.023] | +0.316 [0.031] | 0.850 [0.033] | 501 | 3 |
+| chromatic (L−M) | none | model, L−M stream (same cell read in the model; not in the interaction) | −0.454 [0.015] | −0.156 [0.015] | 0.477 [0.032] | 426 | 3 |
+
+Carrier × ramp interaction (achromatic ramp effect − chromatic ramp effect): +0.44 with exemplars held out, +0.73 with exemplars shared; the ramp moves the achromatic stream by +0.49 and the chromatic stream by +0.05 (held out).
+
+*BA network (PAPER_v2).*
+
 | carrier | transform | condition, stream | probe bias | probe bias, exemplars held out | cue-conflict shape bias | decided / 1,200 | seeds |
 |---|---|---|---|---|---|---|---|
 | chromatic (L−M) | none | no diet, parvo | −0.504 [0.035] | −0.118 [0.021] | 0.364 [0.080] | 270 | 3 |
@@ -727,6 +797,23 @@ The trajectory does not add to the correspondence (Fig. 6d). On the resolution t
 | achromatic (luminance) | yes | diet, magno | +0.819 [0.014] | +0.337 [0.007] | 0.878 [0.022] | 488 | 3 |
 
 **Supplementary Table S4 | Single-stream controls trained with the identical diet, and the readout ladder.** Best saved checkpoint per seed, except the no-diet row, which is scored at the final checkpoint because its accuracy does not degrade (Fig. 2d; Methods 4.7); mean [range] over three seeds. Accuracy is validation top-1 at the scored checkpoint. Sources: `results/cue_conflict_bestep/`, `results/cue_conflict_single34_bestep/`, `results/cue_conflict_single_bestep/`, run histories, `results/param_matched/`.
+
+*Model of record.* Final checkpoint of every run; mean [range] over three seeds; accuracy is validation top-1 at that checkpoint; parameters are counted from the stored state dict with BatchNorm running statistics excluded (two trunks of 11,170,240, the joint classifier of 57,456 and the two per-stream heads of 57,456 each, identical across the three arms). No single-trunk network was trained on the dvd300 schedule, so the single-stream rows of the BA table have no counterpart (Supplementary Note S1).
+
+| model / readout | parameters | shape bias | decided / 1,200 | accuracy |
+|---|---|---|---|---|
+| model, magno stream alone (w = 1) | 22,512,848 | 0.850 [0.838, 0.871] | 501 | 0.683 [0.682, 0.685] |
+| model, both streams (w = 0.5) | 22,512,848 | 0.682 [0.659, 0.698] | 580 | 0.683 [0.682, 0.685] |
+| model, parvo stream alone (w = 0) | 22,512,848 | 0.477 [0.463, 0.495] | 426 | 0.683 [0.682, 0.685] |
+| control, magno stream alone (w = 1) | 22,512,848 | 0.384 [0.376, 0.397] | 673 | 0.764 [0.761, 0.767] |
+| control, both streams (w = 0.5) | 22,512,848 | 0.374 [0.359, 0.393] | 672 | 0.764 [0.761, 0.767] |
+| control, parvo stream alone (w = 0) | 22,512,848 | 0.426 [0.388, 0.467] | 209 | 0.764 [0.761, 0.767] |
+| channel swap, magno stream alone (w = 1) | 22,512,848 | 0.397 [0.380, 0.417] | 649 | 0.760 [0.757, 0.762] |
+| channel swap, both streams (w = 0.5) | 22,512,848 | 0.389 [0.378, 0.405] | 654 | 0.760 [0.757, 0.762] |
+| channel swap, parvo stream alone (w = 0) | 22,512,848 | 0.390 [0.384, 0.399] | 206 | 0.760 [0.757, 0.762] |
+| single-stream controls on the dvd300 schedule | — | not trained | — | — |
+
+*BA network (PAPER_v2).*
 
 | model / readout | parameters | shape bias | decided / 1,200 | accuracy |
 |---|---|---|---|---|
@@ -739,6 +826,20 @@ The trajectory does not add to the correspondence (Fig. 6d). On the resolution t
 
 **Supplementary Table S5 | Out-of-distribution robustness: relative-accuracy AUC per corruption family and condition.** Mean over three seeds [range]; the thesis's schedule-trained checkpoint is a single run. “sep.” marks complete seed separation between the diet and no-diet arms (the exact 3 v 3 floor, p = 0.100). Families marked ‡ were declared trained-in before the run. Source: `results/ood_bestep/`.
 
+*Model of record.* Mean over three seeds [range]; “sep.” marks complete seed separation between the model and the control (exact 3 v 3 floor, p = .100); families marked ‡ were declared trained-in before the BA run and keep the mark. Source: results/ood/fs2_*.json.
+
+| family | model | control | channel swap | model − control | sep. |
+|---|---|---|---|---|---|
+| uniform-noise | 0.646 [0.642, 0.653] | 0.781 [0.779, 0.784] | 0.772 [0.764, 0.777] | −0.135 | yes |
+| high-pass | 0.754 [0.751, 0.760] | 0.890 [0.885, 0.897] | 0.891 [0.884, 0.895] | −0.136 | yes |
+| false-colour | 0.893 [0.891, 0.896] | 0.977 [0.975, 0.977] | 0.985 [0.983, 0.987] | −0.084 | yes |
+| rotation | 0.605 [0.604, 0.606] | 0.644 [0.643, 0.645] | 0.640 [0.637, 0.642] | −0.040 | yes |
+| phase-scrambling | 0.395 [0.393, 0.396] | 0.386 [0.385, 0.388] | 0.384 [0.380, 0.386] | +0.009 | yes |
+| contrast ‡ | 0.654 [0.651, 0.661] | 0.659 [0.654, 0.666] | 0.653 [0.649, 0.658] | −0.004 | no |
+| low-pass ‡ | 0.440 [0.437, 0.443] | 0.362 [0.360, 0.364] | 0.360 [0.357, 0.364] | +0.078 | yes |
+
+*BA network (PAPER_v2).*
+
 | family | diet | no diet | swap | parvo_highsf | thesis schedule | diet − no diet | sep. |
 |---|---|---|---|---|---|---|---|
 | uniform-noise | 0.634 [0.619, 0.647] | 0.729 [0.720, 0.735] | 0.749 [0.744, 0.758] | 0.767 [0.758, 0.773] | 0.640 | −0.095 | yes |
@@ -750,6 +851,22 @@ The trajectory does not add to the correspondence (Fig. 6d). On the resolution t
 | low-pass ‡ | 0.444 [0.434, 0.464] | 0.356 [0.353, 0.359] | 0.359 [0.353, 0.362] | 0.385 [0.375, 0.392] | 0.436 | +0.089 | yes |
 
 **Supplementary Table S6 | Error consistency (Cohen's κ) with the ten human observers.** The trained readout (w = 0.5), the magno stream alone (w = 1; the κ = 0.0082, 3.5% of Results 2.5 is the mean of the three final-checkpoint runs) and the best readout over the 21 values of w, per run; κ as a percentage of the human–human ceiling (κ = 0.234, 45 pairs). Published CNN values are from Geirhos et al. (2020). Source: `results/sweep_error_consistency/`.
+
+*Model of record.* Final checkpoints; the trained readout (w = 0.5), the magno stream alone (w = 1) and the best readout over the 21 values of w, per run; κ as a percentage of the human–human ceiling (κ = 0.234, 45 pairs). Source: results/sweep_error_consistency/fs2_*_final_kappa_sweep.json.
+
+| run | shape bias at w = 0.5 | κ at w = 0.5 | % ceiling | κ at w = 1 (magno alone) | % ceiling | rate at w = 1 | best κ over w | % ceiling | w at best | rate at best |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fs2_dvd300_avg_w050_ls_seed0_final | 0.698 | +0.0220 | 9.4 | +0.0119 | 5.1 | 0.869 | +0.0272 | 11.7 | 0.00 | 0.464 |
+| fs2_dvd300_avg_w050_ls_seed1_final | 0.659 | +0.0292 | 12.5 | +0.0599 | 25.6 | 0.845 | +0.0605 | 25.9 | 0.90 | 0.823 |
+| fs2_dvd300_avg_w050_ls_seed2_final | 0.690 | +0.0412 | 17.7 | +0.0496 | 21.3 | 0.837 | +0.0677 | 29.0 | 0.75 | 0.806 |
+| fs2_dvdfix300_avg_w050_ls_seed0_final | 0.372 | +0.0240 | 10.3 | +0.0251 | 10.8 | 0.379 | +0.0272 | 11.7 | 0.70 | 0.380 |
+| fs2_dvdfix300_avg_w050_ls_seed1_final | 0.359 | +0.0286 | 12.2 | +0.0328 | 14.1 | 0.375 | +0.0329 | 14.1 | 0.90 | 0.375 |
+| fs2_dvdfix300_avg_w050_ls_seed2_final | 0.393 | +0.0308 | 13.2 | +0.0305 | 13.1 | 0.396 | +0.0325 | 13.9 | 0.40 | 0.384 |
+| fs2_dvd300swap_avg_w050_ls_seed0_final | 0.378 | +0.0335 | 14.4 | +0.0306 | 13.1 | 0.378 | +0.0335 | 14.4 | 0.50 | 0.378 |
+| fs2_dvd300swap_avg_w050_ls_seed1_final | 0.383 | +0.0262 | 11.2 | +0.0280 | 12.0 | 0.395 | +0.0301 | 12.9 | 0.75 | 0.389 |
+| fs2_dvd300swap_avg_w050_ls_seed2_final | 0.405 | +0.0315 | 13.5 | +0.0333 | 14.3 | 0.415 | +0.0346 | 14.8 | 0.80 | 0.412 |
+
+*BA network (PAPER_v2).*
 
 | run | shape bias at w = 0.5 | κ at w = 0.5 | % ceiling | κ at w = 1 (magno alone) | % ceiling | rate at w = 1 | best κ over w | % ceiling | w at best | rate at best |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -768,6 +885,26 @@ The trajectory does not add to the correspondence (Fig. 6d). On the resolution t
 
 **Supplementary Table S7 | The estimator's own bias, and the residual-misfit variants.** Synthetic voxels were generated from each arm's fitted 1,000-component feature spaces with the measured per-ROI noise ceilings imposed and the true magno − parvo difference set to zero everywhere; the recovered contrast is the instrument's signed floor. “Displacement” is the real contrast minus the floor, paired per subject. The six variants differ in how the floor is paired (group or per-subject) and whether the residual misfit of the recovery simulation is also removed (before or after rescaling by the recovered slope). Sources: `results/vp_recovery_realnc/diet_floor_paired_2026-09-07.txt`, `floor_pairing_2026-09-07.txt`, `prediction_scored_2026-09-07.txt`.
 
+*Model of record.* Seed 0 of the model and the control, as the BA table (seeds 1–2 and the channel swap were not simulated). Definitions as the BA rows: the floor is the recovered hV4 − mean(V1v, V1d) contrast under a true difference of zero; the six variants differ in how the floor is paired and whether the residual misfit of the recovery simulation is removed before or after rescaling by the recovered slope. Source: results/vp_recovery_realnc_v3/.
+
+| quantity | model | control |
+|---|---|---|
+| floor, normalised contrast (true = 0) | +0.0180 (5/8 > 0, p = .1094) | +0.0655 (8/8 > 0, p = .0078) |
+| floor, raw contrast | −0.0009 (p = .3125) | +0.0036 (p = .0078) |
+| real contrast, normalised (seed 0) | −1.2594 | −0.0616 |
+| displacement real − floor | −1.2773 (8/8, p = .0078) | −0.1271 (8/8, p = .0078) |
+| recovered slope of estimate vs truth (intercept fixed at the group floor) | 1.301 | 1.267 |
+| variant: group floor, minimal | −0.9819 (8/8, p = .0078) | −0.1003 (8/8, p = .0078) |
+| variant: group floor, + residual before scaling | −0.8918 (8/8, p = .0078) | −0.0291 (4/8, p = .6406) |
+| variant: group floor, + residual after scaling | −0.8646 (8/8, p = .0078) | −0.0100 (3/8, p = .9453) |
+| variant: per-subject floor, minimal | −0.9819 (8/8, p = .0078) | −0.1003 (8/8, p = .0078) |
+| variant: per-subject floor, + residual before scaling | −0.8918 (8/8, p = .0078) | −0.0291 (4/8, p = .6406) |
+| variant: per-subject floor, + residual after scaling | −0.8646 (8/8, p = .0078) | −0.0100 (4/8, p = .8438) |
+| per-ROI normalised floor, V1v … hV4 (model geometry) | +0.083, +0.080, +0.076, +0.064, +0.072, +0.113, +0.100 (ρ vs rank +0.29, p = .0781) |  |
+| per-ROI normalised floor, V1v … hV4 (control geometry) |  | +0.113, +0.109, +0.127, +0.165, +0.172, +0.162, +0.176 (ρ vs rank +0.73, p = .0078) |
+
+*BA network (PAPER_v2).*
+
 | quantity | diet | no diet |
 |---|---|---|
 | floor, normalised contrast (true = 0) | +0.0375 (8/8 > 0, p = .0078) | +0.0511 (8/8 > 0, p = .0078) |
@@ -784,6 +921,33 @@ The trajectory does not add to the correspondence (Fig. 6d). On the resolution t
 | per-ROI normalised floor, V1v … hV4 (no-diet geometry) | | +0.025, +0.025, +0.026, +0.025, +0.027, +0.026, +0.026 (ρ vs rank +0.54, p = .22) |
 
 **Supplementary Table S8 | Stream preference regressed on pRF eccentricity and pRF size within subject.** Per-voxel stream-preference index regressed on log pRF eccentricity and log pRF size (NSD pRF estimates, voxels with pRF R² > 5%, noise ceiling > 0.1); “ecc | size” is the partial slope for eccentricity controlling for size and vice versa; mean over 8 subjects, with the number of subjects on the stated side and the exact Wilcoxon p. Collinearity between the two predictors is modest (mean VIF 1.66). The arm interaction is the paired difference of partial slopes, seed-averaged within arm. Sources: `results/prf_continuous/dissociation_2026-09-08.txt`, `interaction_2026-09-08.txt`, `input_null_2026-09-08.txt`. The paired trained − untrained rows compare each subject's partial slope in the trained seed-0 network with the untrained network on the diet front end; training with the diet changes neither statistic significantly and the two disagree in sign, while training without the diet removes the dissociation on the raw statistic.
+
+*Model of record.* Per-voxel stream-preference index regressed on log pRF eccentricity and log pRF size (NSD pRF estimates; voxels with pRF R² > 5%, noise ceiling > 0.1); “ecc | size” is the partial slope for eccentricity controlling for size and vice versa; mean over 8 subjects, with the number of subjects on the stated side and the exact Wilcoxon p. Partial slopes are the stored record of Extended Data Fig. 3 (results/figures_v3/cortex_controls.json); the univariate slopes are computed here with the same voxel selection.
+
+| model | statistic | ecc alone | size alone | ecc \| size | size \| ecc |
+|---|---|---|---|---|---|
+| model, seed 0 | normalised | +0.085 (0/8 neg, .0078) | −0.013 (5/8 neg, .4609) | +0.154 (0/8 neg, .0078) | −0.110 (8/8 neg, .0078) |
+| model, seed 0 | raw | +0.214 (0/8 neg, .0078) | −0.111 (8/8 neg, .0078) | +0.450 (0/8 neg, .0078) | −0.383 (8/8 neg, .0078) |
+| model, seed 1 | normalised | +0.082 (0/8 neg, .0078) | −0.018 (5/8 neg, .2500) | +0.142 (0/8 neg, .0078) | −0.102 (8/8 neg, .0078) |
+| model, seed 2 | normalised | +0.106 (0/8 neg, .0078) | −0.023 (5/8 neg, .1953) | +0.194 (0/8 neg, .0078) | −0.142 (8/8 neg, .0078) |
+| control, seed 0 | normalised | +0.010 (5/8 neg, 1.00) | +0.033 (1/8 neg, .0156) | −0.019 (6/8 neg, .4609) | +0.046 (1/8 neg, .0156) |
+| control, seed 0 | raw | +0.029 (2/8 neg, .4609) | +0.179 (0/8 neg, .0078) | −0.134 (7/8 neg, .0547) | +0.260 (0/8 neg, .0078) |
+| control, seed 1 | normalised | −0.005 (5/8 neg, .6406) | +0.026 (1/8 neg, .0391) | −0.039 (6/8 neg, .1953) | +0.052 (0/8 neg, .0078) |
+| control, seed 2 | normalised | −0.004 (5/8 neg, .8438) | +0.025 (2/8 neg, .0547) | −0.032 (6/8 neg, .1953) | +0.045 (0/8 neg, .0078) |
+| channel swap, seed 0 | normalised | −0.001 (5/8 neg, .9453) | +0.034 (1/8 neg, .0234) | −0.034 (6/8 neg, .1953) | +0.055 (1/8 neg, .0156) |
+| channel swap, seed 0 | raw | +0.055 (2/8 neg, .3828) | +0.200 (0/8 neg, .0078) | −0.115 (6/8 neg, .1094) | +0.270 (0/8 neg, .0078) |
+| channel swap, seed 1 | normalised | +0.011 (4/8 neg, .8438) | +0.041 (0/8 neg, .0078) | −0.023 (7/8 neg, .1953) | +0.055 (1/8 neg, .0156) |
+| channel swap, seed 2 | normalised | +0.003 (4/8 neg, 1.00) | +0.023 (2/8 neg, .0391) | −0.017 (6/8 neg, .2500) | +0.034 (1/8 neg, .0234) |
+| untrained network, shared front end | normalised | +0.058 (1/8 neg, .0781) | +0.007 (4/8 neg, .6406) | +0.083 (1/8 neg, .0234) | −0.040 (8/8 neg, .0078) |
+| untrained network, shared front end | raw | +0.295 (0/8 neg, .0078) | −0.010 (4/8 neg, 1.00) | +0.471 (0/8 neg, .0078) | −0.289 (8/8 neg, .0078) |
+| trained model (seed 0) − untrained, paired | normalised | | | +0.071 (7/8 pos, .0781) | −0.070 (0/8 pos, .0078) |
+| trained model (seed 0) − untrained, paired | raw | | | −0.021 (2/8 pos, .4609) | −0.094 (0/8 pos, .0078) |
+| trained control (seed 0) − untrained, paired | normalised | | | −0.102 (1/8 pos, .0156) | +0.085 (8/8 pos, .0078) |
+| trained control (seed 0) − untrained, paired | raw | | | −0.605 (0/8 pos, .0078) | +0.548 (8/8 pos, .0078) |
+| arm interaction, model − control (seed-averaged) | normalised | | | +0.193 (8/8 pos, .0078) | −0.165 (0/8 pos, .0078) |
+| arm interaction, model − control (seed-averaged) | raw | | | +0.592 (8/8 pos, .0078) | −0.656 (0/8 pos, .0078) |
+
+*BA network (PAPER_v2).*
 
 | model | statistic | ecc alone | size alone | ecc \| size | size \| ecc |
 |---|---|---|---|---|---|
@@ -806,6 +970,22 @@ The trajectory does not add to the correspondence (Fig. 6d). On the resolution t
 | arm interaction, diet − no diet (seed-averaged) | raw | | | +0.305 (8/8, .0078) | −0.502 (0/8 pos, .0078) |
 
 **Supplementary Table S9 | Cue-conflict shape bias under the forced two-way estimator.** The primary estimator (Methods 4.3) restricts the logits to the 16 categories, takes the argmax, and scores shape against texture over the images decided as one of the two, so images decided as a third category drop out of the denominator (“decided”). The forced estimator keeps all 1,200 images and scores, per image, whether the logit of the shape category exceeds the logit of the texture category. Mean over seeds [range]. Source: the stored per-image logits in `results/cue_conflict*/`.
+
+*Model of record.* The restricted (primary) estimator and the forced two-way estimator over all 1,200 images, from the stored per-image logits of the final checkpoints (results/cue_conflict/fs2_*_logits.npz); mean over seeds [range].
+
+| model / readout | restricted (primary) | decided / 1,200 | forced two-way | seeds |
+|---|---|---|---|---|
+| model, magno stream alone (w = 1) (final ckpt) | 0.850 [0.838, 0.871] | 501 | 0.730 [0.717, 0.740] | 3 |
+| model, both streams (w = 0.5) (final ckpt) | 0.682 [0.659, 0.698] | 580 | 0.648 [0.632, 0.663] | 3 |
+| model, parvo stream alone (w = 0) (final ckpt) | 0.477 [0.463, 0.495] | 426 | 0.520 [0.501, 0.537] | 3 |
+| control, magno stream alone (w = 1) (final ckpt) | 0.384 [0.376, 0.397] | 673 | 0.393 [0.391, 0.394] | 3 |
+| control, both streams (w = 0.5) (final ckpt) | 0.374 [0.359, 0.393] | 672 | 0.383 [0.378, 0.393] | 3 |
+| control, parvo stream alone (w = 0) (final ckpt) | 0.426 [0.388, 0.467] | 209 | 0.471 [0.453, 0.482] | 3 |
+| channel swap, magno stream alone (w = 1) (final ckpt) | 0.397 [0.380, 0.417] | 649 | 0.399 [0.378, 0.415] | 3 |
+| channel swap, both streams (w = 0.5) (final ckpt) | 0.389 [0.378, 0.405] | 654 | 0.393 [0.372, 0.407] | 3 |
+| channel swap, parvo stream alone (w = 0) (final ckpt) | 0.390 [0.384, 0.399] | 206 | 0.447 [0.439, 0.454] | 3 |
+
+*BA network (PAPER_v2).*
 
 | model / readout | restricted (primary) | decided / 1,200 | forced two-way | seeds |
 |---|---|---|---|---|
@@ -830,6 +1010,45 @@ The trajectory does not add to the correspondence (Fig. 6d). On the resolution t
 | untrained, no-diet front end, magno alone | 0.568 | 169 | 0.508 | 1 |
 
 **Supplementary Table S10 | Stream preference beyond hV4, on every NSD atlas.** Median over reliable voxels of the per-voxel index (Um − Up)/(Um + Up) (noise ceiling > 0.1, Um + Up > 10⁻³, ≥ 20 voxels per ROI per subject), mean over the eight subjects (n = subjects with enough voxels); the no-diet, diet, swap and parvo + high-SF arms are each the mean over three training seeds per subject, and the thesis column is the thesis's one checkpoint (Methods 4.5). Positive = magno band, negative = parvo band. Atlases: Wang et al. (2015) Kastner2015 ROIs beyond hV4 (the V1–hV4 rows are Extended Data Table 1 and Fig. 3), NSD's `streams` atlas, and the fLoc category-selective ROIs. Regional contrasts and the exact tests are in Extended Data Fig. 4c and `results/figures_v2/ext_gradient.md`. Source: the stored voxelwise fits in `results/encoding_cc/` and `results/encoding/`, relabelled; no refitting.
+
+*Model of record.* Median over reliable voxels of the per-voxel index (noise ceiling > 0.1, U_m + U_p > 10⁻³, ≥ 20 voxels per ROI per subject), mean over the eight subjects, each trained arm the mean over three seeds per subject. Positive = magno band, negative = parvo band. The BA columns are PAPER_v2's stored values; the fs2 arms are recomputed from the stored voxelwise fits (no refitting) and reproduce results/figures_v3/ext_gradient.json.
+
+| atlas | ROI | untrained (shared front end) | control (3 seeds) | model (3 seeds) | channel swap (3 seeds) | BA no diet (3 seeds) | BA (3 seeds) | voxels (median, model) |
+|---|---|---|---|---|---|---|---|---|
+| Kastner2015 | VO1 | +0.46 (n=8) | +0.92 (n=8) | −0.81 (n=8) | +0.95 (n=8) | +0.92 (n=8) | −0.87 (n=8) | 195 |
+| Kastner2015 | VO2 | +0.52 (n=8) | +0.98 (n=8) | −0.87 (n=8) | +0.99 (n=8) | +0.97 (n=8) | −0.90 (n=8) | 218 |
+| Kastner2015 | PHC1 | +0.68 (n=8) | +0.99 (n=8) | −0.85 (n=8) | +1.00 (n=8) | +0.98 (n=8) | −0.89 (n=8) | 148 |
+| Kastner2015 | PHC2 | +0.73 (n=8) | +1.00 (n=8) | −0.83 (n=8) | +1.00 (n=8) | +0.99 (n=8) | −0.87 (n=8) | 150 |
+| Kastner2015 | LO1 | +0.58 (n=8) | +0.90 (n=8) | −0.81 (n=8) | +0.93 (n=8) | +0.92 (n=8) | −0.83 (n=8) | 230 |
+| Kastner2015 | LO2 | +0.26 (n=8) | +0.94 (n=8) | −0.86 (n=8) | +0.96 (n=8) | +0.92 (n=8) | −0.90 (n=8) | 167 |
+| Kastner2015 | TO1 | +0.53 (n=8) | +0.97 (n=8) | −0.86 (n=8) | +0.99 (n=8) | +0.96 (n=8) | −0.86 (n=8) | 280 |
+| Kastner2015 | TO2 | +0.43 (n=8) | +0.98 (n=8) | −0.89 (n=8) | +0.99 (n=8) | +0.96 (n=8) | −0.89 (n=8) | 36 |
+| Kastner2015 | V3A | +0.66 (n=8) | +0.87 (n=8) | −0.68 (n=8) | +0.94 (n=8) | +0.91 (n=8) | −0.81 (n=8) | 278 |
+| Kastner2015 | V3B | +0.60 (n=8) | +0.96 (n=8) | −0.80 (n=8) | +0.98 (n=8) | +0.96 (n=8) | −0.87 (n=8) | 255 |
+| Kastner2015 | IPS0 | +0.43 (n=8) | +0.98 (n=8) | −0.81 (n=8) | +0.99 (n=8) | +0.98 (n=8) | −0.87 (n=8) | 316 |
+| Kastner2015 | IPS1 | +0.26 (n=8) | +0.98 (n=8) | −0.82 (n=8) | +0.99 (n=8) | +0.98 (n=8) | −0.86 (n=8) | 237 |
+| Kastner2015 | IPS2 | +0.28 (n=8) | +0.99 (n=8) | −0.89 (n=8) | +1.01 (n=8) | +1.00 (n=8) | −0.92 (n=8) | 47 |
+| streams | early | +0.76 (n=8) | +0.74 (n=8) | −0.06 (n=8) | +0.83 (n=8) | +0.86 (n=8) | −0.42 (n=8) | 3106 |
+| streams | midventral | +0.38 (n=8) | +0.81 (n=8) | −0.77 (n=8) | +0.88 (n=8) | +0.87 (n=8) | −0.84 (n=8) | 704 |
+| streams | midlateral | +0.46 (n=8) | +0.88 (n=8) | −0.85 (n=8) | +0.92 (n=8) | +0.91 (n=8) | −0.86 (n=8) | 570 |
+| streams | midparietal | +0.62 (n=8) | +0.93 (n=8) | −0.75 (n=8) | +0.97 (n=8) | +0.94 (n=8) | −0.84 (n=8) | 511 |
+| streams | ventral | +0.44 (n=8) | +0.98 (n=8) | −0.90 (n=8) | +0.99 (n=8) | +0.96 (n=8) | −0.91 (n=8) | 2724 |
+| streams | lateral | +0.51 (n=8) | +0.99 (n=8) | −0.89 (n=8) | +0.99 (n=8) | +0.97 (n=8) | −0.87 (n=8) | 1838 |
+| streams | parietal | +0.42 (n=8) | +0.99 (n=8) | −0.83 (n=8) | +1.00 (n=8) | +0.99 (n=8) | −0.87 (n=8) | 1076 |
+| floc-faces | OFA | +0.36 (n=8) | +0.86 (n=8) | −0.90 (n=8) | +0.91 (n=8) | +0.90 (n=8) | −0.89 (n=8) | 364 |
+| floc-faces | FFA-1 | +0.36 (n=8) | +0.97 (n=8) | −0.93 (n=8) | +0.98 (n=8) | +0.95 (n=8) | −0.91 (n=8) | 398 |
+| floc-faces | FFA-2 | +0.55 (n=7) | +0.99 (n=7) | −0.95 (n=7) | +1.00 (n=7) | +0.98 (n=7) | −0.92 (n=7) | 261 |
+| floc-places | OPA | +0.61 (n=8) | +0.98 (n=8) | −0.79 (n=8) | +0.99 (n=8) | +0.98 (n=8) | −0.86 (n=8) | 1067 |
+| floc-places | PPA | +0.71 (n=8) | +1.00 (n=8) | −0.84 (n=8) | +1.00 (n=8) | +0.99 (n=8) | −0.88 (n=8) | 618 |
+| floc-bodies | EBA | +0.46 (n=8) | +0.98 (n=8) | −0.90 (n=8) | +0.99 (n=8) | +0.97 (n=8) | −0.88 (n=8) | 2178 |
+| floc-bodies | FBA-1 | +0.28 (n=6) | +0.98 (n=6) | −0.91 (n=6) | +0.99 (n=6) | +0.96 (n=6) | −0.91 (n=6) | 314 |
+| floc-bodies | FBA-2 | +0.45 (n=8) | +1.00 (n=8) | −0.94 (n=8) | +0.99 (n=8) | +0.98 (n=8) | −0.92 (n=8) | 252 |
+| floc-words | OWFA | +0.43 (n=8) | +0.76 (n=8) | −0.84 (n=8) | +0.83 (n=8) | +0.88 (n=8) | −0.85 (n=8) | 394 |
+| floc-words | VWFA-1 | +0.18 (n=8) | +0.99 (n=8) | −0.91 (n=8) | +1.00 (n=8) | +0.96 (n=8) | −0.91 (n=8) | 460 |
+| floc-words | VWFA-2 | +0.19 (n=5) | +0.98 (n=6) | −0.91 (n=5) | +0.99 (n=6) | +0.95 (n=6) | −0.94 (n=6) | 150 |
+| floc-words | mfs-words | +0.21 (n=8) | +0.99 (n=8) | −0.93 (n=8) | +1.00 (n=8) | +0.97 (n=8) | −0.93 (n=8) | 122 |
+
+*BA network (PAPER_v2).*
 
 | atlas | ROI | untrained (diet front end) | no diet (3 seeds) | diet (3 seeds) | swap (3 seeds) | parvo + high-SF (3 seeds) | thesis ckpt (n = 1) | voxels (median, diet) |
 |---|---|---|---|---|---|---|---|---|

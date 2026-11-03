@@ -1454,6 +1454,33 @@ def check_cortex_decision() -> None:
         print("  ... 4.8: v2 record not yet in results/cortex_decision/v2/ (ledger §4)")
 
 
+def check_supp_model() -> None:
+    """Supplementary Tables S1-S10, model-of-record rows (docs/PLAN_SUPP_MODEL_2026-11-03.md): the record
+    results/supp_v3/supp_tables_model.json passes the plan's consistency gate (tmp_analysis/figs_v3/supp_gate.py: every
+    number with a main-text / Table 1 / ED Table 1 / figures_v3 counterpart equals it), the rows in the manuscript are the
+    record's verbatim, and the ⟦PENDING⟧ marker for them is gone."""
+    print("\n[Supplementary] model-of-record rows (results/supp_v3)")
+    rec, md = "results/supp_v3/supp_tables_model.json", "results/supp_v3/supp_tables_model.md"
+    if not (os.path.isfile(rec) and os.path.isfile(md)):
+        FAILS.append("results/supp_v3 record missing"); print("  BAD results/supp_v3/supp_tables_model.{json,md} missing"); return
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "figs_v3"))
+    import supp_gate
+    # the phrase every gate item is anchored on is the Supplement preface's statement of where the rows come from
+    PH = "Each Supplementary Table gives the model of record's rows first"
+    res = supp_gate.gate(json.load(open(rec)))
+    for name, ok, detail in res:
+        holds(f"supp gate: {name} ({detail})", ok, PH)
+    lines = [l for l in open(md, encoding="utf8").read().splitlines() if l.startswith("|") and not l.startswith("|---")]
+    missing = [l for l in lines if l not in PAPER]
+    holds(f"supp rows: {len(lines) - len(missing)}/{len(lines)} record lines appear verbatim in PAPER_v3" + (f" (missing e.g. {missing[0][:60]})" if missing else ""),
+          not missing, PH)
+    holds("supp: ten '*Model of record.*' blocks and ten '*BA network (PAPER_v2).*' labels",
+          PAPER.count("*Model of record.*") == 10 and PAPER.count("*BA network (PAPER_v2).*") == 10, PH)
+    holds("supp: no ⟦PENDING⟧ marker left except the resolved 2026-10-26 changelog sentence", PAPER.count("⟦PENDING⟧") == 1,
+          "**Supplementary material in this draft.**")
+    holds("supp: Note S1 carries the model's list and the BA list", "**The BA network's list (PAPER_v2).**" in PAPER, "**For the model of record.**")
+
+
 def _external(fn, key: str) -> None:
     path, what = EXTERNAL[key]
     if not os.path.isdir(path):
@@ -1484,6 +1511,7 @@ def main() -> int:
     check_length_cut()
     check_citations()
     check_cortex_decision()
+    check_supp_model()
     _external(check_fig6_reference_recompute, "encoding")
     if SKIPS:
         print(f"\nSKIPPED {len(SKIPS)} blocks for inputs not in the repository:")
